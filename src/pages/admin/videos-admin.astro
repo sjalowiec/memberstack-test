@@ -15,8 +15,8 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
     <header class="help-hub-admin__head">
       <h1 class="help-hub-admin__title">Videos Admin</h1>
       <p class="help-hub-admin__sub">
-        Data lives in <code>src/data/videos-public.json</code> and is updated via <code>/api/admin/videos</code>.
-        Lessons pick videos by stable key (<code>slug</code> or <code>content_id</code>) in the lesson editor (<code>videoSlug</code>).
+        Search by Knit It Now video number, title, slug, or Vimeo ID. Saves from this admin are published through GitHub,
+        and the site rebuilds within a few minutes. Lessons still use the video key (<code>slug</code>, or <code>content_id</code>).
       </p>
     </header>
 
@@ -31,6 +31,47 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
       </p>
     </div>
 
+    <section class="videos-admin-search" aria-labelledby="videos-admin-search-label">
+      <div class="videos-admin-search__head">
+        <label id="videos-admin-search-label" for="videos-admin-search">Search videos</label>
+        <p id="videos-admin-search-count" class="videos-admin-search__count" aria-live="polite"></p>
+      </div>
+      <p class="videos-admin-search__hint">Video number, title, or Vimeo ID. For example, 707.</p>
+      <div class="videos-admin-search__row">
+        <input
+          type="search"
+          id="videos-admin-search"
+          class="videos-admin__search"
+          placeholder="707, hung hem, or 151859846"
+          autocomplete="off"
+          enterkeyhint="search"
+        />
+        <button type="button" id="videos-admin-search-clear" class="kbm-btn kbm-btn-outline">
+          Clear search
+        </button>
+      </div>
+    </section>
+
+    <section id="videos-admin-match" class="videos-admin-match" hidden aria-live="polite">
+      <h2 id="videos-admin-match-title" class="videos-admin-match__title"></h2>
+      <dl class="videos-admin-match__facts">
+        <div>
+          <dt>Video number</dt>
+          <dd id="videos-admin-match-number"></dd>
+        </div>
+        <div>
+          <dt>Vimeo ID</dt>
+          <dd>
+            <code id="videos-admin-match-vimeo"></code>
+            <button type="button" id="videos-admin-copy-vimeo" class="kbm-btn kbm-btn-outline">Copy Vimeo ID</button>
+          </dd>
+        </div>
+      </dl>
+      <p class="videos-admin-match__actions">
+        <a id="videos-admin-match-edit" class="kbm-btn kbm-btn-primary" href="/admin/videos-edit">Edit video</a>
+      </p>
+    </section>
+
     <section class="admin-panel help-hub-admin__table-panel" aria-labelledby="list-heading">
       <h2 id="list-heading" class="visually-hidden">All videos</h2>
       <p id="videos-admin-loading" class="help-hub-admin__loading">Loading…</p>
@@ -39,10 +80,12 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
           <thead>
             <tr>
               <th scope="col">Key</th>
-              <th scope="col">content_id</th>
+              <th scope="col">Video number</th>
               <th scope="col">Title</th>
-              <th scope="col">vimeo_id</th>
+              <th scope="col">Vimeo ID</th>
               <th scope="col">Category</th>
+              <th scope="col">Status</th>
+              <th scope="col">Transcript</th>
               <th scope="col" class="help-hub-admin__th-actions">Actions</th>
             </tr>
           </thead>
@@ -133,6 +176,132 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
       font-size: 0.95rem;
     }
 
+    .videos-admin-search {
+      position: sticky;
+      top: 0.75rem;
+      z-index: 20;
+      margin: 0 0 1rem;
+      padding: 1rem 1.1rem;
+      background: #fff;
+      border: 2px solid #5d7340;
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(36, 48, 21, 0.08);
+    }
+
+    .videos-admin-search__head {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 0.35rem 1rem;
+    }
+
+    .videos-admin-search label {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: #243015;
+    }
+
+    .videos-admin-search__count {
+      margin: 0;
+      font-size: 1rem;
+      font-weight: 700;
+      color: #3f6212;
+    }
+
+    .videos-admin-search__hint {
+      margin: 0.2rem 0 0.7rem;
+      color: #475569;
+      font-size: 0.95rem;
+    }
+
+    .videos-admin-search__row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.65rem;
+    }
+
+    .videos-admin__search {
+      flex: 1 1 16rem;
+      width: 100%;
+      min-height: 3rem;
+      box-sizing: border-box;
+      border: 2px solid #243015;
+      border-radius: 8px;
+      padding: 0.65rem 0.8rem;
+      background: #fff;
+      color: #111827;
+      font: inherit;
+      font-size: 1.05rem;
+      font-weight: 600;
+    }
+
+    .videos-admin__search:focus {
+      outline: 3px solid #84a15a;
+      border-color: #5d7340;
+    }
+
+    .videos-admin-search__row .kbm-btn {
+      min-height: 3rem;
+    }
+
+    .videos-admin-match {
+      margin: 0 0 1rem 0;
+      background: #fff;
+      border: 1px solid #d6e0c8;
+      border-radius: 12px;
+      padding: 1rem 1.1rem;
+    }
+
+    .videos-admin-match__title {
+      margin: 0 0 0.75rem 0;
+      font-size: 1.25rem;
+      color: #243015;
+    }
+
+    .videos-admin-match__facts {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem 2rem;
+      margin: 0;
+    }
+
+    .videos-admin-match__facts dt {
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+      color: #64748b;
+    }
+
+    .videos-admin-match__facts dd {
+      margin: 0.2rem 0 0 0;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 1.05rem;
+    }
+
+    .videos-admin-match__facts code {
+      font-size: 1rem;
+      background: #f1f5f9;
+      padding: 0.15rem 0.4rem;
+      border-radius: 4px;
+    }
+
+    .videos-admin-match__actions {
+      margin: 0.9rem 0 0 0;
+    }
+
+    .videos-admin__vimeo-cell {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
     .admin-panel {
       background: #fff;
       border: 1px solid #e5e7eb;
@@ -221,11 +390,15 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
   </style>
 
   <script>
+    import { fetchAdminJson, promptAdminSignIn } from "../../lib/admin/adminAuthClient";
+    import { videoMatchesAdminSearch, vimeoIdKey } from "../../lib/videos/videoAdminSearch";
+
     const API_BASE = "/api/admin/videos";
 
     type VideoRow = Record<string, unknown>;
 
     let videos: VideoRow[] = [];
+    let transcripts: Record<string, string> = {};
 
     function stableVideoKey(v: VideoRow): string {
       const s = typeof v.slug === "string" ? v.slug.trim() : "";
@@ -238,6 +411,35 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
     const tableWrapEl = document.getElementById("videos-table-wrap");
     const tbodyEl = document.getElementById("videos-table-body");
     const emptyEl = document.getElementById("videos-admin-empty");
+    const SEARCH_STORAGE_KEY = "videos-admin-search";
+
+    function readStoredSearch(): string {
+      try {
+        return sessionStorage.getItem(SEARCH_STORAGE_KEY) ?? "";
+      } catch {
+        return "";
+      }
+    }
+
+    function storeSearch(value: string) {
+      try {
+        if (value.trim()) sessionStorage.setItem(SEARCH_STORAGE_KEY, value);
+        else sessionStorage.removeItem(SEARCH_STORAGE_KEY);
+      } catch {
+        /* The box still filters this visit. */
+      }
+    }
+
+    const searchEl = document.getElementById("videos-admin-search");
+    const searchCountEl = document.getElementById("videos-admin-search-count");
+    const searchClearEl = document.getElementById("videos-admin-search-clear");
+    const matchEl = document.getElementById("videos-admin-match");
+    const matchTitleEl = document.getElementById("videos-admin-match-title");
+    const matchNumberEl = document.getElementById("videos-admin-match-number");
+    const matchVimeoEl = document.getElementById("videos-admin-match-vimeo");
+    const matchEditEl = document.getElementById("videos-admin-match-edit");
+    let searchQuery = readStoredSearch();
+    if (searchEl instanceof HTMLInputElement) searchEl.value = searchQuery;
 
     function setStatus(message: string, kind: "ok" | "err" | "neutral" = "neutral") {
       if (!statusEl) return;
@@ -283,35 +485,86 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
       return v === null || v === undefined ? "" : String(v);
     }
 
+    function vimeoLabel(v: VideoRow) {
+      return vimeoIdKey(v.vimeo_id);
+    }
+
+    function visibleVideos() {
+      return videos
+        .map((v) => ({ v, key: stableVideoKey(v) }))
+        .filter((x) => x.key.length > 0 && videoMatchesAdminSearch(x.v, searchQuery))
+        .sort((a, b) => a.key.localeCompare(b.key, undefined, { sensitivity: "base" }));
+    }
+
+    async function copyText(value: string, button: HTMLButtonElement | null) {
+      if (!value) return;
+      try {
+        await navigator.clipboard.writeText(value);
+      } catch {
+        const area = document.createElement("textarea");
+        area.value = value;
+        document.body.appendChild(area);
+        area.select();
+        document.execCommand("copy");
+        area.remove();
+      }
+      if (!button) return;
+      const previous = button.textContent;
+      button.textContent = "Copied";
+      window.setTimeout(() => {
+        button.textContent = previous;
+      }, 1600);
+    }
+
+    function renderMatch(rows: Array<{ v: VideoRow; key: string }>) {
+      if (!matchEl || !matchTitleEl || !matchNumberEl || !matchVimeoEl || !matchEditEl) return;
+      const query = searchQuery.trim();
+      if (!query || rows.length !== 1) {
+        matchEl.hidden = true;
+        return;
+      }
+      const { v, key } = rows[0];
+      const vimeoId = vimeoLabel(v);
+      matchTitleEl.textContent = asString(v.title) || key;
+      matchNumberEl.textContent = asString(v.content_id);
+      matchVimeoEl.textContent = vimeoId || "None";
+      matchEditEl.setAttribute("href", `/admin/videos-edit?key=${encodeURIComponent(key)}`);
+      const copyButton = document.getElementById("videos-admin-copy-vimeo");
+      if (copyButton instanceof HTMLButtonElement) copyButton.disabled = !vimeoId;
+      matchEl.hidden = false;
+    }
+
     function renderTable() {
       if (!tbodyEl || !tableWrapEl || !emptyEl || !loadingEl) return;
       loadingEl.hidden = true;
-      if (videos.length === 0) {
+      const rows = visibleVideos();
+      renderMatch(rows);
+      if (rows.length === 0) {
         tableWrapEl.hidden = true;
         emptyEl.hidden = false;
+        emptyEl.textContent = searchQuery.trim() ? "No matching videos" : "No videos in catalog.";
         tbodyEl.innerHTML = "";
         refreshTableSorter();
         return;
       }
       emptyEl.hidden = true;
       tableWrapEl.hidden = false;
-      const rows = videos
-        .map((v) => ({ v, key: stableVideoKey(v) }))
-        .filter((x) => x.key.length > 0)
-        .sort((a, b) => a.key.localeCompare(b.key, undefined, { sensitivity: "base" }));
 
       tbodyEl.innerHTML = rows
         .map(({ v, key }) => {
-          const vid = v.vimeo_id;
-          const idStr =
-            typeof vid === "number" && Number.isFinite(vid) ? String(Math.trunc(vid)) : asString(vid);
+          const idStr = vimeoLabel(v);
           const href = `/admin/videos-edit?key=${encodeURIComponent(key)}`;
+          const copy = idStr
+            ? `<button type="button" class="kbm-btn kbm-btn-outline" data-copy-vimeo="${escapeHtml(idStr)}">Copy</button>`
+            : "";
           return `<tr>
             <td class="col-key"><code>${escapeHtml(key)}</code></td>
             <td>${escapeHtml(asString(v.content_id))}</td>
             <td class="col-title">${escapeHtml(asString(v.title))}</td>
-            <td>${escapeHtml(idStr)}</td>
+            <td><div class="videos-admin__vimeo-cell"><span>${escapeHtml(idStr)}</span>${copy}</div></td>
             <td>${escapeHtml(asString(v.category))}</td>
+            <td>${escapeHtml(statusLabel(v))}</td>
+            <td>${escapeHtml(TRANSCRIPT_LABEL[transcripts[asString(v.content_id)] ?? "none"])}</td>
             <td class="help-hub-admin__actions">
               <a class="kbm-btn kbm-btn-outline" href="${href}">Edit</a>
             </td>
@@ -319,6 +572,19 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
         })
         .join("");
       refreshTableSorter();
+    }
+
+    const TRANSCRIPT_LABEL: Record<string, string> = {
+      published: "Yes",
+      draft: "Waiting for publish",
+      none: "",
+    };
+
+    function statusLabel(v: VideoRow) {
+      const raw = asString(v.status).trim().toLowerCase();
+      if (raw === "draft") return "Draft";
+      if (raw === "archived") return "Archived";
+      return "Published";
     }
 
     function escapeHtml(s: string) {
@@ -329,22 +595,75 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
         .replace(/"/g, "&quot;");
     }
 
+    function reportSearch() {
+      const query = searchQuery.trim();
+      const shown = query ? visibleVideos().length : videos.length;
+      if (searchCountEl) {
+        if (!videos.length && !query) searchCountEl.textContent = "";
+        else if (!query) searchCountEl.textContent = `${videos.length} videos`;
+        else searchCountEl.textContent = shown === 1 ? "1 match" : `${shown} matches`;
+      }
+      if (searchClearEl instanceof HTMLButtonElement) searchClearEl.disabled = query.length === 0;
+      if (!query) {
+        setStatus(`${videos.length} video(s) loaded.`, "ok");
+        return;
+      }
+      setStatus(shown === 1 ? "1 match." : `${shown} matches.`, shown ? "ok" : "neutral");
+    }
+
     async function load() {
       setStatus("Loading catalog…");
       try {
-        const res = await fetch(API_BASE);
-        const data = await res.json();
-        if (!res.ok || !data?.ok || !Array.isArray(data.videos)) {
-          setStatus(data?.error || `Load failed (${res.status})`, "err");
+        const result = await fetchAdminJson<{ videos?: VideoRow[]; transcripts?: Record<string, string> }>(
+          API_BASE,
+          { method: "GET" },
+        );
+        if (!result.ok || !Array.isArray(result.data.videos)) {
+          if (result.needsSignIn) promptAdminSignIn("/admin/videos-admin");
+          setStatus(result.error || "Load failed.", "err");
           return;
         }
-        videos = data.videos as VideoRow[];
-        setStatus(`${videos.length} video(s) loaded.`, "ok");
+        videos = result.data.videos;
+        transcripts = result.data.transcripts ?? {};
+        reportSearch();
         renderTable();
       } catch {
         setStatus("Network error loading videos.", "err");
       }
     }
+
+    searchEl?.addEventListener("input", () => {
+      if (!(searchEl instanceof HTMLInputElement)) return;
+      searchQuery = searchEl.value;
+      storeSearch(searchQuery);
+      reportSearch();
+      renderTable();
+    });
+
+    searchClearEl?.addEventListener("click", () => {
+      searchQuery = "";
+      if (searchEl instanceof HTMLInputElement) {
+        searchEl.value = "";
+        searchEl.focus();
+      }
+      storeSearch("");
+      reportSearch();
+      renderTable();
+    });
+
+    document.getElementById("videos-admin-copy-vimeo")?.addEventListener("click", () => {
+      const button = document.getElementById("videos-admin-copy-vimeo");
+      const value = matchVimeoEl?.textContent?.trim() ?? "";
+      void copyText(value, button instanceof HTMLButtonElement ? button : null);
+    });
+
+    tbodyEl?.addEventListener("click", (event) => {
+      const target = event.target;
+      if (!(target instanceof HTMLButtonElement)) return;
+      const value = target.getAttribute("data-copy-vimeo");
+      if (!value) return;
+      void copyText(value, target);
+    });
 
     load();
   </script>
