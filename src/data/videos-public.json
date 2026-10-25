@@ -7764,7 +7764,7 @@
     "slug": "admin-test-video-delete-me",
     "title": "Admin Test Video Edited (delete me)",
     "description": "Edited throwaway test. Safe to archive.",
-    "access_level": "member",
+    "access_level": "public",
     "status": "published",
     "category": "Testing",
     "vimeo_id": 999999001

@@ -2,8 +2,8 @@
   "generator": "catalog-transcripts",
   "kind": "audit",
   "sourceDirectory": "src/data/transcripts/en",
-  "publicCount": 13,
-  "memberCount": 239,
+  "publicCount": 14,
+  "memberCount": 238,
   "records": [
     {
       "vimeoId": "151857129",
@@ -2279,7 +2279,7 @@
     },
     {
       "vimeoId": "999999001",
-      "access": "member",
+      "access": "public",
       "sourceFile": "999999001.vtt",
       "sourceSha256": "101fd13b7c13c44a3e1a85cae4b6bbacbe137138cbd58ce6a804e15ea32fca07",
       "paragraphCount": 1,
