@@ -102,6 +102,29 @@
   text-anchor: middle;
 }
 
+/* Heel and toe: a needle returned to work, distinct from a needle placed into hold.
+ * Slightly smaller than sweater bind-off labels so a one-row step stays readable. */
+.shaping-map__svg--heel-toe .shaping-map-step-label {
+  font-size: 15px;
+}
+
+.shaping-map-step-label--return {
+  fill: var(--kbm-green, #52682d);
+}
+
+/* Keep one screen pixel per grid cell. Print scales the map to the page. */
+.shaping-map__svg--heel-toe {
+  width: auto;
+  max-width: none;
+  height: auto;
+}
+
+/* The instruction section clips overflow. A wide heel/toe map stays in its
+ * own scroll box, and the section must not crop that box. */
+#pattern-content .sock-pattern-section:has([data-heel-toe-shaping-map]) {
+  overflow: visible;
+}
+
 /* Right-side row numbers — same size/weight as step labels; Y aligns to the grid row. */
 .shaping-map-row-number {
   fill: #111111;
@@ -387,13 +410,29 @@ button.ns-visual-guides__preview:focus-visible .ns-visual-guides__zoom {
     page-break-inside: avoid;
   }
 
+  /* Large stockings are taller than one page. Let this map print instead of
+   * being dropped by a keep-together rule. */
+  .shaping-map[data-heel-toe-shaping-map] {
+    break-inside: auto;
+    page-break-inside: auto;
+  }
+
   .shaping-map__scroll {
     overflow: visible;
     border-color: #ccc;
   }
 
-  .shaping-map__svg {
-    min-width: 0;
+  .shaping-map__svg,
+  .shaping-map__svg--heel-toe {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+  }
+
+  /* The map is tall. Let the instruction section break so the map can keep its own page. */
+  #pattern-content .sock-pattern-section:has(.shaping-map) {
+    break-inside: auto;
+    page-break-inside: auto;
   }
 
   /* Preserve the grid + path colors when printing. */
@@ -403,6 +442,7 @@ button.ns-visual-guides__preview:focus-visible .ns-visual-guides__zoom {
   .shaping-map-grid-minor line,
   .shaping-map-grid-major line,
   .shaping-map-path,
+  .shaping-map-step-label--return,
   .shaping-map-edge-label,
   .shaping-map-annotation,
   .shaping-map-dimension-label,
