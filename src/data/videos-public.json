@@ -7762,8 +7762,8 @@
   {
     "content_id": 5004,
     "slug": "admin-test-video-delete-me",
-    "title": "Admin Test Video (delete me)",
-    "description": "Throwaway test for the hosted video admin. Safe to archive.",
+    "title": "Admin Test Video Edited (delete me)",
+    "description": "Edited throwaway test. Safe to archive.",
     "access_level": "member",
     "status": "published",
     "category": "Testing",
