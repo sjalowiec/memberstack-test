@@ -70,16 +70,16 @@ export const GET: APIRoute = async ({ request, cookies }) => {
       save = { canSave: false, warning: `${reason} Showing this deploy's copy; saving is turned off.` };
     }
 
+    // Editor saves store one video's thumbnail at a time, so showing catalog
+    // pictures while thumbnail storage is down cannot wipe other stored ones.
     let videos = data;
+    let posterWarning: string | undefined;
     try {
       const overrides = await listVideoPosterOverrides();
       videos = applyVideoPosterOverrides(data, overrides);
     } catch (error) {
       if (!isMissingVideoPosterTable(error)) {
-        return jsonResponse(
-          { ok: false, error: "Saved thumbnails could not be loaded. Nothing was changed." },
-          500,
-        );
+        posterWarning = "Stored thumbnails could not be loaded, so catalog pictures are shown.";
       }
     }
 
@@ -96,6 +96,7 @@ export const GET: APIRoute = async ({ request, cookies }) => {
       transcripts,
       nextContentId: nextVideoContentId(data as Record<string, unknown>[]),
       save,
+      posterWarning,
     });
   } catch (e) {
     const message = e instanceof Error ? e.message : "Could not read videos-public.json";
