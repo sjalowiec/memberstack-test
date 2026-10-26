@@ -1,12 +1,10 @@
 /**
- * Christmas Stocking is temporarily unavailable on member-facing production hosts.
- * Localhost, Astro dev, and Netlify hosts (including kin-dev) stay open for testing.
- * Saved projects and the pattern code stay in place.
+ * Christmas Stocking has launched — it is available on member-facing production hosts.
+ * The gate is retired (always returns false); the route matcher and unavailable
+ * response below are kept so the gate can be re-enabled later by restoring the
+ * env check. Membership rules for starting and editing a stocking are unchanged.
  */
-import {
-  detectSiteEnvironment,
-  type DetectSiteEnvironmentOptions,
-} from "../env/siteEnvironment";
+import { type DetectSiteEnvironmentOptions } from "../env/siteEnvironment";
 
 export const CHRISTMAS_STOCKING_PATH_PREFIX = "/patterns/christmas-stocking";
 export const CHRISTMAS_STOCKING_TEMPORARILY_UNAVAILABLE_MESSAGE = "Temporarily unavailable";
@@ -23,13 +21,14 @@ export function isChristmasStockingRoute(pathname: string): boolean {
 /**
  * When true, Christmas Stocking must not appear in the public catalog and
  * direct builder, landing, and instruction routes show a short unavailable message.
- * Uses the same host/env rules as {@link detectSiteEnvironment}.
+ * Christmas Stocking is now launched, so this is always false. The signature is
+ * preserved for the catalog page and middleware.
  */
 export function isChristmasStockingProductionBlocked(
-  hostname: string | null | undefined,
-  options: DetectSiteEnvironmentOptions = {},
+  _hostname: string | null | undefined,
+  _options: DetectSiteEnvironmentOptions = {},
 ): boolean {
-  return detectSiteEnvironment(hostname, options) === "production";
+  return false;
 }
 
 /** Short page shown instead of the builder or generated instructions on production. */

@@ -35,14 +35,11 @@ describe("isChristmasStockingRoute", () => {
 });
 
 describe("isChristmasStockingProductionBlocked", () => {
-  it("blocks production custom domains", () => {
-    expect(isChristmasStockingProductionBlocked("knititnow.com")).toBe(true);
-    expect(isChristmasStockingProductionBlocked("www.knititnow.com")).toBe(true);
-    expect(isChristmasStockingProductionBlocked("app.knititnow.com")).toBe(true);
-    expect(isChristmasStockingProductionBlocked("app.knitbymachine.com")).toBe(true);
-  });
-
-  it("stays available on localhost, Astro dev, and Netlify DEV hosts", () => {
+  it("never blocks now that Christmas Stocking has launched", () => {
+    expect(isChristmasStockingProductionBlocked("knititnow.com")).toBe(false);
+    expect(isChristmasStockingProductionBlocked("www.knititnow.com")).toBe(false);
+    expect(isChristmasStockingProductionBlocked("app.knititnow.com")).toBe(false);
+    expect(isChristmasStockingProductionBlocked("app.knitbymachine.com")).toBe(false);
     expect(isChristmasStockingProductionBlocked("localhost", { isViteDev: true })).toBe(false);
     expect(isChristmasStockingProductionBlocked("localhost")).toBe(false);
     expect(isChristmasStockingProductionBlocked("127.0.0.1")).toBe(false);
@@ -53,7 +50,7 @@ describe("isChristmasStockingProductionBlocked", () => {
 });
 
 describe("Christmas Stocking catalog and route wiring", () => {
-  it("omits the catalog card on production and keeps the card definition for DEV", () => {
+  it("keeps the catalog card behind the availability control", () => {
     expect(catalog).toContain("isChristmasStockingProductionBlocked");
     expect(catalog).toContain("hideChristmasStockingInCatalog");
     expect(catalog).toContain("...(hideChristmasStockingInCatalog ? [] : [christmasStockingPattern])");

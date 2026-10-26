@@ -504,4 +504,104 @@ describe("map, written actions, and finished depth", () => {
       },
     ]);
   });
+
+  it("knits Mini at 16/24 and 12/16 over 4 inches in both directions", () => {
+    const gauges = [
+      {
+        stitchGaugeDisplay: 16,
+        rowGaugeDisplay: 24,
+        stitches: 24,
+        legRows: 24,
+        straightFootRows: 8,
+        working: 12,
+        remaining: 4,
+        depthRows: 8,
+      },
+      {
+        stitchGaugeDisplay: 12,
+        rowGaugeDisplay: 16,
+        stitches: 18,
+        legRows: 16,
+        straightFootRows: 4,
+        working: 9,
+        remaining: 3,
+        depthRows: 6,
+      },
+    ];
+    for (const gauge of gauges) {
+      const geometries: string[] = [];
+      for (const direction of ["cuff-down", "toe-up"] as const) {
+        const label = `${gauge.stitchGaugeDisplay}x${gauge.rowGaugeDisplay} ${direction}`;
+        const result = calculateChristmasStockingPattern({
+          direction,
+          legLengthInches: 4,
+          footCircumferenceInches: 6,
+          footLengthInches: 4,
+          stitchGaugeDisplay: gauge.stitchGaugeDisplay,
+          rowGaugeDisplay: gauge.rowGaugeDisplay,
+          displayUnit: "inches",
+        });
+        expect(result.ok, label).toBe(true);
+        if (!result.ok) continue;
+        const calc = result.calc;
+        expect(calc.totalSockStitches, label).toBe(gauge.stitches);
+        expect(calc.legRows, label).toBe(gauge.legRows);
+        expect(calc.legCircumferenceInches, label).toBe(6);
+        expect(calc.legLengthInches, label).toBe(4);
+        expect(calc.footLengthInches, label).toBe(4);
+        expect(calc.straightFootRows, label).toBe(gauge.straightFootRows);
+        expect(calc.heel.workingStitches, label).toBe(gauge.working);
+        expect(calc.heel.remainingStitches, label).toBe(gauge.remaining);
+        expect(calc.heel.shortRowDepthRows, label).toBe(gauge.depthRows);
+        expect(calc.toe.shortRowDepthRows, label).toBe(calc.heel.shortRowDepthRows);
+        expect(calc.toe.shortRowKnittingRows, label).toBe(calc.heel.shortRowKnittingRows);
+
+        const doc = buildChristmasStockingInstructions(calc);
+        const built = buildHeelToeShapingMap(doc);
+        expect(built.ok, label).toBe(true);
+        if (!built.ok) continue;
+        for (const part of ["heel", "toe"] as const) {
+          const section = doc.sections.find((entry) => entry.id === part) as SockInstructionSection;
+          const inn = section.steps.find((step) => step.type === "short-row-in");
+          const out = section.steps.find((step) => step.type === "short-row-out");
+          expect(inn?.type, `${label} ${part}`).toBe("short-row-in");
+          expect(out?.type, `${label} ${part}`).toBe("short-row-out");
+          if (!inn || inn.type !== "short-row-in" || !out || out.type !== "short-row-out") continue;
+          expect(built.map.passes.filter((pass) => pass.action === "hold"), `${label} ${part}`).toHaveLength(
+            inn.rows,
+          );
+          expect(built.map.passes.filter((pass) => pass.action === "return"), `${label} ${part}`).toHaveLength(
+            out.rows,
+          );
+          expect(built.map.workingStitches, `${label} ${part}`).toBe(inn.startWorkingStitches);
+          expect(built.map.remainingStitches, `${label} ${part}`).toBe(inn.remainingStitches);
+          const alignment = describeHeelToeDepthAlignment({
+            mapPasses: built.map.passes.length,
+            holdPasses: built.map.passes.filter((pass) => pass.action === "hold").length,
+            returnPasses: built.map.passes.filter((pass) => pass.action === "return").length,
+            instructionInRows: inn.rows,
+            instructionOutRows: out.rows,
+            depthRows: calc[part].shortRowDepthRows,
+            knittingRows: calc[part].shortRowKnittingRows,
+            depthInches: part === "heel" ? calc.heelDepthInches : calc.toeDepthInches,
+            rowGaugePerInch: calc.rowGaugePerInch,
+          });
+          expect(alignment.disagreements, `${label} ${part}`).toEqual([]);
+        }
+        geometries.push(
+          [
+            calc.totalSockStitches,
+            calc.legRows,
+            calc.straightFootRows,
+            calc.heel.shortRowDepthRows,
+            calc.toe.shortRowDepthRows,
+          ].join(":"),
+        );
+      }
+      expect(geometries, `${gauge.stitchGaugeDisplay}x${gauge.rowGaugeDisplay}`).toEqual([
+        geometries[0],
+        geometries[0],
+      ]);
+    }
+  });
 });
