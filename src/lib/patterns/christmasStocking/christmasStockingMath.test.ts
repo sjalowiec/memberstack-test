@@ -71,7 +71,7 @@ describe("Christmas stocking chart", () => {
       row.footLengthInches,
       row.defaultLegCircumferenceInches,
     ])).toEqual([
-      ["mini", 4, 6, 3, 6],
+      ["mini", 4, 6, 4, 6],
       ["sm", 8, 10, 7, 10],
       ["med", 12, 14, 9, 14],
       ["lg", 16, 18, 11, 18],
@@ -123,27 +123,26 @@ describe("Christmas stocking calculations", () => {
       direction: "cuff-down",
       legLengthInches: 4,
       footCircumferenceInches: 6,
-      footLengthInches: 3,
+      footLengthInches: 4,
       stitchGaugeDisplay: 16,
       rowGaugeDisplay: 24,
       displayUnit: "inches",
     });
+    expect(coarseMini.ok).toBe(true);
+    if (coarseMini.ok) {
+      expect(coarseMini.calc.straightFootRows).toBe(8);
+    }
     const fineMini = calculateChristmasStockingPattern({
       direction: "toe-up",
       legLengthInches: 4,
       footCircumferenceInches: 6,
-      footLengthInches: 3,
+      footLengthInches: 4,
       stitchGaugeDisplay: 28,
       rowGaugeDisplay: 44,
       displayUnit: "inches",
     });
-    if (!coarseMini.ok) {
-      expect(coarseMini.errors[0]).toMatch(/foot length|short-row|too short|stitch count/i);
-    }
-    if (!fineMini.ok) {
-      expect(fineMini.errors[0]).toMatch(/foot length|short-row|too short|stitch count/i);
-    }
-    expect(failures.filter((line) => !line.startsWith("mini "))).toEqual([]);
+    expect(fineMini.ok).toBe(true);
+    expect(failures).toEqual([]);
   });
 
   it("keeps finished dimensions the same in both directions", () => {

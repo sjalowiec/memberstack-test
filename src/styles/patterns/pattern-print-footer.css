@@ -10,32 +10,46 @@
 
 @page pattern_print_footer {
   size: letter;
-  /* Extra bottom margin keeps @bottom-center page counters out of body/table text in Chromium PDF. */
-  margin: 0.75in 0.7in 1.08in 0.7in;
+  /*
+   * Bottom margin holds two footer lines (attribution, then the pattern URL)
+   * plus a gap so those lines stay out of the knitting instructions.
+   * Column widths are sized for A4, the narrower sheet: the 2.55in URL column
+   * ends before the centered page number, and the date keeps its own 2.45in.
+   */
+  margin: 0.75in 0.7in 1.15in 0.7in;
 
   @bottom-left {
     content: var(--pattern-print-footer-bottom-left, "Created by Knit It Now LLC");
+    width: 2.55in;
     font-size: 9pt;
+    line-height: 1.35;
     font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
     color: #4b5563;
-    white-space: nowrap;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
   }
 
   @bottom-center {
     content: "Page " counter(page) " of " counter(pages);
+    width: 1.35in;
     font-size: 9pt;
     font-weight: 600;
+    line-height: 1.35;
     font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
     color: #4b5563;
     white-space: nowrap;
+    text-align: center;
   }
 
   @bottom-right {
     content: "Generated " var(--pattern-print-generated-date, "");
+    width: 2.45in;
     font-size: 9pt;
+    line-height: 1.35;
     font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
     color: #4b5563;
     white-space: nowrap;
+    text-align: right;
   }
 }
 
