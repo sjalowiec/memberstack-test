@@ -48,10 +48,10 @@ import {
 } from "./vestInShow";
 
 const pageSource = readFileSync(resolve("src/pages/knit-ables/vest-in-show.astro"), "utf8");
-const templateSource = readFileSync(
-  resolve("src/components/knit-ables/KnitAbleInspirationPage.astro"),
-  "utf8",
-);
+const templateSource = [
+  readFileSync(resolve("src/components/knit-ables/KnitAbleInspirationPage.astro"), "utf8"),
+  readFileSync(resolve("src/components/knit-ables/KnitAbleInspirationBuilder.astro"), "utf8"),
+].join("\n");
 const capSleevePage = readFileSync(resolve("src/pages/knit-ables/cap-sleeve-tank.astro"), "utf8");
 const cocoLocoPage = readFileSync(resolve("src/pages/knit-ables/coco-loco-tank.astro"), "utf8");
 const teenageKicksPage = readFileSync(

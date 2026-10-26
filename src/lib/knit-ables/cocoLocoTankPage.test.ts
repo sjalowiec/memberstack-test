@@ -49,10 +49,10 @@ import {
 } from "./cocoLocoTank";
 
 const pageSource = readFileSync(resolve("src/pages/knit-ables/coco-loco-tank.astro"), "utf8");
-const templateSource = readFileSync(
-  resolve("src/components/knit-ables/KnitAbleInspirationPage.astro"),
-  "utf8",
-);
+const templateSource = [
+  readFileSync(resolve("src/components/knit-ables/KnitAbleInspirationPage.astro"), "utf8"),
+  readFileSync(resolve("src/components/knit-ables/KnitAbleInspirationBuilder.astro"), "utf8"),
+].join("\n");
 const sleevelessLandingPage = readFileSync(
   resolve("src/pages/patterns/sleeveless/index.astro"),
   "utf8",

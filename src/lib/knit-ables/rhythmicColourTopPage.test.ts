@@ -47,10 +47,10 @@ const pageSource = readFileSync(
   resolve("src/pages/knit-ables/rhythmic-colour-top.astro"),
   "utf8",
 );
-const templateSource = readFileSync(
-  resolve("src/components/knit-ables/KnitAbleInspirationPage.astro"),
-  "utf8",
-);
+const templateSource = [
+  readFileSync(resolve("src/components/knit-ables/KnitAbleInspirationPage.astro"), "utf8"),
+  readFileSync(resolve("src/components/knit-ables/KnitAbleInspirationBuilder.astro"), "utf8"),
+].join("\n");
 const sidewaysLandingPage = readFileSync(
   resolve("src/pages/patterns/sideways-cardigan/index.astro"),
   "utf8",
