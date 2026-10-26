@@ -17,9 +17,9 @@ export const CHRISTMAS_STOCKING_PATTERN_LANDING_IMAGE_SRC =
 
 export const CHRISTMAS_STOCKING_PATTERN_BUILDER_LANDING: PatternBuilderLandingContent = {
   patternName: `${BASIC_SOCK_PATTERN_NAME} Pattern Builder`,
-  headline: "One Christmas stocking, in your yarn and your gauge",
+  headline: "Your Christmas stocking, in your yarn and your gauge",
   intro:
-    "Create one machine-knit stocking from finished leg length, foot circumference, and foot length. Knit it cuff down or toe up. The builder calculates the short-row heel and toe.",
+    "Create a machine-knit Christmas stocking in your choice of size and yarn. Knit cuff down or toe up, with stitch and row counts calculated from your gauge, including short-row heel and toe shaping.",
   makeItYourOwn: CHRISTMAS_STOCKING_MAKE_IT_YOUR_OWN,
   image: {
     src: CHRISTMAS_STOCKING_PATTERN_LANDING_IMAGE_SRC,
@@ -28,7 +28,7 @@ export const CHRISTMAS_STOCKING_PATTERN_BUILDER_LANDING: PatternBuilderLandingCo
   seo: {
     title: "Christmas Stocking Pattern Builder | Knit it Now",
     description:
-      "Create one custom machine-knit Christmas stocking from finished measurements and your gauge. Cuff down or toe up. Included with Knit It Now membership.",
+      "Create a machine-knit Christmas stocking in your choice of size and yarn. Cuff down or toe up, from your gauge. Included with Knit It Now membership.",
     canonicalUrl: CHRISTMAS_STOCKING_PATTERN_LANDING_CANONICAL_URL,
   },
   choices: {
@@ -37,30 +37,30 @@ export const CHRISTMAS_STOCKING_PATTERN_BUILDER_LANDING: PatternBuilderLandingCo
       {
         title: "Finished size",
         description:
-          "Pick Mini through Extra Large. Leg length runs from the top edge to the start of the heel and includes the top edging. Foot circumference and leg circumference are the same.",
+          "Choose Mini through Extra Large. Leg length is measured from the top edge to the start of the heel and includes your chosen edging. The leg and foot have the same circumference.",
       },
       {
         title: "Cuff down or Toe up",
-        description: "Choose the knitting order. Both directions finish to the same measurements.",
+        description: "Start at the cuff or the toe. Choose the knitting direction you prefer.",
       },
       {
         title: "Your stitch and row gauge",
         description:
-          "Enter the gauge from your swatch over 4 inches / 10 cm. Heel and toe are plain knitting. Stitch patterns on the leg and foot are up to you.",
+          "Enter your swatch gauge over 4 inches / 10 cm. Keep the heel and toe plain, and personalize the leg and foot with your choice of stitch patterns.",
       },
     ],
   },
   creates: {
     heading: "What the builder creates",
     body: [
-      "Members receive instructions for one stocking: stitch and row counts, a short-row heel, a short-row toe, and finishing. There is no second stocking.",
-      "The top edge — ribbing, a rolled edge, or another finish — is worked inside the leg length. An optional hanging loop can be an i-cord or twisted cord in a length you choose.",
+      "Members receive personalized knitting instructions with stitch and row counts, short-row heel and toe shaping, and finishing directions.",
+      "Your chosen top edging, such as ribbing or a rolled edge, is included in the finished leg length. Add an optional hanging loop using i-cord or twisted cord.",
     ],
   },
   anyYarn: {
     heading: "Any yarn. Any machine.",
     body: [
-      "This is not a pattern written for one knitting machine. Enter the gauge you achieved with your yarn and machine, and the builder calculates one stocking.",
+      "Enter the gauge from your chosen yarn and knitting machine to create instructions tailored to your stocking.",
     ],
   },
   cta: {
