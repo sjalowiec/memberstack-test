@@ -62,9 +62,11 @@ describe("Knit-able Pacific publish dates", () => {
     expect(KNIT_ABLE_INITIAL_PUBLISH_DATES["coco-loco-tank"]).toBeUndefined();
     expect(KNIT_ABLE_INITIAL_PUBLISH_DATES["vest-in-show"]).toBeUndefined();
     expect(KNIT_ABLE_INITIAL_PUBLISH_DATES["rhythmic-colour-top"]).toBeUndefined();
+    expect(KNIT_ABLE_INITIAL_PUBLISH_DATES["christmas-stockings-your-way"]).toBeUndefined();
 
     const rows = buildKnitAbleAdminRows(KNIT_ABLE_INITIAL_PUBLISH_DATES, SEP_29_NOON_PACIFIC);
     expect(rows.map((row) => [row.slug, row.status])).toEqual([
+      ["christmas-stockings-your-way", "unpublished"],
       ["rhythmic-colour-top", "unpublished"],
       ["vest-in-show", "unpublished"],
       ["coco-loco-tank", "unpublished"],
@@ -158,9 +160,11 @@ describe("Knit-able Pacific publish dates", () => {
     expect(knitAbleScheduleSeedSql()).not.toContain("coco-loco-tank");
     expect(knitAbleScheduleSeedSql()).not.toContain("vest-in-show");
     expect(knitAbleScheduleSeedSql()).not.toContain("rhythmic-colour-top");
+    expect(knitAbleScheduleSeedSql()).not.toContain("christmas-stockings-your-way");
     expect(sql).not.toContain("coco-loco-tank");
     expect(sql).not.toContain("vest-in-show");
     expect(sql).not.toContain("rhythmic-colour-top");
+    expect(sql).not.toContain("christmas-stockings-your-way");
     expect(sql).toContain("Do not apply this on production until the scheduler release is approved");
   });
 });
