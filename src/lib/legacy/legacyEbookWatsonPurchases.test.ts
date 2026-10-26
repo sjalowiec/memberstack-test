@@ -102,8 +102,11 @@ describe("legacy ebook Watson purchase mapping", () => {
 
   it("drops unapproved item IDs", () => {
     expect(watsonEbookRowToPurchase(row({ itemid: 687 }))).toBeNull();
-    expect(watsonEbookRowToPurchase(row({ itemid: 520 }))).toBeNull();
     expect(watsonEbookRowToPurchase(row({ itemid: 621 }))).toBeNull();
+    expect(watsonEbookRowToPurchase(row({ itemid: 520 }))).toMatchObject({
+      legacyItemId: "520",
+      paid: "1",
+    });
   });
 
   it("drops rows without a billing email unless a trusted owner email is supplied", () => {
@@ -170,8 +173,8 @@ describe("legacy ebook Watson purchase mapping", () => {
     expect(listApprovedLegacyEbookItemIds()).toEqual(
       expect.arrayContaining([505, 675, 416]),
     );
+    expect(listApprovedLegacyEbookItemIds()).toContain(520);
     expect(listApprovedLegacyEbookItemIds()).not.toContain(687);
-    expect(listApprovedLegacyEbookItemIds()).not.toContain(520);
     expect(listApprovedLegacyEbookItemIds()).not.toContain(621);
   });
 });
@@ -190,7 +193,7 @@ describe("loadLegacyEbookPurchasesFromWatson", () => {
       row({ paid: 0, itemid: 505 }),
       row({ itemid: 687, itemname: "Mousam Falls 4/6 Aran" }),
       row({ billing_email: null, itemid: 505, totalprice: "0.0000" }),
-      row({ itemid: 520, itemname: "Mitten Magic" }),
+      row({ itemid: 621, itemname: "Passap E-6000 Guidebook" }),
       row({ itemid: 505, itemname: "Machine Knitting Trims and Edges - Single Bed" }),
       row(),
     ]);

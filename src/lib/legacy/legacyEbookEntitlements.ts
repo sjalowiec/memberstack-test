@@ -21,7 +21,6 @@ export const LEGACY_EBOOK_EXCLUDED_ITEM_IDS = new Set<string>([
   "457", // Traditional Irish Cardigans alternate
   "458", // Supplement alternate
   "506", // Tuck Lace Stitch Pattern Template (no deliverable)
-  "520", // Mitten Magic
   "528", // Top Down for Toddlers
   "621", // Passap E-6000 Guidebook
   "777", // Universal Link for DesignaKnit (hardware)
@@ -86,7 +85,7 @@ export type LegacyEbookCustomerEntitlement = {
 };
 
 /**
- * Approved legacy ebook catalog (47 titles).
+ * Approved legacy ebook catalog (48 titles).
  * Special remaps: 346 → recovered Swan/Ultimate Socks under shop/legacy/;
  * 536/620/437/443 → recovered files under shop/legacy/. Item 710 stays on the
  * current electronic edition in the shop root.
@@ -370,6 +369,17 @@ export const LEGACY_EBOOK_ENTITLEMENT_CATALOG: readonly LegacyEbookEntitlementEn
       downloadUrl: legacyEbookPublicDownloadUrl(
         "legacy",
         "LEARN INVENTIVE INTARSIA BOOK.pdf",
+      ),
+      active: false,
+      approved: true,
+    },
+    {
+      itemId: "520",
+      title: "Mitten Magic for All Knitting Machines",
+      storageKey: "mittens_for_any_knitting_machine_12.pdf",
+      downloadUrl: legacyEbookPublicDownloadUrl(
+        "legacy",
+        "mittens_for_any_knitting_machine_12.pdf",
       ),
       active: false,
       approved: true,
