@@ -48,10 +48,10 @@ import {
 } from "./vestInShow";
 
 const pageSource = readFileSync(resolve("src/pages/knit-ables/vest-in-show.astro"), "utf8");
-const templateSource = readFileSync(
-  resolve("src/components/knit-ables/KnitAbleInspirationPage.astro"),
-  "utf8",
-);
+const templateSource = [
+  readFileSync(resolve("src/components/knit-ables/KnitAbleInspirationPage.astro"), "utf8"),
+  readFileSync(resolve("src/components/knit-ables/KnitAbleInspirationBuilder.astro"), "utf8"),
+].join("\n");
 const capSleevePage = readFileSync(resolve("src/pages/knit-ables/cap-sleeve-tank.astro"), "utf8");
 const cocoLocoPage = readFileSync(resolve("src/pages/knit-ables/coco-loco-tank.astro"), "utf8");
 const teenageKicksPage = readFileSync(
@@ -84,9 +84,9 @@ describe("Vest in Show Knit-able page", () => {
     expect(templateSource).toContain("`${content.title} | Knit it Now`");
     expect(templateSource).toContain("description={content.description}");
     expect(KNIT_ABLE_INITIAL_PUBLISH_DATES["vest-in-show"]).toBe("2026-10-22");
-    expect(KNIT_ABLES_CARDS[1]?.href).toBe(VEST_IN_SHOW_PATH);
-    expect(KNIT_ABLES_CARDS[1]?.title).toBe(VEST_IN_SHOW_TITLE);
-    expect(KNIT_ABLES_CARDS[1]?.description).toBe(VEST_IN_SHOW_CARD_COPY);
+    expect(KNIT_ABLES_CARDS[2]?.href).toBe(VEST_IN_SHOW_PATH);
+    expect(KNIT_ABLES_CARDS[2]?.title).toBe(VEST_IN_SHOW_TITLE);
+    expect(KNIT_ABLES_CARDS[2]?.description).toBe(VEST_IN_SHOW_CARD_COPY);
   });
 
   it("uses the supplied Vest in Show thumbnail", () => {

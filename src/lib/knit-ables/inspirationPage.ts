@@ -80,6 +80,11 @@ export type KnitAbleInspirationPageContent = {
   tagline: string;
   /** One paragraph, or several paragraphs rendered with the page's normal paragraph spacing. */
   intro: string | readonly string[];
+  /**
+   * Places the builder under the title, in the column beside the photo.
+   * Leave this unset so other Knit-ables keep the builder below the photo.
+   */
+  placeBuilderBesidePhoto?: boolean;
   palette?: KnitAbleInspirationPalette;
   builder: {
     heading: string;
