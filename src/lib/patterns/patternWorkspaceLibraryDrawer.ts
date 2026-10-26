@@ -42,6 +42,7 @@ export function formatCustomPatternProjectType(project: CustomPatternProjectSumm
   const system = project.patternSystem?.trim();
   if (system === "hat") return "Hat";
   if (system === "socks") return "Socks";
+  if (system === "christmas-stocking") return patternSystemDisplayName("christmas-stocking");
   if (system === "sideways-cardigan") return patternSystemDisplayName("sideways-cardigan");
   if (system === "drop-shoulder") return "Drop Shoulder";
   if (system === "sleeveless") return "Sleeveless";
