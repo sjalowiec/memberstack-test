@@ -3,6 +3,7 @@
  * Sock pair, mirrored-sock, and extra cuff-length wording stay in the sock renderer.
  */
 
+import { christmasStockingMakeItYourOwnHtml } from "./christmasStockingMakeItYourOwn";
 import { buildPatternExplainerVideoBodyHtml } from "../patternExplainerVideoTip";
 import { buildPatternQuickTipInnerHtml } from "../patternQuickTip";
 import { formatRowCounterResetGarmentRcLabel } from "../rowCounterReset";
@@ -183,6 +184,17 @@ function withContinuousCuffDownLeg(
   };
 }
 
+/** After the direction label, before the first knitting section. */
+function insertMakeItYourOwn(html: string): string {
+  const marker = '<p class="sock-instructions__label">';
+  const start = html.indexOf(marker);
+  if (start < 0) return html;
+  const end = html.indexOf("</p>", start);
+  if (end < 0) return html;
+  const insertAt = end + "</p>".length;
+  return html.slice(0, insertAt) + christmasStockingMakeItYourOwnHtml() + html.slice(insertAt);
+}
+
 function insertCuffCastOnVideo(html: string): string {
   const marker = 'data-section-id="leg"';
   const content = '<div class="sock-pattern-section__content">';
@@ -219,18 +231,20 @@ export function renderChristmasStockingInstructionsHtml(calc: BasicSockCalc): st
   const html = renderBasicSockInstructionsHtml(buildChristmasStockingInstructions(calc));
   const withVideo =
     calc.constructionDirection === "cuff-to-toe" ? insertCuffCastOnVideo(html) : html;
-  return withVideo
-    .replace("Sock 1 — Cuff to Toe", "Christmas Stocking — Cuff down")
-    .replace("Sock 1 — Toe Up", "Christmas Stocking — Toe up")
-    .replaceAll(SOCK_TOE_UP_FINISH_CUFF, STOCKING_TOP_EDGE_WITHIN_LEG)
-    .replaceAll("Place this join on top of the toes for comfort.", STOCKING_TOE_JOIN)
-    .replaceAll(SOCK_FIGURE_8_BIND_OFF_VIDEO_COPY, "The Figure 8 Bind Off is a stretchy option for the top edge.")
-    .replaceAll(SOCK_TOE_UP_COMPLETE_VIDEO_HEADING, "New to toe-up knitting?")
-    .replaceAll(SOCK_TOE_UP_COMPLETE_VIDEO_TITLE, "Complete toe-up construction")
-    .replaceAll(
-      SOCK_TOE_UP_COMPLETE_VIDEO_COPY,
-      "Watch the complete toe-up video before you begin. It walks through this construction from start to finish.",
-    )
-    .replaceAll(SOCK_FOLD_RIGHT_SIDES_INSTRUCTION, "Fold the stocking in half with right/public sides together.")
-    .replaceAll(SOCK_BICKFORD_SEAM_VIDEO_COPY, "Watch how to work a flat Bickford seam for the side seam.");
+  return insertMakeItYourOwn(
+    withVideo
+      .replace("Sock 1 — Cuff to Toe", "Christmas Stocking — Cuff down")
+      .replace("Sock 1 — Toe Up", "Christmas Stocking — Toe up")
+      .replaceAll(SOCK_TOE_UP_FINISH_CUFF, STOCKING_TOP_EDGE_WITHIN_LEG)
+      .replaceAll("Place this join on top of the toes for comfort.", STOCKING_TOE_JOIN)
+      .replaceAll(SOCK_FIGURE_8_BIND_OFF_VIDEO_COPY, "The Figure 8 Bind Off is a stretchy option for the top edge.")
+      .replaceAll(SOCK_TOE_UP_COMPLETE_VIDEO_HEADING, "New to toe-up knitting?")
+      .replaceAll(SOCK_TOE_UP_COMPLETE_VIDEO_TITLE, "Complete toe-up construction")
+      .replaceAll(
+        SOCK_TOE_UP_COMPLETE_VIDEO_COPY,
+        "Watch the complete toe-up video before you begin. It walks through this construction from start to finish.",
+      )
+      .replaceAll(SOCK_FOLD_RIGHT_SIDES_INSTRUCTION, "Fold the stocking in half with right/public sides together.")
+      .replaceAll(SOCK_BICKFORD_SEAM_VIDEO_COPY, "Watch how to work a flat Bickford seam for the side seam."),
+  );
 }

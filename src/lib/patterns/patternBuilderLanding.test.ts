@@ -6,6 +6,7 @@ import {
   hasPatternBuilderLandingChoices,
   hasPatternBuilderLandingCopy,
   hasPatternBuilderLandingKnitAble,
+  hasPatternBuilderLandingMakeItYourOwn,
   hasPatternBuilderLandingMembership,
   type PatternBuilderLandingContent,
 } from "./patternBuilderLanding";
@@ -100,6 +101,7 @@ describe("pattern builder landing content model", () => {
     expect(hasPatternBuilderLandingCopy(withoutOptional.howItWorks)).toBe(false);
     expect(hasPatternBuilderLandingCopy(withoutOptional.creates)).toBe(false);
     expect(hasPatternBuilderLandingCopy(withoutOptional.anyYarn)).toBe(false);
+    expect(hasPatternBuilderLandingMakeItYourOwn(withoutOptional.makeItYourOwn)).toBe(false);
     expect(hasPatternBuilderLandingKnitAble(withoutOptional.knitAble)).toBe(false);
     expect(hasPatternBuilderLandingCatalogBadge(withoutOptional.catalogBadge)).toBe(false);
     expect(hasPatternBuilderLandingCatalogBadge({ count: 32, rest: "Styles" })).toBe(true);

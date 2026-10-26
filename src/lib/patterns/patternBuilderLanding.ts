@@ -65,6 +65,27 @@ export type PatternBuilderLandingCatalogBadge = {
   rest: string;
 };
 
+export type PatternBuilderLandingInlineLink = {
+  href: string;
+  label: string;
+};
+
+/** One paragraph that may include a single inline link. */
+export type PatternBuilderLandingLinkedParagraph = {
+  lead: string;
+  link?: PatternBuilderLandingInlineLink;
+  tail?: string;
+};
+
+/**
+ * Optional note between the hero introduction and the builder button.
+ * Only builders that supply it render the block.
+ */
+export type PatternBuilderLandingMakeItYourOwn = {
+  heading: string;
+  paragraphs: readonly PatternBuilderLandingLinkedParagraph[];
+};
+
 export type PatternBuilderLandingContent = {
   patternName: string;
   headline: string;
@@ -77,6 +98,7 @@ export type PatternBuilderLandingContent = {
   howItWorks?: PatternBuilderLandingCopySection;
   creates?: PatternBuilderLandingCopySection;
   anyYarn?: PatternBuilderLandingCopySection;
+  makeItYourOwn?: PatternBuilderLandingMakeItYourOwn;
   knitAble?: PatternBuilderLandingKnitAble;
   cta: PatternBuilderLandingCta;
 };
@@ -91,6 +113,18 @@ export function hasPatternBuilderLandingCopy(
   section: PatternBuilderLandingCopySection | undefined,
 ): section is PatternBuilderLandingCopySection {
   return Boolean(section?.heading?.trim() && section.body.some((paragraph) => paragraph.trim()));
+}
+
+export function hasPatternBuilderLandingMakeItYourOwn(
+  section: PatternBuilderLandingMakeItYourOwn | undefined,
+): section is PatternBuilderLandingMakeItYourOwn {
+  return Boolean(
+    section?.heading?.trim() &&
+      section.paragraphs.some(
+        (paragraph) =>
+          paragraph.lead.trim() || paragraph.tail?.trim() || paragraph.link?.label.trim(),
+      ),
+  );
 }
 
 export function hasPatternBuilderLandingChoices(

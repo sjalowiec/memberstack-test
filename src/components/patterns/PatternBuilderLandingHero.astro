@@ -1,6 +1,7 @@
 ---
 import {
   hasPatternBuilderLandingCatalogBadge,
+  hasPatternBuilderLandingMakeItYourOwn,
   type PatternBuilderLandingContent,
 } from "../../lib/patterns/patternBuilderLanding";
 
@@ -12,6 +13,9 @@ const { content } = Astro.props;
 const { patternName, headline, intro, image, cta } = content;
 const catalogBadge = hasPatternBuilderLandingCatalogBadge(content.catalogBadge)
   ? content.catalogBadge
+  : null;
+const makeItYourOwn = hasPatternBuilderLandingMakeItYourOwn(content.makeItYourOwn)
+  ? content.makeItYourOwn
   : null;
 ---
 
@@ -41,6 +45,20 @@ const catalogBadge = hasPatternBuilderLandingCatalogBadge(content.catalogBadge)
     <p class="pattern-builder-hero__name">{patternName}</p>
     <h1 id="pattern-builder-hero-heading">{headline}</h1>
     <p class="pattern-builder-hero__intro">{intro}</p>
+    {
+      makeItYourOwn ? (
+        <section
+          class="pattern-builder-hero__make-it-your-own"
+          data-pattern-builder-make-it-your-own
+          aria-labelledby="pattern-builder-make-it-your-own-heading"
+        >
+          <h2 id="pattern-builder-make-it-your-own-heading">{makeItYourOwn.heading}</h2>
+          {makeItYourOwn.paragraphs.map((paragraph) => (
+            <p>{paragraph.lead}{paragraph.link ? <a href={paragraph.link.href}>{paragraph.link.label}</a> : null}{paragraph.tail}</p>
+          ))}
+        </section>
+      ) : null
+    }
     <div class="pattern-builder-hero__actions">
       <p
         class="pattern-builder-hero__loading"
@@ -192,6 +210,32 @@ const catalogBadge = hasPatternBuilderLandingCatalogBadge(content.catalogBadge)
     font-size: 1.02rem;
     line-height: 1.55;
     color: #243015;
+  }
+
+  /* Same callout treatment as PatternBuilderLandingAnyYarn, sized for the hero. */
+  .pattern-builder-hero__make-it-your-own {
+    margin: 0 0 1.1rem;
+    padding: 1.1rem 1.2rem;
+    background: color-mix(in srgb, var(--kbm-green, #52682d) 8%, #ffffff);
+    border: 1px solid #c7d8a4;
+    border-radius: 10px;
+  }
+
+  .pattern-builder-hero__make-it-your-own h2 {
+    margin: 0 0 0.7rem;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--kbm-green, #52682d);
+  }
+
+  .pattern-builder-hero__make-it-your-own p {
+    margin: 0 0 0.85rem;
+    color: #243015;
+    line-height: 1.55;
+  }
+
+  .pattern-builder-hero__make-it-your-own p:last-child {
+    margin-bottom: 0;
   }
 
   .pattern-builder-hero__actions {
