@@ -68,16 +68,16 @@ describe("normalizeLegacyPurchaseEmail", () => {
 });
 
 describe("legacy ebook entitlement catalog + public files", () => {
-  it("includes exactly 47 approved titles each with a download URL", () => {
-    expect(approvedLegacyEbookTitleCount()).toBe(47);
-    expect(LEGACY_EBOOK_ENTITLEMENT_CATALOG).toHaveLength(47);
+  it("includes exactly 48 approved titles each with a download URL", () => {
+    expect(approvedLegacyEbookTitleCount()).toBe(48);
+    expect(LEGACY_EBOOK_ENTITLEMENT_CATALOG).toHaveLength(48);
     for (const entry of LEGACY_EBOOK_ENTITLEMENT_CATALOG) {
       expect(entry.downloadUrl).toMatch(/^\/downloads\/shop\//);
       expect(entry.downloadUrl.includes("..")).toBe(false);
     }
   });
 
-  it("resolves all 47 download URLs to physical files under public/", () => {
+  it("resolves all 48 download URLs to physical files under public/", () => {
     const missing = findMissingLegacyEbookPublicFiles();
     expect(missing).toEqual([]);
     for (const entry of LEGACY_EBOOK_ENTITLEMENT_CATALOG) {
@@ -203,7 +203,7 @@ describe("legacy ebook ownership resolver", () => {
   it("includes approved items and removes excluded items", () => {
     const records = buildApprovedLegacyEbookOwnershipRecords([
       purchase({ legacyItemId: "416", billingEmail: "x@example.com" }),
-      purchase({ legacyItemId: "520", billingEmail: "x@example.com" }),
+      purchase({ legacyItemId: "621", billingEmail: "x@example.com" }),
       purchase({ legacyItemId: "434", billingEmail: "x@example.com" }),
       purchase({ legacyItemId: "437", billingEmail: "x@example.com" }),
     ]);
@@ -218,7 +218,7 @@ describe("legacy ebook ownership resolver", () => {
         purchase({ billingEmail: "owner@example.com", legacyItemId: "620" }),
         purchase({ billingEmail: "owner@example.com", legacyItemId: "437" }),
         purchase({ billingEmail: "owner@example.com", legacyItemId: "443" }),
-        purchase({ billingEmail: "owner@example.com", legacyItemId: "520" }),
+        purchase({ billingEmail: "owner@example.com", legacyItemId: "621" }),
       ],
     });
 
@@ -237,7 +237,27 @@ describe("legacy ebook ownership resolver", () => {
     expect(ebooks.find((e) => e.itemId === "443")?.downloadUrl).toBe(
       "/downloads/shop/legacy/pockets_mini.pdf",
     );
-    expect(ebooks.some((e) => e.itemId === "520")).toBe(false);
+    expect(ebooks.some((e) => e.itemId === "621")).toBe(false);
+  });
+
+  it("returns Mitten Magic for a paid purchase without a membership", () => {
+    const ebooks = resolveLegacyEbookEntitlementsForEmail("buyer@example.com", {
+      purchases: [
+        purchase({
+          billingEmail: "buyer@example.com",
+          legacyItemId: "520",
+          itemName: "Mitten Magic for All Knitting Machines",
+          paid: "1",
+        }),
+      ],
+    });
+    expect(ebooks).toEqual([
+      {
+        itemId: "520",
+        title: "Mitten Magic for All Knitting Machines",
+        downloadUrl: "/downloads/shop/legacy/mittens_for_any_knitting_machine_12.pdf",
+      },
+    ]);
   });
 
   it("returns an empty list for a purchaser with no matching approved rows", () => {
@@ -247,7 +267,7 @@ describe("legacy ebook ownership resolver", () => {
           purchase({ billingEmail: "other@example.com", legacyItemId: "416" }),
           purchase({
             billingEmail: "nobody@example.com",
-            legacyItemId: "520",
+            legacyItemId: "621",
             paid: "1",
           }),
         ],
@@ -280,7 +300,7 @@ describe("legacy ebook ownership resolver", () => {
   });
 
   it("counts exact approved ownership records from repository purchase data", () => {
-    expect(countApprovedLegacyEbookOwnershipRecords()).toBe(4590);
+    expect(countApprovedLegacyEbookOwnershipRecords()).toBe(4723);
   });
 
   it("resolves Jacqueline's 13 titles with valid public download URLs", () => {

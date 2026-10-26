@@ -16,8 +16,8 @@ import {
 } from "./legacyEbookPublicFileCheck";
 
 describe("legacy ebook public file verification", () => {
-  it("has exactly 47 approved entitlements and zero missing public files", () => {
-    expect(approvedLegacyEbookTitleCount()).toBe(47);
+  it("has exactly 48 approved entitlements and zero missing public files", () => {
+    expect(approvedLegacyEbookTitleCount()).toBe(48);
     expect(findMissingLegacyEbookPublicFiles()).toEqual([]);
   });
 
