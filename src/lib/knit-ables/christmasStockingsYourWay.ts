@@ -103,6 +103,7 @@ export const CHRISTMAS_STOCKINGS_YOUR_WAY_PAGE: KnitAbleInspirationPageContent =
   },
   tagline: CHRISTMAS_STOCKINGS_YOUR_WAY_TAGLINE,
   intro: "",
+  placeBuilderBesidePhoto: true,
   builder: {
     heading: CHRISTMAS_STOCKINGS_YOUR_WAY_BUILDER_HEADING,
     introduction: {

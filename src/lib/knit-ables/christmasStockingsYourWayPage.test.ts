@@ -3,9 +3,12 @@ import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { CHRISTMAS_STOCKING_PATTERN_BUILDER_LANDING } from "../patterns/christmasStockingPatternLanding";
 import { buildSockBuilderNewPatternHref } from "../patterns/christmasStocking/sockFreshStart";
+import { COCO_LOCO_TANK_PAGE } from "./cocoLocoTank";
 import { KNIT_ABLE_AFFILIATE_REL } from "./links";
 import { KNIT_ABLES_CARDS } from "./knitAblesLanding";
+import { RHYTHMIC_COLOUR_TOP_PAGE } from "./rhythmicColourTop";
 import { KNIT_ABLE_INITIAL_PUBLISH_DATES } from "./schedule";
+import { VEST_IN_SHOW_PAGE } from "./vestInShow";
 import {
   CHRISTMAS_STOCKINGS_YOUR_WAY_AFFILIATE_DISCLOSURE,
   CHRISTMAS_STOCKINGS_YOUR_WAY_BUILDER_COPY_AFTER,
@@ -38,10 +41,10 @@ const pageSource = readFileSync(
   resolve("src/pages/knit-ables/christmas-stockings-your-way.astro"),
   "utf8",
 );
-const templateSource = readFileSync(
-  resolve("src/components/knit-ables/KnitAbleInspirationPage.astro"),
-  "utf8",
-);
+const templateSource = [
+  readFileSync(resolve("src/components/knit-ables/KnitAbleInspirationPage.astro"), "utf8"),
+  readFileSync(resolve("src/components/knit-ables/KnitAbleInspirationBuilder.astro"), "utf8"),
+].join("\n");
 const landingSource = readFileSync(resolve("src/pages/knit-ables/index.astro"), "utf8");
 
 function pngSize(filePath: string): { width: number; height: number } {
@@ -114,6 +117,31 @@ describe("Christmas Stockings, Your Way Knit-able page", () => {
     expect(templateSource).toContain("aspect-ratio: auto !important");
     expect(landingSource).toContain("object-fit: contain");
     expect(landingSource).toContain("height: auto");
+  });
+
+  it("places the builder beside the photo without changing other Knit-ables", () => {
+    expect(CHRISTMAS_STOCKINGS_YOUR_WAY_PAGE.placeBuilderBesidePhoto).toBe(true);
+    expect(VEST_IN_SHOW_PAGE.placeBuilderBesidePhoto).toBeUndefined();
+    expect(RHYTHMIC_COLOUR_TOP_PAGE.placeBuilderBesidePhoto).toBeUndefined();
+    expect(COCO_LOCO_TANK_PAGE.placeBuilderBesidePhoto).toBeUndefined();
+    expect(pageSource).toContain("KnitAbleInspirationPage");
+    expect(pageSource).not.toContain("KnitAbleInspirationBuilder");
+    const copyStart = templateSource.indexOf('class="knit-able-hero__copy"');
+    const heroClose = templateSource.indexOf("</section>", copyStart);
+    const copyBlock = templateSource.slice(copyStart, heroClose);
+    expect(copyBlock).toContain(
+      "placeBuilderBesidePhoto ? <KnitAbleInspirationBuilder content={content} /> : null",
+    );
+    const afterHero = templateSource.slice(
+      heroClose,
+      templateSource.indexOf('class="knit-able-pair"'),
+    );
+    expect(afterHero).toContain(
+      "placeBuilderBesidePhoto ? null : <KnitAbleInspirationBuilder content={content} />",
+    );
+    expect(templateSource).toContain("knit-able-hero--builder-beside");
+    expect(templateSource).toContain("content.builder.cta.memberHref");
+    expect(templateSource).toContain('data-ms-modal="login"');
   });
 
   it("keeps the approved inspiration copy in the shared page sections", () => {

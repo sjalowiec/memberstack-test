@@ -5,6 +5,7 @@
  * See docs/knit-ables-inspiration-template.md.
  */
 import Layout from "../../layouts/Layout.astro";
+import KnitAbleInspirationBuilder from "./KnitAbleInspirationBuilder.astro";
 import KnitAbleLinkedImage from "./KnitAbleLinkedImage.astro";
 import KnitAblePageHeader from "./KnitAblePageHeader.astro";
 import FavoritesRuntime from "../favorites/FavoritesRuntime.astro";
@@ -12,7 +13,6 @@ import KnitAblePreviewBanner from "./KnitAblePreviewBanner.astro";
 import KnitAbleYarnCard from "./KnitAbleYarnCard.astro";
 import { KNIT_ABLE_AFFILIATE_REL } from "../../lib/knit-ables/links";
 import {
-  knitAbleInspirationClosingLines,
   knitAbleInspirationDisclosure,
   knitAbleInspirationIntroParagraphs,
   knitAbleInspirationLessonContentId,
@@ -36,14 +36,13 @@ const paletteSwatches = knitAbleInspirationSwatches(content.palette);
 const introParagraphs = knitAbleInspirationIntroParagraphs(content.intro);
 const paletteLabel = content.palette?.label?.trim() ?? "";
 const paletteCaption = content.palette?.caption?.trim() ?? "";
-const closingLines = knitAbleInspirationClosingLines(content.builder.closing);
+const placeBuilderBesidePhoto = content.placeBuilderBesidePhoto === true;
 const lessons = knitAbleInspirationLessons(content.lessons);
 const lessonsIntro = lessons?.intro?.trim() ?? "";
 const disclosure = knitAbleInspirationDisclosure(content.affiliateDisclosure);
 const heroHref = content.hero.href?.trim() || content.pattern.href;
 const heroRel = content.hero.rel ?? content.pattern.rel ?? KNIT_ABLE_AFFILIATE_REL;
 const patternRel = content.pattern.rel ?? KNIT_ABLE_AFFILIATE_REL;
-const introductionLink = content.builder.introduction.link;
 const lessonModalId = "knit-able-lesson-modal";
 const lessonModalTitleId = "knit-able-lesson-modal-title";
 const yarnImage = content.yarn.image;
@@ -62,7 +61,13 @@ const yarnImage = content.yarn.image;
 
   <div class="page-wrap knit-able-page">
     <article>
-      <section class="knit-able-hero" aria-labelledby="knit-able-hero-heading">
+      <section
+        class:list={[
+          "knit-able-hero",
+          placeBuilderBesidePhoto && "knit-able-hero--builder-beside",
+        ]}
+        aria-labelledby="knit-able-hero-heading"
+      >
         <figure class="knit-able-hero__figure">
           <KnitAbleLinkedImage
             href={heroHref}
@@ -103,83 +108,11 @@ const yarnImage = content.yarn.image;
           {introParagraphs.map((paragraph) => (
             <p>{paragraph}</p>
           ))}
+          {placeBuilderBesidePhoto ? <KnitAbleInspirationBuilder content={content} /> : null}
         </div>
       </section>
 
-      <section class="knit-able-builder" aria-labelledby="knit-able-builder-heading">
-        <h2 id="knit-able-builder-heading">{content.builder.heading}</h2>
-        <p>
-          {content.builder.introduction.before}{
-            introductionLink ? (
-              <a class="knit-able-text-link" href={introductionLink.href}>
-                {introductionLink.label}
-              </a>
-            ) : null
-          }{content.builder.introduction.after}
-        </p>
-        {
-          content.builder.steps.length > 0 ? (
-            <ul class="knit-able-steps">
-              {content.builder.steps.map((item) =>
-                typeof item === "string" ? (
-                  <li>{item}</li>
-                ) : (
-                  <li>
-                    <strong>{item.lead}</strong> {item.text}
-                  </li>
-                )
-              )}
-            </ul>
-          ) : null
-        }
-        {
-          closingLines.map((line) =>
-            line.heading ? (
-              <h3 class="knit-able-builder-subhead">{line.text}</h3>
-            ) : (
-              <p
-                class:list={[
-                  line.emphasis && "knit-able-any-yarn",
-                  line.strong && "knit-able-strong",
-                ]}
-              >
-                {line.text}
-              </p>
-            )
-          )
-        }
-        <div class="knit-able-builder-cta" data-pattern-builder-landing data-cta-mode="pending">
-          <p
-            class="knit-able-builder-cta__loading"
-            data-pattern-builder-landing-cta-loading
-            role="status"
-          >
-            {content.builder.cta.checkingLabel}
-          </p>
-          <div data-pattern-builder-landing-cta-member hidden>
-            <a class="kbm-btn kbm-btn-accent" href={content.builder.cta.memberHref}>
-              {content.builder.cta.memberLabel}
-            </a>
-          </div>
-          <div
-            class="knit-able-builder-cta__prospect"
-            data-pattern-builder-landing-cta-prospect
-            hidden
-          >
-            <a class="kbm-btn kbm-btn-accent" href={content.builder.cta.prospectHref}>
-              {content.builder.cta.prospectLabel}
-            </a>
-            <a
-              class="knit-able-text-link"
-              href="#"
-              data-ms-modal="login"
-              data-ms-redirect="current-url"
-            >
-              {content.builder.cta.signInLabel}
-            </a>
-          </div>
-        </div>
-      </section>
+      {placeBuilderBesidePhoto ? null : <KnitAbleInspirationBuilder content={content} />}
 
       <div class="knit-able-pair">
         <section class="knit-able-source" aria-labelledby="knit-able-source-heading">
@@ -371,6 +304,10 @@ const yarnImage = content.yarn.image;
     max-width: 100%;
   }
 
+  .knit-able-hero--builder-beside :global(.knit-able-builder) {
+    margin-top: 0.85rem;
+  }
+
   .knit-able-hero h1 {
     margin: 0 0 0.65rem;
     font-size: clamp(1.45rem, 3vw, 2.15rem);
@@ -427,58 +364,8 @@ const yarnImage = content.yarn.image;
     border: 1px solid #c5c5c5;
   }
 
-  .knit-able-builder {
-    margin: 0;
-    padding: 1.15rem 1.2rem 1.05rem;
-    border: 1px solid rgba(82, 104, 45, 0.18);
-    border-radius: 16px;
-    background: #f3f6ee;
-  }
-
-  .knit-able-any-yarn {
-    margin: 0 0 0.85rem;
-    color: #3f4b35;
-    font-weight: 700;
-  }
-
-  .knit-able-text-link {
-    color: var(--kbm-green, #52682d);
-    font-weight: 600;
-    text-underline-offset: 2px;
-  }
-
   .knit-able-page h2 {
     margin: 0 0 0.7rem;
-  }
-
-  .knit-able-steps {
-    margin: 0 0 0.9rem;
-    padding-left: 24px;
-  }
-
-  .knit-able-steps li {
-    margin: 0 0 0.4rem;
-    padding: 0;
-    color: #333;
-    line-height: 1.55;
-  }
-
-  .knit-able-steps li:last-child {
-    margin-bottom: 0;
-  }
-
-  .knit-able-steps strong {
-    font-weight: 700;
-  }
-
-  .knit-able-builder-subhead {
-    margin: 1.15rem 0 0.55rem;
-    font-size: 1.2rem;
-    line-height: 1.3;
-  }
-
-  .knit-able-strong {
-    font-weight: 700;
   }
 
   .knit-able-lessons-panel {
@@ -733,36 +620,6 @@ const yarnImage = content.yarn.image;
     font-weight: 600;
     letter-spacing: 0.02em;
     vertical-align: 0.1em;
-  }
-
-  .knit-able-builder-cta {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.75rem;
-    margin: 0;
-  }
-
-  .knit-able-builder-cta [hidden] {
-    display: none !important;
-  }
-
-  .knit-able-builder-cta__loading {
-    margin: 0;
-    color: #5a6350;
-  }
-
-  .knit-able-builder-cta__prospect {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.75rem;
-  }
-
-  .knit-able-builder-cta :global(.kbm-btn) {
-    display: inline-flex;
-    align-items: center;
-    min-height: 48px;
   }
 
   .knit-able-pair {
