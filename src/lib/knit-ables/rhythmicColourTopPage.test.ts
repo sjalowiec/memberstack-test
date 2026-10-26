@@ -87,10 +87,10 @@ describe("Rhythmic Colour Top Knit-able page", () => {
     expect(KNIT_ABLE_INITIAL_PUBLISH_DATES["rhythmic-colour-top"]).toBeUndefined();
     expect(RHYTHMIC_COLOUR_TOP_PAGE.lessons).toBeUndefined();
     expect(RHYTHMIC_COLOUR_TOP_PAGE.palette).toBeUndefined();
-    expect(KNIT_ABLES_CARDS[0]?.href).toBe(RHYTHMIC_COLOUR_TOP_PATH);
-    expect(KNIT_ABLES_CARDS[0]?.title).toBe(RHYTHMIC_COLOUR_TOP_TITLE);
-    expect(KNIT_ABLES_CARDS[0]?.description).toBe(RHYTHMIC_COLOUR_TOP_CARD_COPY);
-    expect(KNIT_ABLES_CARDS[0]?.image.src).toBe(RHYTHMIC_COLOUR_TOP_IMAGES.hero.src);
+    expect(KNIT_ABLES_CARDS[1]?.href).toBe(RHYTHMIC_COLOUR_TOP_PATH);
+    expect(KNIT_ABLES_CARDS[1]?.title).toBe(RHYTHMIC_COLOUR_TOP_TITLE);
+    expect(KNIT_ABLES_CARDS[1]?.description).toBe(RHYTHMIC_COLOUR_TOP_CARD_COPY);
+    expect(KNIT_ABLES_CARDS[1]?.image.src).toBe(RHYTHMIC_COLOUR_TOP_IMAGES.hero.src);
   });
 
   it("uses the existing thumbnail for the hero and catalog card", () => {

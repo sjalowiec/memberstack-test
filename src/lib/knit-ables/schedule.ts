@@ -13,8 +13,9 @@ export const KNIT_ABLE_PUBLIC_HOUR_LABEL = "12:00 a.m. Pacific";
  * First-run dates for Knit-ables that already exist in code.
  * Sock pages keep the public status they already have. The Branch Out Tank
  * (cap-sleeve-tank) waits until October 1, 2026. Vest in Show is public on
- * October 22, 2026. Coco Loco Tank and Rhythmic Colour Top have no seed date,
- * so they stay unpublished until Watson saves one.
+ * October 22, 2026. Coco Loco Tank, Rhythmic Colour Top, and Christmas
+ * Stockings, Your Way have no seed date, so they stay unpublished until
+ * Watson saves one.
  * Inserts use ON CONFLICT DO NOTHING so a later Watson edit is not overwritten.
  */
 export const KNIT_ABLE_INITIAL_PUBLISH_DATES: Readonly<Record<string, string>> = {
