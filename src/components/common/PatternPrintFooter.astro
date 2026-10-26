@@ -5,10 +5,16 @@
  *
  * Add Layout bodyClass including `pattern-print-global-footer`, and place this once per page.
  */
+import { patternPrintFooterBottomLeftCssValue } from "../../lib/patterns/patternPrintFooterText";
+
 export interface Props {
   /** Defaults to current date/time at SSR; client refreshes at load + beforeprint. */
   generatedDate?: Date | string;
-  /** When set, appended to “Created by Knit It Now LLC” for the print margin left line (one CSS string). */
+  /**
+   * Pattern URL for the print margin. Placed on its own line under
+   * “Created by Knit It Now LLC” so it cannot run through the page number.
+   * A leading “ · ” is removed.
+   */
   footerBottomLeftExtra?: string;
 }
 
@@ -31,13 +37,8 @@ const footerBottomLeftExtra =
   typeof Astro.props.footerBottomLeftExtra === "string" ? Astro.props.footerBottomLeftExtra.trim() : "";
 
 /** Single token for @bottom-left — concatenation via var() is unreliable in some @page UAs. */
-const patternPrintFooterBottomLeftFull =
-  footerBottomLeftExtra !== ""
-    ? `Created by Knit It Now LLC${footerBottomLeftExtra}`
-    : "Created by Knit It Now LLC";
-
 const cssDateToken = JSON.stringify(initialDate);
-const cssFooterBottomLeftToken = JSON.stringify(patternPrintFooterBottomLeftFull);
+const cssFooterBottomLeftToken = patternPrintFooterBottomLeftCssValue(footerBottomLeftExtra);
 const patternPrintFooterCss = `:root {\n  --pattern-print-generated-date: ${cssDateToken};\n  --pattern-print-footer-bottom-left: ${cssFooterBottomLeftToken};\n}`;
 ---
 
