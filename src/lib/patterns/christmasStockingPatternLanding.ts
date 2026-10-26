@@ -3,6 +3,7 @@
  */
 
 import { PATTERNS_LANDING_BECOME_MEMBER_HREF } from "./patternsLandingCta";
+import { CHRISTMAS_STOCKING_MAKE_IT_YOUR_OWN } from "./christmasStocking/christmasStockingMakeItYourOwn";
 import { buildSockBuilderNewPatternHref } from "./christmasStocking/sockFreshStart";
 import { BASIC_SOCK_PATTERN_NAME } from "./christmasStocking/sockDraft";
 import type { PatternBuilderLandingContent } from "./patternBuilderLanding";
@@ -19,6 +20,7 @@ export const CHRISTMAS_STOCKING_PATTERN_BUILDER_LANDING: PatternBuilderLandingCo
   headline: "One Christmas stocking, in your yarn and your gauge",
   intro:
     "Create one machine-knit stocking from finished leg length, foot circumference, and foot length. Knit it cuff down or toe up. The builder calculates the short-row heel and toe.",
+  makeItYourOwn: CHRISTMAS_STOCKING_MAKE_IT_YOUR_OWN,
   image: {
     src: CHRISTMAS_STOCKING_PATTERN_LANDING_IMAGE_SRC,
     alt: "Line drawing of Christmas stockings. The tree and snowflake are decorative, not stitch charts.",
