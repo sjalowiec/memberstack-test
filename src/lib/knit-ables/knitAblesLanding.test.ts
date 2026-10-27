@@ -62,9 +62,11 @@ describe("Knit-ables landing page logo", () => {
     expect(landingSource).toContain("export const prerender = false");
     expect(landingSource).toContain("listPublicKnitAbleCards");
     expect(landingSource).toContain("applyKnitAbleCacheHeaders");
-    expect(landingSource).toContain("KNIT_ABLES_LOGO");
+    expect(landingSource).not.toContain("KNIT_ABLES_LOGO");
+    expect(landingSource).not.toContain("knit-ables-logo");
     expect(landingSource).toContain('id="knit-ables-heading"');
-    expect(landingSource).toContain(">Hand to Machine</h1>");
+    expect(landingSource).toContain(">Hand → Machine</h1>");
+    expect(landingSource).not.toContain(">Hand to Machine</h1>");
     expect(landingSource).toContain(">Choose a project</h2>");
     expect(landingSource).toContain(
       "Hand-knitting designs provide inspiration for machine-knitting projects.",
@@ -82,22 +84,15 @@ describe("Knit-ables landing page logo", () => {
     expect(existsSync(resolve("public/images/knit-ables/machine-knit-ables-logo.png"))).toBe(
       true,
     );
-    expect(landingSource).toContain("src={logo.src}");
-    expect(landingSource).toContain("alt={logo.alt}");
-    expect(landingSource).toContain("width={logo.width}");
-    expect(landingSource).toContain("height={logo.height}");
-    expect(landingSource).toContain("width: min(100%, 160px)");
-    expect(landingSource).toContain("width: min(100%, 220px)");
-    expect(landingSource).toContain("align-items: start");
     expect(landingSource).toContain("object-fit: contain");
     expect(landingSource).toContain("overflow-x: hidden");
-    expect(landingSource).not.toMatch(/\.knit-ables-logo[\s\S]*box-shadow/);
-    expect(landingSource).not.toMatch(/\.knit-ables-logo[\s\S]*border:/);
-    expect(landingSource).not.toMatch(/\.knit-ables-logo[\s\S]*background/);
+    expect(landingSource).toContain("max-width: 40rem");
   });
 
   it("does not add the logo to the site Header", () => {
     expect(headerSource).not.toContain("machine-knit-ables-logo.png");
+    expect(headerSource).toContain("Hand to Machine");
+    expect(headerSource).not.toContain("Hand → Machine");
     expect(inspirationSource).toContain("KnitAblePageHeader");
   });
 });
