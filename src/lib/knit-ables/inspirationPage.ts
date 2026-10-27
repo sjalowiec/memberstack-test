@@ -93,6 +93,8 @@ export type KnitAbleInspirationPageContent = {
   title: string;
   /** Small label above the title. Other Knit-ables keep “Knit-able Inspiration.” */
   eyebrow?: string;
+  /** Set false to show the title without the collection logo. */
+  showLogo?: boolean;
   description: string;
   hero: KnitAbleInspirationImage & {
     /** Defaults to the original pattern link. */

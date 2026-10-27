@@ -77,6 +77,11 @@ describe("Christmas Stockings, Your Way Knit-able page", () => {
     expect(CHRISTMAS_STOCKINGS_YOUR_WAY_PAGE.title).toBe(CHRISTMAS_STOCKINGS_YOUR_WAY_TITLE);
     expect(CHRISTMAS_STOCKINGS_YOUR_WAY_EYEBROW).toBe("Hand to Machine Inspiration");
     expect(CHRISTMAS_STOCKINGS_YOUR_WAY_PAGE.eyebrow).toBe(CHRISTMAS_STOCKINGS_YOUR_WAY_EYEBROW);
+    expect(CHRISTMAS_STOCKINGS_YOUR_WAY_PAGE.showLogo).toBe(false);
+    expect(templateSource).toContain("showLogo={content.showLogo !== false}");
+    expect(COCO_LOCO_TANK_PAGE.showLogo).toBeUndefined();
+    expect(RHYTHMIC_COLOUR_TOP_PAGE.showLogo).toBeUndefined();
+    expect(VEST_IN_SHOW_PAGE.showLogo).toBeUndefined();
     expect(CHRISTMAS_STOCKINGS_YOUR_WAY_PAGE.description).toBe(
       CHRISTMAS_STOCKINGS_YOUR_WAY_DESCRIPTION,
     );
