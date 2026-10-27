@@ -73,7 +73,7 @@ describe("Header Patterns navigation", () => {
     expect(panel).not.toContain("Pattern Builders");
   });
 
-  it("orders logged-out items as Catalog, Knit-ables, About, Stitch Browser, Sizing Charts", () => {
+  it("orders logged-out items as Catalog, Hand to Machine, About, Stitch Browser, Sizing Charts", () => {
     const panel = patternsPanel();
     const catalogIdx = panel.indexOf('data-testid="nav-pattern-catalog"');
     const knitAblesIdx = panel.indexOf('data-testid="nav-knit-ables"');
@@ -96,27 +96,29 @@ describe("Header Patterns navigation", () => {
 });
 
 describe("Header Knit-ables navigation", () => {
-  it("does not add a top-level Knit-ables item", () => {
+  it("does not add a top-level Hand to Machine item", () => {
     expect(headerSource).not.toMatch(
       /<li class="nav-item">\s*<a href=\{KNIT_ABLES_PATH\} class="nav-link" data-testid="nav-knit-ables">/,
     );
     const topLevel = headerSource.match(
       /<a[\s\S]*?data-testid="nav-patterns"[\s\S]*?<\/a>/,
     )?.[0];
+    expect(topLevel).not.toContain("Hand to Machine");
     expect(topLevel).not.toContain("Knit-ables");
   });
 
-  it("adds Knit-ables exactly once in the Patterns dropdown, linking to the landing page", () => {
+  it("labels the Patterns dropdown link Hand to Machine and keeps the Knit-ables destination", () => {
     const panel = patternsPanel();
     const knitAblesLi = panel.match(
-      /<li>\s*<a href=\{KNIT_ABLES_PATH\} data-testid="nav-knit-ables">\s*Knit-ables\s*<\/a>\s*<\/li>/,
+      /<li>\s*<a href=\{KNIT_ABLES_PATH\} data-testid="nav-knit-ables">\s*Hand to Machine\s*<\/a>\s*<\/li>/,
     )?.[0];
     expect(knitAblesLi).toBeTruthy();
+    expect(knitAblesLi).not.toContain("Knit-ables");
     expect([...headerSource.matchAll(/data-testid="nav-knit-ables"/g)]).toHaveLength(1);
     expect([...panel.matchAll(/data-testid="nav-knit-ables"/g)]).toHaveLength(1);
   });
 
-  it("places Knit-ables immediately after Pattern Catalog", () => {
+  it("places Hand to Machine immediately after Pattern Catalog", () => {
     const panel = patternsPanel();
     const catalogIdx = panel.indexOf('data-testid="nav-pattern-catalog"');
     const knitAblesIdx = panel.indexOf('data-testid="nav-knit-ables"');
