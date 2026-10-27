@@ -1,0 +1,202 @@
+---
+/**
+ * Static route so /stitch/christmas is not captured by /stitch/[id].
+ * Tiles link to the existing pattern pages. This page does not copy pattern files.
+ */
+export const prerender = true;
+
+import Layout from "../../layouts/Layout.astro";
+import FavoriteStar from "../../components/favorites/FavoriteStar.astro";
+import FavoritesRuntime from "../../components/favorites/FavoritesRuntime.astro";
+import {
+  CHRISTMAS_STITCH_PATTERNS_INTRO,
+  CHRISTMAS_STITCH_PATTERNS_PATH,
+  CHRISTMAS_STITCH_PATTERNS_TITLE,
+  christmasStitchPatternHref,
+  getChristmasStitchPatterns,
+} from "../../lib/stitch/christmasStitchPatterns";
+import "../../styles/favorites.css";
+
+const patterns = getChristmasStitchPatterns();
+const canonicalUrl = `https://knititnow.com${CHRISTMAS_STITCH_PATTERNS_PATH}`;
+---
+
+<Layout
+  title={CHRISTMAS_STITCH_PATTERNS_TITLE}
+  description={CHRISTMAS_STITCH_PATTERNS_INTRO}
+  bodyClass="page--tight-header"
+>
+  <Fragment slot="head">
+    <link rel="canonical" href={canonicalUrl} />
+  </Fragment>
+  <div class="page-wrap stitch-cat">
+    <header class="stitch-cat__intro">
+      <h1>{CHRISTMAS_STITCH_PATTERNS_TITLE}</h1>
+      <p class="stitch-cat__dek">{CHRISTMAS_STITCH_PATTERNS_INTRO}</p>
+    </header>
+
+    <div class="stitch-cat__grid">
+      {
+        patterns.map((pattern) => (
+          <a href={christmasStitchPatternHref(pattern.id)} class="stitch-cat__tile">
+            <div class="stitch-cat__figure">
+              {pattern.swatchSrc ? (
+                <img
+                  class="stitch-cat__img"
+                  src={pattern.swatchSrc}
+                  alt=""
+                  width={640}
+                  height={640}
+                  loading="lazy"
+                  decoding="async"
+                />
+              ) : (
+                <div class="stitch-cat__placeholder" aria-hidden="true" />
+              )}
+            </div>
+            <div class="stitch-cat__caption">
+              <div class="favorite-title-row stitch-cat__title-row">
+                <span class="stitch-cat__tile-title">{pattern.title}</span>
+                <FavoriteStar
+                  contentType="stitch"
+                  contentId={pattern.id}
+                  title={pattern.title || `Stitch #${pattern.id}`}
+                />
+              </div>
+              {pattern.techniqueTitle || pattern.stitchMultiple ? (
+                <span class="stitch-cat__tile-meta">
+                  {[pattern.techniqueTitle, pattern.stitchMultiple].filter(Boolean).join(" · ")}
+                </span>
+              ) : null}
+            </div>
+          </a>
+        ))
+      }
+    </div>
+    <FavoritesRuntime contentType="stitch" />
+  </div>
+</Layout>
+
+<style>
+  .stitch-cat.page-wrap {
+    max-width: 1320px;
+    margin: 0 auto;
+    padding-top: 0.5rem;
+    padding-bottom: 4.5rem;
+    padding-left: 1.35rem;
+    padding-right: 1.35rem;
+  }
+
+  @media (min-width: 768px) {
+    .stitch-cat.page-wrap {
+      padding-left: 2.25rem;
+      padding-right: 2.25rem;
+    }
+  }
+
+  .stitch-cat__intro {
+    margin-bottom: 1.35rem;
+  }
+
+  .stitch-cat__intro h1 {
+    margin: 0;
+  }
+
+  .stitch-cat__dek {
+    max-width: 42rem;
+    margin: 0.65rem 0 0;
+    font-size: 1.05rem;
+    line-height: 1.6;
+    color: rgba(36, 48, 21, 0.72);
+  }
+
+  .stitch-cat__grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: clamp(1.15rem, 3vw, 2.15rem) clamp(0.85rem, 2.4vw, 1.8rem);
+  }
+
+  @media (min-width: 600px) {
+    .stitch-cat__grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 960px) {
+    .stitch-cat__grid {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 1200px) {
+    .stitch-cat__grid {
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+    }
+  }
+
+  .stitch-cat__tile {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    min-width: 0;
+    padding: 0.42rem 0.48rem 0.55rem;
+    text-decoration: none;
+    color: inherit;
+    border-radius: 12px;
+    background: rgba(253, 252, 249, 0.45);
+    box-shadow: 0 2px 12px rgba(28, 36, 18, 0.035);
+  }
+
+  .stitch-cat__tile:hover {
+    background: rgba(82, 104, 45, 0.045);
+  }
+
+  .stitch-cat__tile:focus-visible {
+    outline: 2px solid var(--kbm-green, #52682d);
+    outline-offset: 4px;
+  }
+
+  .stitch-cat__figure {
+    aspect-ratio: 1;
+    border-radius: 6px;
+    overflow: hidden;
+    background: linear-gradient(145deg, #f0ebe3 0%, #e8e2d8 100%);
+  }
+
+  .stitch-cat__img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .stitch-cat__placeholder {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(160deg, #e5dfd4, #d8d2c8);
+  }
+
+  .stitch-cat__caption {
+    min-width: 0;
+  }
+
+  .stitch-cat__tile-title {
+    display: block;
+    font-weight: 600;
+    line-height: 1.25;
+    color: #1c2412;
+    overflow-wrap: anywhere;
+  }
+
+  .stitch-cat__tile:hover .stitch-cat__tile-title {
+    color: var(--kbm-green, #52682d);
+  }
+
+  .stitch-cat__tile-meta {
+    display: block;
+    margin-top: 0.1rem;
+    font-size: 0.75rem;
+    line-height: 1.35;
+    color: rgba(36, 48, 21, 0.55);
+  }
+</style>

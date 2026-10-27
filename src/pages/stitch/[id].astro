@@ -20,6 +20,10 @@ if (!pattern) {
   throw new Error("Pattern not found");
 }
 
+if (pattern.active === false) {
+  return new Response("Not found", { status: 404 });
+}
+
 const images = getImagesForPattern(patternId);
 const files = getFilesForPattern(patternId);
 const technique = getTechniqueById(pattern.techniqueId);
