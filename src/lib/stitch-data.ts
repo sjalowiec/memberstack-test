@@ -58,7 +58,9 @@ function mainSwatchSrcForPattern(pattern: {
 
 /** Build-time list for the Stitch Library catalog (search, filter, sort on the client). */
 export function getStitchCatalogItems(): StitchCatalogItem[] {
-  return (patterns as Record<string, unknown>[]).map((pattern) => {
+  return (patterns as Record<string, unknown>[])
+    .filter((pattern) => pattern.active !== false)
+    .map((pattern) => {
     const id = Number(pattern.id);
     const technique = getTechniqueById(Number(pattern.techniqueId));
     const cats = getCategoriesForPattern(id).filter(Boolean) as {

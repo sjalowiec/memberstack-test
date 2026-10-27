@@ -43,6 +43,7 @@ Omit the field, or leave a list empty, and the layout drops that piece.
 | `pattern.rel` / `yarn.rel` | Override the affiliate `rel` for a non-affiliate link. |
 | `yarn.image` | Optional yarn photo. `featured` and `imagePlacement` (`above` or `beside`) match `KnitAbleYarnCard`. |
 | `lessons` | Helpful member lessons. The panel is collapsed. The summary count is `items.length`. Each `href` must be `/videos/{contentId}` so the existing lesson modal and membership check can open it. |
+| `perspective` | Machine-knitter notes after the photo and before the builder. `heading`, optional `intro`, and `points` with a bold `lead` plus `paragraphs`. A paragraph can be a string, or text mixed with `{ label, href }` links. Set `introVoice` to put only the intro in an outlined speech bubble. Set `callout` on one point for a modest tip. The section is not a stack of cards. |
 | `affiliateDisclosure` | Affiliate note at the end of the page. Include it when the page has affiliate links. |
 
 ## Shared pieces the template already uses

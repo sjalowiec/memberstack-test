@@ -1672,6 +1672,7 @@
  {
    "id": 1207,
    "title": "Border10",
+   "active": false,
    "techniqueId": 15,
    "stitchMultiple": "11x7",
    "punchcard": true,
