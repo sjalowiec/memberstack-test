@@ -45,7 +45,7 @@ describe("membership corner CTA — phone hide contract", () => {
     expect(cornerControlAstro).toContain("MembershipCornerCta");
     // Homepage white membership card CTAs stay as normal page links.
     expect(indexAstro).toMatch(
-      /home-v2-hero__actions[\s\S]*?<a href="\/membership" class="kbm-btn kbm-btn-outline">Become a Member<\/a>/,
+      /home-v2-cta__actions[\s\S]*?<a href="\/membership" class="kbm-btn kbm-btn-outline">Become a Member<\/a>/,
     );
     expect(indexAstro).toMatch(
       /<a href="\/membership" class="kbm-btn kbm-btn-outline">Become a Member<\/a>/,
