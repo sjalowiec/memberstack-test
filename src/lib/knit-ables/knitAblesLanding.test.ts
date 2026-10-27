@@ -64,6 +64,14 @@ describe("Knit-ables landing page logo", () => {
     expect(landingSource).toContain("applyKnitAbleCacheHeaders");
     expect(landingSource).toContain("KNIT_ABLES_LOGO");
     expect(landingSource).toContain('id="knit-ables-heading"');
+    expect(landingSource).toContain(">Hand to Machine</h1>");
+    expect(landingSource).toContain(">Choose a project</h2>");
+    expect(landingSource).toContain(
+      "Hand-knitting designs provide inspiration for machine-knitting projects.",
+    );
+    expect(landingSource).not.toContain("Machine Knit-ables");
+    expect(landingSource).not.toContain("Start with a Knit-able");
+    expect(landingSource).not.toContain("Knit-able");
   });
 
   it("uses the supplied Machine Knit-ables logo with CLS-safe sizing", () => {
