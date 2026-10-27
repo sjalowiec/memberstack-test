@@ -67,10 +67,32 @@ export type KnitAbleInspirationLessons = {
   items: readonly KnitAbleInspirationLesson[];
 };
 
+/** Plain words, or a linked phrase inside a perspective paragraph. */
+export type KnitAbleInspirationPerspectivePart = string | { label: string; href: string };
+
+/** Scannable machine-knitter notes. Rendered as plain points, not a card. */
+export type KnitAbleInspirationPerspectivePoint = {
+  lead: string;
+  /** A paragraph, or a paragraph made of text and links. */
+  paragraphs: readonly (string | readonly KnitAbleInspirationPerspectivePart[])[];
+  /** Modest callout for one point, such as a tip. */
+  callout?: boolean;
+};
+
+export type KnitAbleInspirationPerspective = {
+  heading: string;
+  intro?: string;
+  /** Render the intro as a subtle speech bubble. The points stay outside it. */
+  introVoice?: boolean;
+  points: readonly KnitAbleInspirationPerspectivePoint[];
+};
+
 export type KnitAbleInspirationPageContent = {
   path: string;
   canonicalUrl: string;
   title: string;
+  /** Small label above the title. Other Knit-ables keep “Knit-able Inspiration.” */
+  eyebrow?: string;
   description: string;
   hero: KnitAbleInspirationImage & {
     /** Defaults to the original pattern link. */
@@ -119,6 +141,11 @@ export type KnitAbleInspirationPageContent = {
     rel?: string;
   };
   lessons?: KnitAbleInspirationLessons;
+  /**
+   * Machine-knitter perspective. Omit it and the layout skips the section.
+   * Shown after the photo and before the builder.
+   */
+  perspective?: KnitAbleInspirationPerspective;
   affiliateDisclosure?: string;
 };
 
@@ -147,6 +174,48 @@ export function knitAbleInspirationClosingLines(
 ): KnitAbleInspirationClosingLine[] {
   if (!closing) return [];
   return closing.filter((line) => line.text.trim().length > 0);
+}
+
+function normalizePerspectiveParagraph(
+  paragraph: string | readonly KnitAbleInspirationPerspectivePart[],
+): string | KnitAbleInspirationPerspectivePart[] | null {
+  if (typeof paragraph === "string") {
+    const text = paragraph.trim();
+    return text.length > 0 ? text : null;
+  }
+  const parts = paragraph.flatMap((part) => {
+    if (typeof part === "string") return part.length > 0 ? [part] : [];
+    const label = part.label.trim();
+    const href = part.href.trim();
+    if (!label || !href) return [];
+    return [{ label, href }];
+  });
+  return parts.length > 0 ? parts : null;
+}
+
+export function knitAbleInspirationPerspective(
+  perspective: KnitAbleInspirationPerspective | undefined,
+): KnitAbleInspirationPerspective | null {
+  if (!perspective) return null;
+  const heading = perspective.heading.trim();
+  if (!heading) return null;
+  const points = perspective.points.flatMap((point) => {
+    const lead = point.lead.trim();
+    const paragraphs = point.paragraphs.flatMap((paragraph) => {
+      const normalized = normalizePerspectiveParagraph(paragraph);
+      return normalized ? [normalized] : [];
+    });
+    if (!lead || paragraphs.length === 0) return [];
+    return [{ lead, paragraphs, ...(point.callout ? { callout: true } : {}) }];
+  });
+  if (points.length === 0) return null;
+  const intro = perspective.intro?.trim() ?? "";
+  return {
+    heading,
+    ...(intro ? { intro } : {}),
+    ...(perspective.introVoice && intro ? { introVoice: true } : {}),
+    points,
+  };
 }
 
 export function knitAbleInspirationLessons(

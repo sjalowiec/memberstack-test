@@ -6,10 +6,6 @@ import {
   HOME_CTA_GUEST_HEADING,
   HOME_CTA_MEMBER_COPY,
   HOME_CTA_MEMBER_HEADING,
-  HOME_HERO_GUEST_COPY,
-  HOME_HERO_GUEST_HEADING,
-  HOME_HERO_MEMBER_COPY,
-  HOME_HERO_MEMBER_HEADING,
   HOME_HERO_MEMBER_SECONDARY_HREF,
   HOME_HERO_MEMBER_SECONDARY_LABEL,
 } from "../lib/home/homeHeroPromo";
@@ -162,48 +158,44 @@ const sueIntroParagraphs = [
     <link
       rel="preload"
       as="image"
-      href="/images/home/knitting-machine.webp"
+      href="/images/knit-ables/christmas-stockings/christmas-stockings.png"
       fetchpriority="high"
     />
   </Fragment>
   <div class="home-v2">
-    <!-- ========== HERO: wide image with card overlaid on the left (desktop) ========== -->
-    <section class="home-v2-hero" data-home-hero aria-labelledby="home-hero-heading">
-      <div class="home-v2-hero__frame">
-        <div
-          class="home-v2-hero__card"
-          data-home-promo
-          data-home-promo-state="pending"
-          aria-busy="true"
-          aria-hidden="true"
-        >
-          <div data-home-promo-panel="guest" aria-hidden="true">
-            <h1 id="home-hero-heading">{HOME_HERO_GUEST_HEADING}</h1>
-            <p class="home-v2-hero__copy">
-              {HOME_HERO_GUEST_COPY}
-            </p>
-            <div class="home-v2-hero__actions">
-              <a href="#explore" class="kbm-btn kbm-btn-accent">Explore the Site</a>
-              <a href="/membership" class="kbm-btn kbm-btn-outline">Become a Member</a>
-            </div>
-            <p class="home-v2-hero__login">
-              Already a member?
-              <a href="#" data-ms-modal="login" data-ms-redirect="current-url">Log in</a>
+    <!-- Static hero mockup. Same block for visitors and members. -->
+    <section class="home-v2-featured" aria-labelledby="home-featured-knitable-heading">
+      <div class="home-v2-featured__panel">
+        <div class="home-v2-featured__copy">
+          <div class="home-v2-featured__intro">
+            <h1 id="home-featured-knitable-heading">Hand to Machine</h1>
+            <p>
+              Get inspired by hand-knitting patterns and find ideas and resources to make them on your knitting machine.
             </p>
           </div>
-          <div data-home-promo-panel="member" hidden aria-hidden="true">
-            <h1 id="home-hero-heading-member">{HOME_HERO_MEMBER_HEADING}</h1>
-            <p class="home-v2-hero__copy">
-              {HOME_HERO_MEMBER_COPY}
+          <div class="home-v2-featured__offer">
+            <h2>Christmas Stockings, Your Way</h2>
+            <p>
+              Make a Christmas stocking that’s uniquely yours. Explore ideas for colors, stitches, and finishing touches, then create a pattern to fit your machine and yarn.
             </p>
-            <div class="home-v2-hero__actions">
-              <a href="#explore" class="kbm-btn kbm-btn-accent">Explore the Site</a>
-              <a href={HOME_HERO_MEMBER_SECONDARY_HREF} class="kbm-btn kbm-btn-outline">
-                {HOME_HERO_MEMBER_SECONDARY_LABEL}
-              </a>
-            </div>
+            <a href="/knit-ables/christmas-stockings-your-way" class="kbm-btn kbm-btn-accent">
+              Explore Christmas Stockings
+            </a>
+            <a href="/knit-ables" class="home-v2-featured__more">
+              Browse all Hand to Machine ideas
+            </a>
           </div>
         </div>
+        <figure class="home-v2-featured__photo">
+          <img
+            src="/images/knit-ables/christmas-stockings/christmas-stockings.png"
+            alt="A person holding two red, white, and blue Christmas stockings, one with a snowflake and one with reindeer."
+            width="403"
+            height="600"
+            fetchpriority="high"
+            decoding="async"
+          />
+        </figure>
       </div>
     </section>
 
@@ -471,170 +463,142 @@ const sueIntroParagraphs = [
     padding: 0 var(--home-gutter) 4.5rem;
   }
 
-  /* —— Hero —— */
-  .home-v2-hero {
-    margin-bottom: clamp(3.5rem, 6vw, 5rem);
-    background-image: url("/images/home/knitting-machine.webp");
-    background-size: cover;
-    background-repeat: no-repeat;
-    background-position: center center;
+  /* —— Featured Knit-able hero (static homepage mockup) —— */
+  .home-v2-featured {
+    background: #fff;
+    border-bottom: 1px solid rgba(82, 104, 45, 0.12);
+    margin-bottom: clamp(2.25rem, 4vw, 3.25rem);
   }
 
-  .home-v2-hero__frame {
-    position: relative;
-    z-index: 1;
+  .home-v2-featured__panel {
+    display: flex;
+    flex-direction: column;
+    gap: 1.15rem;
     max-width: var(--home-max);
     margin: 0 auto;
-    padding: clamp(2rem, 5vw, 3rem) var(--home-gutter);
-    min-height: clamp(320px, 62vw, 420px);
+    padding: clamp(1.15rem, 2.5vw, 1.75rem) var(--home-gutter) clamp(1.35rem, 3vw, 2rem);
+  }
+
+  .home-v2-featured__copy {
+    display: contents;
+  }
+
+  .home-v2-featured__photo {
+    order: 2;
+    margin: 0;
     display: flex;
-    align-items: flex-end;
+    justify-content: center;
+    align-items: center;
+    padding: 0.65rem;
+    background: #f4f6f0;
+    border-radius: 1rem;
   }
 
-  .home-v2-hero__card {
-    position: relative;
-    z-index: 2;
-    width: 100%;
-    max-width: 470px;
-    padding: clamp(1.35rem, 3vw, 1.85rem) clamp(1.25rem, 3vw, 1.75rem);
-    background: #fff;
-    border-radius: 1.125rem;
-    border: 1px solid rgba(82, 104, 45, 0.14);
-    box-shadow: 0 18px 45px rgba(0, 0, 0, 0.18);
+  .home-v2-featured__offer {
+    order: 3;
   }
 
-  @media (min-width: 900px) {
-    .home-v2-hero {
-      /* Favor machine + green fabric; crop more window (top) and table/basket (bottom) */
-      background-position: 62% 38%;
-      background-size: cover;
-      margin-bottom: 1.75rem;
-    }
-
-    .home-v2-hero__frame {
-      height: 430px;
-      min-height: 430px;
-      max-height: 430px;
-      padding: 1.5rem var(--home-gutter);
-      align-items: center;
-    }
-
-    .home-v2-hero__card {
-      padding: 1.05rem 1.25rem;
-    }
-
-    .home-v2-hero__card h1 {
-      margin-bottom: 0.55rem;
-    }
-
-    .home-v2-hero__copy {
-      margin-bottom: 0.9rem;
-    }
-
-    .home-v2-hero__actions {
-      gap: 0.5rem;
-    }
-
-    .home-v2-hero__login {
-      margin-top: 0.7rem;
-    }
-  }
-
-  .home-v2-hero__card h1 {
-    margin: 0 0 0.85rem;
-    font-size: clamp(1.45rem, 3.2vw, 2rem);
-    line-height: 1.28;
+  .home-v2-featured__intro h1 {
+    margin: 0 0 0.6rem;
+    font-size: clamp(1.85rem, 3.8vw, 2.6rem);
+    line-height: 1.15;
     color: #2c3a57;
   }
 
-  .home-v2-hero__copy {
-    margin: 0 0 1.35rem;
-    font-size: 1rem;
+  .home-v2-featured__intro p,
+  .home-v2-featured__offer p {
+    margin: 0;
+    max-width: 40rem;
+    font-size: clamp(1rem, 1.5vw, 1.125rem);
     line-height: 1.6;
     color: #4d5a48;
   }
 
-  .home-v2-hero__actions {
-    display: flex;
-    flex-direction: column;
-    gap: 0.65rem;
+  .home-v2-featured__offer h2 {
+    margin: 0 0 0.5rem;
+    font-size: clamp(1.4rem, 2.5vw, 1.9rem);
+    line-height: 1.25;
+    color: #2c3a57;
   }
 
-  .home-v2-hero__actions .kbm-btn {
-    text-align: center;
+  .home-v2-featured__offer p {
+    margin-bottom: 1.2rem;
+  }
+
+  .home-v2-featured__photo img {
+    display: block;
+    width: auto;
+    max-width: min(100%, 17rem);
+    height: auto;
+    max-height: 320px;
+    object-fit: contain;
+    border-radius: 0.65rem;
+  }
+
+  .home-v2-featured__offer .kbm-btn {
+    padding: 0.8rem 1.3rem;
+    font-size: 1.05rem;
     text-decoration: none;
   }
 
-  @media (min-width: 480px) {
-    .home-v2-hero__actions {
-      flex-direction: row;
-      flex-wrap: wrap;
-    }
-  }
-
-  .home-v2-hero__login {
-    margin: 1rem 0 0;
-    font-size: 0.9rem;
-    color: #6b7565;
-    text-align: center;
-  }
-
-  .home-v2-hero__login a {
+  .home-v2-featured__more {
+    display: block;
+    width: fit-content;
+    margin-top: 0.85rem;
     color: var(--kbm-green, #52682d);
     font-weight: 600;
+    font-size: 1rem;
+    line-height: 1.4;
     text-decoration: underline;
-    text-underline-offset: 2px;
+    text-underline-offset: 3px;
   }
 
-  /*
-   * Narrow mobile only (phones). Matches max-width: 767px site phone queries.
-   * Tablet (768–899) and desktop (900+) keep their existing hero rules.
-   */
-  @media (max-width: 767px) {
-    .home-v2-hero {
-      margin-bottom: 2rem;
-    }
-
-    .home-v2-hero__frame {
-      min-height: clamp(220px, 48vw, 280px);
-      padding: 1.15rem var(--home-gutter) 0;
-      align-items: flex-end;
-    }
-
-    .home-v2-hero__card {
-      padding: 1rem 1.1rem;
-    }
-
-    .home-v2-hero__card h1 {
-      margin-bottom: 0.45rem;
-      font-size: 1.28rem;
-      line-height: 1.25;
-    }
-
-    .home-v2-hero__copy {
-      margin-bottom: 0.55rem;
-      font-size: 0.9375rem;
-      line-height: 1.45;
-    }
-
-    .home-v2-hero__actions {
-      flex-direction: column;
-      align-items: stretch;
-      gap: 0.4rem;
-    }
-
-    .home-v2-hero__actions .kbm-btn {
-      width: 100%;
-    }
-
-    .home-v2-hero__login {
-      margin-top: 0.5rem;
-    }
+  .home-v2-featured__more:hover,
+  .home-v2-featured__more:focus-visible {
+    color: var(--kbm-green-hover, #445626);
   }
 
   @media (min-width: 768px) {
-    .home-v2-hero__login {
-      text-align: left;
+    .home-v2-featured__panel {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(260px, 380px);
+      align-items: center;
+      column-gap: clamp(2rem, 4vw, 3.5rem);
+      padding-block: clamp(1.75rem, 3vw, 2.6rem);
+    }
+
+    .home-v2-featured__copy {
+      display: flex;
+      flex-direction: column;
+      gap: 1.35rem;
+      order: 0;
+    }
+
+    .home-v2-featured__photo {
+      order: 0;
+      padding: 0.85rem;
+    }
+
+    .home-v2-featured__photo img {
+      max-width: 100%;
+      max-height: 480px;
+    }
+
+    .home-v2-featured__offer {
+      order: 0;
+    }
+  }
+
+  @media (max-width: 767px) {
+    .home-v2-featured__offer .kbm-btn {
+      display: block;
+      width: 100%;
+      text-align: center;
+    }
+
+    .home-v2-featured__more {
+      margin-inline: auto;
+      text-align: center;
     }
   }
 
@@ -1117,7 +1081,7 @@ const sueIntroParagraphs = [
       padding-inline: 1rem;
     }
 
-    .home-v2-hero__frame {
+    .home-v2-featured__panel {
       padding-inline: 1rem;
     }
 

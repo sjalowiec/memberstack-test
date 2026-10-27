@@ -231,38 +231,50 @@ describe("homepage promo markup contract", () => {
     expect(promoSource).not.toContain("$memberstackDom");
   });
 
-  it("keeps the guest hero invitation unchanged", () => {
+  it("keeps the closing guest invitation and a shared featured hero", () => {
     expect(HOME_HERO_GUEST_HEADING).toBe(
       "Learn, build skills, and machine knit with confidence.",
     );
     expect(HOME_HERO_GUEST_COPY).toContain("less time guessing and more time knitting");
     expect(HOME_CTA_GUEST_HEADING).toBe("Ready to explore?");
     expect(HOME_CTA_GUEST_COPY).toContain("we'd love to have you join.");
-    expect(indexAstro).toContain("{HOME_HERO_GUEST_HEADING}");
-    expect(indexAstro).toContain("{HOME_HERO_GUEST_COPY}");
     expect(indexAstro).toContain("{HOME_CTA_GUEST_HEADING}");
     expect(indexAstro).toContain("{HOME_CTA_GUEST_COPY}");
-    expect(indexAstro).toMatch(
-      /data-home-promo-panel="guest"[\s\S]*?Become a Member[\s\S]*?Already a member\?/,
+    expect(indexAstro).not.toContain("{HOME_HERO_GUEST_HEADING}");
+    expect(indexAstro).not.toContain("knitting-machine.webp");
+
+    const featureStart = indexAstro.indexOf('class="home-v2-featured"');
+    const featureEnd = indexAstro.indexOf("SECTION 2");
+    const feature = indexAstro.slice(featureStart, featureEnd);
+    expect(feature).toContain("Hand to Machine");
+    expect(feature).toContain(
+      "Get inspired by hand-knitting patterns and find ideas and resources to make them on your knitting machine.",
     );
+    expect(feature).not.toContain("Featured Knit-able");
+    expect(feature).toContain("Explore Christmas Stockings");
+    expect(feature).toMatch(
+      /href="\/knit-ables" class="home-v2-featured__more"/,
+    );
+    expect(feature).toContain("Browse all Hand to Machine ideas");
+    expect(feature).not.toContain("data-home-promo");
+    expect(feature).not.toContain("Become a Member");
   });
 
-  it("gives active members a welcome/action message instead of a join CTA", () => {
+  it("gives active members a closing action instead of a join CTA", () => {
     expect(HOME_HERO_MEMBER_HEADING).toBe("Welcome back.");
     expect(HOME_HERO_MEMBER_COPY).toContain("Your membership is ready");
     expect(HOME_HERO_MEMBER_SECONDARY_LABEL).toBe("Create a Pattern");
     expect(HOME_HERO_MEMBER_SECONDARY_HREF).toBe("/patterns");
-    expect(indexAstro).toContain("{HOME_HERO_MEMBER_HEADING}");
-    expect(indexAstro).toContain("{HOME_HERO_MEMBER_COPY}");
+    expect(indexAstro).not.toContain("{HOME_HERO_MEMBER_HEADING}");
+    expect(indexAstro).not.toContain("{HOME_HERO_MEMBER_COPY}");
     expect(indexAstro).toContain("{HOME_HERO_MEMBER_SECONDARY_LABEL}");
     expect(indexAstro).toContain("href={HOME_HERO_MEMBER_SECONDARY_HREF}");
 
-    const heroMemberStart = indexAstro.indexOf('data-home-promo-panel="member"');
-    const heroMemberEnd = indexAstro.indexOf("SECTION 2");
-    const heroMember = indexAstro.slice(heroMemberStart, heroMemberEnd);
-    expect(heroMember).toContain("HOME_HERO_MEMBER_SECONDARY_LABEL");
-    expect(heroMember).not.toContain("Become a Member");
-    expect(heroMember).not.toContain("/membership");
+    const memberStart = indexAstro.indexOf('data-home-promo-panel="member"');
+    const member = indexAstro.slice(memberStart, memberStart + 700);
+    expect(member).toContain("HOME_HERO_MEMBER_SECONDARY_LABEL");
+    expect(member).not.toContain("Become a Member");
+    expect(member).not.toContain('href="/membership"');
   });
 
   it("starts pending so the entire promo card cannot flash during auth load", () => {

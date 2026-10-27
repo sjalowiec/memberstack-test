@@ -14,18 +14,23 @@ import {
   CHRISTMAS_STOCKINGS_YOUR_WAY_BUILDER_COPY_AFTER,
   CHRISTMAS_STOCKINGS_YOUR_WAY_BUILDER_COPY_BEFORE,
   CHRISTMAS_STOCKINGS_YOUR_WAY_BUILDER_HEADING,
+  CHRISTMAS_STOCKINGS_YOUR_WAY_BUILDER_HELP,
   CHRISTMAS_STOCKINGS_YOUR_WAY_BUILDER_LINK_LABEL,
   CHRISTMAS_STOCKINGS_YOUR_WAY_CANONICAL_URL,
   CHRISTMAS_STOCKINGS_YOUR_WAY_CARD_COPY,
   CHRISTMAS_STOCKINGS_YOUR_WAY_CTA,
   CHRISTMAS_STOCKINGS_YOUR_WAY_CTA_LABEL,
   CHRISTMAS_STOCKINGS_YOUR_WAY_DESCRIPTION,
+  CHRISTMAS_STOCKINGS_YOUR_WAY_EYEBROW,
   CHRISTMAS_STOCKINGS_YOUR_WAY_IMAGES,
   CHRISTMAS_STOCKINGS_YOUR_WAY_INSPIRED_COPY,
   CHRISTMAS_STOCKINGS_YOUR_WAY_INSPIRED_HEADING,
   CHRISTMAS_STOCKINGS_YOUR_WAY_INTRO,
-  CHRISTMAS_STOCKINGS_YOUR_WAY_MAIN_COPY,
+  CHRISTMAS_STOCKINGS_YOUR_WAY_MEMBERSHIP_COPY,
   CHRISTMAS_STOCKINGS_YOUR_WAY_ORIGINAL_PATTERN_URL,
+  CHRISTMAS_STOCKINGS_YOUR_WAY_PERSPECTIVE_HEADING,
+  CHRISTMAS_STOCKINGS_YOUR_WAY_PERSPECTIVE_INTRO,
+  CHRISTMAS_STOCKINGS_YOUR_WAY_PERSPECTIVE_POINTS,
   CHRISTMAS_STOCKINGS_YOUR_WAY_PAGE,
   CHRISTMAS_STOCKINGS_YOUR_WAY_PATH,
   CHRISTMAS_STOCKINGS_YOUR_WAY_PATTERN_LINK_LABEL,
@@ -70,11 +75,13 @@ describe("Christmas Stockings, Your Way Knit-able page", () => {
     );
     expect(CHRISTMAS_STOCKINGS_YOUR_WAY_TITLE).toBe("Christmas Stockings, Your Way");
     expect(CHRISTMAS_STOCKINGS_YOUR_WAY_PAGE.title).toBe(CHRISTMAS_STOCKINGS_YOUR_WAY_TITLE);
+    expect(CHRISTMAS_STOCKINGS_YOUR_WAY_EYEBROW).toBe("Hand to Machine Inspiration");
+    expect(CHRISTMAS_STOCKINGS_YOUR_WAY_PAGE.eyebrow).toBe(CHRISTMAS_STOCKINGS_YOUR_WAY_EYEBROW);
     expect(CHRISTMAS_STOCKINGS_YOUR_WAY_PAGE.description).toBe(
       CHRISTMAS_STOCKINGS_YOUR_WAY_DESCRIPTION,
     );
     expect(CHRISTMAS_STOCKINGS_YOUR_WAY_DESCRIPTION).toBe(
-      "Choose your size, use your yarn, and make it your own. Take inspiration from these Knit Picks stockings, then use the Christmas Stocking builder to create your machine knitting instructions at your gauge.",
+      "Choose your size, use your yarn, and make it your own. The stockings in the photo are the Knit Picks Holiday Stockings, a hand-knitting pattern. Use them for ideas, then make your own on the machine.",
     );
     expect(templateSource).toContain("`${content.title} | Knit it Now`");
     expect(KNIT_ABLE_INITIAL_PUBLISH_DATES["christmas-stockings-your-way"]).toBeUndefined();
@@ -119,42 +126,95 @@ describe("Christmas Stockings, Your Way Knit-able page", () => {
     expect(landingSource).toContain("height: auto");
   });
 
-  it("places the builder beside the photo without changing other Knit-ables", () => {
-    expect(CHRISTMAS_STOCKINGS_YOUR_WAY_PAGE.placeBuilderBesidePhoto).toBe(true);
+  it("shows Sue's perspective before the builder, without a new card or a course", () => {
+    expect(CHRISTMAS_STOCKINGS_YOUR_WAY_PAGE.placeBuilderBesidePhoto).toBeUndefined();
     expect(VEST_IN_SHOW_PAGE.placeBuilderBesidePhoto).toBeUndefined();
     expect(RHYTHMIC_COLOUR_TOP_PAGE.placeBuilderBesidePhoto).toBeUndefined();
     expect(COCO_LOCO_TANK_PAGE.placeBuilderBesidePhoto).toBeUndefined();
+    expect(VEST_IN_SHOW_PAGE.perspective).toBeUndefined();
+    expect(RHYTHMIC_COLOUR_TOP_PAGE.perspective).toBeUndefined();
+    expect(COCO_LOCO_TANK_PAGE.perspective).toBeUndefined();
     expect(pageSource).toContain("KnitAbleInspirationPage");
     expect(pageSource).not.toContain("KnitAbleInspirationBuilder");
-    const copyStart = templateSource.indexOf('class="knit-able-hero__copy"');
-    const heroClose = templateSource.indexOf("</section>", copyStart);
-    const copyBlock = templateSource.slice(copyStart, heroClose);
-    expect(copyBlock).toContain(
-      "placeBuilderBesidePhoto ? <KnitAbleInspirationBuilder content={content} /> : null",
-    );
-    const afterHero = templateSource.slice(
-      heroClose,
-      templateSource.indexOf('class="knit-able-pair"'),
-    );
-    expect(afterHero).toContain(
-      "placeBuilderBesidePhoto ? null : <KnitAbleInspirationBuilder content={content} />",
-    );
-    expect(templateSource).toContain("knit-able-hero--builder-beside");
+    expect(pageSource).not.toContain("lessons");
+    const heroClose = templateSource.indexOf("</section>", templateSource.indexOf('class="knit-able-hero__copy"'));
+    const afterHero = templateSource.slice(heroClose, templateSource.indexOf('class="knit-able-pair"'));
+    const perspectiveAt = afterHero.indexOf('class="knit-able-perspective"');
+    const builderAt = afterHero.indexOf("<KnitAbleInspirationBuilder");
+    expect(perspectiveAt).toBeGreaterThan(-1);
+    expect(builderAt).toBeGreaterThan(perspectiveAt);
+    expect(afterHero).toContain("knit-able-perspective__points");
+    expect(afterHero).toContain("knit-able-perspective__voice");
+    expect(afterHero).toContain("knit-able-perspective__tip");
+    expect(afterHero).not.toContain("knit-able-perspective-card");
+    expect(afterHero).not.toMatch(/sue\.(png|jpg|webp)|portrait/i);
     expect(templateSource).toContain("content.builder.cta.memberHref");
     expect(templateSource).toContain('data-ms-modal="login"');
   });
 
-  it("keeps the approved inspiration copy in the shared page sections", () => {
+  it("keeps the hand-knit pattern distinct from the machine-knitting builder", () => {
     expect(CHRISTMAS_STOCKINGS_YOUR_WAY_TAGLINE).toBe(
       "Choose your size, use your yarn, and make it your own.",
     );
     expect(CHRISTMAS_STOCKINGS_YOUR_WAY_PAGE.tagline).toBe(CHRISTMAS_STOCKINGS_YOUR_WAY_TAGLINE);
-    expect(CHRISTMAS_STOCKINGS_YOUR_WAY_INTRO).toBe(
-      "Take inspiration from these Knit Picks stockings, then use the Christmas Stocking builder to create your machine knitting instructions at your gauge.",
+    expect(CHRISTMAS_STOCKINGS_YOUR_WAY_PAGE.intro).toBe(CHRISTMAS_STOCKINGS_YOUR_WAY_INTRO);
+    expect(CHRISTMAS_STOCKINGS_YOUR_WAY_INTRO).toContain("hand-knitting pattern");
+    expect(CHRISTMAS_STOCKINGS_YOUR_WAY_PERSPECTIVE_HEADING).toBe(
+      "Through the Eyes of a Machine Knitter",
     );
-    expect(
-      `${CHRISTMAS_STOCKINGS_YOUR_WAY_BUILDER_COPY_BEFORE}${CHRISTMAS_STOCKINGS_YOUR_WAY_BUILDER_LINK_LABEL}${CHRISTMAS_STOCKINGS_YOUR_WAY_BUILDER_COPY_AFTER}`,
-    ).toBe(CHRISTMAS_STOCKINGS_YOUR_WAY_INTRO);
+    expect(CHRISTMAS_STOCKINGS_YOUR_WAY_PAGE.perspective).toMatchObject({
+      heading: CHRISTMAS_STOCKINGS_YOUR_WAY_PERSPECTIVE_HEADING,
+      intro: CHRISTMAS_STOCKINGS_YOUR_WAY_PERSPECTIVE_INTRO,
+      introVoice: true,
+      points: CHRISTMAS_STOCKINGS_YOUR_WAY_PERSPECTIVE_POINTS,
+    });
+    expect(CHRISTMAS_STOCKINGS_YOUR_WAY_PERSPECTIVE_INTRO).toBe(
+      "When I saw these stockings, I immediately started thinking about the possibilities. You could make a matching set, choose a different design for each family member, or use up some favorite yarn.",
+    );
+    expect(CHRISTMAS_STOCKINGS_YOUR_WAY_PERSPECTIVE_POINTS.map((point) => point.lead)).toEqual([
+      "Start with the shape.",
+      "Make it yours.",
+      "Have fun with the design.",
+      "Sue’s tip:",
+    ]);
+    expect(CHRISTMAS_STOCKINGS_YOUR_WAY_PERSPECTIVE_POINTS[0]?.paragraphs[0]).toContain(
+      "knitted flat in one piece",
+    );
+    expect(CHRISTMAS_STOCKINGS_YOUR_WAY_PERSPECTIVE_POINTS[0]?.paragraphs[0]).toContain(
+      "short-row shaping for the heel and toe",
+    );
+    const machine = String(CHRISTMAS_STOCKINGS_YOUR_WAY_PERSPECTIVE_POINTS[1]?.paragraphs[0]);
+    expect(machine).toContain("from an LK150 to an electronic machine");
+    expect(machine).not.toContain("fits the bed");
+    expect(machine).not.toContain("depends on what that machine can do");
+    expect(machine).not.toMatch(/any machine/i);
+    const designParts = CHRISTMAS_STOCKINGS_YOUR_WAY_PERSPECTIVE_POINTS[2]?.paragraphs ?? [];
+    const designText = designParts
+      .map((paragraph) =>
+        Array.isArray(paragraph)
+          ? paragraph.map((part) => (typeof part === "string" ? part : part.label)).join("")
+          : paragraph,
+      )
+      .join(" ");
+    expect(designText).toContain("Knit Picks hand-knitting pattern");
+    expect(designText).toContain("Knitter’s Graph Paper Tool");
+    expect(designText).toContain("Browse Christmas stitch patterns");
+    expect(designText).not.toContain("Christmas 1, Christmas 2, and Christmas 3");
+    expect(designText).toContain("stocking’s stitch count");
+    expect(designParts[1]).toEqual([
+      { label: "Knitter’s Graph Paper Tool", href: "/tools/graph-paper" },
+    ]);
+    expect(designParts[2]).toEqual([
+      { label: "Browse Christmas stitch patterns", href: "/stitch/christmas" },
+    ]);
+    expect(templateSource).toContain("knit-able-perspective__resource");
+    expect(CHRISTMAS_STOCKINGS_YOUR_WAY_PERSPECTIVE_POINTS[3]?.callout).toBe(true);
+    expect(CHRISTMAS_STOCKINGS_YOUR_WAY_PERSPECTIVE_POINTS[3]?.paragraphs[0]).toContain(
+      "single color",
+    );
+    expect(templateSource).toContain("border: 1.5px solid #6d8748");
+    expect(templateSource).toContain("knit-able-perspective__voice::before");
+    expect(CHRISTMAS_STOCKINGS_YOUR_WAY_PERSPECTIVE_POINTS.slice(0, 3).every((point) => !("callout" in point && point.callout))).toBe(true);
     expect(CHRISTMAS_STOCKINGS_YOUR_WAY_BUILDER_HEADING).toBe("Christmas Stocking builder");
     expect(CHRISTMAS_STOCKINGS_YOUR_WAY_PAGE.builder.heading).toBe(
       CHRISTMAS_STOCKINGS_YOUR_WAY_BUILDER_HEADING,
@@ -168,21 +228,28 @@ describe("Christmas Stockings, Your Way Knit-able page", () => {
       after: CHRISTMAS_STOCKINGS_YOUR_WAY_BUILDER_COPY_AFTER,
     });
     expect(CHRISTMAS_STOCKINGS_YOUR_WAY_PAGE.builder.steps).toEqual([]);
-    expect(CHRISTMAS_STOCKINGS_YOUR_WAY_MAIN_COPY).toEqual([
-      "Make a little stocking for a small gift or a larger one to fill with Christmas surprises. Choose from the builder's stocking sizes, swatch your yarn, and enter your gauge.",
-      "Add your favorite colors and stitch patterns to the leg and foot, keeping the heel and toe plain. Make matching stockings for the family or give each one its own personality.",
+    expect(CHRISTMAS_STOCKINGS_YOUR_WAY_PAGE.builder.closing).toEqual([
+      { text: CHRISTMAS_STOCKINGS_YOUR_WAY_BUILDER_HELP },
+      ...CHRISTMAS_STOCKINGS_YOUR_WAY_MEMBERSHIP_COPY.map((text) => ({ text })),
     ]);
-    expect(CHRISTMAS_STOCKINGS_YOUR_WAY_PAGE.builder.closing).toEqual(
-      CHRISTMAS_STOCKINGS_YOUR_WAY_MAIN_COPY.map((text) => ({ text })),
+    expect(CHRISTMAS_STOCKINGS_YOUR_WAY_MEMBERSHIP_COPY.join(" ")).toContain(
+      "paid Knit It Now membership",
+    );
+    expect(CHRISTMAS_STOCKINGS_YOUR_WAY_MEMBERSHIP_COPY.join(" ")).toContain(
+      "view, print, and download",
+    );
+    expect(CHRISTMAS_STOCKINGS_YOUR_WAY_MEMBERSHIP_COPY.join(" ")).toContain("active membership");
+    expect(CHRISTMAS_STOCKINGS_YOUR_WAY_MEMBERSHIP_COPY.join(" ")).not.toContain(
+      "without a membership",
     );
     expect(CHRISTMAS_STOCKINGS_YOUR_WAY_INSPIRED_HEADING).toBe("Knit Picks Holiday Stockings");
-    expect(CHRISTMAS_STOCKINGS_YOUR_WAY_INSPIRED_COPY).toBe(
-      "Like the snowflakes and reindeer? The Knit Picks Holiday Stockings hand knitting pattern is available separately. Check its motif widths against your stocking's stitch count when planning your design. Use the Knit It Now builder for your machine knitting shaping instructions.",
-    );
+    expect(CHRISTMAS_STOCKINGS_YOUR_WAY_INSPIRED_COPY).toContain("hand-knitting pattern");
+    expect(CHRISTMAS_STOCKINGS_YOUR_WAY_INSPIRED_COPY).toContain("machine-knitting builder");
     expect(CHRISTMAS_STOCKINGS_YOUR_WAY_PAGE.pattern.copy).toBe(
       CHRISTMAS_STOCKINGS_YOUR_WAY_INSPIRED_COPY,
     );
     expect(CHRISTMAS_STOCKINGS_YOUR_WAY_PAGE.lessons).toBeUndefined();
+    expect(CHRISTMAS_STOCKINGS_YOUR_WAY_CARD_COPY).toContain("Christmas Stocking builder");
     expect(JSON.stringify(CHRISTMAS_STOCKINGS_YOUR_WAY_PAGE)).not.toMatch(/any yarn|any machine|unlimited/i);
   });
 
