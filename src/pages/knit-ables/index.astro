@@ -26,14 +26,14 @@ try {
     "[knit-ables] schedule lookup failed:",
     error instanceof Error ? error.message : "unknown error",
   );
-  loadError = "Knit-ables aren't available right now. Please try again in a few minutes.";
+  loadError = "These projects aren't available right now. Please try again in a few minutes.";
   Astro.response.status = 503;
 }
 ---
 
 <Layout
-  title="Machine Knit-ables | Knit it Now"
-  description="Use hand-knitting patterns as inspiration, then create a custom machine-knit version with Knit It Now Pattern Builders and your own gauge."
+  title="Hand to Machine | Knit it Now"
+  description="Hand-knitting designs provide inspiration for machine-knitting projects you can make with Knit It Now Pattern Builders and your own gauge."
   bodyClass="page--tight-header"
 >
   <Fragment slot="head">
@@ -53,11 +53,11 @@ try {
       />
       <div class="knit-ables-hero__copy">
         <p class="knit-ables-eyebrow">Knit it Now</p>
-        <h1 id="knit-ables-heading">Machine Knit-ables</h1>
+        <h1 id="knit-ables-heading">Hand to Machine</h1>
         <p>
-          Hand-knitting patterns can be wonderful inspiration. Machine Knit-ables show how
-          to get a similar look on a knitting machine—using Knit It Now Pattern Builders
-          and your own gauge.
+          Hand-knitting designs provide inspiration for machine-knitting projects. Each one
+          shows how to get a similar look on your knitting machine, using a Knit It Now
+          Pattern Builder and your own gauge.
         </p>
       </div>
     </header>
@@ -67,9 +67,9 @@ try {
         <p role="alert">{loadError}</p>
       ) : (
         <section aria-labelledby="knit-ables-list-heading">
-          <h2 id="knit-ables-list-heading">Start with a Knit-able</h2>
+          <h2 id="knit-ables-list-heading">Choose a project</h2>
           {publicCards.length === 0 ? (
-            <p>New Knit-ables show up here when they are published.</p>
+            <p>New projects show up here when they are published.</p>
           ) : (
             <div class="knit-ables-card-list">
               {publicCards.map((card) => {
