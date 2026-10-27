@@ -23,6 +23,7 @@ const worstedPageSource = readFileSync(
 describe("KnitAblePageHeader", () => {
   it("shows the Knit-able eyebrow, logo, and title", () => {
     expect(headerSource).toContain('eyebrow = "Knit-able Inspiration"');
+    expect(headerSource).toContain("showLogo = true");
     expect(headerSource).toContain("KNIT_ABLES_LOGO.src");
     expect(headerSource).toContain("KNIT_ABLES_PAGE_LOGO_ALT");
     expect(headerSource).toContain("{title}");

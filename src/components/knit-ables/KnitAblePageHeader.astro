@@ -11,6 +11,7 @@ interface Props {
   headingId: string;
   eyebrow?: string;
   favoriteContentId?: string;
+  showLogo?: boolean;
 }
 
 const {
@@ -18,27 +19,32 @@ const {
   headingId,
   eyebrow = "Knit-able Inspiration",
   favoriteContentId = "",
+  showLogo = true,
 } = Astro.props;
 ---
 
-<div class="knit-able-page-header">
+<div class:list={["knit-able-page-header", !showLogo && "knit-able-page-header--text"]}>
   <p class="knit-able-eyebrow">{eyebrow}</p>
   <div class="knit-able-page-header__title-row">
-    <a
-      class="knit-able-page-header__logo-link"
-      href={KNIT_ABLES_PATH}
-      aria-label={KNIT_ABLES_PAGE_LOGO_ALT}
-    >
-      <img
-        class="knit-able-page-header__logo"
-        src={KNIT_ABLES_LOGO.src}
-        alt={KNIT_ABLES_PAGE_LOGO_ALT}
-        width={KNIT_ABLES_LOGO.width}
-        height={KNIT_ABLES_LOGO.height}
-        loading="eager"
-        decoding="async"
-      />
-    </a>
+    {
+      showLogo ? (
+        <a
+          class="knit-able-page-header__logo-link"
+          href={KNIT_ABLES_PATH}
+          aria-label={KNIT_ABLES_PAGE_LOGO_ALT}
+        >
+          <img
+            class="knit-able-page-header__logo"
+            src={KNIT_ABLES_LOGO.src}
+            alt={KNIT_ABLES_PAGE_LOGO_ALT}
+            width={KNIT_ABLES_LOGO.width}
+            height={KNIT_ABLES_LOGO.height}
+            loading="eager"
+            decoding="async"
+          />
+        </a>
+      ) : null
+    }
     <h1 id={headingId} class="knit-able-page-header__title">{title}</h1>
     {
       favoriteContentId ? (
@@ -61,6 +67,12 @@ const {
     align-items: center;
     gap: 0.7rem;
     margin-bottom: 0.85rem;
+  }
+
+  .knit-able-page-header--text .knit-able-page-header__title-row {
+    gap: 0.85rem;
+    margin-top: 0.15rem;
+    margin-bottom: 0.7rem;
   }
 
   .knit-able-page-header .knit-able-eyebrow {
