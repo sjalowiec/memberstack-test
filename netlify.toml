@@ -46,7 +46,6 @@
 [context.production.environment]
   COMPLIMENTARY_EXPIRY_LIVE_ENABLED = "true"
   COMPLIMENTARY_CAMPAIGN_SYNC_LIVE_ENABLED = "true"
-  LEGACY_RENEWAL_REMINDER_LIVE_ENABLED = "true"
 
 # Complimentary ActiveCampaign date sync (daily at 09:30 UTC). Updates the
 # complimentary access-through date and the paid-membership field. Does not
@@ -54,16 +53,19 @@
 [functions."complimentary-campaign-sync"]
   schedule = "30 9 * * *"
 
-# Legacy annual renewal reminders (daily at 08:00 UTC, ~midnight America/Los_Angeles).
-# Tags legacy annual members in ActiveCampaign at 30 / 7 / 1 day before their Watson
-# paid-through date, after re-checking Memberstack for an active paid plan. Scheduled
-# runs perform LIVE changes ONLY when LEGACY_RENEWAL_REMINDER_LIVE_ENABLED === "true";
-# otherwise they run dry-run. Manual HTTP is dry-run by default; a live manual run
-# requires POST ?confirm=LIVE AND a correct X-Legacy-Renewal-Secret header. Never
-# modifies Watson dates. Requires WATSON_DATABASE_URL + MEMBERSTACK_SECRET_KEY +
-# ACTIVECAMPAIGN_* (API key, base url, KIN list id, paid-through field id).
+# Legacy annual renewal reminders (daily at 09:00 UTC).
+# 09:00 UTC is 01:00 PST and 02:00 PDT, after Pacific midnight in both standard
+# time and daylight saving time. 08:00 UTC is exactly midnight during PST and
+# is not used. Tags legacy annual members whose Watson paid-through date was
+# yesterday in America/Los_Angeles, after re-checking Memberstack for an active
+# or trialing paid plan. Scheduled runs perform LIVE changes ONLY when
+# LEGACY_RENEWAL_REMINDER_LIVE_ENABLED === "true"; otherwise they run dry-run.
+# Manual HTTP is dry-run by default; a live manual run requires POST ?confirm=LIVE
+# AND a correct X-Legacy-Renewal-Secret header. Never modifies Watson dates.
+# Requires WATSON_DATABASE_URL + MEMBERSTACK_SECRET_KEY + ACTIVECAMPAIGN_*
+# (API key, base url, KIN list id, paid-through field id).
 [functions."legacy-renewal-reminders"]
-  schedule = "0 8 * * *"
+  schedule = "0 9 * * *"
 
 # Former beta domain → canonical production host (path-preserving).
 # Does not affect legacy.knititnow.com (separate host, not matched here).

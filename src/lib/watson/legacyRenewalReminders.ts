@@ -7,10 +7,14 @@
  * Knit It Now membership in Memberstack. Therefore the unchanged legacy date can
  * never prove they have not repurchased.
  *
- * This job sends renewal nudges by tagging an already-subscribed member in
- * ActiveCampaign at 30, 7 and 1 day before the Watson paid-through date, after
- * re-checking Memberstack. It never subscribes or resubscribes a contact, never
- * modifies Watson dates, and never touches the separate legacy annual expiration
+ * This job tags an already-subscribed member in ActiveCampaign on the
+ * America/Los_Angeles day after the inclusive Watson paid-through date.
+ * Paid through December 30 is tagged on December 31 with
+ * `legacy-renewal-expired`. Follow-ups 7 and 14 days later belong to
+ * ActiveCampaign, not this job. A paid-through date that is not exactly
+ * yesterday is not selected, so a missed day does not tag a historical
+ * backlog. It never subscribes or resubscribes a contact, never modifies
+ * Watson dates, and never touches the separate legacy annual expiration
  * process.
  *
  * Source-of-truth split:
@@ -52,18 +56,41 @@ import type { WatsonQueryFn } from "./memberSearch";
 
 export type ReminderTriggerSource = "manual" | "scheduled";
 
-/** Reminder windows, in days before the Watson paid-through date. */
-export const REMINDER_WINDOW_DAYS = [30, 7, 1] as const;
+/**
+ * Days after the inclusive paid-through date. 1 means the next Pacific day:
+ * paid through December 30 is selected when today is December 31.
+ */
+export const EXPIRED_REMINDER_DAYS_AFTER = 1 as const;
+export const EXPIRED_REMINDER_TAG = "legacy-renewal-expired";
+
+/** The only selection this job runs. There is no 30-, 7-, or 1-day advance tag. */
+export const REMINDER_WINDOW_DAYS = [EXPIRED_REMINDER_DAYS_AFTER] as const;
 export type ReminderWindowDays = (typeof REMINDER_WINDOW_DAYS)[number];
 
-/** The exact ActiveCampaign tag applied for each window. */
+/** The exact ActiveCampaign tag applied for the day-after selection. */
 export const LEGACY_PAID_THROUGH_FIELD_TITLE = "Legacy Membership Paid Through";
 
 export const REMINDER_TAG_BY_WINDOW: Record<ReminderWindowDays, string> = {
-  30: "legacy-renewal-30-days",
-  7: "legacy-renewal-7-days",
-  1: "legacy-renewal-1-day",
+  [EXPIRED_REMINDER_DAYS_AFTER]: EXPIRED_REMINDER_TAG,
 };
+
+/**
+ * Daily Netlify schedule. 09:00 UTC is 01:00 PST and 02:00 PDT, so the Los
+ * Angeles date is already the new day in both standard time and daylight time.
+ * 08:00 UTC is midnight during PST and is not used.
+ */
+export const LEGACY_RENEWAL_REMINDER_CRON = "0 9 * * *";
+
+/** True when a daily cron is strictly after 08:00 UTC (Pacific midnight in winter). */
+export function dailyCronIsAfterPacificMidnight(cron: string): boolean {
+  const match = /^(\d{1,2}) (\d{1,2}) \* \* \*$/.exec(cron.trim());
+  if (!match) return false;
+  const minute = Number(match[1]);
+  const hour = Number(match[2]);
+  if (!Number.isInteger(minute) || !Number.isInteger(hour)) return false;
+  if (minute < 0 || minute > 59 || hour < 0 || hour > 23) return false;
+  return hour * 60 + minute > 8 * 60;
+}
 
 export type ReminderOutcome =
   | "tagged"
@@ -97,8 +124,8 @@ export interface ReminderDetail {
   email: string | null;
   /**
    * The Watson paid-through / legacy expiration calendar day (YYYY-MM-DD).
-   * By construction this equals the member's `subscriptionexpiring` day, since
-   * candidates are selected where `subscriptionexpiring = today + windowDays`.
+   * By construction this is yesterday in America/Los_Angeles: candidates are
+   * selected where `subscriptionexpiring` is exactly that many days before today.
    */
   paidThrough: string | null;
   memberstackId: string | null;
@@ -182,10 +209,11 @@ export interface ReminderAuditRow {
 }
 
 /**
- * Members whose paid-through calendar day is exactly `windowDays` after the
- * supplied America/Los_Angeles day. Monthly subscribers are excluded (they
- * auto-renew via Stripe); beta rows are excluded (mirrors the current-member
- * universe). `$1::date` keeps the comparison on the business calendar.
+ * Members whose inclusive paid-through day was exactly `daysAfter` Pacific
+ * days before today. `$2` is 1, so the date is yesterday. Equality, not a
+ * range, keeps older expirations out. Monthly subscribers are excluded (they
+ * auto-renew via Stripe); beta rows are excluded. `$1::date` keeps the
+ * comparison on the America/Los_Angeles calendar passed by the caller.
  */
 export const REMINDER_WINDOW_MEMBERS_SQL = `
   SELECT
@@ -198,7 +226,7 @@ export const REMINDER_WINDOW_MEMBERS_SQL = `
   WHERE COALESCE(m.betaactive, 0) = 0
     AND m.subscriptionexpiring IS NOT NULL
     AND COALESCE(m.monthlysubscriber, 0) <> 1
-    AND m.subscriptionexpiring::date = ($1::date + ($2 || ' days')::interval)::date
+    AND m.subscriptionexpiring::date = ($1::date - ($2 || ' days')::interval)::date
   ORDER BY m.subscriptionexpiring ASC NULLS LAST, m.memberid ASC
 `;
 
@@ -634,7 +662,7 @@ export async function runLegacyRenewalReminders(
     for (const entry of allCandidates) {
       const { windowDays, row } = entry;
       const tag = REMINDER_TAG_BY_WINDOW[windowDays];
-      const paidThrough = addDaysYmd(todayLosAngeles, windowDays);
+      const paidThrough = addDaysYmd(todayLosAngeles, -windowDays);
       const normalizedEmail = normalizeCustomerEmail(row.email);
 
       const base: ReminderDetail = {
