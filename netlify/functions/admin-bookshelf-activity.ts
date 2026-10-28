@@ -1,3 +1,4 @@
+import { hasStaffSession, isSameOriginStaffRequest, STAFF_OWNER } from "./lib/staff-session.js";
 /**
  * Admin-only reporting for the Machine Knitter's Bookshelf activity log.
  *
@@ -229,11 +230,15 @@ export default async (req: Request): Promise<Response> => {
   }
 
   // Resolve identity from verified Bearer JWT (401 when signed out), then admin allowlist (403).
-  const user = await resolveVerifiedProjectUserId(req);
+  const staff = hasStaffSession(req);
+  if (staff && !isSameOriginStaffRequest(req)) {
+    return withCors(jsonResponse({ ok: false, error: "Same-origin staff request required." }, 403));
+  }
+  const user = staff ? { userId: STAFF_OWNER.id, mode: "staff" } : await resolveVerifiedProjectUserId(req);
   if ("error" in user) {
     return withCors(jsonResponse({ ok: false, error: user.error }, user.status));
   }
-  if (!isActivityAdmin(req, user.userId)) {
+  if (!staff && !isActivityAdmin(req, user.userId)) {
     return withCors(jsonResponse({ ok: false, error: "Admin access required." }, 403));
   }
 
@@ -275,3 +280,4 @@ export default async (req: Request): Promise<Response> => {
     return withCors(jsonResponse({ ok: false, error: "Failed to load bookshelf activity." }, 500));
   }
 };
+

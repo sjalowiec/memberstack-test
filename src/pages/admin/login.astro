@@ -1,0 +1,39 @@
+---
+import { sanitizeStaffLoginNextPath } from "../../lib/watson/watsonAuth";
+export const prerender = false;
+const next = sanitizeStaffLoginNextPath(Astro.url.searchParams.get("next"));
+const showError = Astro.url.searchParams.get("error") === "1";
+Astro.response.headers.set("Cache-Control", "no-store");
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Knit it Now | Staff sign in</title>
+  </head>
+  <body>
+    <main>
+      <h1>Knit it Now Administration</h1>
+      <p>Sign in once to access your content, marketing, customers, and reports.</p>
+      <p>Use your existing Watson staff password.</p>
+      {showError && <p role="alert">Incorrect staff password. Please try again.</p>}
+      <form method="post" action="/api/admin/login">
+        <input type="hidden" name="next" value={next} />
+        <label for="staff-password">Staff password</label>
+        <input id="staff-password" name="password" type="password" autocomplete="current-password" required autofocus />
+        <button type="submit">Sign in</button>
+      </form>
+    </main>
+  </body>
+</html>
+<style>
+  body { margin: 0; background: #f6f3ee; color: #243015; font: 18px/1.5 system-ui, sans-serif; }
+  main { max-width: 28rem; margin: 4rem auto; padding: 2rem; background: white; border-radius: 12px; }
+  h1 { font-size: 1.6rem; line-height: 1.2; }
+  form { display: grid; gap: .75rem; }
+  input, button { font: inherit; padding: .65rem; border: 1px solid #94a3b8; border-radius: 6px; }
+  button { background: #3f6212; color: white; cursor: pointer; }
+  [role=alert] { color: #991b1b; }
+</style>

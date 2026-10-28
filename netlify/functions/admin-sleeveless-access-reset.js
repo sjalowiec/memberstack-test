@@ -1,3 +1,4 @@
+import { hasStaffSession, isSameOriginStaffRequest, STAFF_OWNER } from "./lib/staff-session.js";
 /**
  * Admin-only support tool: look up a Memberstack member by email and reset that member's one-time
  * free Sleeveless Pattern build claim — WITHOUT logging in as that member.
@@ -45,13 +46,17 @@ export default async (req) => {
   }
 
   // Must be signed in (verified Bearer JWT — mirrors pattern-activity-log) …
-  const user = await resolveVerifiedProjectUserId(req);
+  const staff = hasStaffSession(req);
+  if (staff && !isSameOriginStaffRequest(req)) {
+    return withCors(jsonResponse({ ok: false, error: "Same-origin staff request required." }, 403));
+  }
+  const user = staff ? { userId: STAFF_OWNER.id, mode: "staff" } : await resolveVerifiedProjectUserId(req);
   if ("error" in user) {
     return withCors(jsonResponse({ ok: false, error: user.error }, user.status));
   }
   // … and an admin. Same allowlist as the activity dashboard. Fail closed.
   // Pass verified userId so X-KBM-Member-Id cannot spoof admin.
-  if (!isActivityAdmin(req, user.userId)) {
+  if (!staff && !isActivityAdmin(req, user.userId)) {
     return withCors(jsonResponse({ ok: false, error: "Admin access required." }, 403));
   }
 
@@ -178,3 +183,4 @@ export default async (req) => {
     );
   }
 };
+

@@ -15,6 +15,39 @@ type DashSection = {
 
 const sections: DashSection[] = [
   {
+    id: "customers-support", title: "Customers & Support", cards: [
+      { href: "/watson/customers", label: "Customers", description: "Find customers, membership details, purchases, and support notes." },
+      { href: "/watson/contact-messages", label: "Contact Messages", description: "Read and manage customer messages." },
+      { href: "/watson/video-replies", label: "Video Replies", description: "Manage video replies." },
+      { href: "/watson/responses", label: "Support Responses", description: "Manage reusable support responses." },
+      { href: "/watson/pattern-inspector", label: "Saved Pattern Inspector", description: "Inspect a saved pattern using its project ID." },
+      { href: "/watson/vendors", label: "Vendors", description: "Manage vendor records." },
+      { href: "/watson/birthdays", label: "Birthdays", description: "Manage birthday cards." },
+    ],
+  },
+  {
+    id: "publishing", title: "Publishing & Scheduling", cards: [
+      { href: "/watson/whats-new", label: "What's New", description: "Manage site announcements and featured content." },
+      { href: "/watson/tip-of-the-week", label: "Tip of the Week", description: "Manage weekly tips." },
+      { href: "/watson/knit-ables", label: "Knit-ables", description: "Manage Knit-able scheduling." },
+      { href: "/watson/skill-builders", label: "Skill Builders", description: "Manage Skill Builders." },
+      { href: "/watson/course-admin", label: "Course Editor", description: "Open the course administration directory." },
+    ],
+  },
+  {
+    id: "business", title: "Business & Activity", cards: [
+      { href: "/watson", label: "Business Overview", description: "Customer, order, enrollment, and saved pattern overview." },
+      { href: "/watson/sales/report", label: "Sales Reports", description: "Review sales and revenue." },
+      { href: "/watson/sales", label: "Store Orders", description: "Review Shopify orders and fulfillment." },
+      { href: "/watson/reports", label: "Membership Reports", description: "Review membership and legacy access reports." },
+      { href: "/watson/current", label: "Current Business", description: "Review current business data." },
+      { href: "/watson/legacy-renewals", label: "Legacy Renewals", description: "Review legacy membership renewal tools." },
+      { href: "/watson/email-signups", label: "Email Signups", description: "Review email signup activity." },
+      { href: "/watson/pattern-activity", label: "Pattern Activity", description: "Review pattern generation and saving activity." },
+      { href: "/watson/search-activity", label: "Search Activity", description: "Review searches across the site." },
+    ],
+  },
+  {
     id: "marketing",
     title: "Marketing",
     cards: [
@@ -112,12 +145,7 @@ const sections: DashSection[] = [
         description:
           "Machine Knitter's Bookshelf usage — views, searches, filters, and My Library adds.",
       },
-      {
-        href: "/admin/bookshelf-suggestions",
-        label: "Bookshelf Suggestions",
-        description:
-          "Review reader-submitted books — approve, reject, edit, or delete pending suggestions.",
-      },
+
     ],
   },
   {
@@ -181,43 +209,18 @@ const sections: DashSection[] = [
 ---
 
 <BaseLayout
-  title="Creator Control Panel | Knit it Now"
+  title="Knit it Now Administration | Knit it Now"
   description="Admin dashboard for creating and managing Knit It Now content."
   bodyClass="admin-dash-body"
 >
   <main class="admin-dash">
     <header class="admin-dash__head">
-      <h1 class="admin-dash__title">Creator Control Panel</h1>
+      <h1 class="admin-dash__title">Knit it Now Administration</h1>
       <p class="admin-dash__intro">
-        A clean starting point for creating and managing Knit It Now content.
+        One place for content, marketing, customers, support, and reports. All tools use the same staff sign-in.
       </p>
     </header>
 
-    <section class="admin-dash__section" aria-labelledby="env-status-heading">
-      <h2 id="env-status-heading" class="admin-dash__section-title">
-        Environment Status
-      </h2>
-      <div class="admin-dash__env-card">
-        <dl class="admin-dash__env-list">
-          <div class="admin-dash__env-row">
-            <dt class="admin-dash__env-label">Environment</dt>
-            <dd class="admin-dash__env-value">
-              <span class="admin-dash__env-badge" data-env-environment>Detecting…</span>
-            </dd>
-          </div>
-          <div class="admin-dash__env-row">
-            <dt class="admin-dash__env-label">Memberstack Mode</dt>
-            <dd class="admin-dash__env-value">
-              <span class="admin-dash__env-badge" data-env-ms-mode>Detecting…</span>
-            </dd>
-          </div>
-          <div class="admin-dash__env-row">
-            <dt class="admin-dash__env-label">Logged In User</dt>
-            <dd class="admin-dash__env-value" data-env-user>Checking…</dd>
-          </div>
-        </dl>
-      </div>
-    </section>
 
     {
       sections.map((section) => (
@@ -517,65 +520,7 @@ const sections: DashSection[] = [
     </section>
   </main>
 
-  <script>
-    import {
-      detectMemberstackMode,
-      detectSiteEnvironment,
-      memberstackModeLabel,
-      siteEnvironmentLabel,
-    } from "../../lib/env/siteEnvironment";
-    import { memberEmailFromMemberstackPayload as envMemberEmail } from "../../lib/patterns/memberstackMember";
 
-    function applyEnvStatus(): void {
-      const envEl = document.querySelector("[data-env-environment]");
-      if (envEl instanceof HTMLElement) {
-        const env = detectSiteEnvironment(window.location.hostname, {
-          publicSiteEnv: import.meta.env.PUBLIC_SITE_ENV,
-          isViteDev: import.meta.env.DEV,
-        });
-        envEl.textContent = siteEnvironmentLabel(env);
-        envEl.dataset.envState = env;
-      }
-    }
-
-    function applyMemberstackMode(): void {
-      const modeEl = document.querySelector("[data-env-ms-mode]");
-      if (modeEl instanceof HTMLElement) {
-        const mode = detectMemberstackMode(window, window.location.hostname);
-        modeEl.textContent = memberstackModeLabel(mode);
-        modeEl.dataset.modeState = mode;
-      }
-    }
-
-    async function applyLoggedInUser(): Promise<void> {
-      const userEl = document.querySelector("[data-env-user]");
-      if (!(userEl instanceof HTMLElement)) return;
-      try {
-        const ms = window.$memberstackDom;
-        if (!ms?.getCurrentMember) {
-          userEl.textContent = "Memberstack unavailable";
-          return;
-        }
-        const payload = await ms.getCurrentMember();
-        const email = envMemberEmail(payload);
-        userEl.textContent = email || "Not signed in";
-      } catch {
-        userEl.textContent = "Unknown";
-      }
-    }
-
-    applyEnvStatus();
-    // Memberstack loads asynchronously; retry the mode + user reads briefly.
-    let envAttempts = 0;
-    const envTimer = window.setInterval(() => {
-      envAttempts += 1;
-      applyMemberstackMode();
-      void applyLoggedInUser();
-      if (window.$memberstackDom?.getCurrentMember || envAttempts >= 25) {
-        window.clearInterval(envTimer);
-      }
-    }, 200);
-  </script>
 
   <script>
     import {
@@ -583,11 +528,7 @@ const sections: DashSection[] = [
       PATTERN_ACTIVITY_LOG_ENDPOINT,
       type PatternActivityEvent,
     } from "../../lib/patterns/patternActivityLog";
-    import {
-      authHeadersForCustomPatternProjects,
-      resolveCustomPatternProjectAuth,
-    } from "../../lib/patterns/customPatternProjectAuth";
-    import { memberEmailFromMemberstackPayload } from "../../lib/patterns/memberstackMember";
+    import { getAdminAuthHeaders } from "../../lib/admin/adminAuthClient";
     import {
       activityMembershipDisplay,
       dateRangeForPreset,
@@ -775,26 +716,9 @@ const sections: DashSection[] = [
       }
     }
 
-    async function resolveMemberEmailHeader(): Promise<Record<string, string>> {
-      try {
-        const ms = window.$memberstackDom;
-        if (!ms?.getCurrentMember) return {};
-        const payload = await ms.getCurrentMember();
-        const email = memberEmailFromMemberstackPayload(payload);
-        return email ? { "X-KBM-Member-Email": email } : {};
-      } catch {
-        return {};
-      }
-    }
-
     async function loadPatternActivity(): Promise<void> {
       syncCustomRangeVisibility();
       try {
-        const auth = await resolveCustomPatternProjectAuth();
-        if (auth.mode === "none") {
-          setStatus("Sign in to view pattern activity.");
-          return;
-        }
         const filters = readFilters();
         const range = dateRangeForPreset(filters.datePreset, new Date(), {
           from: filters.customFrom,
@@ -804,10 +728,10 @@ const sections: DashSection[] = [
         if (range.fromIso) params.set("from", range.fromIso);
         if (range.toIso) params.set("to", range.toIso);
 
-        const emailHeader = await resolveMemberEmailHeader();
+        const headers = await getAdminAuthHeaders();
         const res = await fetch(`${PATTERN_ACTIVITY_LOG_ENDPOINT}?${params}`, {
           method: "GET",
-          headers: { ...authHeadersForCustomPatternProjects(auth), ...emailHeader },
+          headers,
         });
         if (res.status === 403) {
           let message = "You don't have admin access to view pattern activity.";
@@ -1040,11 +964,7 @@ const sections: DashSection[] = [
     import {
       checkPatternActivityAdminAccess,
     } from "../../lib/patterns/patternActivityLog";
-    import {
-      authHeadersForCustomPatternProjects,
-      resolveCustomPatternProjectAuth,
-    } from "../../lib/patterns/customPatternProjectAuth";
-    import { memberEmailFromMemberstackPayload } from "../../lib/patterns/memberstackMember";
+    import { getAdminAuthHeaders } from "../../lib/admin/adminAuthClient";
 
     const RESET_ENDPOINT =
       "/.netlify/functions/admin-sleeveless-access-reset";
@@ -1121,22 +1041,8 @@ const sections: DashSection[] = [
 
     // Reuse the same auth + member-email headers the activity dashboard sends; the Netlify function
     // re-checks admin access server-side, so these are an identity hint only (never trusted alone).
-    async function adminHeaders(): Promise<Record<string, string> | null> {
-      const auth = await resolveCustomPatternProjectAuth();
-      if (auth.mode === "none") return null;
-      const headers: Record<string, string> = {
-        ...authHeadersForCustomPatternProjects(auth),
-      };
-      try {
-        const ms = window.$memberstackDom;
-        if (auth.mode === "member" && ms?.getCurrentMember) {
-          const email = memberEmailFromMemberstackPayload(await ms.getCurrentMember());
-          if (email) headers["X-KBM-Member-Email"] = email;
-        }
-      } catch {
-        /* identity hint only */
-      }
-      return headers;
+    async function adminHeaders(): Promise<Record<string, string>> {
+      return getAdminAuthHeaders();
     }
 
     async function lookupMember(email: string): Promise<void> {
@@ -1886,3 +1792,4 @@ const sections: DashSection[] = [
     }
   </style>
 </BaseLayout>
+

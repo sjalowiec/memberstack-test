@@ -33,7 +33,7 @@ try {
   <main class="watson">
     <header class="watson__head">
       <nav class="watson__nav" aria-label="Watson">
-        <a href="/watson">Dashboard</a>
+        <a href="/watson">Business Overview</a>
         <a href="/watson/sales/report">Sales</a>
         <a href="/watson/pattern-activity">Pattern Activity</a>
         <a href="/watson/search-activity">Search activity</a>
@@ -65,8 +65,8 @@ try {
         <a href="/watson/course-admin/111">Course editor</a>
         <a href="/watson/current">Current</a>
         <a href="/watson/legacy-renewals">Legacy Renewals</a>
-        <a href={adminHref}>Admin</a>
-        <form class="watson__logout" method="post" action="/api/watson/logout">
+        <a href={adminHref}>All Administration</a>
+        <form class="watson__logout" method="post" action="/api/admin/logout">
           <button type="submit">Logout</button>
         </form>
       </nav>
@@ -82,3 +82,4 @@ try {
   import { initSortableTables } from "../../lib/watson/sortableTable";
   initSortableTables(document);
 </script>
+

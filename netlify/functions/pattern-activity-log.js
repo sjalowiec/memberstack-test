@@ -1,3 +1,4 @@
+import { hasStaffSession, STAFF_OWNER } from "./lib/staff-session.js";
 /**
  * Lightweight pattern activity log.
  *
@@ -112,13 +113,14 @@ export default async (req) => {
     }
   }
 
-  const user = await resolveVerifiedProjectUserId(req);
+  const staff = req.method === "GET" && hasStaffSession(req);
+  const user = staff ? { userId: STAFF_OWNER.id, mode: "staff", email: null } : await resolveVerifiedProjectUserId(req);
   if ("error" in user) {
     return withCors(jsonResponse({ ok: false, error: user.error }, user.status));
   }
 
   if (req.method === "GET") {
-    if (!isActivityAdmin(req, user.userId, user.email)) {
+    if (!staff && !isActivityAdmin(req, user.userId, user.email)) {
       const allowlistDebug = {
         ...describeActivityAdmin403(user.userId, user.email),
         emailLookupSkippedDueToEnvMismatch: isMemberstackEnvironmentMismatch(
@@ -167,3 +169,4 @@ export default async (req) => {
 
   return withCors(jsonResponse({ ok: false, error: "Method not allowed" }, 405));
 };
+

@@ -31,6 +31,10 @@ describe("admin server gate", () => {
     expect(isAdminProtectedPath("/help-hub/casting-on")).toBe(false);
     expect(isAdminProtectedPath("/api/membership-status")).toBe(false);
     expect(isAdminProtectedPath("/administration")).toBe(false);
+    expect(isAdminProtectedPath("/admin/login")).toBe(false);
+    expect(isAdminProtectedPath("/api/admin/login")).toBe(false);
+    expect(isAdminProtectedPath("/api/admin/logout")).toBe(false);
+    expect(isAdminProtectedPath("/api/admin/login/anything")).toBe(true);
   });
 
   it("covers the dashboard, nested admin pages, and admin APIs", () => {
@@ -47,22 +51,12 @@ describe("admin server gate", () => {
     const page = adminGateResponse(signedOut, "/admin");
     const nested = adminGateResponse(signedOut, "/admin/lessons");
     const api = adminGateResponse(signedOut, "/api/admin/machines");
-    const pageHtml = await page?.text();
-    const nestedHtml = await nested?.text();
-
-    expect(page?.status).toBe(401);
-    expect(page?.headers.get("content-type")).toContain("text/html");
+    expect(page?.status).toBe(302);
+    expect(page?.headers.get("Location")).toBe("/admin/login?next=%2Fadmin");
     expect(page?.headers.get("cache-control")).toBe("no-store");
-    expect(pageHtml).toContain("Sign in required.");
-    expect(pageHtml).toContain('id="admin-sign-in"');
-    expect(pageHtml).toContain(">Sign in<");
-    expect(pageHtml).not.toContain("Creator Control Panel");
-    expect(pageHtml).not.toContain("Help Hub");
-    expect(pageHtml).not.toContain("/api/admin");
-
-    expect(nested?.status).toBe(401);
-    expect(nestedHtml).toContain('id="admin-sign-in"');
-    expect(nestedHtml).not.toContain("Creator Control Panel");
+    expect(await page?.text()).toBe("");
+    expect(nested?.status).toBe(302);
+    expect(nested?.headers.get("Location")).toBe("/admin/login?next=%2Fadmin%2Flessons");
 
     expect(api?.status).toBe(401);
     expect(api?.headers.get("content-type")).toContain("application/json");
@@ -103,3 +97,4 @@ describe("admin server gate", () => {
     expect(middleware).toContain("requireAdminForRequest");
   });
 });
+
