@@ -16,7 +16,7 @@ export type AdminAuthDiagnostics = {
 };
 
 export type RequireAdminResult =
-  | { ok: true; member: { id: string; email: string | null }; mode: "verified" | "dev" }
+  | { ok: true; member: { id: string; email: string | null }; mode: "verified" | "dev" | "staff" }
   | { ok: false; status: number; error: string; diagnostics?: AdminAuthDiagnostics };
 
 /**
@@ -43,6 +43,7 @@ export function combineAdminAllowlistValue(
 
 export function astroServerAdminEnv(): NodeJS.ProcessEnv {
   const fromAstro: Record<string, unknown> = {
+    WATSON_ADMIN_PASSWORD: import.meta.env.WATSON_ADMIN_PASSWORD,
     MEMBERSTACK_SECRET_KEY: import.meta.env.MEMBERSTACK_SECRET_KEY,
     MEMBERSTACK_SANDBOX_SECRET_KEY: import.meta.env.MEMBERSTACK_SANDBOX_SECRET_KEY,
   };
@@ -173,3 +174,4 @@ export async function requireVerifiedMemberForRequest(
   const { requireVerifiedMember } = await import("../../../netlify/functions/lib/admin-auth.js");
   return requireVerifiedMember(authRequest, astroServerAdminEnv()) as Promise<RequireAdminResult>;
 }
+

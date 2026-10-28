@@ -1,39 +1,24 @@
-import fs from "fs";
-import path from "path";
-
+import fs from "node:fs";
 import { describe, expect, it } from "vitest";
 
-describe("Watson auth routes", () => {
-  it("defines a password login page and auth API routes", () => {
-    const loginPage = fs.readFileSync(path.resolve("src/pages/watson/login.astro"), "utf8");
-    const loginApi = fs.readFileSync(path.resolve("src/pages/api/watson/login.ts"), "utf8");
-    const logoutApi = fs.readFileSync(path.resolve("src/pages/api/watson/logout.ts"), "utf8");
-    const middleware = fs.readFileSync(path.resolve("src/middleware.ts"), "utf8");
-    const shell = fs.readFileSync(
-      path.resolve("src/components/watson/WatsonPageShell.astro"),
-      "utf8",
-    );
-
-    expect(loginPage).toContain('action="/api/watson/login"');
-    expect(loginPage).toContain("Incorrect password.");
-    expect(loginPage).toContain('type="password"');
-    expect(loginPage).not.toContain("Memberstack");
-    expect(loginPage).not.toContain("WATSON_ADMIN_PASSWORD");
-
-    expect(loginApi).toContain("verifyWatsonPassword");
-    expect(loginApi).toContain("buildWatsonSessionCookieHeader");
-    expect(loginApi).toContain("resolveWatsonAdminPassword");
-    expect(loginApi).not.toContain("requireAdminForRequest");
-
-    expect(logoutApi).toContain("buildWatsonLogoutCookieHeader");
-    expect(logoutApi).toContain('Location: "/watson/login"');
-
-    expect(middleware).toContain("isWatsonSessionAuthenticated");
-    expect(middleware).toContain("/watson/login?next=");
-    expect(middleware).not.toContain("requireAdminForRequest");
-    expect(middleware).not.toContain("watsonAccessDeniedResponse");
-
-    expect(shell).toContain('action="/api/watson/logout"');
-    expect(shell).toContain("Logout");
+describe("shared production staff entry", () => {
+  it("uses one password form and no member SDK on the login document", () => {
+    const form = fs.readFileSync("src/pages/admin/login.astro", "utf8");
+    expect(form).toContain('action="/api/admin/login"');
+    expect(form).toContain('type="password"');
+    expect(form).not.toContain("BaseLayout");
+    expect(form).not.toContain("memberstack");
+    expect(form).not.toContain("WATSON_ADMIN_PASSWORD");
+    expect(fs.readFileSync("src/pages/watson/login.astro", "utf8")).toContain("/admin/login?");
+  });
+  it("gives both workspaces a way back to the full directory and shared logout", () => {
+    const layout = fs.readFileSync("src/layouts/BaseLayout.astro", "utf8");
+    expect(layout).toContain('href="/admin"');
+    expect(layout).toContain('action="/api/admin/logout"');
+    const directory = fs.readFileSync("src/pages/admin/index.astro", "utf8");
+    for (const target of ["/watson/customers", "/watson/tip-of-the-week", "/watson/whats-new", "/admin/marketing-calendar", "/admin/help-hub"]) {
+      expect(directory).toContain(target);
+    }
+    expect(directory).not.toContain("kin-dev.netlify.app");
   });
 });

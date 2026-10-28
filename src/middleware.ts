@@ -36,7 +36,7 @@ import {
 import {
   isWatsonPublicPath,
   isWatsonSessionAuthenticated,
-  sanitizeWatsonLoginNextPath,
+  sanitizeStaffLoginNextPath,
 } from "./lib/watson/watsonAuth";
 import { adminGateResponse, isAdminProtectedPath } from "./lib/admin/adminPageGate";
 import { requireAdminForRequest } from "./lib/admin/requireAdminRequest";
@@ -60,9 +60,22 @@ export const onRequest = defineMiddleware(async (context, next) => {
     return context.redirect(`${normalizedPathname}${u.search}`, 301);
   }
 
+  const staffSignedIn = isWatsonSessionAuthenticated(context.cookies);
+  (context.locals as { staffAuthenticated?: boolean }).staffAuthenticated = staffSignedIn;
+
+  if (normalizedPathname.replace(/\/+$/, "") === "/admin/login" && staffSignedIn) {
+    return context.redirect(sanitizeStaffLoginNextPath(u.searchParams.get("next")), 302);
+  }
+
   if (isAdminProtectedPath(normalizedPathname)) {
-    const auth = await requireAdminForRequest(request, context.cookies);
-    const denied = adminGateResponse(auth, normalizedPathname);
+    // Admin pages require the staff session. Customer Memberstack sessions never
+    // substitute for signing in as staff. API handlers share the verified gate.
+    const isApi = normalizedPathname.startsWith("/api/");
+    const localDevelopment = import.meta.env.DEV && ["localhost", "127.0.0.1"].includes(u.hostname);
+    const auth = isApi || staffSignedIn || localDevelopment
+      ? await requireAdminForRequest(request, context.cookies)
+      : { ok: false as const, status: 401, error: "Sign in required." };
+    const denied = adminGateResponse(auth, normalizedPathname, `${normalizedPathname}${u.search}`);
     if (denied) return denied;
   }
 
@@ -130,7 +143,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
   const isWatsonApi = isWatsonApiRoute(u.pathname);
 
   if (isWatsonPage && u.pathname === "/watson/login" && isWatsonSessionAuthenticated(context.cookies)) {
-    return context.redirect(sanitizeWatsonLoginNextPath(u.searchParams.get("next")), 302);
+    return context.redirect(sanitizeStaffLoginNextPath(u.searchParams.get("next")), 302);
   }
 
   if ((isWatsonPage || isWatsonApi) && !isWatsonPublicPath(u.pathname)) {
@@ -140,7 +153,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
       }
 
       const next = encodeURIComponent(`${u.pathname}${u.search}`);
-      return context.redirect(`/watson/login?next=${next}`, 302);
+      return context.redirect(`/admin/login?next=${next}`, 302);
     }
 
     context.locals.watsonAuthenticated = true;
@@ -159,6 +172,9 @@ export const onRequest = defineMiddleware(async (context, next) => {
     return next();
   }
 
-  // For non-API routes, just continue
-  return next();
+  const response = await next();
+  if (isWatsonPage || normalizedPathname === "/admin" || normalizedPathname.startsWith("/admin/")) {
+    response.headers.set("Cache-Control", "no-store");
+  }
+  return response;
 });

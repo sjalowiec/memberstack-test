@@ -63,6 +63,7 @@ const isProduction =
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    {(Astro.locals as { staffAuthenticated?: boolean }).staffAuthenticated && <meta name="kin-staff-session" content="active" />}
     {documentBaseHref ? <base href={documentBaseHref} /> : null}
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
@@ -268,12 +269,21 @@ const isProduction =
     setCookieOnRootDomain: true,
   };
 </script>
-<script data-memberstack-app="app_cmfh3d1n802vb0wy706205810" data-memberstack-use-cookies src="https://static.memberstack.com/scripts/v2/memberstack.js" type="text/javascript"></script>
+{!(isAdminPage || isWatsonPage) && (<script data-memberstack-app="app_cmfh3d1n802vb0wy706205810" data-memberstack-use-cookies src="https://static.memberstack.com/scripts/v2/memberstack.js" type="text/javascript"></script>)}
 
 
   
 
   <body class={bodyClass}>
+    {(isAdminPage || isWatsonPage) && (
+      <nav aria-label="Administration" style="position:relative;z-index:10001;display:flex;gap:1.25rem;align-items:center;padding:.6rem 1rem;background:#243015;color:white;font:16px system-ui;">
+        <a href="/admin" style="color:white;font-weight:700;">All administration</a>
+        <form method="post" action="/api/admin/logout" style="margin:0;margin-left:auto;">
+          <button type="submit" style="font:inherit;cursor:pointer;">Sign out of administration</button>
+        </form>
+      </nav>
+    )}
+
     <EnvBanner />
     {import.meta.env.DEV && (
       <div class="preview-banner" id="preview-banner"></div>
@@ -301,7 +311,7 @@ const isProduction =
     <AccountPasswordResetModal />
     <KinCatalogVideoModal />
     <KinImageModal />
-    {!hideMembershipCorner && <MembershipCornerControl />}
+    {!hideMembershipCorner && !isAdminPage && !isWatsonPage && <MembershipCornerControl />}
 
     <script>
       import "../scripts/accountPasswordResetModal.ts";

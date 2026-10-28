@@ -1,4 +1,5 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
+import { verifyStaffSessionToken } from "../../../netlify/functions/lib/staff-session.js";
 
 export const WATSON_SESSION_COOKIE = "watson_session";
 export const WATSON_SESSION_MAX_AGE_SECONDS = 24 * 60 * 60;
@@ -12,7 +13,9 @@ type CookieStore = {
 };
 
 export function resolveWatsonAdminPassword(
-  env: WatsonSecretEnv = import.meta.env,
+  env: WatsonSecretEnv = {
+    WATSON_ADMIN_PASSWORD: import.meta.env.WATSON_ADMIN_PASSWORD || process.env.WATSON_ADMIN_PASSWORD,
+  },
 ): string | null {
   const password = (env.WATSON_ADMIN_PASSWORD || "").trim();
   return password || null;
@@ -41,27 +44,7 @@ export function verifyWatsonSessionToken(
   password: string,
   now = Date.now(),
 ): boolean {
-  const [payload, signature] = token.split(".");
-  if (!payload || !signature) return false;
-
-  const expected = signSessionPayload(payload, password);
-  try {
-    const actualBuf = Buffer.from(signature, "base64url");
-    const expectedBuf = Buffer.from(expected, "base64url");
-    if (actualBuf.length !== expectedBuf.length) return false;
-    if (!timingSafeEqual(actualBuf, expectedBuf)) return false;
-  } catch {
-    return false;
-  }
-
-  try {
-    const data = JSON.parse(Buffer.from(payload, "base64url").toString("utf8")) as {
-      exp?: unknown;
-    };
-    return typeof data.exp === "number" && data.exp > now;
-  } catch {
-    return false;
-  }
+  return verifyStaffSessionToken(token, password, now);
 }
 
 export function verifyWatsonPassword(input: string, password: string): boolean {
@@ -123,4 +106,20 @@ export function sanitizeWatsonLoginNextPath(next: string | null | undefined): st
     return "/watson";
   }
   return next;
+}
+
+
+/** Accept only local staff page paths. Resolve before checking to reject encoded
+ * slashes, backslashes, dot segments, and login targets that could create loops. */
+export function sanitizeStaffLoginNextPath(next: string | null | undefined): string {
+  if (!next || !next.startsWith("/") || next.startsWith("//") || /[\\\x00-\x20]/.test(next)) return "/admin";
+  try {
+    const url = new URL(next, "https://staff.invalid");
+    const path = decodeURIComponent(url.pathname);
+    if (url.origin !== "https://staff.invalid" || path.includes("//") || path.includes("\\") || /[\x00-\x20]/.test(path)) return "/admin";
+    if (!(path === "/admin" || path.startsWith("/admin/") || path === "/watson" || path.startsWith("/watson/"))) return "/admin";
+    if (path.replace(/\/+$/, "") === "/admin/login" || path.replace(/\/+$/, "") === "/watson/login") return "/admin";
+    if (path.split("/").some((part) => part === "." || part === "..")) return "/admin";
+    return url.pathname + url.search;
+  } catch { return "/admin"; }
 }

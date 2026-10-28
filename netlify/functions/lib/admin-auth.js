@@ -1,3 +1,4 @@
+import { hasStaffSession, isSameOriginStaffRequest, STAFF_OWNER } from "./staff-session.js";
 /**
  * Shared server-side admin gate for reporting endpoints.
  *
@@ -214,6 +215,12 @@ function bearerTokenFromRequest(req) {
  * >}
  */
 export async function requireAdmin(req, env = process.env) {
+  if (hasStaffSession(req, env)) {
+    if (!isSameOriginStaffRequest(req)) {
+      return { ok: false, status: 403, error: "Same-origin staff request required." };
+    }
+    return { ok: true, member: STAFF_OWNER, mode: "staff" };
+  }
   const token = bearerTokenFromRequest(req);
 
   if (!token) {
@@ -321,3 +328,4 @@ export async function requireVerifiedMember(req, env = process.env) {
   }
   return { ok: true, member: { id: memberId, email }, mode: "verified" };
 }
+

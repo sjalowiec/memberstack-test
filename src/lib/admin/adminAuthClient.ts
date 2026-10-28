@@ -1,25 +1,20 @@
 /**
- * Client-side auth headers for admin APIs that use requireAdminForRequest.
- *
- * The browser must send a real Memberstack session JWT (`Authorization: Bearer`) on every
- * protected request. A normal navigation GET cannot attach that header; Help Hub and
- * member-lesson previews obtain the JWT via `$memberstackDom.getMemberCookie()` and send it
- * on fetch. Netlify Basic Auth on `/admin/*` is a separate gate and does not authenticate
- * these APIs.
- *
- * Token reads wait for the Memberstack DOM package and retry `getMemberCookie()` because
- * `getCurrentMember` can exist before the JWT is available. Tokens are never cached across
- * requests — each call re-reads the current session.
+ * Admin requests use the verified HttpOnly staff cookie on staff pages. The
+ * Memberstack bearer fallback remains for existing callers outside those pages.
+ * UI markers never grant access: every API verifies the cookie or bearer itself.
  */
 
-import { openMemberstackLoginModal } from "../memberstackLogin";
+/** UI hint only. The HttpOnly session is verified independently on the server. */
+export function hasStaffSessionPage(): boolean {
+  return typeof document !== "undefined" && !!document.querySelector('meta[name="kin-staff-session"][content="active"]');
+}
 import {
   looksLikeMemberstackSessionJwt,
   publishBrowserMemberstackSessionCookie,
   readStoredMemberstackJwt,
 } from "../memberstackSessionBridge";
 
-export const ADMIN_SIGN_IN_REQUIRED_MESSAGE = "Sign in with your Knit it Now account to continue.";
+export const ADMIN_SIGN_IN_REQUIRED_MESSAGE = "Your staff session has expired. Sign in to administration again.";
 export const ADMIN_FORBIDDEN_MESSAGE = "This Knit it Now account does not have admin access.";
 
 /**
@@ -148,6 +143,7 @@ export async function readMemberstackBearerToken(
  * no session token is available. Never fabricates a token. Does not reuse a previous JWT.
  */
 export async function getAdminAuthHeaders(): Promise<Record<string, string>> {
+  if (hasStaffSessionPage()) return { "X-Kin-Staff-Session": "cookie" };
   const token = await readMemberstackBearerToken();
   if (!token) return {};
   return {
@@ -200,7 +196,7 @@ export async function fetchAdminJson<T = Record<string, unknown>>(
   Object.assign(headers, authHeaders);
 
   const allowMissingToken = init.allowMissingToken ?? isDevAdminBypassEnabled();
-  if (!headers.Authorization && !allowMissingToken) {
+  if (!headers.Authorization && !hasStaffSessionPage() && !allowMissingToken) {
     return {
       ok: false,
       status: 401,
@@ -279,7 +275,7 @@ export async function fetchAdminHtml(
   Object.assign(headers, authHeaders);
 
   const allowMissingToken = init.allowMissingToken ?? isDevAdminBypassEnabled();
-  if (!headers.Authorization && !allowMissingToken) {
+  if (!headers.Authorization && !hasStaffSessionPage() && !allowMissingToken) {
     return {
       ok: false,
       status: 401,
@@ -329,5 +325,8 @@ export function htmlLooksLikeAdminPreviewBootstrap(html: string): boolean {
 }
 
 export function promptAdminSignIn(returnPath?: string): void {
-  openMemberstackLoginModal(returnPath);
+  if (typeof window === "undefined") return;
+  const next = returnPath || window.location.pathname + window.location.search;
+  window.location.assign(`/admin/login?next=${encodeURIComponent(next)}`);
 }
+

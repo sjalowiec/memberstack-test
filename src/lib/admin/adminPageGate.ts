@@ -1,4 +1,4 @@
-import { adminSignInPageDocument } from "./adminSignInPage";
+import { sanitizeStaffLoginNextPath } from "../watson/watsonAuth";
 import { adminAuthErrorBody, type RequireAdminResult } from "./requireAdminRequest";
 
 /**
@@ -6,6 +6,7 @@ import { adminAuthErrorBody, type RequireAdminResult } from "./requireAdminReque
  * APIs those pages call. Public site routes are not included.
  */
 export function isAdminProtectedPath(pathname: string): boolean {
+  if (["/admin/login", "/api/admin/login", "/api/admin/logout"].includes(pathname.replace(/\/+$/, ""))) return false;
   return (
     pathname === "/admin" ||
     pathname.startsWith("/admin/") ||
@@ -20,13 +21,14 @@ function isAdminApiPath(pathname: string): boolean {
 
 /**
  * Server response for a failed admin check. `null` means the request may continue.
- * Signed-out page requests get a sign-in document and no admin HTML. Signed-in
+ * Signed-out page requests redirect to the shared staff login without admin HTML. Signed-in
  * non-admins stay on a plain denial. Admin APIs stay JSON. An allowlisted owner
  * is not handled here — `requireAdmin` must return ok before the page renders.
  */
 export function adminGateResponse(
   auth: RequireAdminResult,
   pathname: string,
+  returnPath: string = pathname,
 ): Response | null {
   if (auth.ok) return null;
 
@@ -42,9 +44,10 @@ export function adminGateResponse(
   }
 
   if (status === 401) {
-    return new Response(adminSignInPageDocument(), {
-      status,
-      headers: { ...headers, "Content-Type": "text/html; charset=utf-8" },
+    const next = encodeURIComponent(sanitizeStaffLoginNextPath(returnPath));
+    return new Response(null, {
+      status: 302,
+      headers: { ...headers, Location: `/admin/login?next=${next}` },
     });
   }
 
@@ -54,3 +57,4 @@ export function adminGateResponse(
     headers: { ...headers, "Content-Type": "text/plain; charset=utf-8" },
   });
 }
+

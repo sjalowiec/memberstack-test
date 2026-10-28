@@ -110,11 +110,7 @@ const STAT_CARDS: { key: string; label: string }[] = [
   </main>
 
   <script>
-    import {
-      authHeadersForCustomPatternProjects,
-      resolveCustomPatternProjectAuth,
-    } from "../../lib/patterns/customPatternProjectAuth";
-    import { memberEmailFromMemberstackPayload } from "../../lib/patterns/memberstackMember";
+    import { getAdminAuthHeaders } from "../../lib/admin/adminAuthClient";
 
     const ENDPOINT = "/.netlify/functions/admin-bookshelf-activity";
 
@@ -246,30 +242,14 @@ const STAT_CARDS: { key: string; label: string }[] = [
       renderRecent(summary.recentEvents ?? []);
     }
 
-    async function resolveMemberEmailHeader(): Promise<Record<string, string>> {
-      try {
-        const ms = window.$memberstackDom;
-        if (!ms?.getCurrentMember) return {};
-        const email = memberEmailFromMemberstackPayload(await ms.getCurrentMember());
-        return email ? { "X-KBM-Member-Email": email } : {};
-      } catch {
-        return {};
-      }
-    }
-
     async function loadActivity(days: number): Promise<void> {
       setStatus("Loading bookshelf activity…");
       showReport(false);
       try {
-        const auth = await resolveCustomPatternProjectAuth();
-        if (auth.mode === "none") {
-          setStatus("Sign in with an admin account to view bookshelf activity.");
-          return;
-        }
-        const emailHeader = await resolveMemberEmailHeader();
+        const headers = await getAdminAuthHeaders();
         const res = await fetch(`${ENDPOINT}?days=${days}`, {
           method: "GET",
-          headers: { ...authHeadersForCustomPatternProjects(auth), ...emailHeader },
+          headers,
         });
         if (res.status === 403) {
           setStatus("You don't have admin access to view bookshelf activity.");
@@ -485,3 +465,4 @@ const STAT_CARDS: { key: string; label: string }[] = [
     }
   </style>
 </BaseLayout>
+
