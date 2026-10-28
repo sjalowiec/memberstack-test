@@ -19,7 +19,10 @@ import {
   type PaidBillingInterval,
   type ViewerAccessState,
 } from "./memberAccess";
-import { billingIntervalFromActivePaidConnection } from "./membership/accountMembershipPanel";
+import {
+  billingIntervalFromActivePaidConnection,
+  renewsLabelFromActivePaidConnection,
+} from "./membership/accountMembershipPanel";
 import { memberEmailFromMemberstackPayload, memberIdFromMemberstackPayload } from "./patterns/memberstackMember";
 import { loadComplimentaryAccessThroughYmd } from "./watson/complimentaryAccess";
 import { resolveLegacyLinkByMemberstackEmail } from "./watson/customerIdentifier";
@@ -49,6 +52,12 @@ export type EvaluatedMemberAccess = {
   /** True when the Admin record has an active or trialing paid plan. */
   serverConfirmedPaidAccess: boolean;
   serverConfirmedPaidBillingInterval: PaidBillingInterval | null;
+  /**
+   * Stripe `payment.nextBillingDate` for the confirmed paid plan, formatted.
+   * Null when there is no paid plan or Stripe did not provide the date.
+   * This is never the Watson paid-through date.
+   */
+  serverConfirmedPaidRenewsLabel: string | null;
 };
 
 export type LoadComplimentaryThroughYmd = (
@@ -109,6 +118,9 @@ export async function evaluateMemberAccessForRecord(
   const serverConfirmedPaidBillingInterval: PaidBillingInterval | null = serverConfirmedPaidAccess
     ? billingIntervalFromActivePaidConnection(record)
     : null;
+  const serverConfirmedPaidRenewsLabel = serverConfirmedPaidAccess
+    ? renewsLabelFromActivePaidConnection(record)
+    : null;
 
   let legacyPaidThroughLookup: LegacyPaidThroughLookup = "not_loaded";
   let legacyPaidThroughYmd: string | null = null;
@@ -139,5 +151,6 @@ export async function evaluateMemberAccessForRecord(
     legacyLookupFailed: legacyLookupFailed && !granted,
     serverConfirmedPaidAccess,
     serverConfirmedPaidBillingInterval,
+    serverConfirmedPaidRenewsLabel,
   };
 }

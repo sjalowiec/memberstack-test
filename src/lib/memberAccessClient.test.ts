@@ -120,6 +120,29 @@ describe("ensureLegacyPaidThroughContext", () => {
       planDisplayLabel: "Annual Membership",
       statusLabel: "Active",
       visibleActions: ["manageBilling"],
+      renewsLabel: null,
+      membershipDateLabel: null,
+    });
+  });
+
+  it("shows the Stripe renewal date and does not use the Watson date", async () => {
+    const res = payload(LEGACY_FREE);
+    await ensureLegacyPaidThroughContext(res, {
+      fetchAccessDates: async () => ({
+        legacyPaidThroughYmd: "2026-01-15",
+        legacyPaidThroughLookup: "found",
+        complimentaryThroughYmd: null,
+        serverConfirmedPaidAccess: true,
+        serverConfirmedPaidBillingInterval: "annual",
+        serverConfirmedPaidRenewsLabel: "November 30, 2027",
+      }),
+    });
+    expect(resolveAccountMembershipPanelView(res, { todayYmd: "2026-10-28" })).toMatchObject({
+      planDisplayLabel: "Annual Membership",
+      statusLabel: "Active",
+      visibleActions: ["manageBilling"],
+      renewsLabel: "November 30, 2027",
+      membershipDateLabel: null,
     });
   });
 
@@ -257,6 +280,57 @@ describe("ensureLegacyPaidThroughContext failures", () => {
     await ensureLegacyPaidThroughContext(res, { fetchAccessDates });
     expect(fetchAccessDates).toHaveBeenCalledTimes(1);
     expect(hasMemberAccess(res)).toBe(true);
+  });
+
+  it("keeps Annual Membership and the Stripe date in a cached session", async () => {
+    stubBrowser({ memberId: "mem_client" });
+    const res = payload(LEGACY_FREE);
+    const fetchAccessDates = vi.fn(async () => ({
+      legacyPaidThroughYmd: "2026-01-15",
+      legacyPaidThroughLookup: "found" as const,
+      complimentaryThroughYmd: null,
+      serverConfirmedPaidAccess: true,
+      serverConfirmedPaidBillingInterval: "annual" as const,
+      serverConfirmedPaidRenewsLabel: "November 30, 2027",
+    }));
+    await ensureLegacyPaidThroughContext(res, { fetchAccessDates });
+    clearRememberedLegacyPaidThroughForAccess();
+    clearRememberedServerConfirmedPaidAccess();
+    await ensureLegacyPaidThroughContext(res, { fetchAccessDates });
+    expect(fetchAccessDates).toHaveBeenCalledTimes(1);
+    expect(resolveAccountMembershipPanelView(res, { todayYmd: "2026-10-28" })).toMatchObject({
+      planDisplayLabel: "Annual Membership",
+      statusLabel: "Active",
+      visibleActions: ["manageBilling"],
+      renewsLabel: "November 30, 2027",
+      membershipDateLabel: null,
+    });
+  });
+
+  it("keeps Paid through for a cached legacy-only session", async () => {
+    stubBrowser({ memberId: "mem_client" });
+    const res = payload(LEGACY_FREE);
+    const fetchAccessDates = vi.fn(async () => ({
+      legacyPaidThroughYmd: "2027-11-30",
+      legacyPaidThroughLookup: "found" as const,
+      complimentaryThroughYmd: null,
+      serverConfirmedPaidAccess: false,
+      serverConfirmedPaidBillingInterval: null,
+      serverConfirmedPaidRenewsLabel: null,
+    }));
+    await ensureLegacyPaidThroughContext(res, { fetchAccessDates });
+    clearRememberedLegacyPaidThroughForAccess();
+    clearRememberedServerConfirmedPaidAccess();
+    await ensureLegacyPaidThroughContext(res, { fetchAccessDates });
+    expect(fetchAccessDates).toHaveBeenCalledTimes(1);
+    expect(resolveAccountMembershipPanelView(res, { todayYmd: "2026-10-28" })).toMatchObject({
+      planDisplayLabel: "Legacy Membership",
+      statusLabel: "Legacy Access",
+      visibleActions: ["renewAnnual", "becomeMonthly"],
+      renewsLabel: null,
+      membershipDateLabel: "Paid through",
+      membershipDateValue: "November 30, 2027",
+    });
   });
 
   it("refetches once the cached date is older than the freshness window", async () => {

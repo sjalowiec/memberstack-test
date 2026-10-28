@@ -38,7 +38,7 @@ function setText(root: Element, selector: string, value: string): void {
 
 /**
  * Fill the single primary date row (label + value). Legacy members read
- * "Legacy Access Through {date}"; everyone else keeps "Member Since {date}".
+ * "Paid through {date}"; everyone else keeps "Member Since {date}".
  * Hidden when there is no date/label so we never show an empty row.
  */
 function setDateRow(root: Element, label: string | null, value: string | null): void {
@@ -101,6 +101,19 @@ function setVisible(el: Element | null, visible: boolean): void {
   el.hidden = !visible;
 }
 
+function applyRenews(root: Element, renewsLabel: string | null): void {
+  const row = root.querySelector("[data-kbm-account-membership-renews-row]");
+  const valueEl = root.querySelector("[data-kbm-account-membership-renews]");
+  if (!(row instanceof HTMLElement) || !(valueEl instanceof HTMLElement)) return;
+  if (renewsLabel && renewsLabel.trim()) {
+    valueEl.textContent = renewsLabel.trim();
+    row.hidden = false;
+  } else {
+    valueEl.textContent = "";
+    row.hidden = true;
+  }
+}
+
 function applyActions(root: Element, actions: AccountMembershipPanelAction[] | null): void {
   if (!actions) return;
   const visible = new Set(actions);
@@ -138,6 +151,7 @@ function applyDetail(root: Element, detail: AccountMembershipDetailResponse): vo
     }
   }
   applyActions(root, paint.visibleActions);
+  applyRenews(root, paint.renewsLabel);
 
   setDateRow(root, view.membershipDateLabel, view.membershipDateValue);
 

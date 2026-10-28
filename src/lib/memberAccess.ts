@@ -89,6 +89,12 @@ export type MemberAccessOptions = {
   /** Billing interval for {@link serverConfirmedPaidAccess}. Null when unknown. */
   serverConfirmedPaidBillingInterval?: PaidBillingInterval | null;
   /**
+   * Stripe next billing date for {@link serverConfirmedPaidAccess}, already
+   * formatted. Null when the paid plan is confirmed and that date is absent.
+   * Never a Watson paid-through date.
+   */
+  serverConfirmedPaidRenewsLabel?: string | null;
+  /**
    * Watson `watson_complimentary_access.access_through` as YYYY-MM-DD.
    * `null` means loaded and no saved date (complimentary plan stays open).
    * Omit the property when the date has not been loaded.
@@ -118,6 +124,8 @@ let rememberedComplimentaryThrough: RememberedComplimentaryThrough | null = null
 type RememberedServerPaidAccess = {
   memberId: string;
   billingInterval: PaidBillingInterval | null;
+  /** Null when the paid plan is confirmed and Stripe has no next billing date. */
+  renewsLabel: string | null;
 };
 
 let rememberedServerPaidAccess: RememberedServerPaidAccess | null = null;
@@ -316,10 +324,15 @@ export function clearRememberedLegacyPaidThroughForAccess(): void {
 export function rememberServerConfirmedPaidAccess(
   memberId: string,
   billingInterval: PaidBillingInterval | null,
+  renewsLabel: string | null = null,
 ): void {
   const id = memberId.trim();
   if (!id) return;
-  rememberedServerPaidAccess = { memberId: id, billingInterval };
+  rememberedServerPaidAccess = {
+    memberId: id,
+    billingInterval,
+    renewsLabel: renewsLabel?.trim() || null,
+  };
 }
 
 export function clearRememberedServerConfirmedPaidAccess(): void {
@@ -344,6 +357,18 @@ export function rememberedServerConfirmedPaidBillingInterval(
   if (!memberId || !rememberedServerPaidAccess) return undefined;
   if (rememberedServerPaidAccess.memberId !== memberId) return undefined;
   return rememberedServerPaidAccess.billingInterval;
+}
+
+/**
+ * `undefined` = Admin has not confirmed a paid plan.
+ * `null` = confirmed, and Stripe did not provide a next billing date.
+ */
+export function rememberedServerConfirmedPaidRenewsLabel(
+  memberId: string | null | undefined,
+): string | null | undefined {
+  if (!memberId || !rememberedServerPaidAccess) return undefined;
+  if (rememberedServerPaidAccess.memberId !== memberId) return undefined;
+  return rememberedServerPaidAccess.renewsLabel;
 }
 
 /** Remember a Watson complimentary access-through date for sync access checks. */

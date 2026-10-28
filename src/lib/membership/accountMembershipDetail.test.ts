@@ -244,9 +244,9 @@ describe("loadAccountMembershipDetail", () => {
     expect(detail.legacyPaidThroughDate).not.toBe("August 2, 2026");
     expect(detail.legacyAccessActive).toBe(true);
 
-    // Account panel display (Legacy Access Through + Available through) must match Watson.
+    // Account panel display (Paid through + Available through) must match Watson.
     const view = resolveAccountMembershipDetailView(detail);
-    expect(view.membershipDateLabel).toBe("Legacy Access Through");
+    expect(view.membershipDateLabel).toBe("Paid through");
     expect(view.membershipDateValue).toBe("September 15, 2026");
     expect(view.legacyAccessValue).toBe("Available through September 15, 2026");
   });
