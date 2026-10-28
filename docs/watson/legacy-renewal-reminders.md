@@ -54,7 +54,7 @@ the candidate universe. An active or trialing paid Memberstack plan is skipped.
 For each candidate, in order (first match wins):
 
 1. **Missing email** ? `skipped_missing_email`.
-2. **Staff/test email** (`isStaffOrTestEmail`) ? `skipped_staff_or_test`.
+2. **Staff/test email** (`isStaffOrTestEmail`), except `abc123@knititnow.com` ? `skipped_staff_or_test`.
 3. **Ambiguous legacy email** (same email on >1 legacy row) ? `skipped_ambiguous`.
 4. **Memberstack re-check**:
    - ambiguous match ? `skipped_ambiguous`

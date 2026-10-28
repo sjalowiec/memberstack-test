@@ -57,6 +57,18 @@ import type { WatsonQueryFn } from "./memberSearch";
 export type ReminderTriggerSource = "manual" | "scheduled";
 
 /**
+ * The only staff address this reminder may tag. Every other staff/test address,
+ * including the rest of @knititnow.com, stays excluded.
+ */
+export const LEGACY_RENEWAL_STAFF_EXCEPTION_EMAIL = "abc123@knititnow.com";
+
+export function isLegacyRenewalStaffOrTestEmail(email: string | null | undefined): boolean {
+  const normalized = normalizeCustomerEmail(email);
+  if (normalized === LEGACY_RENEWAL_STAFF_EXCEPTION_EMAIL) return false;
+  return isStaffOrTestEmail(normalized);
+}
+
+/**
  * Days after the inclusive paid-through date. 1 means the next Pacific day:
  * paid through December 30 is selected when today is December 31.
  */
@@ -693,8 +705,8 @@ export async function runLegacyRenewalReminders(
         continue;
       }
 
-      // Never email staff/test addresses.
-      if (isStaffOrTestEmail(normalizedEmail)) {
+      // Never email staff/test addresses, except the one expiration-reminder address.
+      if (isLegacyRenewalStaffOrTestEmail(normalizedEmail)) {
         await pushDetail({
           ...base,
           outcome: "skipped_staff_or_test",
