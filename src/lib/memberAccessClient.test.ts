@@ -6,9 +6,12 @@ import {
 } from "../config/memberships";
 import {
   clearRememberedLegacyPaidThroughForAccess,
+  clearRememberedServerConfirmedPaidAccess,
   hasMemberAccess,
   rememberedLegacyPaidThroughYmdForMember,
+  rememberedServerConfirmedPaidBillingInterval,
 } from "./memberAccess";
+import { resolveAccountMembershipPanelView } from "./membership/accountMembershipPanel";
 import {
   clearVerifiedMemberAccessCache,
   ensureLegacyPaidThroughContext,
@@ -37,6 +40,7 @@ function payload(planId: string, id = "mem_client") {
 
 afterEach(() => {
   clearRememberedLegacyPaidThroughForAccess();
+  clearRememberedServerConfirmedPaidAccess();
   vi.unstubAllGlobals();
   vi.restoreAllMocks();
 });
@@ -95,6 +99,53 @@ describe("ensureLegacyPaidThroughContext", () => {
 
   it("uses the member-access API path", () => {
     expect(MEMBER_ACCESS_API_PATH).toBe("/.netlify/functions/member-access");
+  });
+
+  it("uses a server-confirmed annual plan when the browser payload only has the free legacy plan", async () => {
+    const res = payload(LEGACY_FREE);
+    const status = await ensureLegacyPaidThroughContext(res, {
+      fetchAccessDates: async () => ({
+        legacyPaidThroughYmd: null,
+        legacyPaidThroughLookup: "not_loaded",
+        complimentaryThroughYmd: null,
+        serverConfirmedPaidAccess: true,
+        serverConfirmedPaidBillingInterval: "annual",
+      }),
+    });
+    expect(status).toBe("ready");
+    expect(rememberedLegacyPaidThroughYmdForMember("mem_client")).toBeUndefined();
+    expect(rememberedServerConfirmedPaidBillingInterval("mem_client")).toBe("annual");
+    expect(hasMemberAccess(res, { todayYmd: "2026-10-28" })).toBe(true);
+    expect(resolveAccountMembershipPanelView(res, { todayYmd: "2026-10-28" })).toMatchObject({
+      planDisplayLabel: "Annual Membership",
+      statusLabel: "Active",
+      visibleActions: ["manageBilling"],
+    });
+  });
+
+  it("remembers a completed Watson miss as not found", async () => {
+    const res = payload(LEGACY_FREE);
+    await ensureLegacyPaidThroughContext(res, {
+      fetchAccessDates: async () => ({
+        legacyPaidThroughYmd: null,
+        legacyPaidThroughLookup: "not_found",
+        complimentaryThroughYmd: null,
+        serverConfirmedPaidAccess: false,
+        serverConfirmedPaidBillingInterval: null,
+      }),
+    });
+    expect(rememberedLegacyPaidThroughYmdForMember("mem_client")).toBeNull();
+    expect(hasMemberAccess(res, { todayYmd: "2026-10-28" })).toBe(false);
+  });
+
+  it("leaves the Watson date unloaded when the access request fails", async () => {
+    const res = payload(LEGACY_FREE);
+    const status = await ensureLegacyPaidThroughContext(res, {
+      fetchAccessDates: async () => null,
+    });
+    expect(status).toBe("unavailable");
+    expect(rememberedLegacyPaidThroughYmdForMember("mem_client")).toBeUndefined();
+    expect(hasMemberAccess(res, { todayYmd: "2026-10-28" })).toBe(false);
   });
 });
 

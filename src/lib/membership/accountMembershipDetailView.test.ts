@@ -1,7 +1,10 @@
 import { describe, expect, it } from "vitest";
 import type { AccountMembershipDetail } from "./accountMembershipDetail";
 import type { MembershipHistoryEvent } from "./membershipHistory";
-import { resolveAccountMembershipDetailView } from "./accountMembershipDetailView";
+import {
+  resolveAccountMembershipDetailPaint,
+  resolveAccountMembershipDetailView,
+} from "./accountMembershipDetailView";
 
 function event(title: string): MembershipHistoryEvent {
   return { type: "joined", title, date: "January 1, 2020", dateSort: "2020-01-01" };
@@ -173,6 +176,73 @@ describe("resolveAccountMembershipDetailView", () => {
     );
     expect(view.membershipDateLabel).toBeNull();
     expect(view.membershipDateValue).toBeNull();
+  });
+
+  it("replaces unconfirmed labels when the detail is an identified active annual membership", () => {
+    const paint = resolveAccountMembershipDetailPaint(
+      detail({
+        membershipName: "Knit it Now Membership",
+        statusLabel: "Active",
+        billingLabel: "Annual",
+        memberSince: "April 1, 2017",
+      }),
+      {
+        planLabel: "Membership status unavailable",
+        statusLabel: "Could not confirm",
+      },
+    );
+    expect(paint.planLabel).toBe("Annual Membership");
+    expect(paint.statusLabel).toBe("Active");
+    expect(paint.visibleActions).toEqual(["manageBilling"]);
+    expect(paint.markMember).toBe(true);
+    expect(paint.manageBillingDescription).toContain("payment method");
+  });
+
+  it("replaces blank labels when an identified active detail arrives first", () => {
+    const paint = resolveAccountMembershipDetailPaint(
+      detail({
+        membershipName: "Knit it Now Membership",
+        statusLabel: "Active",
+        billingLabel: "Annual",
+      }),
+      { planLabel: "", statusLabel: "" },
+    );
+    expect(paint.planLabel).toBe("Annual Membership");
+    expect(paint.statusLabel).toBe("Active");
+    expect(paint.visibleActions).toEqual(["manageBilling"]);
+  });
+
+  it("does not replace an already active annual panel", () => {
+    const paint = resolveAccountMembershipDetailPaint(
+      detail({
+        membershipName: "Knit it Now Membership",
+        statusLabel: "Active",
+        billingLabel: "Annual",
+      }),
+      { planLabel: "Annual Membership", statusLabel: "Active" },
+    );
+    expect(paint.planLabel).toBeNull();
+    expect(paint.statusLabel).toBeNull();
+    expect(paint.visibleActions).toBeNull();
+    expect(paint.markMember).toBe(false);
+  });
+
+  it("keeps an expired legacy detail as Expired when the panel was unconfirmed", () => {
+    const paint = resolveAccountMembershipDetailPaint(
+      detail({
+        membershipName: null,
+        statusLabel: "Expired",
+        legacyPaidThroughDate: "January 1, 2020",
+        legacyAccessActive: false,
+      }),
+      {
+        planLabel: "Membership status unavailable",
+        statusLabel: "Could not confirm",
+      },
+    );
+    expect(paint.planLabel).toBe("Legacy Membership");
+    expect(paint.statusLabel).toBe("Expired");
+    expect(paint.visibleActions).toEqual(["join"]);
   });
 
   it("overlays could-not-confirm when the detail is unidentified", () => {

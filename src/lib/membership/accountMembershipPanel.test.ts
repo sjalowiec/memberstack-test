@@ -6,7 +6,12 @@ import {
   REMOVED_BASIC_MEMBERSHIP_PLAN_ID,
   RETIRED_MONTHLY_SUBSCRIPTION_PRICE_ID,
 } from "../../config/memberships";
-import { clearRememberedLegacyPaidThroughForAccess, hasMemberAccess } from "../memberAccess";
+import {
+  clearRememberedLegacyPaidThroughForAccess,
+  clearRememberedServerConfirmedPaidAccess,
+  hasMemberAccess,
+  rememberServerConfirmedPaidAccess,
+} from "../memberAccess";
 import {
   accountMembershipPanelActions,
   billingIntervalFromActivePaidConnection,
@@ -14,6 +19,7 @@ import {
   isPortalEligiblePaidPlanConnection,
   memberHasStripeCustomerPortalAccess,
   resolveAccountMembershipPanelView,
+  shouldPreserveConfirmedActivePanel,
 } from "./accountMembershipPanel";
 import { memberHasActivePaidMembership } from "./membershipCheckoutDecision";
 
@@ -98,6 +104,7 @@ describe("formatMemberstackUnixDate", () => {
 describe("resolveAccountMembershipPanelView", () => {
   afterEach(() => {
     clearRememberedLegacyPaidThroughForAccess();
+    clearRememberedServerConfirmedPaidAccess();
   });
 
   it("shows no active membership when Watson confirms there is no paid-through date", () => {
@@ -757,7 +764,91 @@ describe("resolveAccountMembershipPanelView", () => {
     })).toBe(false);
   });
 
-  it("does not show a connected free legacy plan as active when Watson lookup fails", () => {
+  it("keeps a confirmed Active panel when a later paint is unconfirmed", () => {
+    expect(
+      shouldPreserveConfirmedActivePanel(
+        { kind: "member", statusLabel: "Active" },
+        "Could not confirm",
+      ),
+    ).toBe(true);
+    expect(
+      shouldPreserveConfirmedActivePanel(
+        { kind: "member", statusLabel: "Active" },
+        "Legacy Access",
+      ),
+    ).toBe(false);
+    expect(
+      shouldPreserveConfirmedActivePanel(
+        { kind: "free", statusLabel: "Could not confirm" },
+        "Could not confirm",
+      ),
+    ).toBe(false);
+  });
+
+  it("shows Annual Membership when Admin confirmed a trialing annual plan the browser payload omitted", () => {
+    const member = memberWithPlans([
+      { planId: "pln_course-lk150-patterning-nw00gk6", status: "ACTIVE", active: true },
+      {
+        planId: FREE_ACCESS_MEMBERSHIPS.legacyMembership.memberstackPlanId,
+        status: "ACTIVE",
+        active: true,
+      },
+    ]);
+    const access = {
+      serverConfirmedPaidAccess: true as const,
+      serverConfirmedPaidBillingInterval: "annual" as const,
+      todayYmd: "2026-10-28",
+    };
+    const view = resolveAccountMembershipPanelView(member, access);
+    expect(view).toMatchObject({
+      kind: "member",
+      planDisplayLabel: "Annual Membership",
+      statusLabel: "Active",
+      billingLabel: "Annual",
+      visibleActions: ["manageBilling"],
+      manageBillingDescription:
+        "Update your payment method, view invoices, or manage your subscription.",
+    });
+    expect(view.statusLabel).not.toBe("Could not confirm");
+    expect(view.planDisplayLabel).not.toBe("Membership status unavailable");
+    expect(hasMemberAccess(member, access)).toBe(true);
+
+    rememberServerConfirmedPaidAccess("mem_test", "annual");
+    expect(resolveAccountMembershipPanelView(member, { todayYmd: "2026-10-28" })).toMatchObject({
+      planDisplayLabel: "Annual Membership",
+      statusLabel: "Active",
+      visibleActions: ["manageBilling"],
+    });
+    expect(hasMemberAccess(member, { todayYmd: "2026-10-28" })).toBe(true);
+  });
+
+  it("keeps a loaded missing Watson date distinct from a date that was not loaded", () => {
+    const freePlan = memberWithPlans([
+      {
+        planId: FREE_ACCESS_MEMBERSHIPS.legacyMembership.memberstackPlanId,
+        status: "ACTIVE",
+        active: true,
+      },
+    ]);
+    const notLoaded = resolveAccountMembershipPanelView(freePlan);
+    expect(notLoaded.statusLabel).toBe("Could not confirm");
+    expect(notLoaded.visibleActions).toEqual([]);
+
+    const notFound = resolveAccountMembershipPanelView(freePlan, {
+      legacyPaidThroughYmd: null,
+      todayYmd: "2026-10-28",
+    });
+    expect(notFound.statusLabel).toBe("Could not confirm");
+
+    const confirmedNone = resolveAccountMembershipPanelView(memberWithPlans([]), {
+      legacyPaidThroughYmd: null,
+      todayYmd: "2026-10-28",
+    });
+    expect(confirmedNone.planDisplayLabel).toBe("No active membership");
+    expect(confirmedNone.statusLabel).toBe("No Active Membership");
+  });
+
+  it("does not show a connected free legacy plan as active when Watson found no date", () => {
     const member = memberWithPlans([
       {
         planId: FREE_ACCESS_MEMBERSHIPS.legacyMembership.memberstackPlanId,

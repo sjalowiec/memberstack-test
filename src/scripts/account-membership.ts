@@ -10,6 +10,7 @@ import { isMemberLoggedIn } from "../lib/memberAccess";
 import { ensureLegacyPaidThroughContext } from "../lib/memberAccessClient";
 import {
   resolveAccountMembershipPanelView,
+  shouldPreserveConfirmedActivePanel,
   type AccountMembershipPanelAction,
   type AccountMembershipPanelView,
 } from "../lib/membership/accountMembershipPanel";
@@ -153,7 +154,20 @@ async function populateAccountMembership(): Promise<void> {
   }
 
   await ensureLegacyPaidThroughContext(payload);
-  applyView(root, resolveAccountMembershipPanelView(payload));
+  const view = resolveAccountMembershipPanelView(payload);
+  const statusEl = root.querySelector("[data-kbm-account-membership-status]");
+  const currentStatus = statusEl?.textContent ?? "";
+  if (
+    !shouldPreserveConfirmedActivePanel(
+      {
+        kind: root.getAttribute("data-kbm-account-membership-kind"),
+        statusLabel: currentStatus,
+      },
+      view.statusLabel,
+    )
+  ) {
+    applyView(root, view);
+  }
   setVisible(loadingEl, false);
   setVisible(contentEl, true);
 }

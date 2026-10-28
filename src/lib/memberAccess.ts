@@ -68,13 +68,26 @@ const freeLegacyPlanIds = new Set<string>(FREE_LEGACY_MEMBER_ACCESS_PLAN_IDS);
 /** Resolved viewer state for any gated area. */
 export type ViewerAccessState = "loggedOut" | "loggedInNoAccess" | "memberAccess";
 
+/** Result of a Watson paid-through lookup. `not_loaded` is not the same as `not_found`. */
+export type LegacyPaidThroughLookup = "not_loaded" | "not_found" | "found";
+
+export type PaidBillingInterval = "monthly" | "annual";
+
 export type MemberAccessOptions = {
   /**
    * Watson `legacy_members.subscriptionexpiring` as YYYY-MM-DD.
-   * Used when there is no active paid plan and complimentary access does not
-   * already grant. Ignored for paid plans.
+   * `undefined` means the date has not been loaded. `null` means a completed
+   * lookup found no usable date. Ignored when a paid plan already grants access.
    */
   legacyPaidThroughYmd?: string | null;
+  /**
+   * Admin confirmed an active or trialing paid plan. Used when the browser
+   * Memberstack payload does not include that connection. Omit when the server
+   * has not confirmed a paid plan.
+   */
+  serverConfirmedPaidAccess?: boolean;
+  /** Billing interval for {@link serverConfirmedPaidAccess}. Null when unknown. */
+  serverConfirmedPaidBillingInterval?: PaidBillingInterval | null;
   /**
    * Watson `watson_complimentary_access.access_through` as YYYY-MM-DD.
    * `null` means loaded and no saved date (complimentary plan stays open).
@@ -101,6 +114,13 @@ type RememberedComplimentaryThrough = {
 };
 
 let rememberedComplimentaryThrough: RememberedComplimentaryThrough | null = null;
+
+type RememberedServerPaidAccess = {
+  memberId: string;
+  billingInterval: PaidBillingInterval | null;
+};
+
+let rememberedServerPaidAccess: RememberedServerPaidAccess | null = null;
 
 function asRecord(value: unknown): Record<string, unknown> {
   return value && typeof value === "object" && !Array.isArray(value)
@@ -289,6 +309,43 @@ export function clearRememberedLegacyPaidThroughForAccess(): void {
   rememberedLegacyPaidThrough = null;
 }
 
+/**
+ * Remember that Admin confirmed an active or trialing paid plan for this member.
+ * `billingInterval` null means the plan is confirmed and the interval is unknown.
+ */
+export function rememberServerConfirmedPaidAccess(
+  memberId: string,
+  billingInterval: PaidBillingInterval | null,
+): void {
+  const id = memberId.trim();
+  if (!id) return;
+  rememberedServerPaidAccess = { memberId: id, billingInterval };
+}
+
+export function clearRememberedServerConfirmedPaidAccess(): void {
+  rememberedServerPaidAccess = null;
+}
+
+export function clearRememberedServerConfirmedPaidAccessForMember(
+  memberId: string | null | undefined,
+): void {
+  const id = memberId?.trim();
+  if (!id || !rememberedServerPaidAccess) return;
+  if (rememberedServerPaidAccess.memberId === id) rememberedServerPaidAccess = null;
+}
+
+/**
+ * `undefined` = Admin has not confirmed a paid plan for this member.
+ * `null` = confirmed, billing interval unknown.
+ */
+export function rememberedServerConfirmedPaidBillingInterval(
+  memberId: string | null | undefined,
+): PaidBillingInterval | null | undefined {
+  if (!memberId || !rememberedServerPaidAccess) return undefined;
+  if (rememberedServerPaidAccess.memberId !== memberId) return undefined;
+  return rememberedServerPaidAccess.billingInterval;
+}
+
 /** Remember a Watson complimentary access-through date for sync access checks. */
 export function rememberComplimentaryThroughForAccess(
   memberId: string,
@@ -360,6 +417,17 @@ function memberIdForRememberedAccess(memberOrPayload: unknown): string | undefin
   );
 }
 
+function hasServerConfirmedPaidAccess(
+  memberOrPayload: unknown,
+  options?: MemberAccessOptions,
+): boolean {
+  if (options && "serverConfirmedPaidAccess" in options) {
+    return options.serverConfirmedPaidAccess === true;
+  }
+  return rememberedServerConfirmedPaidBillingInterval(memberIdForRememberedAccess(memberOrPayload)) !==
+    undefined;
+}
+
 function resolvedComplimentaryThroughYmd(
   memberOrPayload: unknown,
   options?: MemberAccessOptions,
@@ -372,16 +440,19 @@ function resolvedComplimentaryThroughYmd(
 
 /**
  * The global member-access check. True only when the viewer is logged in AND
- * has a currently valid membership (paid plan, complimentary access, or a
- * Watson paid-through date that is today or later). The free legacy plan is
- * not required. An expired complimentary date does not block a still-valid
- * legacy paid-through date.
+ * has a currently valid membership (paid plan, server-confirmed paid plan,
+ * complimentary access, or a Watson paid-through date that is today or later).
+ * The free legacy plan is not required. An expired complimentary date does not
+ * block a still-valid legacy paid-through date.
  */
 export function hasMemberAccess(
   memberOrPayload: unknown,
   options?: MemberAccessOptions,
 ): boolean {
   if (hasPaidMemberAccess(memberOrPayload)) return true;
+  if (isMemberLoggedIn(memberOrPayload) && hasServerConfirmedPaidAccess(memberOrPayload, options)) {
+    return true;
+  }
   if (hasCurrentComplimentaryAccess(memberOrPayload, options)) return true;
   if (!isMemberLoggedIn(memberOrPayload)) return false;
   return isLegacyPaidThroughCurrentlyValid(

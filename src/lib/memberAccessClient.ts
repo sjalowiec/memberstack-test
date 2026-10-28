@@ -19,6 +19,8 @@
 import {
   clearRememberedComplimentaryThroughForAccess,
   clearRememberedLegacyPaidThroughForAccess,
+  clearRememberedServerConfirmedPaidAccess,
+  clearRememberedServerConfirmedPaidAccessForMember,
   complimentaryThroughYmdForAccess,
   getViewerAccessState,
   hasComplimentaryMemberAccess,
@@ -31,8 +33,12 @@ import {
   needsLegacyPaidThroughForAccess,
   rememberComplimentaryThroughForAccess,
   rememberLegacyPaidThroughForAccess,
+  rememberServerConfirmedPaidAccess,
   rememberedComplimentaryThroughYmdForMember,
   rememberedLegacyPaidThroughYmdForMember,
+  rememberedServerConfirmedPaidBillingInterval,
+  type LegacyPaidThroughLookup,
+  type PaidBillingInterval,
   type ViewerAccessState,
 } from "./memberAccess";
 import { getMembershipStatusAuthHeaders } from "./membership/membershipStatusClient";
@@ -44,8 +50,11 @@ import { isSharedMemberstackPayloadResolved } from "./sharedMemberAccessPublish"
 
 export const MEMBER_ACCESS_API_PATH = "/.netlify/functions/member-access";
 
-/** sessionStorage key for the verified access snapshot (per tab). */
-export const MEMBER_ACCESS_CACHE_KEY = "kbm:member-access:v1";
+/**
+ * sessionStorage key for the verified access snapshot (per tab).
+ * v2 drops snapshots that stored a skipped Watson date as "not found".
+ */
+export const MEMBER_ACCESS_CACHE_KEY = "kbm:member-access:v2";
 
 /** How long a verified result is reused across page loads before re-checking Watson. */
 export const MEMBER_ACCESS_FRESH_MS = 10 * 60 * 1000;
@@ -66,15 +75,39 @@ function memberIdForAccessContext(memberOrPayload: unknown): string | undefined 
 type MemberAccessApiBody = {
   ok?: boolean;
   legacyPaidThroughYmd?: string | null;
+  legacyPaidThroughLookup?: LegacyPaidThroughLookup;
   complimentaryThroughYmd?: string | null;
   /** Server could not reach Watson: membership is unconfirmed, not denied. */
   legacyLookupFailed?: boolean;
+  serverConfirmedPaidAccess?: boolean;
+  serverConfirmedPaidBillingInterval?: PaidBillingInterval | null;
 };
 
 export type MemberAccessDateContext = {
   legacyPaidThroughYmd: string | null;
+  legacyPaidThroughLookup: LegacyPaidThroughLookup;
   complimentaryThroughYmd: string | null;
+  serverConfirmedPaidAccess: boolean;
+  serverConfirmedPaidBillingInterval: PaidBillingInterval | null;
 };
+
+function paidBillingIntervalFromBody(value: unknown): PaidBillingInterval | null {
+  return value === "monthly" || value === "annual" ? value : null;
+}
+
+function legacyLookupFromBody(body: MemberAccessApiBody): LegacyPaidThroughLookup {
+  if (
+    body.legacyPaidThroughLookup === "found" ||
+    body.legacyPaidThroughLookup === "not_found" ||
+    body.legacyPaidThroughLookup === "not_loaded"
+  ) {
+    return body.legacyPaidThroughLookup;
+  }
+  if (body.legacyLookupFailed === true) return "not_loaded";
+  return typeof body.legacyPaidThroughYmd === "string" && body.legacyPaidThroughYmd.trim()
+    ? "found"
+    : "not_loaded";
+}
 
 /** `ready` = dates known (or not needed). `unavailable` = lookup failed; retry later. */
 export type MemberAccessContextStatus = "ready" | "unavailable";
@@ -220,6 +253,7 @@ export function readFreshVerifiedMemberAccess(now: Date = new Date()): CachedMem
  */
 function accessThroughYmdForGrant(payload: unknown, memberId: string): string | null {
   if (hasPaidMemberAccess(payload)) return null;
+  if (rememberedServerConfirmedPaidBillingInterval(memberId) !== undefined) return null;
   const dates: string[] = [];
   if (hasCurrentComplimentaryAccess(payload)) {
     const complimentary = complimentaryThroughYmdForAccess(payload);
@@ -242,6 +276,7 @@ export function clearVerifiedMemberAccessCache(): void {
   }
   clearRememberedLegacyPaidThroughForAccess();
   clearRememberedComplimentaryThroughForAccess();
+  clearRememberedServerConfirmedPaidAccess();
   inFlightByMemberId.clear();
 }
 
@@ -285,10 +320,25 @@ async function fetchMemberAccessDatesFromApi(): Promise<MemberAccessDateContext 
   } catch {
     return null;
   }
-  if (!body || body.ok === false || body.legacyLookupFailed === true) return null;
+  if (!body || body.ok === false) return null;
+  const serverConfirmedPaidAccess = body.serverConfirmedPaidAccess === true;
+  if (body.legacyLookupFailed === true && !serverConfirmedPaidAccess) return null;
+  const legacyPaidThroughLookup = legacyLookupFromBody(body);
+  const legacyPaidThroughYmd =
+    legacyPaidThroughLookup === "found"
+      ? memberAccessYmdFromDateOnlyValue(body.legacyPaidThroughYmd ?? null)
+      : null;
   return {
-    legacyPaidThroughYmd: memberAccessYmdFromDateOnlyValue(body.legacyPaidThroughYmd ?? null),
+    legacyPaidThroughYmd,
+    legacyPaidThroughLookup:
+      legacyPaidThroughLookup === "found" && !legacyPaidThroughYmd
+        ? "not_found"
+        : legacyPaidThroughLookup,
     complimentaryThroughYmd: memberAccessYmdFromDateOnlyValue(body.complimentaryThroughYmd ?? null),
+    serverConfirmedPaidAccess,
+    serverConfirmedPaidBillingInterval: paidBillingIntervalFromBody(
+      body.serverConfirmedPaidBillingInterval,
+    ),
   };
 }
 
@@ -337,6 +387,7 @@ export async function ensureLegacyPaidThroughContext(
   if (!isMemberLoggedIn(memberOrPayload)) {
     clearRememberedLegacyPaidThroughForAccess();
     clearRememberedComplimentaryThroughForAccess();
+    clearRememberedServerConfirmedPaidAccess();
     return "ready";
   }
   if (hasPaidMemberAccess(memberOrPayload)) return "ready";
@@ -371,10 +422,19 @@ export async function ensureLegacyPaidThroughContext(
       const load = deps.fetchAccessDates ?? fetchMemberAccessDatesFromApi;
       const dates = await load();
       if (!dates) return "unavailable";
-      rememberLegacyPaidThroughForAccess(memberId, dates.legacyPaidThroughYmd);
+      if (dates.serverConfirmedPaidAccess) {
+        rememberServerConfirmedPaidAccess(memberId, dates.serverConfirmedPaidBillingInterval);
+      } else {
+        clearRememberedServerConfirmedPaidAccessForMember(memberId);
+      }
       const persisted: Partial<MemberAccessDateContext> = {
-        legacyPaidThroughYmd: dates.legacyPaidThroughYmd,
+        serverConfirmedPaidAccess: dates.serverConfirmedPaidAccess,
+        serverConfirmedPaidBillingInterval: dates.serverConfirmedPaidBillingInterval,
       };
+      if (dates.legacyPaidThroughLookup !== "not_loaded") {
+        rememberLegacyPaidThroughForAccess(memberId, dates.legacyPaidThroughYmd);
+        persisted.legacyPaidThroughYmd = dates.legacyPaidThroughYmd;
+      }
       if (needsComplimentary) {
         rememberComplimentaryThroughForAccess(memberId, dates.complimentaryThroughYmd);
         persisted.complimentaryThroughYmd = dates.complimentaryThroughYmd;
