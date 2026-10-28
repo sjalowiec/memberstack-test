@@ -10,6 +10,7 @@ import type { AccountMembershipDetail } from "./accountMembershipDetail";
 import {
   ACCOUNT_MEMBERSHIP_UNCONFIRMED_PLAN_LABEL,
   ACCOUNT_MEMBERSHIP_UNCONFIRMED_STATUS_LABEL,
+  ACCOUNT_PAID_THROUGH_LABEL,
   MANAGE_BILLING_DESCRIPTION_ACTIVE,
   type AccountMembershipPanelAction,
 } from "./accountMembershipPanel";
@@ -24,7 +25,7 @@ export interface AccountMembershipDetailView {
   legacyAccessValue: string | null;
   /**
    * Label for the panel's single primary date row. Legacy members (any state
-   * with a current-status legacy access date) read "Legacy Access Through";
+   * with a current-status legacy access date) read "Paid through";
    * everyone else reads "Member Since". Null when there is no date to show.
    */
   membershipDateLabel: string | null;
@@ -52,6 +53,7 @@ type AccountMembershipDetailViewInput = Pick<
   | "legacyAccessActive"
   | "memberSince"
   | "history"
+  | "nextRenewalDate"
 >;
 
 export type AccountMembershipDetailPaint = {
@@ -62,9 +64,14 @@ export type AccountMembershipDetailPaint = {
   /** Set the panel kind to member after replacing unconfirmed labels. */
   markMember: boolean;
   manageBillingDescription: string | null;
+  /**
+   * Stripe next billing label to write on the Next renewal row.
+   * Null hides that row. Never a Watson date.
+   */
+  renewsLabel: string | null;
 };
 
-export const LEGACY_ACCESS_THROUGH_LABEL = "Legacy Access Through";
+export const LEGACY_ACCESS_THROUGH_LABEL = ACCOUNT_PAID_THROUGH_LABEL;
 export const MEMBER_SINCE_LABEL = "Member Since";
 
 function historyView(
@@ -156,6 +163,19 @@ export function resolveAccountMembershipDetailView(
   };
 }
 
+function stripeRenewsLabel(detail: AccountMembershipDetailViewInput): string | null {
+  if (!isIdentifiedActivePaid(detail)) return null;
+  const label = detail.nextRenewalDate;
+  return typeof label === "string" && label.trim() ? label.trim() : null;
+}
+
+function currentShowsLegacyMembership(current: { planLabel: string; statusLabel: string }): boolean {
+  return (
+    current.planLabel.trim() === FREE_MEMBERSHIP_DISPLAY_LABEL ||
+    current.statusLabel.trim() === "Legacy Access"
+  );
+}
+
 function blankOrUnconfirmed(value: string): boolean {
   const text = value.trim();
   return (
@@ -194,6 +214,7 @@ export function resolveAccountMembershipDetailPaint(
   current: { planLabel: string; statusLabel: string },
 ): AccountMembershipDetailPaint {
   const view = resolveAccountMembershipDetailView(detail);
+  const renewsLabel = stripeRenewsLabel(detail);
   if (view.planOverride || view.statusOverride) {
     return {
       planLabel: view.planOverride,
@@ -201,18 +222,23 @@ export function resolveAccountMembershipDetailPaint(
       visibleActions: view.visibleActions,
       markMember: false,
       manageBillingDescription: null,
+      renewsLabel,
     };
   }
 
   const currentUnconfirmed =
     blankOrUnconfirmed(current.planLabel) || blankOrUnconfirmed(current.statusLabel);
-  if (currentUnconfirmed && isIdentifiedActivePaid(detail)) {
+  const replaceLegacyLabels =
+    isIdentifiedActivePaid(detail) &&
+    (currentUnconfirmed || currentShowsLegacyMembership(current));
+  if (replaceLegacyLabels) {
     return {
       planLabel: paidPlanDisplayFromBilling(detail.billingLabel, detail.membershipName),
       statusLabel: detail.statusLabel,
       visibleActions: ["manageBilling"],
       markMember: true,
       manageBillingDescription: MANAGE_BILLING_DESCRIPTION_ACTIVE,
+      renewsLabel,
     };
   }
 
@@ -222,5 +248,6 @@ export function resolveAccountMembershipDetailPaint(
     visibleActions: view.visibleActions,
     markMember: false,
     manageBillingDescription: null,
+    renewsLabel,
   };
 }

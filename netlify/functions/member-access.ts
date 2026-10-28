@@ -58,6 +58,7 @@ export default async (req: Request): Promise<Response> => {
         legacyLookupFailed: false,
         serverConfirmedPaidAccess: false,
         serverConfirmedPaidBillingInterval: null,
+        serverConfirmedPaidRenewsLabel: null,
       }),
     );
   }
@@ -77,6 +78,7 @@ export default async (req: Request): Promise<Response> => {
         legacyLookupFailed: evaluated.legacyLookupFailed,
         serverConfirmedPaidAccess: evaluated.serverConfirmedPaidAccess,
         serverConfirmedPaidBillingInterval: evaluated.serverConfirmedPaidBillingInterval,
+        serverConfirmedPaidRenewsLabel: evaluated.serverConfirmedPaidRenewsLabel,
       }),
     );
   } catch (err) {

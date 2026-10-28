@@ -91,7 +91,7 @@ describe("resolveAccountMembershipDetailView", () => {
     expect(view.legacyAccessValue).toBeNull();
   });
 
-  it("shows Legacy Access Through (not Member Since) for a legacy member with a paid-through date", () => {
+  it("shows Paid through (not Member Since) for a legacy member with a paid-through date", () => {
     const view = resolveAccountMembershipDetailView(
       detail({
         membershipName: "Legacy Membership",
@@ -101,13 +101,13 @@ describe("resolveAccountMembershipDetailView", () => {
         memberSince: "April 27, 2026",
       }),
     );
-    expect(view.membershipDateLabel).toBe("Legacy Access Through");
+    expect(view.membershipDateLabel).toBe("Paid through");
     expect(view.membershipDateValue).toBe("September 15, 2026");
     expect(view.planOverride).toBe("Legacy Membership");
     expect(view.statusOverride).toBe("Legacy Access");
   });
 
-  it("keeps Legacy Access Through for an expired legacy member (no empty row)", () => {
+  it("keeps Paid through for an expired legacy member (no empty row)", () => {
     const view = resolveAccountMembershipDetailView(
       detail({
         membershipName: null,
@@ -116,7 +116,7 @@ describe("resolveAccountMembershipDetailView", () => {
         memberSince: "October 27, 2023",
       }),
     );
-    expect(view.membershipDateLabel).toBe("Legacy Access Through");
+    expect(view.membershipDateLabel).toBe("Paid through");
     expect(view.membershipDateValue).toBe("April 6, 2026");
     expect(view.planOverride).toBe("Legacy Membership");
     expect(view.statusOverride).toBe("Expired");
@@ -137,7 +137,7 @@ describe("resolveAccountMembershipDetailView", () => {
     expect(view.legacyAccessValue).toBe("Ended April 6, 2026");
   });
 
-  it("keeps Member Since for a paid member and never shows Legacy Access Through", () => {
+  it("keeps Member Since for a paid member and never shows Paid through", () => {
     const view = resolveAccountMembershipDetailView(
       detail({
         membershipName: "Knit it Now Membership",
@@ -210,6 +210,38 @@ describe("resolveAccountMembershipDetailView", () => {
     expect(paint.planLabel).toBe("Annual Membership");
     expect(paint.statusLabel).toBe("Active");
     expect(paint.visibleActions).toEqual(["manageBilling"]);
+  });
+
+  it("replaces Legacy Membership with the annual plan and the Stripe renewal date", () => {
+    const paint = resolveAccountMembershipDetailPaint(
+      detail({
+        membershipName: "Knit it Now Membership",
+        statusLabel: "Active",
+        billingLabel: "Annual",
+        nextRenewalDate: "November 30, 2027",
+        legacyPaidThroughDate: null,
+      }),
+      { planLabel: "Legacy Membership", statusLabel: "Legacy Access" },
+    );
+    expect(paint.planLabel).toBe("Annual Membership");
+    expect(paint.statusLabel).toBe("Active");
+    expect(paint.visibleActions).toEqual(["manageBilling"]);
+    expect(paint.renewsLabel).toBe("November 30, 2027");
+  });
+
+  it("omits Next renewal when the Stripe billing date is missing", () => {
+    const paint = resolveAccountMembershipDetailPaint(
+      detail({
+        membershipName: "Knit it Now Membership",
+        statusLabel: "Active",
+        billingLabel: "Annual",
+        nextRenewalDate: null,
+        legacyPaidThroughDate: "November 30, 2027",
+      }),
+      { planLabel: "Legacy Membership", statusLabel: "Legacy Access" },
+    );
+    expect(paint.planLabel).toBe("Annual Membership");
+    expect(paint.renewsLabel).toBeNull();
   });
 
   it("does not replace an already active annual panel", () => {

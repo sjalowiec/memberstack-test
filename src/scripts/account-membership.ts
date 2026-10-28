@@ -79,6 +79,18 @@ function applyView(root: Element, view: AccountMembershipPanelView): void {
     setVisible(renewsRow, false);
   }
 
+  const dateRow = root.querySelector("[data-kbm-account-membership-date-row]");
+  const dateLabelEl = root.querySelector("[data-kbm-account-membership-date-label]");
+  const dateValueEl = root.querySelector("[data-kbm-account-membership-date-value]");
+  if (view.membershipDateLabel && view.membershipDateValue && dateLabelEl && dateValueEl) {
+    dateLabelEl.textContent = view.membershipDateLabel;
+    dateValueEl.textContent = view.membershipDateValue;
+    setVisible(dateRow, true);
+  } else {
+    if (dateValueEl) dateValueEl.textContent = "";
+    setVisible(dateRow, false);
+  }
+
   if (view.autoRenewNote && autoRenewEl instanceof HTMLElement) {
     autoRenewEl.textContent = view.autoRenewNote;
     setVisible(autoRenewEl, true);

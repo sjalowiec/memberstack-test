@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { COMPLIMENTARY_MEMBERSHIPS, FREE_ACCESS_MEMBERSHIPS, MEMBERSHIPS } from "../config/memberships";
+import { formatMemberstackUnixDate } from "./membership/accountMembershipPanel";
 import { evaluateMemberAccessForRecord, loadLegacyPaidThroughYmdForEmail } from "./memberAccessServer";
 
 vi.mock("./watson/customerIdentifier", () => ({
@@ -117,7 +118,34 @@ describe("evaluateMemberAccessForRecord", () => {
       legacyPaidThroughLookup: "found",
       serverConfirmedPaidAccess: true,
       serverConfirmedPaidBillingInterval: "annual",
+      serverConfirmedPaidRenewsLabel: null,
     });
+  });
+
+  it("uses the Stripe next billing date and not the Watson paid-through date", async () => {
+    const nextBillingDate = Math.floor(Date.UTC(2027, 10, 30, 12) / 1000);
+    const result = await evaluateMemberAccessForRecord(
+      {
+        id: "mem_trial",
+        auth: { email: "legacy@example.com" },
+        planConnections: [
+          {
+            planId: PAID,
+            status: "TRIALING",
+            active: true,
+            payment: {
+              priceId: MEMBERSHIPS.membership.prices.annual.memberstackPriceId,
+              nextBillingDate,
+            },
+          },
+          { planId: LEGACY_FREE, status: "ACTIVE", active: true },
+        ],
+      },
+      { loadPaidThroughYmd: async () => "2026-01-15", todayYmd: TODAY },
+    );
+    expect(result.serverConfirmedPaidRenewsLabel).toBe(formatMemberstackUnixDate(nextBillingDate));
+    expect(result.serverConfirmedPaidRenewsLabel).not.toBe("January 15, 2026");
+    expect(result.legacyPaidThroughYmd).toBe("2026-01-15");
   });
 
   it("grants active free legacy when paid-through is in the future", async () => {

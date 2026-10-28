@@ -54,7 +54,8 @@ export const MEMBER_ACCESS_API_PATH = "/.netlify/functions/member-access";
  * sessionStorage key for the verified access snapshot (per tab).
  * v2 drops snapshots that stored a skipped Watson date as "not found".
  */
-export const MEMBER_ACCESS_CACHE_KEY = "kbm:member-access:v2";
+/** v3 stores the server-confirmed paid plan separately from a cached Watson date. */
+export const MEMBER_ACCESS_CACHE_KEY = "kbm:member-access:v3";
 
 /** How long a verified result is reused across page loads before re-checking Watson. */
 export const MEMBER_ACCESS_FRESH_MS = 10 * 60 * 1000;
@@ -81,6 +82,8 @@ type MemberAccessApiBody = {
   legacyLookupFailed?: boolean;
   serverConfirmedPaidAccess?: boolean;
   serverConfirmedPaidBillingInterval?: PaidBillingInterval | null;
+  /** Stripe next billing label. Present only when the paid plan was confirmed. */
+  serverConfirmedPaidRenewsLabel?: string | null;
 };
 
 export type MemberAccessDateContext = {
@@ -89,6 +92,7 @@ export type MemberAccessDateContext = {
   complimentaryThroughYmd: string | null;
   serverConfirmedPaidAccess: boolean;
   serverConfirmedPaidBillingInterval: PaidBillingInterval | null;
+  serverConfirmedPaidRenewsLabel?: string | null;
 };
 
 function paidBillingIntervalFromBody(value: unknown): PaidBillingInterval | null {
@@ -131,6 +135,11 @@ export type CachedMemberAccess = {
   legacyPaidThroughYmd?: string | null;
   /** Present only when the complimentary date was loaded successfully. */
   complimentaryThroughYmd?: string | null;
+  /** Present once Admin has answered whether a paid plan is active. */
+  serverConfirmedPaidAccess?: boolean;
+  serverConfirmedPaidBillingInterval?: PaidBillingInterval | null;
+  /** Stripe next billing label. Null when confirmed and Stripe omitted the date. */
+  serverConfirmedPaidRenewsLabel?: string | null;
 };
 
 function sessionStore(): Storage | null {
@@ -339,7 +348,18 @@ async function fetchMemberAccessDatesFromApi(): Promise<MemberAccessDateContext 
     serverConfirmedPaidBillingInterval: paidBillingIntervalFromBody(
       body.serverConfirmedPaidBillingInterval,
     ),
+    serverConfirmedPaidRenewsLabel: serverConfirmedPaidAccess
+      ? stripeRenewsLabel(body.serverConfirmedPaidRenewsLabel)
+      : null,
   };
+}
+
+function stripeRenewsLabel(value: unknown): string | null {
+  return typeof value === "string" && value.trim() ? value.trim() : null;
+}
+
+function paidBillingIntervalFromCache(value: unknown): PaidBillingInterval | null {
+  return value === "monthly" || value === "annual" ? value : null;
 }
 
 export type EnsureLegacyPaidThroughContextDeps = {
@@ -355,6 +375,13 @@ function hydrateDatesFromCache(
 ): void {
   const entry = freshCachedEntryForMember(memberId);
   if (!entry) return;
+  if (entry.serverConfirmedPaidAccess === true) {
+    rememberServerConfirmedPaidAccess(
+      memberId,
+      paidBillingIntervalFromCache(entry.serverConfirmedPaidBillingInterval),
+      stripeRenewsLabel(entry.serverConfirmedPaidRenewsLabel),
+    );
+  }
   if (
     needsLegacy &&
     rememberedLegacyPaidThroughYmdForMember(memberId) === undefined &&
@@ -372,9 +399,9 @@ function hydrateDatesFromCache(
 }
 
 /**
- * Load and remember the Watson paid-through date when the visitor has no
- * active paid plan. No-op for paid members, logged-out visitors, and users
- * who already have a remembered (or fresh cached) date. The free legacy plan
+ * Load Watson and any Admin-confirmed paid plan when the browser payload has
+ * no paid connection. A cached Watson date is not enough: the paid-plan answer
+ * has to be in that same cache, or this fetches again. The free legacy plan
  * is not required.
  *
  * Resolves `unavailable` when the lookup fails. The date then stays unknown,
@@ -404,7 +431,13 @@ export async function ensureLegacyPaidThroughContext(
   const legacyKnown = rememberedLegacyPaidThroughYmdForMember(memberId) !== undefined;
   const complimentaryKnown =
     rememberedComplimentaryThroughYmdForMember(memberId) !== undefined;
-  if ((!needsLegacy || legacyKnown) && (!needsComplimentary || complimentaryKnown)) {
+  const paidConfirmationKnown =
+    typeof freshCachedEntryForMember(memberId)?.serverConfirmedPaidAccess === "boolean";
+  if (
+    paidConfirmationKnown &&
+    (!needsLegacy || legacyKnown) &&
+    (!needsComplimentary || complimentaryKnown)
+  ) {
     return "ready";
   }
 
@@ -416,20 +449,35 @@ export async function ensureLegacyPaidThroughContext(
       if (deps.fetchPaidThroughYmd && !deps.fetchAccessDates) {
         const ymd = await deps.fetchPaidThroughYmd();
         rememberLegacyPaidThroughForAccess(memberId, ymd);
-        persistDates(memberId, { legacyPaidThroughYmd: ymd });
+        persistDates(memberId, {
+          legacyPaidThroughYmd: ymd,
+          serverConfirmedPaidAccess: false,
+          serverConfirmedPaidBillingInterval: null,
+          serverConfirmedPaidRenewsLabel: null,
+        });
         return "ready";
       }
       const load = deps.fetchAccessDates ?? fetchMemberAccessDatesFromApi;
       const dates = await load();
       if (!dates) return "unavailable";
+      const renewsLabel = dates.serverConfirmedPaidAccess
+        ? stripeRenewsLabel(dates.serverConfirmedPaidRenewsLabel)
+        : null;
       if (dates.serverConfirmedPaidAccess) {
-        rememberServerConfirmedPaidAccess(memberId, dates.serverConfirmedPaidBillingInterval);
+        rememberServerConfirmedPaidAccess(
+          memberId,
+          dates.serverConfirmedPaidBillingInterval ?? null,
+          renewsLabel,
+        );
       } else {
         clearRememberedServerConfirmedPaidAccessForMember(memberId);
       }
       const persisted: Partial<MemberAccessDateContext> = {
-        serverConfirmedPaidAccess: dates.serverConfirmedPaidAccess,
-        serverConfirmedPaidBillingInterval: dates.serverConfirmedPaidBillingInterval,
+        serverConfirmedPaidAccess: dates.serverConfirmedPaidAccess === true,
+        serverConfirmedPaidBillingInterval: dates.serverConfirmedPaidAccess
+          ? dates.serverConfirmedPaidBillingInterval ?? null
+          : null,
+        serverConfirmedPaidRenewsLabel: renewsLabel,
       };
       if (dates.legacyPaidThroughLookup !== "not_loaded") {
         rememberLegacyPaidThroughForAccess(memberId, dates.legacyPaidThroughYmd);

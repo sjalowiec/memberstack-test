@@ -53,6 +53,7 @@ beforeEach(() => {
     legacyLookupFailed: false,
     serverConfirmedPaidAccess: false,
     serverConfirmedPaidBillingInterval: null,
+    serverConfirmedPaidRenewsLabel: null,
   });
 });
 
@@ -84,6 +85,7 @@ describe("member-access Netlify function", () => {
       legacyLookupFailed: false,
       serverConfirmedPaidAccess: true,
       serverConfirmedPaidBillingInterval: "annual",
+      serverConfirmedPaidRenewsLabel: "November 30, 2027",
     });
     const res = await handler(
       new Request(
@@ -101,6 +103,7 @@ describe("member-access Netlify function", () => {
       legacyPaidThroughLookup: "found",
       serverConfirmedPaidAccess: true,
       serverConfirmedPaidBillingInterval: "annual",
+      serverConfirmedPaidRenewsLabel: "November 30, 2027",
     });
     const client = getMemberstackAdminClient();
     expect(client?.getMember).toHaveBeenCalledWith(VERIFIED_ID);
