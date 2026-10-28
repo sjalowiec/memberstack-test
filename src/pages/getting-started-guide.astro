@@ -1,0 +1,844 @@
+---
+export const prerender = true;
+
+import Layout from "../layouts/Layout.astro";
+import GatedVimeoEmbed from "../components/videos/GatedVimeoEmbed.astro";
+import { getAllMachines } from "../lib/machines/referenceCatalog";
+import { buildMachineIdentityCatalog } from "../lib/gettingStarted/machineIdentity";
+import videosCatalog from "../data/videos-public.json";
+import { findPublicCatalogVideoByContentId } from "../lib/videoPublic";
+import { catalogVideoPlaybackAccess } from "../lib/videos/catalogVideoPlaybackAccess";
+
+const title = "Getting Started Guide";
+const description =
+  "Get comfortable with your knitting machine: identify it, find a manual, check the sponge bar, choose yarn, and knit a small practice piece.";
+const catalogJson = JSON.stringify(buildMachineIdentityCatalog(getAllMachines()));
+
+const SWATCH_VIDEO_TITLE =
+  "How to Knit a Proper Swatch: The Secret to Machine Knitting Success";
+
+type GuideCatalogVideo = {
+  content_id?: number;
+  title?: string;
+  access_level?: string;
+  posterUrl?: string;
+  vimeo_id?: number | string;
+  vimeo_id_public?: number | string;
+};
+
+function guideVideo(contentId: number, expectedTitle?: string) {
+  const video = findPublicCatalogVideoByContentId(
+    videosCatalog as GuideCatalogVideo[],
+    contentId,
+  );
+  if (!video?.title) return null;
+  if (expectedTitle && video.title !== expectedTitle) return null;
+  const rawVimeoId = video.vimeo_id_public ?? video.vimeo_id;
+  const vimeoId = rawVimeoId != null ? String(rawVimeoId).trim() : "";
+  if (!vimeoId) return null;
+  return {
+    contentId: String(video.content_id ?? contentId),
+    title: video.title,
+    vimeoId,
+    accessLevel: catalogVideoPlaybackAccess(video),
+    posterUrl: typeof video.posterUrl === "string" ? video.posterUrl : "",
+  };
+}
+
+const lk150SpongeVideo = guideVideo(2141);
+const metalSpongeVideo = guideVideo(242);
+const yarnVideo = guideVideo(2049);
+const swatchVideo = guideVideo(2189, SWATCH_VIDEO_TITLE);
+---
+
+<Layout title={`${title} | Knit it Now`} description={description} skipAnalytics>
+  <meta slot="head" name="robots" content="noindex, nofollow" />
+
+  <article class="page-wrap gsg">
+    <header class="gsg-header">
+      <h1>Getting Started Guide</h1>
+      <p class="gsg-intro">
+        A short guide to getting comfortable with your knitting machine, from identifying it and finding a manual through a small practice piece.
+      </p>
+    </header>
+
+    <section class="gsg-section gsg-gate" data-gsg-gate aria-labelledby="gsg-gate-title">
+      <h2 id="gsg-gate-title">Open the guide</h2>
+      <p>
+        Enter your first name and email to open the Getting Started Guide. You’ll also receive helpful follow-up emails from Knit It Now. You can unsubscribe at any time.
+      </p>
+      <form class="gsg-signup" data-gsg-signup novalidate>
+        <p class="gsg-honeypot" aria-hidden="true">
+          <label for="gsg-bot">Company</label>
+          <input type="text" id="gsg-bot" name="bot-field" tabindex="-1" autocomplete="off" />
+        </p>
+        <div class="gsg-signup__field">
+          <label class="gsg-label" for="gsg-first-name">
+            First name
+            <span class="gsg-required" aria-hidden="true">*</span>
+            <span class="gsg-sr"> (required)</span>
+          </label>
+          <input
+            class="gsg-signup__input"
+            id="gsg-first-name"
+            name="firstName"
+            type="text"
+            autocomplete="given-name"
+            maxlength="80"
+            required
+            aria-required="true"
+          />
+        </div>
+        <div class="gsg-signup__field">
+          <label class="gsg-label" for="gsg-email">
+            Email address
+            <span class="gsg-required" aria-hidden="true">*</span>
+            <span class="gsg-sr"> (required)</span>
+          </label>
+          <input
+            class="gsg-signup__input"
+            id="gsg-email"
+            name="email"
+            type="email"
+            autocomplete="email"
+            inputmode="email"
+            maxlength="254"
+            required
+            aria-required="true"
+          />
+        </div>
+        <button class="kbm-btn kbm-btn-primary gsg-signup__submit" type="submit">
+          Open the guide
+        </button>
+        <p class="gsg-consent">
+          By signing up, you agree to receive emails from Knit It Now. You can unsubscribe at any time. See our
+          <a href="/privacy">Privacy Policy</a>.
+        </p>
+        <p class="gsg-signup__error" data-gsg-signup-error role="alert" hidden></p>
+      </form>
+    </section>
+
+    <div data-gsg-guide hidden></div>
+
+    <template id="gsg-guide-template">
+    <div class="gsg-sections">
+      <section class="gsg-section" aria-labelledby="gsg-identify">
+        <h2 id="gsg-identify">1. Identify your machine</h2>
+        <p>
+          Have more than one machine? Choose the one you’d like to use as you work through this guide.
+        </p>
+
+        <div class="gsg-fields" data-gsg-machine-identity>
+          <p id="gsg-combo-help" class="gsg-sr">
+            Type to search. Use the arrow keys to browse the list, then press Enter to choose.
+            You can leave this blank.
+          </p>
+
+          <div class="gsg-field" data-gsg-combo="brand" data-selected-id="">
+            <label class="gsg-label" id="gsg-brand-label" for="gsg-brand">Choose your brand</label>
+            <div class="gsg-combo">
+              <input
+                id="gsg-brand"
+                class="gsg-combo__input"
+                type="text"
+                role="combobox"
+                data-gsg-input
+                placeholder="Search brands"
+                autocomplete="off"
+                autocorrect="off"
+                autocapitalize="off"
+                spellcheck="false"
+                aria-autocomplete="list"
+                aria-expanded="false"
+                aria-controls="gsg-brand-list"
+                aria-labelledby="gsg-brand-label"
+                aria-describedby="gsg-combo-help"
+              />
+              <button
+                type="button"
+                class="gsg-combo__toggle"
+                data-gsg-toggle
+                tabindex="-1"
+                aria-label="Show brands"
+                aria-expanded="false"
+                aria-controls="gsg-brand-list"
+              >
+                <span class="gsg-combo__chevron" aria-hidden="true"></span>
+              </button>
+              <ul
+                id="gsg-brand-list"
+                class="gsg-combo__list"
+                role="listbox"
+                data-gsg-list
+                hidden
+                aria-labelledby="gsg-brand-label"
+              ></ul>
+              <p class="gsg-combo__empty" data-gsg-empty hidden>No matches</p>
+            </div>
+          </div>
+
+          <div class="gsg-field" data-gsg-combo="model" data-selected-id="">
+            <label class="gsg-label" id="gsg-model-label" for="gsg-model">Choose your model</label>
+            <div class="gsg-combo">
+              <input
+                id="gsg-model"
+                class="gsg-combo__input"
+                type="text"
+                role="combobox"
+                data-gsg-input
+                placeholder="Choose a brand first"
+                disabled
+                autocomplete="off"
+                autocorrect="off"
+                autocapitalize="off"
+                spellcheck="false"
+                aria-autocomplete="list"
+                aria-expanded="false"
+                aria-controls="gsg-model-list"
+                aria-labelledby="gsg-model-label"
+                aria-describedby="gsg-combo-help"
+                aria-disabled="true"
+              />
+              <button
+                type="button"
+                class="gsg-combo__toggle"
+                data-gsg-toggle
+                tabindex="-1"
+                aria-label="Show models"
+                aria-expanded="false"
+                aria-controls="gsg-model-list"
+                disabled
+              >
+                <span class="gsg-combo__chevron" aria-hidden="true"></span>
+              </button>
+              <ul
+                id="gsg-model-list"
+                class="gsg-combo__list"
+                role="listbox"
+                data-gsg-list
+                hidden
+                aria-labelledby="gsg-model-label"
+              ></ul>
+              <p class="gsg-combo__empty" data-gsg-empty hidden>No matches</p>
+            </div>
+          </div>
+
+          <p class="gsg-sr" data-gsg-status aria-live="polite"></p>
+        </div>
+
+        <p class="gsg-note">You can continue without identifying a machine.</p>
+        <p class="gsg-link-line">
+          <a href="/reference/machine-brands" target="_blank" rel="noopener noreferrer">
+            Explore Machines Around the World to see how the same knitting machine was sold under different brand names in different countries.
+          </a>
+        </p>
+      </section>
+
+      <section class="gsg-section" aria-labelledby="gsg-manual">
+        <h2 id="gsg-manual">2. Do you have your machine’s manual?</h2>
+        <p>
+          Your manual is an important companion as you get comfortable with your machine. Keep it handy to check threading, settings, and basic instructions.
+        </p>
+        <p>
+          If you need a copy, visit <a href="https://mkmanuals.com" target="_blank" rel="noopener noreferrer">MKManuals.com</a>. Look for your exact model first. If it isn’t available, a manual for a similar model in the same machine family may help. Check that the carriage, controls, and features match your machine before following the instructions.
+        </p>
+        <p>
+          Can’t find a suitable manual? Explore ways to <a href="/help-hub/work-with-sue">work with Sue</a> for help finding a useful starting point.
+        </p>
+      </section>
+
+      <section class="gsg-section gsg-section--critical" aria-labelledby="gsg-sponge">
+        <p class="gsg-kicker gsg-kicker--critical">Check this before you knit</p>
+        <h2 id="gsg-sponge">3. Check your sponge bar</h2>
+        <p>
+          Before you start knitting, check your sponge bar. The sponge can deteriorate over time, even when a machine hasn’t been used. A worn sponge bar may no longer hold the needles properly, causing knitting problems and potentially damaging needles.
+        </p>
+        <p>
+          If the sponge is deteriorating or no longer holds the needles securely, replace it before knitting.
+        </p>
+        <figure class="gsg-figure">
+          <img
+            src="/images/reference/sponge-bar.png"
+            alt="A worn sponge bar in a knitting machine, marked past time to replace. The sponge is crumbling and compressed, so it no longer holds the needles evenly."
+            width="1829"
+            height="968"
+          />
+        </figure>
+        <div class="gsg-videos">
+          <div class="gsg-video-choice">
+            <h3>LK150</h3>
+            {lk150SpongeVideo ? (
+              <GatedVimeoEmbed
+                videoId={lk150SpongeVideo.vimeoId}
+                contentId={lk150SpongeVideo.contentId}
+                title={lk150SpongeVideo.title}
+                access_level={lk150SpongeVideo.accessLevel}
+                thumbUrl={lk150SpongeVideo.posterUrl}
+              />
+            ) : (
+              <p class="gsg-note">The LK150 sponge bar video could not be matched in the video library.</p>
+            )}
+          </div>
+          <div class="gsg-video-choice">
+            <h3>Metal bed machines</h3>
+            {metalSpongeVideo ? (
+              <GatedVimeoEmbed
+                videoId={metalSpongeVideo.vimeoId}
+                contentId={metalSpongeVideo.contentId}
+                title={metalSpongeVideo.title}
+                access_level={metalSpongeVideo.accessLevel}
+                thumbUrl={metalSpongeVideo.posterUrl}
+              />
+            ) : (
+              <p class="gsg-note">The metal bed sponge bar video could not be matched in the video library.</p>
+            )}
+          </div>
+        </div>
+        <p>
+          Need a replacement? Check our <a href="/reference/repairs">Repairs and Service directory</a> for businesses that may supply sponge bars or replacement sponge. Confirm that the replacement is suitable for your machine model before ordering.
+        </p>
+      </section>
+
+      <section class="gsg-section" aria-labelledby="gsg-yarn">
+        <h2 id="gsg-yarn">4. Choose a suitable yarn</h2>
+        <p>
+          Choose a yarn weight appropriate for your machine. For your first practice, use a smooth yarn in a light color so you can easily see the stitches. Check your manual for yarn recommendations.
+        </p>
+        <p>
+          You don’t need yarn on cones. Your yarn simply needs to feed smoothly into the machine without tangles or resistance. A center-pull ball may work, or you can rewind the yarn with a ball winder.
+        </p>
+        {yarnVideo ? (
+          <div class="gsg-video-choice">
+            <h3>{yarnVideo.title}</h3>
+            <GatedVimeoEmbed
+              videoId={yarnVideo.vimeoId}
+              contentId={yarnVideo.contentId}
+              title={yarnVideo.title}
+              access_level={yarnVideo.accessLevel}
+              thumbUrl={yarnVideo.posterUrl}
+            />
+          </div>
+        ) : (
+          <p class="gsg-note">The yarn video could not be matched in the video library.</p>
+        )}
+        <p>
+          Not sure about your yarn? Use the <a href="/tools/yarn-comparison-calculator">Yarn Comparison Calculator</a> to check your yarn label against suggested yarn weights for different machines.
+        </p>
+      </section>
+
+      <section class="gsg-section" aria-labelledby="gsg-practice">
+        <h2 id="gsg-practice">5. Get comfortable knitting again</h2>
+        <p>
+          Find the instructions for plain knitting or stockinette in your machine manual. Check the carriage settings and needle positions before you begin. Keep that page handy as you follow the video.
+        </p>
+        <p>
+          For your first practice, focus on getting comfortable with your machine. Cast on, knit a small piece of plain knitting, and bind off. You can skip the gauge markers and tension eyelets for now.
+        </p>
+        <p>
+          Once knitting feels familiar again, follow the complete video to make a proper gauge swatch for your next project.
+        </p>
+        {swatchVideo ? (
+          <div class="gsg-video-choice">
+            <h3>{swatchVideo.title}</h3>
+            <GatedVimeoEmbed
+              videoId={swatchVideo.vimeoId}
+              contentId={swatchVideo.contentId}
+              title={swatchVideo.title}
+              access_level={swatchVideo.accessLevel}
+              thumbUrl={swatchVideo.posterUrl}
+            />
+          </div>
+        ) : (
+          <p class="gsg-note">
+            The video “{SWATCH_VIDEO_TITLE}” could not be matched in the video library. This step is waiting on that recording.
+          </p>
+        )}
+        <aside class="gsg-optional" aria-label="Optional resource">
+          <p class="gsg-kicker gsg-kicker--optional">Optional</p>
+          <p>
+            Keep a record of your settings. Once you’ve set your machine for plain knitting, take a photo or jot down the settings and manual page number. Our Machine Technique Reference Cards give you a handy place to record settings for future use.
+          </p>
+          <img
+            class="gsg-optional__image"
+            src="/images/shop/downloads/machine-technique-reference-cards.webp"
+            alt="Machine Technique Reference Card filled in with settings beside a knitting machine"
+            width="601"
+            height="477"
+          />
+          <p class="gsg-product">
+            <a href="/downloads/shop/machine-technique-reference-cards">Machine Technique Reference Cards</a>
+            <span class="gsg-price">$14.99 PDF</span>
+          </p>
+          <p class="gsg-note">Purchasing the cards is optional.</p>
+        </aside>
+      </section>
+
+      <section class="gsg-section" aria-labelledby="gsg-help">
+        <h2 id="gsg-help">6. Get personal help</h2>
+        <div class="gsg-help">
+          <img
+            class="gsg-help__photo"
+            src="/images/knit-by-machine-sue.png"
+            alt="Sue from Knit It Now"
+            width="1385"
+            height="1371"
+          />
+          <div class="gsg-help__copy">
+            <p>
+              Still feeling stuck or unsure where to start? Explore the ways to work with Sue for help with your machine knitting.
+            </p>
+            <p class="gsg-action">
+              <a class="kbm-btn kbm-btn-primary" href="/help-hub/work-with-sue">Explore help with Sue</a>
+            </p>
+          </div>
+        </div>
+      </section>
+    </div>
+    <script id="getting-started-machine-catalog" type="application/json" set:html={catalogJson}></script>
+    </template>
+  </article>
+</Layout>
+
+<script>
+  import { initGettingStartedGuideAccess } from "../scripts/gettingStartedGuideAccess";
+
+  initGettingStartedGuideAccess();
+</script>
+
+<style>
+  /* Main already clears the fixed header, so don't add page-wrap's second offset. */
+  .gsg.page-wrap {
+    padding-top: 0.5rem;
+  }
+
+  .gsg-header {
+    margin-bottom: 1.5rem;
+  }
+
+  .gsg-header h1 {
+    margin-bottom: 0.75rem;
+  }
+
+  .gsg-intro {
+    margin: 0;
+    max-width: 40rem;
+    color: #243015;
+  }
+
+  .gsg-gate {
+    margin-bottom: 2rem;
+  }
+
+  .gsg-signup {
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+    max-width: 28rem;
+  }
+
+  .gsg-signup__field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+
+  .gsg-required {
+    color: #8a4b32;
+  }
+
+  .gsg-signup__input {
+    width: 100%;
+    box-sizing: border-box;
+    min-height: 48px;
+    padding: 0.7rem 0.9rem;
+    border: 2px solid #c7d8a4;
+    border-radius: 12px;
+    background: #fff;
+    color: #243015;
+    font: inherit;
+    font-size: 1rem;
+  }
+
+  .gsg-signup__input:focus {
+    outline: none;
+    border-color: var(--kbm-green, #52682d);
+    box-shadow: 0 0 0 3px rgba(82, 104, 45, 0.18);
+  }
+
+  .gsg-signup__submit {
+    align-self: flex-start;
+    min-height: 48px;
+  }
+
+  .gsg-consent,
+  .gsg-signup__error {
+    margin: 0;
+    font-size: 0.92rem;
+    line-height: 1.45;
+  }
+
+  .gsg-signup__error {
+    color: #8a2f2f;
+  }
+
+  .gsg-honeypot {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .gsg-gate[hidden],
+  [data-gsg-guide][hidden] {
+    display: none;
+  }
+
+  .gsg-sections {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    margin-bottom: 2.5rem;
+  }
+
+  .gsg-section {
+    background: #fff;
+    border: 1px solid rgba(82, 104, 45, 0.14);
+    border-radius: 0.85rem;
+    box-shadow: 0 2px 8px rgba(82, 104, 45, 0.05);
+    padding: 1.25rem 1.25rem 1.35rem;
+  }
+
+  .gsg-section h2 {
+    margin: 0 0 0.75rem;
+    font-size: clamp(1.25rem, 2.4vw, 1.5rem);
+    line-height: 1.3;
+  }
+
+  .gsg-section h3 {
+    margin: 0 0 0.55rem;
+    font-size: 1.05rem;
+    line-height: 1.35;
+    color: var(--kbm-green, #52682d);
+  }
+
+  .gsg-section--critical {
+    border: 2px solid #8a4b32;
+    background: #fff8f4;
+    box-shadow: 0 2px 10px rgba(138, 75, 50, 0.08);
+  }
+
+  .gsg-kicker {
+    display: inline-block;
+    margin: 0 0 0.7rem;
+    padding: 0.2rem 0.6rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    line-height: 1.3;
+    text-transform: uppercase;
+  }
+
+  .gsg-kicker--critical {
+    background: #8a4b32;
+    color: #fff;
+  }
+
+  .gsg-kicker--optional {
+    background: rgba(82, 104, 45, 0.12);
+    color: var(--kbm-green, #52682d);
+  }
+
+  .gsg-figure {
+    margin: 0.2rem 0 1rem;
+  }
+
+  .gsg-figure img {
+    display: block;
+    width: 100%;
+    max-width: 40rem;
+    height: auto;
+    border-radius: 12px;
+    border: 1px solid rgba(138, 75, 50, 0.25);
+  }
+
+  .gsg-videos {
+    display: flex;
+    flex-direction: column;
+    gap: 1.15rem;
+    margin: 0.35rem 0 1rem;
+  }
+
+  .gsg-video-choice {
+    min-width: 0;
+    margin: 0.35rem 0 1rem;
+  }
+
+  .gsg-videos .gsg-video-choice {
+    margin: 0;
+  }
+
+  .gsg-optional {
+    margin-top: 1.15rem;
+    padding: 0.95rem 1rem 1rem;
+    border: 1px dashed rgba(82, 104, 45, 0.4);
+    border-radius: 12px;
+    background: #f7f8f4;
+  }
+
+  .gsg-optional__image {
+    display: block;
+    width: 100%;
+    max-width: 360px;
+    height: auto;
+    margin: 0 0 0.75rem;
+    border-radius: 12px;
+  }
+
+  .gsg-optional p {
+    margin: 0 0 0.75rem;
+  }
+
+  .gsg-optional p:last-child {
+    margin-bottom: 0;
+  }
+
+  .gsg-product {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.4rem 0.75rem;
+  }
+
+  .gsg-price {
+    font-weight: 700;
+    color: #243015;
+  }
+
+  .gsg-help {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 1.15rem;
+  }
+
+  .gsg-help__photo {
+    width: 7.25rem;
+    height: auto;
+    flex: 0 0 auto;
+    border-radius: 12px;
+  }
+
+  .gsg-help__copy {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .gsg-action {
+    margin: 0.35rem 0 0;
+  }
+
+  .gsg-action :global(.kbm-btn) {
+    min-height: 48px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .gsg-section p {
+    margin: 0 0 0.9rem;
+    max-width: 65ch;
+  }
+
+  .gsg-section p:last-child {
+    margin-bottom: 0;
+  }
+
+  .gsg-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin: 0.35rem 0 1rem;
+  }
+
+  .gsg-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    min-width: 0;
+  }
+
+  .gsg-label {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--kbm-green, #52682d);
+  }
+
+  .gsg-combo {
+    position: relative;
+  }
+
+  .gsg-combo:focus-within {
+    z-index: 5;
+  }
+
+  .gsg-combo__input {
+    width: 100%;
+    box-sizing: border-box;
+    min-height: 48px;
+    padding: 0.7rem 3rem 0.7rem 0.9rem;
+    border: 2px solid #c7d8a4;
+    border-radius: 12px;
+    background: #fff;
+    color: #243015;
+    font: inherit;
+    font-size: 1rem;
+    line-height: 1.4;
+  }
+
+  .gsg-combo__input:focus {
+    outline: none;
+    border-color: var(--kbm-green, #52682d);
+    box-shadow: 0 0 0 3px rgba(82, 104, 45, 0.18);
+  }
+
+  .gsg-combo__input:disabled {
+    background: #f3f4f1;
+    color: #6b7280;
+    border-color: #e1e6da;
+    cursor: not-allowed;
+  }
+
+  .gsg-combo__toggle {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: calc(100% - 4px);
+    max-height: 48px;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 10px;
+    background: transparent;
+    color: var(--kbm-green, #52682d);
+    cursor: pointer;
+  }
+
+  .gsg-combo__toggle:disabled {
+    color: #9aa392;
+    cursor: not-allowed;
+  }
+
+  .gsg-combo__chevron {
+    width: 0.55rem;
+    height: 0.55rem;
+    border-right: 2px solid currentColor;
+    border-bottom: 2px solid currentColor;
+    transform: translateY(-0.12rem) rotate(45deg);
+  }
+
+  .gsg-combo__list,
+  .gsg-combo__empty {
+    position: absolute;
+    z-index: 6;
+    left: 0;
+    right: 0;
+    top: calc(100% + 4px);
+    margin: 0;
+    background: #fff;
+    border: 1px solid #c7d8a4;
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(82, 104, 45, 0.12);
+  }
+
+  .gsg-combo__list {
+    max-height: min(16rem, 50vh);
+    overflow: auto;
+    padding: 0.35rem;
+    list-style: none;
+  }
+
+  .gsg-combo__list[hidden],
+  .gsg-combo__empty[hidden] {
+    display: none;
+  }
+
+  /* Options are created in the browser, so they do not receive Astro's scope attribute. */
+  .gsg-combo :global(.gsg-combo__option) {
+    display: flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0.45rem 0.75rem;
+    border-radius: 8px;
+    color: #243015;
+    font-size: 1rem;
+    line-height: 1.35;
+    cursor: pointer;
+  }
+
+  .gsg-combo :global(.gsg-combo__option.is-active),
+  .gsg-combo :global(.gsg-combo__option:hover) {
+    background: rgba(82, 104, 45, 0.1);
+  }
+
+  .gsg-combo :global(.gsg-combo__option[aria-selected="true"]) {
+    font-weight: 600;
+  }
+
+  .gsg-combo__empty {
+    padding: 0.75rem 0.9rem;
+    color: #6b7280;
+  }
+
+  .gsg-note {
+    color: #4d5a48;
+  }
+
+  .gsg-link-line {
+    margin-bottom: 0;
+  }
+
+  .gsg-sr {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  @media (max-width: 640px) {
+    .gsg-section {
+      padding: 1rem 0.9rem 1.1rem;
+    }
+
+    .gsg-help {
+      flex-direction: column;
+      gap: 0.85rem;
+    }
+
+    .gsg-combo__input,
+    .gsg-signup__input {
+      font-size: 16px;
+    }
+
+    /* The 16:9 frame is shorter than the membership actions on a phone. */
+    .gsg-video-choice :global(.kbm-video[data-access-level="member"] .kbm-video__frame) {
+      height: auto !important;
+      min-height: 18rem;
+      padding-top: 0 !important;
+    }
+  }
+</style>

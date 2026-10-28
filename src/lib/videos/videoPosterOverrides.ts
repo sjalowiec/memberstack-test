@@ -62,6 +62,18 @@ function comparableRecord(video: Record<string, unknown>): Record<string, unknow
   return next;
 }
 
+/** Field names that differ between two catalog records, ignoring poster-only noise. */
+export function changedCatalogFields(
+  sourceRaw: unknown,
+  submittedRaw: unknown,
+): { ok: true; fields: string[] } | { ok: false; error: string } {
+  const source = normalizeVideoForSave(sourceRaw, 0);
+  if (!source.ok) return source;
+  const submitted = normalizeVideoForSave(submittedRaw, 0);
+  if (!submitted.ok) return submitted;
+  return { ok: true, fields: changedFields(source.video, submitted.video) };
+}
+
 function changedFields(source: Record<string, unknown>, submitted: Record<string, unknown>): string[] {
   const left = comparableRecord(source);
   const right = comparableRecord(submitted);

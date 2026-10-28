@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  accessLevelsMatchCatalog,
   applyVideoAccessLevelPatches,
   describeVideoAccessPatchSuccess,
 } from "./videoAccessLevelPatch";
@@ -22,6 +23,16 @@ describe("videoAccessLevelPatch", () => {
       vimeo_id: 1,
     });
     expect(videos[1]?.access_level).toBe("member");
+  });
+
+  it("confirms a write only when the catalog row has the saved access level", () => {
+    const videos = [
+      { content_id: 2141, access_level: "public" },
+      { content_id: 643, access_level: "member" },
+    ];
+    expect(accessLevelsMatchCatalog(videos, [{ content_id: 2141, access_level: "public" }])).toBe(true);
+    expect(accessLevelsMatchCatalog(videos, [{ content_id: 2141, access_level: "member" }])).toBe(false);
+    expect(accessLevelsMatchCatalog(videos, [{ content_id: 643, access_level: "public" }])).toBe(false);
   });
 
   it("formats a single-video success message", () => {
