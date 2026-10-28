@@ -2,11 +2,7 @@
  * Read ActiveCampaign start triggers for the legacy renewal tags.
  * A tag counts only when a trigger field names it. Automation titles are ignored.
  */
-export const LEGACY_RENEWAL_TRIGGER_TAGS = [
-  "legacy-renewal-30-days",
-  "legacy-renewal-7-days",
-  "legacy-renewal-1-day",
-] as const;
+export const LEGACY_RENEWAL_TRIGGER_TAGS = ["legacy-renewal-expired"] as const;
 
 export type LegacyRenewalTriggerTag = (typeof LEGACY_RENEWAL_TRIGGER_TAGS)[number];
 

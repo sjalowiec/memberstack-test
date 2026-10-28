@@ -199,7 +199,7 @@ describe("Watson member search pages", () => {
     expect(component).toContain("Renewal Reminder Preview");
     expect(component).toContain("Refresh Preview");
     expect(component).toContain("Legacy Expiration Date");
-    expect(component).toContain("Days Until Expiration");
+    expect(component).toContain("Days After Paid-Through");
 
     expect(shell).toContain('<a href="/watson/legacy-renewals">Legacy Renewals</a>');
   });

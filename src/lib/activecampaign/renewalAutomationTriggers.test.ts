@@ -5,7 +5,7 @@ import {
   confirmedStartBlockTriggerTags,
 } from "./renewalAutomationTriggers";
 
-const ids = new Map([["16", "legacy-renewal-7-days"]]);
+const ids = new Map([["16", "legacy-renewal-expired"]]);
 
 describe("legacy renewal automation triggers", () => {
   it("accepts an exact tag field and a resolved tag id", () => {
@@ -13,21 +13,22 @@ describe("legacy renewal automation triggers", () => {
       confirmedRenewalTriggerTags(
         {
           automationTriggers: [
-            { type: "tag", tag: "legacy-renewal-30-days" },
+            { type: "tag", tag: "legacy-renewal-expired" },
             { params: "{\"tagid\":\"16\"}" },
+            { type: "tag", tag: "legacy-renewal-30-days" },
           ],
         },
         ids,
       ),
-    ).toEqual(["legacy-renewal-30-days", "legacy-renewal-7-days"]);
+    ).toEqual(["legacy-renewal-expired"]);
   });
 
   it("does not treat an automation name or email body as the trigger", () => {
     expect(
       confirmedRenewalTriggerTags(
         {
-          name: "Legacy Annual Renewal - 1 Day",
-          email: "Use legacy-renewal-1-day in the message",
+          name: "Legacy Renewal Expired",
+          email: "Use legacy-renewal-expired in the message",
         },
         ids,
       ),
@@ -39,12 +40,12 @@ describe("legacy renewal automation triggers", () => {
       confirmedStartBlockTriggerTags(
         {
           automationBlocks: [
-            { type: "start", params: { tag: "legacy-renewal-1-day" } },
+            { type: "start", params: { tag: "legacy-renewal-expired" } },
             { type: "send", params: { tag: "legacy-renewal-30-days" } },
           ],
         },
         new Map(),
       ),
-    ).toEqual(["legacy-renewal-1-day"]);
+    ).toEqual(["legacy-renewal-expired"]);
   });
 });

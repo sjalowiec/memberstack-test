@@ -1,12 +1,12 @@
 /**
  * Scheduled + manual legacy annual renewal reminders.
  *
- * Tags legacy annual members in ActiveCampaign at 30 / 7 / 1 day before their
- * Watson paid-through date so per-tag automations send renewal emails. Before
- * tagging, each member is re-checked in Memberstack (authoritative for whether
- * they already repurchased) and skipped when an active paid plan exists. The
- * authoritative Watson paid-through date is written to the "Legacy Membership
- * Paid Through" ActiveCampaign date field before the tag is applied.
+ * Tags legacy annual members in ActiveCampaign on the America/Los_Angeles day
+ * after the inclusive Watson paid-through date (`legacy-renewal-expired`).
+ * Before tagging, each member is re-checked in Memberstack and skipped when an
+ * active or trialing paid plan exists. The Watson paid-through date is written
+ * to the "Legacy Membership Paid Through" ActiveCampaign date field before the
+ * tag is applied. This job does not send the 7-day or 14-day follow-ups.
  *
  * This job never modifies Watson dates and is completely independent of the
  * legacy annual EXPIRATION reconciliation (`legacy-annual-expiry`).
