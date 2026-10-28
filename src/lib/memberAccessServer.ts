@@ -1,7 +1,9 @@
 /**
  * Server-side membership access: combine Memberstack plans with Watson
- * `legacy_members.subscriptionexpiring` when there is no active paid plan.
+ * `legacy_members.subscriptionexpiring`.
  *
+ * A paid plan still loads Watson so a returned null means the lookup found no
+ * date. A thrown lookup stays not loaded and is not reported as "not found".
  * Client bundles must not import this module (it talks to Watson/Postgres).
  */
 import {
@@ -9,11 +11,15 @@ import {
   hasComplimentaryMemberAccess,
   hasMemberAccess,
   hasPaidMemberAccess,
+  isMemberLoggedIn,
   memberAccessYmdFromDateOnlyValue,
   needsLegacyPaidThroughForAccess,
+  type LegacyPaidThroughLookup,
   type MemberAccessOptions,
+  type PaidBillingInterval,
   type ViewerAccessState,
 } from "./memberAccess";
+import { billingIntervalFromActivePaidConnection } from "./membership/accountMembershipPanel";
 import { memberEmailFromMemberstackPayload, memberIdFromMemberstackPayload } from "./patterns/memberstackMember";
 import { loadComplimentaryAccessThroughYmd } from "./watson/complimentaryAccess";
 import { resolveLegacyLinkByMemberstackEmail } from "./watson/customerIdentifier";
@@ -26,15 +32,23 @@ export type LoadLegacyPaidThroughYmd = (
 export type EvaluatedMemberAccess = {
   hasMemberAccess: boolean;
   viewerAccessState: ViewerAccessState;
+  /**
+   * Watson date when {@link legacyPaidThroughLookup} is `found` or `not_found`.
+   * Null for both `not_found` and `not_loaded`; use the lookup field to tell
+   * those apart.
+   */
   legacyPaidThroughYmd: string | null;
+  legacyPaidThroughLookup: LegacyPaidThroughLookup;
   /** Saved complimentary date, or null when none is saved or the plan is absent. */
   complimentaryThroughYmd: string | null;
   /**
-   * True when the Watson legacy lookup threw. Access is still denied (fail
-   * closed); callers that report status should say "could not confirm"
-   * rather than "no membership".
+   * True when the Watson legacy lookup threw and access was not otherwise
+   * granted. Callers should say "could not confirm" rather than "no membership".
    */
   legacyLookupFailed: boolean;
+  /** True when the Admin record has an active or trialing paid plan. */
+  serverConfirmedPaidAccess: boolean;
+  serverConfirmedPaidBillingInterval: PaidBillingInterval | null;
 };
 
 export type LoadComplimentaryThroughYmd = (
@@ -56,7 +70,8 @@ export async function loadLegacyPaidThroughYmdForEmail(
 
 /**
  * Canonical server access decision for an Admin `getMember` record (or equivalent).
- * Paid plans skip Watson. An active complimentary plan loads its Watson
+ * Paid plans grant access on their own and still load Watson so a null date
+ * means the lookup found nothing. An active complimentary plan loads its Watson
  * access-through date when one is saved. Any other logged-in member requires a
  * valid legacy paid-through date. The free Memberstack legacy plan is not required.
  */
@@ -90,12 +105,24 @@ export async function evaluateMemberAccessForRecord(
     }
   }
 
+  const serverConfirmedPaidAccess = hasPaidMemberAccess(record);
+  const serverConfirmedPaidBillingInterval: PaidBillingInterval | null = serverConfirmedPaidAccess
+    ? billingIntervalFromActivePaidConnection(record)
+    : null;
+
+  let legacyPaidThroughLookup: LegacyPaidThroughLookup = "not_loaded";
   let legacyPaidThroughYmd: string | null = null;
   let legacyLookupFailed = false;
-  if (needsLegacyPaidThroughForAccess(record, options)) {
+  const shouldLoadLegacy =
+    isMemberLoggedIn(record) &&
+    (serverConfirmedPaidAccess || needsLegacyPaidThroughForAccess(record, options));
+
+  if (shouldLoadLegacy) {
     try {
       legacyPaidThroughYmd = await loadLegacy(memberEmailFromMemberstackPayload(record) ?? null);
+      legacyPaidThroughLookup = legacyPaidThroughYmd ? "found" : "not_found";
     } catch {
+      legacyPaidThroughLookup = "not_loaded";
       legacyPaidThroughYmd = null;
       legacyLookupFailed = true;
     }
@@ -107,7 +134,10 @@ export async function evaluateMemberAccessForRecord(
     hasMemberAccess: granted,
     viewerAccessState: getViewerAccessState(record, options),
     legacyPaidThroughYmd,
+    legacyPaidThroughLookup,
     complimentaryThroughYmd,
     legacyLookupFailed: legacyLookupFailed && !granted,
+    serverConfirmedPaidAccess,
+    serverConfirmedPaidBillingInterval,
   };
 }

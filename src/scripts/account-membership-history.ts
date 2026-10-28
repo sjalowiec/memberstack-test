@@ -3,18 +3,22 @@
  * the read-only Membership History timeline.
  *
  * Live plan/status/billing/renewal + actions are populated separately by
- * account-membership.ts straight from the Memberstack payload. This script adds
- * the fields that require authoritative server data (legacy history, earliest
- * join date) via the customer-safe account-membership-detail endpoint. If that
- * request fails, the extra fields simply stay hidden - the core panel is
- * unaffected.
+ * account-membership.ts from the Memberstack payload and any server-confirmed
+ * paid plan. This script adds the fields that require authoritative server data
+ * (legacy history, earliest join date) via the customer-safe
+ * account-membership-detail endpoint. An identified active detail also replaces
+ * unconfirmed plan and status labels. If that request fails, the extra fields
+ * stay hidden.
  */
 
 import {
   fetchAccountMembershipDetail,
   type AccountMembershipDetailResponse,
 } from "../lib/membership/accountMembershipDetailClient";
-import { resolveAccountMembershipDetailView } from "../lib/membership/accountMembershipDetailView";
+import {
+  resolveAccountMembershipDetailPaint,
+  resolveAccountMembershipDetailView,
+} from "../lib/membership/accountMembershipDetailView";
 import type { MembershipHistoryEvent } from "../lib/membership/membershipHistory";
 import { buildMembershipHistoryRow } from "../lib/membership/membershipHistoryRow";
 import type { AccountMembershipPanelAction } from "../lib/membership/accountMembershipPanel";
@@ -108,14 +112,32 @@ function applyActions(root: Element, actions: AccountMembershipPanelAction[] | n
 
 function applyDetail(root: Element, detail: AccountMembershipDetailResponse): void {
   const view = resolveAccountMembershipDetailView(detail);
+  const planEl = root.querySelector("[data-kbm-account-membership-plan]");
+  const statusEl = root.querySelector("[data-kbm-account-membership-status]");
+  const paint = resolveAccountMembershipDetailPaint(detail, {
+    planLabel: planEl?.textContent ?? "",
+    statusLabel: statusEl?.textContent ?? "",
+  });
 
-  if (view.planOverride) {
-    setText(root, "[data-kbm-account-membership-plan]", view.planOverride);
+  if (paint.planLabel) {
+    setText(root, "[data-kbm-account-membership-plan]", paint.planLabel);
   }
-  if (view.statusOverride) {
-    setText(root, "[data-kbm-account-membership-status]", view.statusOverride);
+  if (paint.statusLabel) {
+    setText(root, "[data-kbm-account-membership-status]", paint.statusLabel);
   }
-  applyActions(root, view.visibleActions);
+  if (paint.markMember) {
+    root.setAttribute("data-kbm-account-membership-kind", "member");
+  }
+  if (paint.manageBillingDescription) {
+    const billingDescriptionEl = root.querySelector(
+      "[data-kbm-account-membership-billing-description]",
+    );
+    if (billingDescriptionEl instanceof HTMLElement) {
+      billingDescriptionEl.textContent = paint.manageBillingDescription;
+      billingDescriptionEl.hidden = false;
+    }
+  }
+  applyActions(root, paint.visibleActions);
 
   setDateRow(root, view.membershipDateLabel, view.membershipDateValue);
 

@@ -10,6 +10,7 @@ import type { AccountMembershipDetail } from "./accountMembershipDetail";
 import {
   ACCOUNT_MEMBERSHIP_UNCONFIRMED_PLAN_LABEL,
   ACCOUNT_MEMBERSHIP_UNCONFIRMED_STATUS_LABEL,
+  MANAGE_BILLING_DESCRIPTION_ACTIVE,
   type AccountMembershipPanelAction,
 } from "./accountMembershipPanel";
 import { FREE_MEMBERSHIP_DISPLAY_LABEL } from "./membershipCheckoutDecision";
@@ -46,11 +47,22 @@ type AccountMembershipDetailViewInput = Pick<
   | "identified"
   | "membershipName"
   | "statusLabel"
+  | "billingLabel"
   | "legacyPaidThroughDate"
   | "legacyAccessActive"
   | "memberSince"
   | "history"
 >;
+
+export type AccountMembershipDetailPaint = {
+  /** Null keeps the label already on screen. */
+  planLabel: string | null;
+  statusLabel: string | null;
+  visibleActions: AccountMembershipPanelAction[] | null;
+  /** Set the panel kind to member after replacing unconfirmed labels. */
+  markMember: boolean;
+  manageBillingDescription: string | null;
+};
 
 export const LEGACY_ACCESS_THROUGH_LABEL = "Legacy Access Through";
 export const MEMBER_SINCE_LABEL = "Member Since";
@@ -141,5 +153,74 @@ export function resolveAccountMembershipDetailView(
     membershipDateValue,
     visibleActions: null,
     history: historyView(true, detail.history),
+  };
+}
+
+function blankOrUnconfirmed(value: string): boolean {
+  const text = value.trim();
+  return (
+    text === "" ||
+    text === ACCOUNT_MEMBERSHIP_UNCONFIRMED_PLAN_LABEL ||
+    text === ACCOUNT_MEMBERSHIP_UNCONFIRMED_STATUS_LABEL
+  );
+}
+
+function isIdentifiedActivePaid(detail: AccountMembershipDetailViewInput): boolean {
+  return (
+    detail.identified === true &&
+    (detail.statusLabel === "Active" || detail.statusLabel === "Canceling") &&
+    detail.membershipName != null &&
+    detail.membershipName !== FREE_MEMBERSHIP_DISPLAY_LABEL &&
+    detail.membershipName !== ACCOUNT_MEMBERSHIP_UNCONFIRMED_PLAN_LABEL
+  );
+}
+
+function paidPlanDisplayFromBilling(
+  billingLabel: string | null | undefined,
+  membershipName: string | null,
+): string {
+  if (billingLabel === "Annual") return "Annual Membership";
+  if (billingLabel === "Monthly") return "Monthly Membership";
+  return membershipName ?? "Knit it Now Membership";
+}
+
+/**
+ * Labels to write onto the account panel. An identified active paid detail
+ * replaces unconfirmed or still-blank plan and status text. A panel that
+ * already shows the live membership is left alone so canceling actions stay.
+ */
+export function resolveAccountMembershipDetailPaint(
+  detail: AccountMembershipDetailViewInput,
+  current: { planLabel: string; statusLabel: string },
+): AccountMembershipDetailPaint {
+  const view = resolveAccountMembershipDetailView(detail);
+  if (view.planOverride || view.statusOverride) {
+    return {
+      planLabel: view.planOverride,
+      statusLabel: view.statusOverride,
+      visibleActions: view.visibleActions,
+      markMember: false,
+      manageBillingDescription: null,
+    };
+  }
+
+  const currentUnconfirmed =
+    blankOrUnconfirmed(current.planLabel) || blankOrUnconfirmed(current.statusLabel);
+  if (currentUnconfirmed && isIdentifiedActivePaid(detail)) {
+    return {
+      planLabel: paidPlanDisplayFromBilling(detail.billingLabel, detail.membershipName),
+      statusLabel: detail.statusLabel,
+      visibleActions: ["manageBilling"],
+      markMember: true,
+      manageBillingDescription: MANAGE_BILLING_DESCRIPTION_ACTIVE,
+    };
+  }
+
+  return {
+    planLabel: null,
+    statusLabel: null,
+    visibleActions: view.visibleActions,
+    markMember: false,
+    manageBillingDescription: null,
   };
 }

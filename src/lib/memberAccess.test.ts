@@ -425,7 +425,7 @@ describe("expired legacy member cannot use member-only surfaces", () => {
 });
 
 describe("corrected legacy access matrix", () => {
-  const future = { legacyPaidThroughYmd: "2026-10-07", todayYmd: TODAY_YMD };
+  const future = { legacyPaidThroughYmd: "2027-11-30", todayYmd: TODAY_YMD };
   const today = { legacyPaidThroughYmd: TODAY_YMD, todayYmd: TODAY_YMD };
   const expiredDate = { legacyPaidThroughYmd: "2026-07-01", todayYmd: TODAY_YMD };
   const noPlan = payload({ planId: null });

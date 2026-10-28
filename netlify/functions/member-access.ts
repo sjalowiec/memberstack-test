@@ -4,10 +4,10 @@
  * GET /.netlify/functions/member-access
  *
  * Auth: requireMember (Bearer JWT). Combines Admin plan connections with Watson
- * paid-through for logged-in members without an active paid plan. Paid members
- * skip Watson. The free Memberstack legacy plan is not required.
- * A failed Watson lookup sets `legacyLookupFailed` (unconfirmed), never a
- * plain "no access" answer.
+ * paid-through. Paid plans grant access and still load Watson. A null date is
+ * "not found" only when legacyPaidThroughLookup is "not_found". The free
+ * Memberstack legacy plan is not required. A failed Watson lookup sets
+ * `legacyLookupFailed` when access was not otherwise granted.
  */
 import { requireMember } from "./lib/member-auth.js";
 import { jsonResponse, withCors } from "./lib/custom-pattern-projects-store.js";
@@ -53,7 +53,11 @@ export default async (req: Request): Promise<Response> => {
         hasMemberAccess: false,
         viewerAccessState: getViewerAccessState(null),
         legacyPaidThroughYmd: null,
+        legacyPaidThroughLookup: "not_loaded",
         complimentaryThroughYmd: null,
+        legacyLookupFailed: false,
+        serverConfirmedPaidAccess: false,
+        serverConfirmedPaidBillingInterval: null,
       }),
     );
   }
@@ -66,10 +70,13 @@ export default async (req: Request): Promise<Response> => {
         hasMemberAccess: evaluated.hasMemberAccess,
         viewerAccessState: evaluated.viewerAccessState,
         legacyPaidThroughYmd: evaluated.legacyPaidThroughYmd,
+        legacyPaidThroughLookup: evaluated.legacyPaidThroughLookup,
         complimentaryThroughYmd: evaluated.complimentaryThroughYmd,
-        // Watson was unreachable for the paid-through date: membership is
-        // unconfirmed (not "no membership"). The browser offers Try again.
+        // Watson was unreachable for the paid-through date and nothing else
+        // granted access: membership is unconfirmed. The browser offers Try again.
         legacyLookupFailed: evaluated.legacyLookupFailed,
+        serverConfirmedPaidAccess: evaluated.serverConfirmedPaidAccess,
+        serverConfirmedPaidBillingInterval: evaluated.serverConfirmedPaidBillingInterval,
       }),
     );
   } catch (err) {

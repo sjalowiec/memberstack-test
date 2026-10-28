@@ -51,14 +51,73 @@ describe("loadLegacyPaidThroughYmdForEmail", () => {
 });
 
 describe("evaluateMemberAccessForRecord", () => {
-  it("grants paid membership without Watson", async () => {
-    const load = vi.fn(async () => "2020-01-01");
+  it("grants paid membership and still records the Watson lookup", async () => {
+    const load = vi.fn(async () => "2027-11-30");
     const result = await evaluateMemberAccessForRecord(record(PAID), {
       loadPaidThroughYmd: load,
       todayYmd: TODAY,
     });
     expect(result.hasMemberAccess).toBe(true);
-    expect(load).not.toHaveBeenCalled();
+    expect(load).toHaveBeenCalledTimes(1);
+    expect(result.legacyPaidThroughLookup).toBe("found");
+    expect(result.legacyPaidThroughYmd).toBe("2027-11-30");
+    expect(result.serverConfirmedPaidAccess).toBe(true);
+    expect(result.legacyLookupFailed).toBe(false);
+  });
+
+  it("keeps paid access when Watson finds no date", async () => {
+    const result = await evaluateMemberAccessForRecord(record(PAID), {
+      loadPaidThroughYmd: async () => null,
+      todayYmd: TODAY,
+    });
+    expect(result).toMatchObject({
+      hasMemberAccess: true,
+      legacyPaidThroughLookup: "not_found",
+      legacyPaidThroughYmd: null,
+      serverConfirmedPaidAccess: true,
+      legacyLookupFailed: false,
+    });
+  });
+
+  it("keeps paid access when Watson is unavailable and does not call that not found", async () => {
+    const result = await evaluateMemberAccessForRecord(record(PAID), {
+      loadPaidThroughYmd: async () => {
+        throw new Error("db down");
+      },
+      todayYmd: TODAY,
+    });
+    expect(result).toMatchObject({
+      hasMemberAccess: true,
+      legacyPaidThroughLookup: "not_loaded",
+      legacyLookupFailed: false,
+      serverConfirmedPaidAccess: true,
+    });
+  });
+
+  it("reports an annual interval for a trialing paid plan beside a free legacy plan", async () => {
+    const result = await evaluateMemberAccessForRecord(
+      {
+        id: "mem_trial",
+        auth: { email: "legacy@example.com" },
+        planConnections: [
+          { planId: "pln_course-lk150-patterning-nw00gk6", status: "ACTIVE", active: true },
+          {
+            planId: PAID,
+            status: "TRIALING",
+            active: true,
+            payment: { priceId: MEMBERSHIPS.membership.prices.annual.memberstackPriceId },
+          },
+          { planId: LEGACY_FREE, status: "ACTIVE", active: true },
+        ],
+      },
+      { loadPaidThroughYmd: async () => "2027-11-30", todayYmd: TODAY },
+    );
+    expect(result).toMatchObject({
+      hasMemberAccess: true,
+      legacyPaidThroughLookup: "found",
+      serverConfirmedPaidAccess: true,
+      serverConfirmedPaidBillingInterval: "annual",
+    });
   });
 
   it("grants active free legacy when paid-through is in the future", async () => {
@@ -181,7 +240,9 @@ describe("evaluateMemberAccessForRecord", () => {
     });
     expect(result.hasMemberAccess).toBe(false);
     expect(result.legacyPaidThroughYmd).toBe(null);
+    expect(result.legacyPaidThroughLookup).toBe("not_loaded");
     expect(result.legacyLookupFailed).toBe(true);
+    expect(result.serverConfirmedPaidAccess).toBe(false);
   });
 
   it("does not flag a successful lookup that finds no record", async () => {
@@ -190,6 +251,7 @@ describe("evaluateMemberAccessForRecord", () => {
       todayYmd: TODAY,
     });
     expect(result.hasMemberAccess).toBe(false);
+    expect(result.legacyPaidThroughLookup).toBe("not_found");
     expect(result.legacyLookupFailed).toBe(false);
   });
 

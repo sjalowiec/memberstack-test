@@ -48,6 +48,11 @@ beforeEach(() => {
     hasMemberAccess: false,
     viewerAccessState: "loggedInNoAccess",
     legacyPaidThroughYmd: null,
+    legacyPaidThroughLookup: "not_loaded",
+    complimentaryThroughYmd: null,
+    legacyLookupFailed: false,
+    serverConfirmedPaidAccess: false,
+    serverConfirmedPaidBillingInterval: null,
   });
 });
 
@@ -74,6 +79,11 @@ describe("member-access Netlify function", () => {
       hasMemberAccess: true,
       viewerAccessState: "memberAccess",
       legacyPaidThroughYmd: "2026-12-01",
+      legacyPaidThroughLookup: "found",
+      complimentaryThroughYmd: null,
+      legacyLookupFailed: false,
+      serverConfirmedPaidAccess: true,
+      serverConfirmedPaidBillingInterval: "annual",
     });
     const res = await handler(
       new Request(
@@ -88,6 +98,9 @@ describe("member-access Netlify function", () => {
       hasMemberAccess: true,
       viewerAccessState: "memberAccess",
       legacyPaidThroughYmd: "2026-12-01",
+      legacyPaidThroughLookup: "found",
+      serverConfirmedPaidAccess: true,
+      serverConfirmedPaidBillingInterval: "annual",
     });
     const client = getMemberstackAdminClient();
     expect(client?.getMember).toHaveBeenCalledWith(VERIFIED_ID);

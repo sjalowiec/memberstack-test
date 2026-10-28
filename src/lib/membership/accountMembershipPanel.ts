@@ -20,7 +20,9 @@ import {
   isLegacyPaidThroughCurrentlyValid,
   needsLegacyPaidThroughForAccess,
   rememberedLegacyPaidThroughYmdForMember,
+  rememberedServerConfirmedPaidBillingInterval,
   type MemberAccessOptions,
+  type PaidBillingInterval,
 } from "../memberAccess";
 import { memberIdFromMemberstackPayload, memberRecordFromMemberstackPayload } from "../patterns/memberstackMember";
 import {
@@ -136,7 +138,7 @@ const AUTO_RENEW_NOTE: Record<AccountMembershipBillingInterval, string> = {
   annual: "Membership renews automatically each year.",
 };
 
-const MANAGE_BILLING_DESCRIPTION_ACTIVE =
+export const MANAGE_BILLING_DESCRIPTION_ACTIVE =
   "Update your payment method, view invoices, or manage your subscription.";
 
 const MANAGE_BILLING_DESCRIPTION_CANCELING =
@@ -395,6 +397,62 @@ function expiredLegacyMembershipPanelView(): AccountMembershipPanelView {
   };
 }
 
+/**
+ * `undefined` when Admin has not confirmed a paid plan.
+ * `null` when it has, and the billing interval is unknown.
+ */
+function resolvedServerConfirmedPaidBillingInterval(
+  memberOrPayload: unknown,
+  accessOptions?: MemberAccessOptions,
+): PaidBillingInterval | null | undefined {
+  if (accessOptions && "serverConfirmedPaidAccess" in accessOptions) {
+    if (accessOptions.serverConfirmedPaidAccess !== true) return undefined;
+    const interval = accessOptions.serverConfirmedPaidBillingInterval;
+    return interval === "monthly" || interval === "annual" ? interval : null;
+  }
+  return rememberedServerConfirmedPaidBillingInterval(
+    memberIdFromMemberstackPayload(memberOrPayload),
+  );
+}
+
+function serverConfirmedPaidMembershipPanelView(
+  billingInterval: PaidBillingInterval | null,
+): AccountMembershipPanelView {
+  return {
+    kind: "member",
+    planLabel: PAID_PLAN_FALLBACK_LABEL,
+    planDisplayLabel: billingInterval
+      ? PAID_PLAN_LABEL[billingInterval]
+      : PAID_PLAN_FALLBACK_LABEL,
+    statusLabel: "Active",
+    billingInterval,
+    billingLabel: billingInterval ? BILLING_LABEL[billingInterval] : null,
+    renewsLabel: null,
+    isCanceling: false,
+    activeUntilMessage: null,
+    autoRenewNote: billingInterval ? AUTO_RENEW_NOTE[billingInterval] : null,
+    manageBillingDescription: MANAGE_BILLING_DESCRIPTION_ACTIVE,
+    annualSwitchWarning: null,
+    visibleActions: ["manageBilling"],
+  };
+}
+
+/**
+ * Keep an identified Active or Canceling panel when a later browser paint would
+ * replace it with the unconfirmed labels. The detail response is authoritative.
+ */
+export function shouldPreserveConfirmedActivePanel(
+  current: { kind: string | null; statusLabel: string },
+  nextStatusLabel: string,
+): boolean {
+  const status = current.statusLabel.trim();
+  return (
+    current.kind === "member" &&
+    (status === "Active" || status === "Canceling") &&
+    nextStatusLabel === ACCOUNT_MEMBERSHIP_UNCONFIRMED_STATUS_LABEL
+  );
+}
+
 function resolvedLegacyPaidThroughYmd(
   memberOrPayload: unknown,
   accessOptions?: MemberAccessOptions,
@@ -448,6 +506,15 @@ export function resolveAccountMembershipPanelView(
         switchToAnnual,
       }),
     };
+  }
+
+  // Browser payload omitted the paid connection. Admin already confirmed it.
+  const serverPaidInterval = resolvedServerConfirmedPaidBillingInterval(
+    memberOrPayload,
+    accessOptions,
+  );
+  if (serverPaidInterval !== undefined) {
+    return serverConfirmedPaidMembershipPanelView(serverPaidInterval);
   }
 
   // Recoverable paid Stripe subscription (past_due / requires_payment):
