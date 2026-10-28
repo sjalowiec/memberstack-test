@@ -43,21 +43,42 @@ describe("admin server gate", () => {
     expect(isAdminProtectedPath("/api/admin/bookshelf")).toBe(true);
   });
 
-  it("blocks a signed-out visitor before any admin page or API data is returned", async () => {
+  it("gives a signed-out visitor a login action and keeps admin APIs on JSON", async () => {
     const page = adminGateResponse(signedOut, "/admin");
+    const nested = adminGateResponse(signedOut, "/admin/lessons");
     const api = adminGateResponse(signedOut, "/api/admin/machines");
+    const pageHtml = await page?.text();
+    const nestedHtml = await nested?.text();
+
     expect(page?.status).toBe(401);
-    expect(await page?.text()).toBe("Sign in required.");
+    expect(page?.headers.get("content-type")).toContain("text/html");
     expect(page?.headers.get("cache-control")).toBe("no-store");
+    expect(pageHtml).toContain("Sign in required.");
+    expect(pageHtml).toContain('id="admin-sign-in"');
+    expect(pageHtml).toContain(">Sign in<");
+    expect(pageHtml).not.toContain("Creator Control Panel");
+    expect(pageHtml).not.toContain("Help Hub");
+    expect(pageHtml).not.toContain("/api/admin");
+
+    expect(nested?.status).toBe(401);
+    expect(nestedHtml).toContain('id="admin-sign-in"');
+    expect(nestedHtml).not.toContain("Creator Control Panel");
+
     expect(api?.status).toBe(401);
-    expect(await api?.json()).toEqual({ ok: false, error: "Sign in required." });
+    expect(api?.headers.get("content-type")).toContain("application/json");
+    const apiText = (await api?.text()) ?? "";
+    expect(JSON.parse(apiText)).toEqual({ ok: false, error: "Sign in required." });
+    expect(apiText).not.toContain("admin-sign-in");
   });
 
   it("blocks a signed-in non-admin", async () => {
     const page = adminGateResponse(nonAdmin, "/admin/lessons");
     const api = adminGateResponse(nonAdmin, "/api/admin/tips");
+    const pageText = await page?.text();
     expect(page?.status).toBe(403);
-    expect(await page?.text()).toBe("Admin access required.");
+    expect(page?.headers.get("content-type")).toContain("text/plain");
+    expect(pageText).toBe("Admin access required.");
+    expect(pageText).not.toContain("admin-sign-in");
     expect(api?.status).toBe(403);
     const body = await api?.json();
     expect(body.ok).toBe(false);
