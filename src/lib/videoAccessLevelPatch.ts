@@ -90,6 +90,23 @@ export function applyVideoAccessLevelPatches(
   return { ok: true, updated, notFound };
 }
 
+/** True when every saved access_level is the value now stored on that catalog row. */
+export function accessLevelsMatchCatalog(
+  videos: unknown[],
+  updated: Array<{ content_id: string | number; access_level: string }>,
+): boolean {
+  const indexById = new Map<string, Record<string, unknown>>();
+  for (const row of videos) {
+    if (!row || typeof row !== "object" || Array.isArray(row)) continue;
+    const id = contentIdKey((row as Record<string, unknown>).content_id);
+    if (id) indexById.set(id, row as Record<string, unknown>);
+  }
+  return updated.every((update) => {
+    const row = indexById.get(contentIdKey(update.content_id));
+    return row?.access_level === update.access_level;
+  });
+}
+
 export function describeVideoAccessPatchSuccess(
   updated: Array<{ content_id: string | number; access_level: string }>,
   titleByContentId: Map<string, string>,
