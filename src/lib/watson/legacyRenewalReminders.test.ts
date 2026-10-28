@@ -15,6 +15,7 @@ import {
   dailyCronIsAfterPacificMidnight,
   EXPIRED_REMINDER_TAG,
   getLegacyReminderActiveCampaignSettings,
+  isLegacyRenewalStaffOrTestEmail,
   LEGACY_RENEWAL_REMINDER_CRON,
   REMINDER_TAG_BY_WINDOW,
   REMINDER_WINDOW_DAYS,
@@ -509,6 +510,41 @@ describe("runLegacyRenewalReminders - skips and protections", () => {
     expect(result.totals.skippedMissingEmail).toBe(1);
     expect(result.totals.skippedStaffOrTest).toBe(1);
     expect(ac.spies.addTag).not.toHaveBeenCalled();
+  });
+
+  it("lets only abc123@knititnow.com through the staff/test exclusion", async () => {
+    expect(isLegacyRenewalStaffOrTestEmail("abc123@knititnow.com")).toBe(false);
+    expect(isLegacyRenewalStaffOrTestEmail("ABC123@KnitItNow.com")).toBe(false);
+    expect(isLegacyRenewalStaffOrTestEmail("test@knititnow.com")).toBe(true);
+    expect(isLegacyRenewalStaffOrTestEmail("sue@knititnow.com")).toBe(true);
+    expect(isLegacyRenewalStaffOrTestEmail("matt@hozgroup.com")).toBe(true);
+    expect(isLegacyRenewalStaffOrTestEmail("person@membership.io")).toBe(true);
+
+    const ac = makeAc({
+      "abc123@knititnow.com": { id: "ac_abc", listStatus: "active", tags: new Set() },
+    });
+    const result = await runLegacyRenewalReminders(
+      baseOpts({
+        dryRun: true,
+        activeCampaign: ac.client,
+        queryFn: makeQueryFn({
+          1: [
+            row({ memberid: "abc", email: "abc123@knititnow.com" }),
+            row({ memberid: "staff", email: "other@knititnow.com" }),
+          ],
+        }),
+        resolveMemberstackMemberByEmail: resolverFor({
+          "abc123@knititnow.com": { status: "not_found" },
+        }),
+      }),
+    );
+    expect(result.totals.wouldTag).toBe(1);
+    expect(result.totals.skippedStaffOrTest).toBe(1);
+    expect(result.details.find((detail) => detail.legacyMemberId === "abc")?.outcome).toBe(
+      "would_tag",
+    );
+    expect(ac.spies.addTag).not.toHaveBeenCalled();
+    expect(ac.spies.syncContact).not.toHaveBeenCalled();
   });
 
   it("treats one email on two legacy rows as ambiguous", async () => {
