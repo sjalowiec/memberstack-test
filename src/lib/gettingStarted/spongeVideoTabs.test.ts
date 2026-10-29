@@ -98,7 +98,7 @@ describe("Getting Started sponge video tabs", () => {
     expect(sponge.match(/<GatedVimeoEmbed/g)).toHaveLength(2);
     expect(sponge).toContain("lk150SpongeVideo");
     expect(sponge).toContain("metalSpongeVideo");
-    expect(sponge).not.toContain("enableVimeoPlayerApi");
+    expect(sponge.match(/enableVimeoPlayerApi=\{true\}/g)).toHaveLength(2);
     expect(sponge).toContain("The sponge holds the needles so your stitches can form.");
     expect(sponge).toContain(
       "On a metal-bed machine, also check that the needles lie firmly in their slots.",
