@@ -51,15 +51,34 @@ const yarnVideo = guideVideo(2049);
 const swatchVideo = guideVideo(2189, SWATCH_VIDEO_TITLE);
 ---
 
-<Layout title={`${title} | Knit it Now`} description={description} skipAnalytics>
+<Layout
+  title={`${title} | Knit it Now`}
+  description={description}
+  bodyClass="page--getting-started-guide"
+  skipAnalytics
+>
   <meta slot="head" name="robots" content="noindex, nofollow" />
 
   <article class="page-wrap gsg">
     <header class="gsg-header">
-      <h1>Getting Started Guide</h1>
-      <p class="gsg-intro">
-        A short guide to getting comfortable with your knitting machine, from identifying it and finding a manual through a small practice piece.
-      </p>
+      <h1>Your First Steps to Machine Knitting</h1>
+      <div class="gsg-intro-row">
+        <img
+          class="gsg-intro__photo"
+          src="/images/knit-by-machine-sue.png"
+          alt="Sue from Knit It Now"
+          width="1385"
+          height="1371"
+        />
+        <div class="gsg-intro__copy">
+          <p class="gsg-intro">
+            New to machine knitting, or getting back to it after a break? Follow these six steps to prepare your machine, choose your yarn, and knit your first practice swatch.
+          </p>
+          <p class="gsg-intro">
+            No need to know everything before you begin. We’ll help you take it one step at a time.
+          </p>
+        </div>
+      </div>
     </header>
 
     <section class="gsg-section gsg-gate" data-gsg-gate aria-labelledby="gsg-gate-title">
@@ -122,8 +141,12 @@ const swatchVideo = guideVideo(2189, SWATCH_VIDEO_TITLE);
 
     <template id="gsg-guide-template">
     <div class="gsg-sections">
-      <section class="gsg-section" aria-labelledby="gsg-identify">
-        <h2 id="gsg-identify">1. Identify your machine</h2>
+      <section class="gsg-step" aria-labelledby="gsg-identify">
+        <div class="gsg-step__rail" aria-hidden="true">
+          <span class="gsg-step__badge">1</span>
+        </div>
+        <div class="gsg-section gsg-step__panel">
+        <h2 id="gsg-identify"><span class="gsg-sr">1. </span>Identify your machine</h2>
         <p>
           Have more than one machine? Choose the one you’d like to use as you work through this guide.
         </p>
@@ -232,10 +255,15 @@ const swatchVideo = guideVideo(2189, SWATCH_VIDEO_TITLE);
             Explore Machines Around the World to see how the same knitting machine was sold under different brand names in different countries.
           </a>
         </p>
+        </div>
       </section>
 
-      <section class="gsg-section" aria-labelledby="gsg-manual">
-        <h2 id="gsg-manual">2. Do you have your machine’s manual?</h2>
+      <section class="gsg-step" aria-labelledby="gsg-manual">
+        <div class="gsg-step__rail" aria-hidden="true">
+          <span class="gsg-step__badge">2</span>
+        </div>
+        <div class="gsg-section gsg-step__panel">
+        <h2 id="gsg-manual"><span class="gsg-sr">2. </span>Do you have your machine’s manual?</h2>
         <p>
           Your manual is an important companion as you get comfortable with your machine. Keep it handy to check threading, settings, and basic instructions.
         </p>
@@ -245,152 +273,189 @@ const swatchVideo = guideVideo(2189, SWATCH_VIDEO_TITLE);
         <p>
           Can’t find a suitable manual? Explore ways to <a href="/help-hub/work-with-sue">work with Sue</a> for help finding a useful starting point.
         </p>
+        </div>
       </section>
 
-      <section class="gsg-section gsg-section--critical" aria-labelledby="gsg-sponge">
-        <p class="gsg-kicker gsg-kicker--critical">Check this before you knit</p>
-        <h2 id="gsg-sponge">3. Check your sponge bar</h2>
-        <p>
-          Before you start knitting, check your sponge bar. The sponge can deteriorate over time, even when a machine hasn’t been used. A worn sponge bar may no longer hold the needles properly, causing knitting problems and potentially damaging needles.
-        </p>
-        <p>
-          If the sponge is deteriorating or no longer holds the needles securely, replace it before knitting.
-        </p>
-        <figure class="gsg-figure">
-          <img
-            src="/images/reference/sponge-bar.png"
-            alt="A worn sponge bar in a knitting machine, marked past time to replace. The sponge is crumbling and compressed, so it no longer holds the needles evenly."
-            width="1829"
-            height="968"
-          />
-        </figure>
-        <div class="gsg-videos">
-          <div class="gsg-video-choice">
-            <h3>LK150</h3>
-            {lk150SpongeVideo ? (
-              <GatedVimeoEmbed
-                videoId={lk150SpongeVideo.vimeoId}
-                contentId={lk150SpongeVideo.contentId}
-                title={lk150SpongeVideo.title}
-                access_level={lk150SpongeVideo.accessLevel}
-                thumbUrl={lk150SpongeVideo.posterUrl}
+      <section class="gsg-step" aria-labelledby="gsg-sponge">
+        <div class="gsg-step__rail" aria-hidden="true">
+          <span class="gsg-step__badge gsg-step__badge--critical">3</span>
+        </div>
+        <div class="gsg-section gsg-section--critical gsg-step__panel">
+            <p class="gsg-kicker gsg-kicker--critical">Check this before you knit</p>
+            <h2 id="gsg-sponge"><span class="gsg-sr">3. </span>Check your sponge bar</h2>
+            <p>
+              The sponge holds the needles so your stitches can form. Most metal-bed machines use a sponge bar along the needle bed. The LK150 uses a different arrangement, and a worn sponge is harder to see on that machine. The sponge can flatten or crumble over time, even if the machine has been stored.
+            </p>
+            <p>
+              Check that the sponge is even and springy, not flat, compressed, or crumbling. On a metal-bed machine, also check that the needles lie firmly in their slots. Replace a worn sponge before you knit. It can cause knitting problems and may damage needles.
+            </p>
+            <p>
+              Need a replacement? Check our <a href="/reference/repairs">Repairs and Service directory</a> for businesses that may supply sponge bars or replacement sponge. Confirm that the replacement is suitable for your machine model before ordering.
+            </p>
+            <p>This photo shows a worn sponge bar on a metal-bed machine.</p>
+            <figure class="gsg-figure">
+              <img
+                src="/images/reference/sponge-bar.png"
+                alt="A worn sponge bar on a metal-bed knitting machine, marked past time to replace. The sponge is crumbling and compressed, so it no longer holds the needles evenly."
+                width="1829"
+                height="968"
               />
-            ) : (
-              <p class="gsg-note">The LK150 sponge bar video could not be matched in the video library.</p>
-            )}
+            </figure>
+            <p>Watch the video for your machine.</p>
+            <div class="gsg-videos">
+              <div class="gsg-video-choice">
+                <h3>LK150</h3>
+                {lk150SpongeVideo ? (
+                  <GatedVimeoEmbed
+                    videoId={lk150SpongeVideo.vimeoId}
+                    contentId={lk150SpongeVideo.contentId}
+                    title={lk150SpongeVideo.title}
+                    access_level={lk150SpongeVideo.accessLevel}
+                    thumbUrl={lk150SpongeVideo.posterUrl}
+                  />
+                ) : (
+                  <p class="gsg-note">The LK150 sponge bar video could not be matched in the video library.</p>
+                )}
+              </div>
+              <div class="gsg-video-choice">
+                <h3>Metal bed machines</h3>
+                {metalSpongeVideo ? (
+                  <GatedVimeoEmbed
+                    videoId={metalSpongeVideo.vimeoId}
+                    contentId={metalSpongeVideo.contentId}
+                    title={metalSpongeVideo.title}
+                    access_level={metalSpongeVideo.accessLevel}
+                    thumbUrl={metalSpongeVideo.posterUrl}
+                  />
+                ) : (
+                  <p class="gsg-note">The metal bed sponge bar video could not be matched in the video library.</p>
+                )}
+              </div>
+            </div>
+        </div>
+      </section>
+
+      <section class="gsg-step" aria-labelledby="gsg-yarn">
+        <div class="gsg-step__rail" aria-hidden="true">
+          <span class="gsg-step__badge">4</span>
+        </div>
+        <div class="gsg-section gsg-step__panel">
+        <div class="gsg-split">
+          <div class="gsg-split__copy">
+            <h2 id="gsg-yarn"><span class="gsg-sr">4. </span>Choose a suitable yarn</h2>
+            <p>
+              Choose a yarn weight appropriate for your machine. For your first practice, use a smooth yarn in a light color so you can easily see the stitches. Check your manual for yarn recommendations.
+            </p>
+            <p>
+              You don’t need yarn on cones. Your yarn simply needs to feed smoothly into the machine without tangles or resistance. A center-pull ball may work, or you can rewind the yarn with a ball winder.
+            </p>
           </div>
-          <div class="gsg-video-choice">
-            <h3>Metal bed machines</h3>
-            {metalSpongeVideo ? (
-              <GatedVimeoEmbed
-                videoId={metalSpongeVideo.vimeoId}
-                contentId={metalSpongeVideo.contentId}
-                title={metalSpongeVideo.title}
-                access_level={metalSpongeVideo.accessLevel}
-                thumbUrl={metalSpongeVideo.posterUrl}
-              />
+          <div class="gsg-split__media">
+            {yarnVideo ? (
+              <div class="gsg-video-choice">
+                <h3>{yarnVideo.title}</h3>
+                <GatedVimeoEmbed
+                  videoId={yarnVideo.vimeoId}
+                  contentId={yarnVideo.contentId}
+                  title={yarnVideo.title}
+                  access_level={yarnVideo.accessLevel}
+                  thumbUrl={yarnVideo.posterUrl}
+                />
+              </div>
             ) : (
-              <p class="gsg-note">The metal bed sponge bar video could not be matched in the video library.</p>
+              <p class="gsg-note">The yarn video could not be matched in the video library.</p>
             )}
           </div>
         </div>
         <p>
-          Need a replacement? Check our <a href="/reference/repairs">Repairs and Service directory</a> for businesses that may supply sponge bars or replacement sponge. Confirm that the replacement is suitable for your machine model before ordering.
-        </p>
-      </section>
-
-      <section class="gsg-section" aria-labelledby="gsg-yarn">
-        <h2 id="gsg-yarn">4. Choose a suitable yarn</h2>
-        <p>
-          Choose a yarn weight appropriate for your machine. For your first practice, use a smooth yarn in a light color so you can easily see the stitches. Check your manual for yarn recommendations.
-        </p>
-        <p>
-          You don’t need yarn on cones. Your yarn simply needs to feed smoothly into the machine without tangles or resistance. A center-pull ball may work, or you can rewind the yarn with a ball winder.
-        </p>
-        {yarnVideo ? (
-          <div class="gsg-video-choice">
-            <h3>{yarnVideo.title}</h3>
-            <GatedVimeoEmbed
-              videoId={yarnVideo.vimeoId}
-              contentId={yarnVideo.contentId}
-              title={yarnVideo.title}
-              access_level={yarnVideo.accessLevel}
-              thumbUrl={yarnVideo.posterUrl}
-            />
-          </div>
-        ) : (
-          <p class="gsg-note">The yarn video could not be matched in the video library.</p>
-        )}
-        <p>
           Not sure about your yarn? Use the <a href="/tools/yarn-comparison-calculator">Yarn Comparison Calculator</a> to check your yarn label against suggested yarn weights for different machines.
         </p>
+        </div>
       </section>
 
-      <section class="gsg-section" aria-labelledby="gsg-practice">
-        <h2 id="gsg-practice">5. Get comfortable knitting again</h2>
-        <p>
-          Find the instructions for plain knitting or stockinette in your machine manual. Check the carriage settings and needle positions before you begin. Keep that page handy as you follow the video.
-        </p>
-        <p>
-          For your first practice, focus on getting comfortable with your machine. Cast on, knit a small piece of plain knitting, and bind off. You can skip the gauge markers and tension eyelets for now.
-        </p>
-        <p>
-          Once knitting feels familiar again, follow the complete video to make a proper gauge swatch for your next project.
-        </p>
-        {swatchVideo ? (
-          <div class="gsg-video-choice">
-            <h3>{swatchVideo.title}</h3>
-            <GatedVimeoEmbed
-              videoId={swatchVideo.vimeoId}
-              contentId={swatchVideo.contentId}
-              title={swatchVideo.title}
-              access_level={swatchVideo.accessLevel}
-              thumbUrl={swatchVideo.posterUrl}
-            />
+      <section class="gsg-step" aria-labelledby="gsg-practice">
+        <div class="gsg-step__rail" aria-hidden="true">
+          <span class="gsg-step__badge">5</span>
+        </div>
+        <div class="gsg-section gsg-step__panel">
+        <div class="gsg-split">
+          <div class="gsg-split__copy">
+            <h2 id="gsg-practice"><span class="gsg-sr">5. </span>Knit Your First Practice Swatch</h2>
+            <p>
+              Find the instructions for plain knitting or stockinette in your machine manual. Check the carriage settings and needle positions before you begin. Keep that page handy as you follow the video.
+            </p>
+            <p>
+              For your first practice, focus on getting comfortable with your machine. Cast on, knit a small piece of plain knitting, and bind off. You can skip the gauge markers and tension eyelets for now.
+            </p>
+            <p>
+              Once knitting feels familiar again, follow the complete video to make a proper gauge swatch for your next project.
+            </p>
           </div>
-        ) : (
-          <p class="gsg-note">
-            The video “{SWATCH_VIDEO_TITLE}” could not be matched in the video library. This step is waiting on that recording.
-          </p>
-        )}
-        <aside class="gsg-optional" aria-label="Optional resource">
-          <p class="gsg-kicker gsg-kicker--optional">Optional</p>
-          <p>
-            Keep a record of your settings. Once you’ve set your machine for plain knitting, take a photo or jot down the settings and manual page number. Our Machine Technique Reference Cards give you a handy place to record settings for future use.
-          </p>
-          <img
-            class="gsg-optional__image"
-            src="/images/shop/downloads/machine-technique-reference-cards.webp"
-            alt="Machine Technique Reference Card filled in with settings beside a knitting machine"
-            width="601"
-            height="477"
-          />
-          <p class="gsg-product">
-            <a href="/downloads/shop/machine-technique-reference-cards">Machine Technique Reference Cards</a>
-            <span class="gsg-price">$14.99 PDF</span>
-          </p>
-          <p class="gsg-note">Purchasing the cards is optional.</p>
-        </aside>
+          <div class="gsg-split__media">
+            {swatchVideo ? (
+              <div class="gsg-video-choice">
+                <h3>{swatchVideo.title}</h3>
+                <GatedVimeoEmbed
+                  videoId={swatchVideo.vimeoId}
+                  contentId={swatchVideo.contentId}
+                  title={swatchVideo.title}
+                  access_level={swatchVideo.accessLevel}
+                  thumbUrl={swatchVideo.posterUrl}
+                />
+              </div>
+            ) : (
+              <p class="gsg-note">
+                The video “{SWATCH_VIDEO_TITLE}” could not be matched in the video library. This step is waiting on that recording.
+              </p>
+            )}
+            <h3>Knitted your practice swatch? That’s progress!</h3>
+            <p>
+              It doesn’t need to be perfect. Every row helps you get more familiar with your machine and how the yarn behaves. Before moving on, give yourself time to practice.
+            </p>
+          </div>
+        </div>
+        </div>
       </section>
 
-      <section class="gsg-section" aria-labelledby="gsg-help">
-        <h2 id="gsg-help">6. Get personal help</h2>
-        <div class="gsg-help">
+      <aside class="gsg-bridge" aria-labelledby="gsg-workshop">
+        <div class="gsg-bridge__rail" aria-hidden="true"></div>
+        <div class="gsg-invite">
           <img
-            class="gsg-help__photo"
-            src="/images/knit-by-machine-sue.png"
-            alt="Sue from Knit It Now"
-            width="1385"
-            height="1371"
+            class="gsg-invite__thumb"
+            src="/images/courses/beginner.webp"
+            alt="Beginner Workshop"
+            width="600"
+            height="338"
           />
+          <div class="gsg-invite__copy">
+            <h2 id="gsg-workshop" class="gsg-invite__title">Ready to build on what you’ve practiced?</h2>
+            <p>
+              Keep going with the Beginner Workshop. Follow step-by-step lessons to build your skills and feel more confident using your knitting machine.
+            </p>
+            <p class="gsg-action gsg-invite__action">
+              <a class="kbm-btn kbm-btn-outline" href="/courses/beginner-workshop">Explore the Beginner Workshop</a>
+              <span class="gsg-invite__access">Members only</span>
+            </p>
+          </div>
+        </div>
+      </aside>
+
+      <section class="gsg-step" aria-labelledby="gsg-help">
+        <div class="gsg-step__rail" aria-hidden="true">
+          <span class="gsg-step__badge">6</span>
+        </div>
+        <div class="gsg-section gsg-step__panel gsg-help-banner">
+        <h2 id="gsg-help"><span class="gsg-sr">6. </span>Get Personal Help</h2>
+        <div class="gsg-help">
           <div class="gsg-help__copy">
             <p>
-              Still feeling stuck or unsure where to start? Explore the ways to work with Sue for help with your machine knitting.
+              You don’t have to figure everything out on your own. Sometimes a little help is all you need to take the next step.
             </p>
             <p class="gsg-action">
-              <a class="kbm-btn kbm-btn-primary" href="/help-hub/work-with-sue">Explore help with Sue</a>
+              <a class="kbm-btn kbm-btn-primary" href="/help-hub/work-with-sue">Explore Your Help Options</a>
             </p>
           </div>
+        </div>
         </div>
       </section>
     </div>
@@ -406,26 +471,58 @@ const swatchVideo = guideVideo(2189, SWATCH_VIDEO_TITLE);
 </script>
 
 <style>
+  /* Soft cream page field; white step panels stay white against it. */
+  :global(body.page--getting-started-guide) {
+    --gsg-page-bg: #fbf9f5;
+    background: var(--gsg-page-bg);
+  }
+
   /* Main already clears the fixed header, so don't add page-wrap's second offset. */
   .gsg.page-wrap {
+    max-width: 68rem;
     padding-top: 0.5rem;
   }
 
   .gsg-header {
-    margin-bottom: 1.5rem;
+    margin-bottom: 1.25rem;
   }
 
   .gsg-header h1 {
     margin-bottom: 0.75rem;
   }
 
+  .gsg-intro-row {
+    display: flex;
+    align-items: center;
+    gap: 1.35rem;
+    width: 100%;
+  }
+
+  .gsg-intro__photo {
+    order: 2;
+    width: 200px;
+    height: auto;
+    flex: 0 0 auto;
+    border-radius: 14px;
+  }
+
+  .gsg-intro__copy {
+    order: 1;
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
   .gsg-intro {
     margin: 0;
-    max-width: 40rem;
     color: #243015;
   }
 
+  .gsg-intro + .gsg-intro {
+    margin-top: 0.75rem;
+  }
+
   .gsg-gate {
+    max-width: 42rem;
     margin-bottom: 2rem;
   }
 
@@ -499,10 +596,153 @@ const swatchVideo = guideVideo(2189, SWATCH_VIDEO_TITLE);
   }
 
   .gsg-sections {
+    --gsg-step-gap: 1.35rem;
+    --gsg-badge-size: 2.5rem;
+    --gsg-badge-offset: 1.25rem;
     display: flex;
     flex-direction: column;
-    gap: 1.25rem;
+    gap: var(--gsg-step-gap);
     margin-bottom: 2.5rem;
+  }
+
+  .gsg-step {
+    display: grid;
+    grid-template-columns: var(--gsg-badge-size) minmax(0, 1fr);
+    column-gap: 0.9rem;
+    align-items: stretch;
+    min-width: 0;
+  }
+
+  .gsg-step__rail {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+  }
+
+  .gsg-step:not(:last-child) .gsg-step__rail::before {
+    content: "";
+    position: absolute;
+    left: 50%;
+    width: 2px;
+    transform: translateX(-50%);
+    background: rgba(82, 104, 45, 0.28);
+    top: calc(var(--gsg-badge-offset) + var(--gsg-badge-size) / 2);
+    bottom: calc((var(--gsg-step-gap) + var(--gsg-badge-offset) + var(--gsg-badge-size) / 2) * -1);
+  }
+
+  .gsg-step__badge {
+    position: relative;
+    z-index: 1;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--gsg-badge-size);
+    height: var(--gsg-badge-size);
+    margin-top: var(--gsg-badge-offset);
+    border-radius: 50%;
+    border: 2px solid var(--kbm-green, #52682d);
+    background: #fff;
+    box-shadow: 0 0 0 4px var(--gsg-page-bg, #fbf9f5);
+    color: var(--kbm-green, #52682d);
+    font-weight: 700;
+    font-size: 1.05rem;
+    line-height: 1;
+    flex: 0 0 auto;
+  }
+
+  .gsg-step__badge--critical {
+    border-color: #8a4b32;
+    background: #fff8f4;
+    color: #8a4b32;
+  }
+
+  .gsg-step__panel {
+    min-width: 0;
+  }
+
+  /* Unnumbered bridge between steps 5 and 6. The rail continues the timeline with no badge. */
+  .gsg-bridge {
+    display: grid;
+    grid-template-columns: var(--gsg-badge-size) minmax(0, 1fr);
+    column-gap: 0.9rem;
+    align-items: stretch;
+    min-width: 0;
+  }
+
+  .gsg-bridge__rail {
+    position: relative;
+  }
+
+  .gsg-bridge__rail::before {
+    content: "";
+    position: absolute;
+    left: 50%;
+    width: 2px;
+    transform: translateX(-50%);
+    background: rgba(82, 104, 45, 0.28);
+    top: calc(var(--gsg-badge-offset) + var(--gsg-badge-size) / 2 - 1px);
+    bottom: calc((var(--gsg-step-gap) + var(--gsg-badge-offset) + var(--gsg-badge-size) / 2) * -1);
+  }
+
+  .gsg-invite {
+    display: flex;
+    align-items: center;
+    gap: 1.15rem;
+    min-width: 0;
+    padding: 0.95rem 1rem 1rem;
+    border: 1px dashed rgba(82, 104, 45, 0.4);
+    border-radius: 12px;
+    background: #f7f8f4;
+  }
+
+  .gsg-invite__thumb {
+    flex: 0 0 240px;
+    width: 240px;
+    height: auto;
+    border-radius: 12px;
+  }
+
+  .gsg-invite__copy {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .gsg-invite__title {
+    margin: 0 0 0.45rem;
+    font-size: 1.15rem;
+    font-weight: 600;
+    line-height: 1.3;
+  }
+
+  .gsg-invite p {
+    margin: 0 0 0.75rem;
+    max-width: 65ch;
+  }
+
+  .gsg-invite p:last-child {
+    margin-bottom: 0;
+  }
+
+  .gsg-invite__action {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.65rem 0.75rem;
+  }
+
+  .gsg-invite__access {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.2rem 0.6rem;
+    border-radius: 999px;
+    background: rgba(82, 104, 45, 0.12);
+    color: var(--kbm-green, #52682d);
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    line-height: 1.3;
   }
 
   .gsg-section {
@@ -511,6 +751,32 @@ const swatchVideo = guideVideo(2189, SWATCH_VIDEO_TITLE);
     border-radius: 0.85rem;
     box-shadow: 0 2px 8px rgba(82, 104, 45, 0.05);
     padding: 1.25rem 1.25rem 1.35rem;
+  }
+
+  .gsg-split {
+    display: grid;
+    grid-template-columns: minmax(0, 2.25fr) minmax(0, 3fr);
+    column-gap: 1.5rem;
+    row-gap: 0.5rem;
+    align-items: start;
+  }
+
+  .gsg-split__copy,
+  .gsg-split__media {
+    min-width: 0;
+  }
+
+  .gsg-split + p {
+    margin-top: 1.15rem;
+  }
+
+  .gsg-split__copy .gsg-figure:last-child {
+    margin-bottom: 0;
+  }
+
+  .gsg-split__media .gsg-videos,
+  .gsg-split__media .gsg-video-choice {
+    margin: 0;
   }
 
   .gsg-section h2 {
@@ -526,10 +792,27 @@ const swatchVideo = guideVideo(2189, SWATCH_VIDEO_TITLE);
     color: var(--kbm-green, #52682d);
   }
 
+  .gsg-split__media > h3 {
+    margin-top: 1.15rem;
+  }
+
   .gsg-section--critical {
     border: 2px solid #8a4b32;
     background: #fff8f4;
     box-shadow: 0 2px 10px rgba(138, 75, 50, 0.08);
+  }
+
+  /* Keep the example photo a supporting image under the text, not a full-width banner. */
+  .gsg-section--critical .gsg-figure {
+    max-width: 40rem;
+  }
+
+  @media (min-width: 1041px) {
+    .gsg-section--critical .gsg-videos {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      align-items: start;
+    }
   }
 
   .gsg-kicker {
@@ -549,11 +832,6 @@ const swatchVideo = guideVideo(2189, SWATCH_VIDEO_TITLE);
     color: #fff;
   }
 
-  .gsg-kicker--optional {
-    background: rgba(82, 104, 45, 0.12);
-    color: var(--kbm-green, #52682d);
-  }
-
   .gsg-figure {
     margin: 0.2rem 0 1rem;
   }
@@ -561,7 +839,7 @@ const swatchVideo = guideVideo(2189, SWATCH_VIDEO_TITLE);
   .gsg-figure img {
     display: block;
     width: 100%;
-    max-width: 40rem;
+    max-width: 100%;
     height: auto;
     border-radius: 12px;
     border: 1px solid rgba(138, 75, 50, 0.25);
@@ -583,60 +861,26 @@ const swatchVideo = guideVideo(2189, SWATCH_VIDEO_TITLE);
     margin: 0;
   }
 
-  .gsg-optional {
-    margin-top: 1.15rem;
-    padding: 0.95rem 1rem 1rem;
-    border: 1px dashed rgba(82, 104, 45, 0.4);
-    border-radius: 12px;
-    background: #f7f8f4;
-  }
-
-  .gsg-optional__image {
-    display: block;
-    width: 100%;
-    max-width: 360px;
-    height: auto;
-    margin: 0 0 0.75rem;
-    border-radius: 12px;
-  }
-
-  .gsg-optional p {
-    margin: 0 0 0.75rem;
-  }
-
-  .gsg-optional p:last-child {
-    margin-bottom: 0;
-  }
-
-  .gsg-product {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: baseline;
-    gap: 0.4rem 0.75rem;
-  }
-
-  .gsg-price {
-    font-weight: 700;
-    color: #243015;
+  .gsg-help-banner {
+    background: linear-gradient(180deg, #f3f6ee 0%, #fff 72%);
+    border-color: rgba(82, 104, 45, 0.22);
   }
 
   .gsg-help {
     display: flex;
-    flex-direction: row;
-    align-items: flex-start;
-    gap: 1.15rem;
-  }
-
-  .gsg-help__photo {
-    width: 7.25rem;
-    height: auto;
-    flex: 0 0 auto;
-    border-radius: 12px;
+    flex-direction: row-reverse;
+    align-items: center;
+    gap: 1.5rem;
   }
 
   .gsg-help__copy {
     flex: 1;
     min-width: 0;
+  }
+
+  .gsg-help__copy p {
+    max-width: 38rem;
+    font-size: 1.05rem;
   }
 
   .gsg-action {
@@ -663,6 +907,7 @@ const swatchVideo = guideVideo(2189, SWATCH_VIDEO_TITLE);
     display: flex;
     flex-direction: column;
     gap: 1rem;
+    max-width: 36rem;
     margin: 0.35rem 0 1rem;
   }
 
@@ -819,14 +1064,87 @@ const swatchVideo = guideVideo(2189, SWATCH_VIDEO_TITLE);
     border: 0;
   }
 
+  @media (max-width: 1040px) {
+    .gsg-split {
+      grid-template-columns: minmax(0, 1fr);
+      row-gap: 1rem;
+    }
+  }
+
   @media (max-width: 640px) {
+    /* Main already insets the page, so the rail can stay compact. */
+    .gsg.page-wrap {
+      padding-left: 0;
+      padding-right: 0;
+    }
+
+    .gsg-sections {
+      --gsg-step-gap: 1rem;
+      --gsg-badge-size: 1.45rem;
+      --gsg-badge-offset: 0.85rem;
+    }
+
+    .gsg-step,
+    .gsg-bridge {
+      column-gap: 0.4rem;
+    }
+
+    .gsg-invite {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 0.85rem;
+      padding: 0.85rem 0.7rem 1rem;
+    }
+
+    .gsg-invite__thumb {
+      flex: 0 1 auto;
+      align-self: center;
+      width: min(240px, 100%);
+      max-width: 100%;
+    }
+
+    .gsg-invite__action {
+      flex-direction: column-reverse;
+      align-items: flex-start;
+    }
+
+    .gsg-step__badge {
+      border-width: 1.5px;
+      box-shadow: 0 0 0 3px var(--gsg-page-bg, #fbf9f5);
+      font-size: 0.72rem;
+    }
+
     .gsg-section {
-      padding: 1rem 0.9rem 1.1rem;
+      padding: 0.85rem 0.7rem 1rem;
+    }
+
+    .gsg-intro-row {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 1rem;
+    }
+
+    .gsg-intro__photo,
+    .gsg-intro__copy {
+      order: 0;
+    }
+
+    .gsg-intro__photo {
+      width: 150px;
     }
 
     .gsg-help {
       flex-direction: column;
-      gap: 0.85rem;
+      align-items: flex-start;
+      gap: 1rem;
+    }
+
+    .gsg-help__copy p {
+      font-size: 1rem;
+    }
+
+    .gsg-action :global(.kbm-btn) {
+      width: 100%;
     }
 
     .gsg-combo__input,
