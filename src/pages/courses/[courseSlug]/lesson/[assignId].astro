@@ -7,7 +7,7 @@ import KinCourseComponents from "../../../../components/kinCourse/KinCourseCompo
 import KinCourseLayout from "../../../../layouts/KinCourseLayout.astro";
 import KinCourseAdminPreviewBootstrap from "../../../../components/kinCourse/KinCourseAdminPreviewBootstrap.astro";
 import { lessonPlainTitle, parseAssignId, parseKinCourseId } from "../../../../lib/kinCourse/hrefs";
-import { loadKinCourseBundle } from "../../../../lib/kinCourse/load";
+import { loadNumberedCoursePlayerBundle } from "../../../../lib/kinCourse/load";
 import { getLessonContext, visibleLessonComponents } from "../../../../lib/kinCourse/player";
 import { kinCourseHomeHref } from "../../../../lib/kinCourse/hrefs";
 import {
@@ -27,7 +27,7 @@ if (!courseId || !assignId) {
 const previewRequested = kinCoursePreviewRequested(Astro.url);
 const loadOptions = await kinCourseLoadOptions(Astro.url, Astro.request, Astro.cookies);
 Astro.response.headers.set("Cache-Control", "no-store");
-const bundle = await loadKinCourseBundle(courseId, loadOptions);
+const bundle = await loadNumberedCoursePlayerBundle(courseId, loadOptions);
 const showAdminPreviewBootstrap = kinCourseNeedsAdminPreviewBootstrap(previewRequested, bundle);
 if (!bundle && !showAdminPreviewBootstrap) {
   return new Response("Course not found", { status: 404 });

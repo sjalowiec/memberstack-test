@@ -134,33 +134,83 @@ const purchaseInfoItems = (copy.purchaseInfo?.items ?? [])
 
         <section class="kin-course-sales__cta" aria-labelledby="kin-course-sales-cta-heading">
           <h2 id="kin-course-sales-cta-heading">{copy.ctaHeading}</h2>
-          <div class="kin-course-sales__buy-row">
-            {
-              priceLabel ? (
-                <p class="kin-course-sales__price">
-                  <span class="kin-course-sales__price-value">{priceLabel}</span>
+          {
+            copy.accessLine ? (
+              <p class="kin-course-sales__access">{copy.accessLine}</p>
+            ) : null
+          }
+          {
+            accessCta ? (
+              <div
+                class="kin-course-sales-cta"
+                data-kin-course-sales-cta
+                data-course-slug={courseSlug}
+                data-course-access={salesAccess}
+              >
+                <p class="kin-course-sales__checkout-status" data-sales-cta="pending" role="status">
+                  Checking access…
                 </p>
-              ) : null
-            }
-            {
-              priceId ? (
-                <CoursePurchaseButton
-                  courseSlug={courseSlug}
-                  label={copy.purchaseButtonLabel}
-                  className="course-home-start kin-course-sales__buy"
-                />
-              ) : null
-            }
-          </div>
-          <p class="kin-course-sales__checkout-status" data-course-checkout-status hidden role="status"></p>
-          <p class="kin-course-sales__owner" data-gate-copy="loggedOut">
-            {copy.ownerBefore}{" "}
-            <button type="button" class="kin-course-sales__signin" data-course-111-login>
-              {copy.ownerAction}
-            </button>{" "}
-            {copy.ownerAfter}
-          </p>
-          <div data-gate-copy="loggedInNoAccess" hidden></div>
+                <div data-sales-cta="open" hidden>
+                  <div class="kin-course-sales__buy-row">
+                    <a class="course-home-start kin-course-sales__join" href={accessCta.startHref}>
+                      {accessCta.startLabel}
+                    </a>
+                  </div>
+                </div>
+                <div data-sales-cta="loggedOut" hidden>
+                  <div class="kin-course-sales__buy-row">
+                    <a class="course-home-start kin-course-sales__join" href={accessCta.joinHref}>
+                      {accessCta.joinLabel}
+                    </a>
+                  </div>
+                  <p class="kin-course-sales__owner">
+                    {accessCta.signInBefore}{" "}
+                    <button type="button" class="kin-course-sales__signin" data-course-111-login>
+                      {accessCta.signInLabel}
+                    </button>{" "}
+                    {accessCta.signInAfter}
+                  </p>
+                </div>
+                <div data-sales-cta="loggedInNoAccess" hidden>
+                  <div class="kin-course-sales__buy-row">
+                    <a class="course-home-start kin-course-sales__join" href={accessCta.memberHref}>
+                      {accessCta.memberLabel}
+                    </a>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <>
+                <div class="kin-course-sales__buy-row">
+                  {
+                    priceLabel ? (
+                      <p class="kin-course-sales__price">
+                        <span class="kin-course-sales__price-value">{priceLabel}</span>
+                      </p>
+                    ) : null
+                  }
+                  {
+                    priceId ? (
+                      <CoursePurchaseButton
+                        courseSlug={courseSlug}
+                        label={copy.purchaseButtonLabel}
+                        className="course-home-start kin-course-sales__buy"
+                      />
+                    ) : null
+                  }
+                </div>
+                <p class="kin-course-sales__checkout-status" data-course-checkout-status hidden role="status"></p>
+                <p class="kin-course-sales__owner" data-gate-copy="loggedOut">
+                  {copy.ownerBefore}{" "}
+                  <button type="button" class="kin-course-sales__signin" data-course-111-login>
+                    {copy.ownerAction}
+                  </button>{" "}
+                  {copy.ownerAfter}
+                </p>
+                <div data-gate-copy="loggedInNoAccess" hidden></div>
+              </>
+            )
+          }
         </section>
       </>
     )
@@ -245,7 +295,8 @@ const purchaseInfoItems = (copy.purchaseInfo?.items ?? [])
   }
 
   .kin-course-sales__intro p,
-  .kin-course-sales__support {
+  .kin-course-sales__support,
+  .kin-course-sales__access {
     margin: 0 0 12px;
     font-size: 1.05rem;
     line-height: 1.55;
