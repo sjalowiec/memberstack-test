@@ -28,6 +28,12 @@ export type SyncPatternInpageNavOptions = {
 };
 
 let patternInpageNavScrollSpyBound = false;
+let patternInpageNavSyncHook: ((nav: HTMLElement) => void) | null = null;
+
+/** Saved-pattern pages register once so nav rebuilds can refresh actions. */
+export function setPatternInpageNavSyncHook(hook: ((nav: HTMLElement) => void) | null): void {
+  patternInpageNavSyncHook = hook;
+}
 
 function patternInpageNavScrollOffsetPx(nav: Element | null): number {
   const headerOffset =
@@ -273,6 +279,7 @@ export function syncPatternInpageNav(options: SyncPatternInpageNavOptions): numb
   if (count > 0) {
     options.onHasItems?.();
   }
+  patternInpageNavSyncHook?.(nav);
   nav.hidden = count === 0 && !patternStickyNavHasVisibleActions(nav);
   if (!nav.hidden) {
     bindPatternInpageNavScrollSpy();

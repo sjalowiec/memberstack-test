@@ -414,6 +414,23 @@ export async function patchCustomPatternProjectReadingWorkflow(
   return { ok: true, project: res.project, authMode: res.authMode };
 }
 
+/** Persist private My Notes only. Does not send or replace the pattern body. */
+export async function patchCustomPatternProjectMemberNotes(
+  id: string,
+  memberNotes: string,
+  family: CustomPatternFamily = "sleeveless",
+): Promise<
+  | { ok: true; project: CustomPatternProject; authMode?: CustomPatternProjectAuthMode }
+  | { ok: false; error: string }
+> {
+  const res = await projectFetch<{ project: CustomPatternProject }>("custom-pattern-project-update", {
+    method: "PUT",
+    body: JSON.stringify({ id, family, memberNotesOnly: true, memberNotes }),
+  });
+  if (!res.ok) return res;
+  return { ok: true, project: res.project, authMode: res.authMode };
+}
+
 export async function loadCustomPatternProject(
   id: string,
   family: CustomPatternFamily = "sleeveless",

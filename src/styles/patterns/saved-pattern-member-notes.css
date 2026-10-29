@@ -1,0 +1,156 @@
+/* My Notes dialog and the saved-notes mark on the sticky-nav button. */
+
+.sleeveless-pattern-page .saved-pattern-member-notes-action {
+  position: relative;
+}
+
+.saved-pattern-member-notes-mark {
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 999px;
+  background: var(--sg-accent, #c2614e);
+  flex: 0 0 auto;
+}
+
+.saved-pattern-member-notes-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.saved-pattern-member-notes-dialog {
+  width: min(32rem, calc(100vw - 1.5rem));
+  max-width: calc(100vw - 1.5rem);
+  padding: 0;
+  border: none;
+  border-radius: 10px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.22);
+}
+
+.saved-pattern-member-notes-dialog::backdrop {
+  background: rgba(17, 24, 39, 0.45);
+}
+
+.saved-pattern-member-notes-dialog__panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 1.25rem 1.35rem 1.35rem;
+}
+
+.saved-pattern-member-notes-dialog__heading {
+  margin: 0 0 0.35rem;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--kbm-green, #52682d);
+  line-height: 1.25;
+}
+
+.saved-pattern-member-notes-dialog__hint {
+  margin: 0 0 0.75rem;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  color: #4b5563;
+}
+
+.saved-pattern-member-notes-dialog__label {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.saved-pattern-member-notes-dialog__input {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 8.5rem;
+  margin: 0.25rem 0 0;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font: inherit;
+  font-size: 0.95rem;
+  line-height: 1.45;
+  resize: vertical;
+}
+
+.saved-pattern-member-notes-dialog__input:focus-visible {
+  outline: 2px solid var(--kbm-green, #52682d);
+  outline-offset: 2px;
+}
+
+.saved-pattern-member-notes-dialog__status {
+  min-height: 1.25rem;
+  margin: 0.55rem 0 0;
+  font-size: 0.88rem;
+  line-height: 1.35;
+  color: #374151;
+}
+
+.saved-pattern-member-notes-dialog__status[data-tone="error"] {
+  color: #9f1239;
+}
+
+.saved-pattern-member-notes-dialog__status[data-tone="saved"] {
+  color: var(--kbm-green, #52682d);
+  font-weight: 600;
+}
+
+.saved-pattern-member-notes-dialog__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  justify-content: flex-end;
+  margin-top: 0.85rem;
+}
+
+.saved-pattern-member-notes-dialog__btn {
+  cursor: pointer;
+  padding: 0.55rem 1rem;
+  border-radius: 8px;
+  border: 1px solid #9ca3af;
+  background: #fff;
+  font-weight: 600;
+  font-size: 0.92rem;
+}
+
+.saved-pattern-member-notes-dialog__btn:focus-visible {
+  outline: 2px solid var(--kbm-green, #52682d);
+  outline-offset: 2px;
+}
+
+.saved-pattern-member-notes-dialog__btn:disabled {
+  cursor: default;
+  opacity: 0.65;
+}
+
+.saved-pattern-member-notes-dialog__btn--primary {
+  border-color: var(--kbm-green, #52682d);
+  background: var(--kbm-green, #52682d);
+  color: #fff;
+}
+
+@media (max-width: 640px) {
+  .saved-pattern-member-notes-dialog__panel {
+    padding: 1rem 0.9rem 1.05rem;
+  }
+
+  .saved-pattern-member-notes-dialog__actions {
+    justify-content: stretch;
+  }
+
+  .saved-pattern-member-notes-dialog__btn {
+    flex: 1 1 8rem;
+  }
+}
+
+@media print {
+  .saved-pattern-member-notes-dialog {
+    display: none !important;
+  }
+}

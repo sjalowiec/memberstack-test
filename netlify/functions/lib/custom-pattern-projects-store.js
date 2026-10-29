@@ -535,6 +535,62 @@ export const UNSUPPORTED_CUSTOM_PATTERN_TYPE_ERROR =
   "Only sleeveless, hat, socks, and Christmas stocking pattern projects are supported in this phase.";
 
 /**
+ * Private "My Notes" text stored on the saved project.
+ * Separate from print/project `notes` (300 characters, shown on the pattern and in print).
+ * Keep in sync with MEMBER_NOTES_MAX_LENGTH in src/lib/patterns/savedPatternMemberNotes.ts.
+ */
+export const MEMBER_NOTES_MAX_LENGTH = 8000;
+
+/** Trimmed plain text. Non-strings become "". Does not enforce the length cap. */
+export function normalizeMemberNotes(value) {
+  if (typeof value !== "string") return "";
+  return value.replace(/\r\n/g, "\n").trim();
+}
+
+/**
+ * Notes-only patch. Copies every other stored field from `existing` and replaces only
+ * `memberNotes` (omitted when blank). Does not change the pattern version.
+ *
+ * @param {Record<string, unknown>} existing
+ * @param {unknown} memberNotesInput
+ */
+export function memberNotesOnlyProject(existing, memberNotesInput) {
+  if (typeof memberNotesInput !== "string") {
+    return { ok: false, error: "Notes must be plain text." };
+  }
+  const notes = normalizeMemberNotes(memberNotesInput);
+  if (notes.length > MEMBER_NOTES_MAX_LENGTH) {
+    return {
+      ok: false,
+      error: `Notes must be ${MEMBER_NOTES_MAX_LENGTH} characters or fewer.`,
+    };
+  }
+  const project = {
+    ...existing,
+    updatedAt: new Date().toISOString(),
+  };
+  if (notes) project.memberNotes = notes;
+  else delete project.memberNotes;
+  return { ok: true, project };
+}
+
+/**
+ * Keep saved My Notes across a full pattern update. The incoming project cannot
+ * change or clear them; only {@link memberNotesOnlyProject} writes this field.
+ *
+ * @param {Record<string, unknown>} project
+ * @param {Record<string, unknown> | null | undefined} existing
+ */
+export function preserveStoredMemberNotes(project, existing) {
+  const next = { ...project };
+  delete next.memberNotes;
+  if (!existing || typeof existing.memberNotes !== "string") return next;
+  const notes = normalizeMemberNotes(existing.memberNotes).slice(0, MEMBER_NOTES_MAX_LENGTH);
+  if (notes) next.memberNotes = notes;
+  return next;
+}
+
+/**
  * @param {Record<string, unknown>} data
  * @param {string} userId
  * @param {string} [existingId]
