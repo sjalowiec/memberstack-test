@@ -70,6 +70,42 @@ export function savedPatternHasMemberNotes(notes: string): boolean {
   return normalizeMemberNotes(notes).length > 0;
 }
 
+type PrintMemberNotesSection = {
+  querySelector(selector: string): { textContent: string | null } | null;
+  removeAttribute(name: string): void;
+  setAttribute(name: string, value: string): void;
+};
+
+/**
+ * Put saved My Notes into the print document, next to At a Glance.
+ * Blank notes hide the section. Line breaks stay in the text.
+ */
+export function applySavedMemberNotesToPrint(
+  notes: string,
+  root: { querySelectorAll(selector: string): Iterable<PrintMemberNotesSection> },
+): void {
+  if (typeof root.querySelectorAll !== "function") return;
+  const text = normalizeMemberNotes(notes).slice(0, MEMBER_NOTES_MAX_LENGTH);
+  for (const section of root.querySelectorAll("[data-pattern-print-member-notes]")) {
+    const body = section.querySelector("[data-pattern-print-member-notes-body]");
+    if (body) body.textContent = text;
+    if (text) section.removeAttribute("hidden");
+    else section.setAttribute("hidden", "");
+  }
+}
+
+let prepareMemberNotesForPrint: (() => void) | null = null;
+
+/** The saved-pattern page registers the loader for its current notes. */
+export function setSavedMemberNotesPrintPrep(prepare: (() => void) | null): void {
+  prepareMemberNotesForPrint = prepare;
+}
+
+/** Copy the saved notes into the print document before the PDF is generated. */
+export function prepareSavedMemberNotesForPrint(): void {
+  prepareMemberNotesForPrint?.();
+}
+
 const MEMBER_NOTES_DATE_MONTHS = [
   "Jan",
   "Feb",

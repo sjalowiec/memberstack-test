@@ -13,6 +13,9 @@ import {
   memberNotesFromProject,
   readSavedPatternMemberNotesTarget,
   savedPatternHasMemberNotes,
+  applySavedMemberNotesToPrint,
+  prepareSavedMemberNotesForPrint,
+  setSavedMemberNotesPrintPrep,
   type MemberNotesFeedback,
 } from "../lib/patterns/savedPatternMemberNotes";
 import { setPatternInpageNavSyncHook } from "../lib/patterns/patternInpageNav";
@@ -101,11 +104,19 @@ export function bindSavedPatternMemberNotes(doc: Document = document): void {
   function remember(projectId: string, notes: string): void {
     sessionNotes.set(projectId, notes);
     renderIndicator(projectId);
+    const current = readSavedPatternMemberNotesTarget();
+    if (current?.projectId === projectId) applySavedMemberNotesToPrint(notes, doc);
   }
 
   setPatternInpageNavSyncHook((nav) => {
     const notesButton = nav.querySelector(`[${OPEN_ATTR}]`);
     if (notesButton instanceof HTMLButtonElement) refreshSavedPatternMemberNotes(notesButton);
+  });
+
+  setSavedMemberNotesPrintPrep(() => {
+    const target = readSavedPatternMemberNotesTarget();
+    if (!target || !sessionNotes.has(target.projectId)) return;
+    applySavedMemberNotesToPrint(sessionNotes.get(target.projectId) ?? "", doc);
   });
 
   button.addEventListener("click", () => {
@@ -260,6 +271,7 @@ export function resetSavedPatternMemberNotesForTests(): void {
   sessionNotes.clear();
   prefetching.clear();
   setPatternInpageNavSyncHook(null);
+  setSavedMemberNotesPrintPrep(null);
 }
 
 export function refreshSavedPatternMemberNotes(button: HTMLButtonElement): void {
@@ -285,6 +297,12 @@ export function refreshSavedPatternMemberNotes(button: HTMLButtonElement): void 
 
 const prefetching = new Set<string>();
 
+if (typeof window !== "undefined") {
+  window.addEventListener("beforeprint", () => {
+    prepareSavedMemberNotesForPrint();
+  });
+}
+
 async function prefetchMemberNotes(projectId: string, button: HTMLButtonElement): Promise<void> {
   if (prefetching.has(projectId) || sessionNotes.has(projectId)) return;
   prefetching.add(projectId);
@@ -293,6 +311,10 @@ async function prefetchMemberNotes(projectId: string, button: HTMLButtonElement)
     if (!loaded.ok || sessionNotes.has(projectId)) return;
     sessionNotes.set(projectId, memberNotesFromProject(loaded.project));
     refreshSavedPatternMemberNotes(button);
+    const current = readSavedPatternMemberNotesTarget();
+    if (current?.projectId === projectId) {
+      applySavedMemberNotesToPrint(sessionNotes.get(projectId) ?? "", document);
+    }
   } catch {
     /* Opening My Notes reports the load error. */
   } finally {

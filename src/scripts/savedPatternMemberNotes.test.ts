@@ -111,6 +111,19 @@ function mount(href: string) {
   const cancel = new FakeEl();
   const status = new FakeEl();
   const form = new FakeEl();
+  const printBody = { textContent: "" };
+  const printSection = {
+    hidden: true,
+    querySelector() {
+      return printBody;
+    },
+    removeAttribute() {
+      this.hidden = false;
+    },
+    setAttribute() {
+      this.hidden = true;
+    },
+  };
   const doc = {
     querySelector(selector: string) {
       const map: Record<string, FakeEl> = {
@@ -122,6 +135,9 @@ function mount(href: string) {
         "[data-saved-pattern-member-notes-form]": form,
       };
       return map[selector] ?? null;
+    },
+    querySelectorAll(selector: string) {
+      return selector === "[data-pattern-print-member-notes]" ? [printSection] : [];
     },
     getElementById(id: string) {
       if (id === "saved-pattern-member-notes-dialog") return dialog;
@@ -137,7 +153,7 @@ function mount(href: string) {
   vi.stubGlobal("document", doc);
   vi.stubGlobal("window", { location: { href } });
   bindSavedPatternMemberNotes(doc as unknown as Document);
-  return { button, dialog, textarea, save, insertDate, cancel, status, form, mark, savedLabel, nav };
+  return { button, dialog, textarea, save, insertDate, cancel, status, form, mark, savedLabel, nav, printBody, printSection };
 }
 
 async function flush(): Promise<void> {
@@ -181,6 +197,8 @@ describe("My Notes editor", () => {
     expect(ui.status.textContent).toBe("");
     await flush();
     expect(ui.textarea.value).toBe("Blue yarn");
+    expect(ui.printBody.textContent).toBe("Blue yarn");
+    expect(ui.printSection.hidden).toBe(false);
     expect(ui.textarea.readOnly).toBe(false);
     expect(ui.save.disabled).toBe(false);
     expect(focused).toBe(ui.textarea);
@@ -229,6 +247,8 @@ describe("My Notes editor", () => {
     expect(focused).toBe(ui.button);
     expect(ui.mark.hidden).toBe(true);
     expect(ui.savedLabel.hidden).toBe(true);
+    expect(ui.printBody.textContent).toBe("");
+    expect(ui.printSection.hidden).toBe(true);
   });
 
   it("opens an empty editor for an older pattern without notes", async () => {

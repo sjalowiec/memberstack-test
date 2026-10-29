@@ -3,6 +3,7 @@ import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { stubLocalStorage } from "./test/stubLocalStorage";
 import {
+  applySavedMemberNotesToPrint,
   formatMemberNotesDate,
   insertMemberNotesDate,
   MEMBER_NOTES_MAX_LENGTH,
@@ -214,6 +215,58 @@ describe("saved pattern My Notes", () => {
     });
     expect(exact.inserted).toBe(true);
     expect(exact.value).toHaveLength(MEMBER_NOTES_MAX_LENGTH);
+  });
+
+  it("puts saved notes in the print document and omits an empty note", () => {
+    const body = { textContent: "stale" };
+    const section = {
+      hidden: false,
+      querySelector(selector: string) {
+        return selector === "[data-pattern-print-member-notes-body]" ? body : null;
+      },
+      removeAttribute(name: string) {
+        if (name === "hidden") this.hidden = false;
+      },
+      setAttribute(name: string) {
+        if (name === "hidden") this.hidden = true;
+      },
+    };
+    const root = {
+      querySelectorAll(selector: string) {
+        return selector === "[data-pattern-print-member-notes]" ? [section] : [];
+      },
+    };
+    applySavedMemberNotesToPrint("Row 20\nHold the rib", root);
+    expect(body.textContent).toBe("Row 20\nHold the rib");
+    expect(section.hidden).toBe(false);
+    applySavedMemberNotesToPrint("   ", root);
+    expect(body.textContent).toBe("");
+    expect(section.hidden).toBe(true);
+
+    const header = readFileSync(resolve("src/components/patterns/SavedPatternHeader.astro"), "utf8");
+    const introClose = header.indexOf("</section>");
+    const notes = header.indexOf('data-pattern-print-member-notes');
+    expect(introClose).toBeGreaterThan(-1);
+    expect(notes).toBeGreaterThan(introClose);
+    expect(header).toContain(">My Notes</h2>");
+
+    const css = readFileSync(resolve("src/styles/patterns/pattern-print-personalization.css"), "utf8");
+    const notesRule = css.slice(css.indexOf(".pattern-print-member-notes:not([hidden])"));
+    expect(notesRule).toContain("white-space: pre-wrap");
+    expect(notesRule).toContain("break-inside: auto");
+    expect(notesRule.slice(0, notesRule.indexOf(".pattern-print-personalization-never-print"))).not.toContain(
+      "break-inside: avoid",
+    );
+
+    const personalization = readFileSync(
+      resolve("src/components/common/PatternPrintPersonalization.astro"),
+      "utf8",
+    );
+    expect(personalization).toContain('maxlength={300}');
+    expect(personalization).toContain("data-pattern-print-personalization-notes");
+    const print = readFileSync(resolve("src/scripts/patternPrintPersonalization.ts"), "utf8");
+    expect(print).toContain("prepareSavedMemberNotesForPrint()");
+    expect(print).toContain("window.print()");
   });
 
   it("places My Notes in the sticky nav beside Edit Pattern and Print", () => {
