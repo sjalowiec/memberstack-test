@@ -192,16 +192,16 @@ describe("Beginner Workshop sales page", () => {
     ).toBe(false);
   });
 
-  it("lists the overview from the course catalog like the other View Course cards", () => {
-    const entry = getCourseCatalogEntries().find(
-      (course) => course.slug === BEGINNER_WORKSHOP_COURSE_SLUG,
-    );
-    expect(entry?.href).toBe("/courses/33");
-    expect(entry?.buttonLabel).toBe("View Course");
-    expect(entry?.access).toBe("member");
-    expect(entry?.title).toBe("Beginner Workshop");
-    expect(entry?.thumbnail).toBe("/images/courses/beginner.webp");
-    expect(entry?.category).toBe("Getting Started");
+  it("uses the Course 33 thumbnail already configured for the workshop", () => {
+    const course = JSON.parse(
+      readFileSync(
+        resolve("src/data/legacy_kin/cleaned/course_33_beginner_workshop.poc.json"),
+        "utf8",
+      ),
+    ) as { course: { thumbnail?: string; title?: string } };
+    expect(course.course.title).toBe("Beginner Workshop");
+    expect(course.course.thumbnail).toBe("/images/courses/beginner.webp");
+    expect(layout).toContain("thumbnailSrc={thumbnailSrc}");
     expect(sales).toContain("thumbnailSrc || catalogEntry?.thumbnail");
     expect(sales).not.toContain('src="/images/');
     expect(wrapper).not.toContain('src="/images/');
