@@ -94,7 +94,11 @@ describe("Beginner Workshop sales page", () => {
   it("uses the compact Taitexma sales layout with one closing access CTA", () => {
     const copy = KIN_BEGINNER_WORKSHOP_SALES_COPY;
     expect(copy.blocks).toBeUndefined();
+    expect(copy.courseTitle).toBe("Beginner Workshop");
     expect(copy.headline).toBe("Start Machine Knitting with Confidence");
+    expect(sales).toContain("kin-course-sales__course-title");
+    expect(sales).toContain("copy.courseTitle");
+    expect(sales).toContain('<h2 class="kin-course-sales__headline">{copy.headline}</h2>');
     expect(copy.intro).toEqual([
       "Ready to use your knitting machine but unsure where to begin?",
       "Follow a clear, step-by-step path through the basics, then put your skills to work knitting three hats.",
@@ -198,5 +202,9 @@ describe("Beginner Workshop sales page", () => {
     expect(entry?.title).toBe("Beginner Workshop");
     expect(entry?.thumbnail).toBe("/images/courses/beginner.webp");
     expect(entry?.category).toBe("Getting Started");
+    expect(sales).toContain("thumbnailSrc || catalogEntry?.thumbnail");
+    expect(sales).not.toContain('src="/images/');
+    expect(wrapper).not.toContain('src="/images/');
+    expect(sales).not.toMatch(/border-left:\s*\d+px/);
   });
 });

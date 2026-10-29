@@ -43,6 +43,8 @@ export type KinCourseSalesAccessCta = {
 };
 
 export type KinCourseSalesCopy = {
+  /** Course name. When set, this is the page H1 and `headline` is the subordinate heading. */
+  courseTitle?: string;
   headline: string;
   intro: readonly string[];
   benefitsHeading: string;
@@ -153,6 +155,7 @@ export const KIN_SK840_SALES_COPY: KinCourseSalesCopy = {
 const MEMBERSHIP_HREF = "/membership";
 
 export const KIN_BEGINNER_WORKSHOP_SALES_COPY: KinCourseSalesCopy = {
+  courseTitle: "Beginner Workshop",
   headline: "Start Machine Knitting with Confidence",
   intro: [
     "Ready to use your knitting machine but unsure where to begin?",
