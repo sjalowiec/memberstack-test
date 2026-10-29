@@ -1,0 +1,23 @@
+---
+/**
+ * Course 33 sales page. Access stays in canAccessCourse. There is no
+ * standalone checkout; the buttons are membership, sign-in, or Start.
+ */
+import KinCourseSales from "./KinCourseSales.astro";
+import { KIN_BEGINNER_WORKSHOP_SALES_COPY } from "../../lib/kinCourse/courseSalesCopy";
+
+interface Props {
+  courseSlug: string;
+  thumbnailSrc?: string;
+  thumbnailAlt?: string;
+}
+
+const { courseSlug, thumbnailSrc, thumbnailAlt } = Astro.props;
+---
+
+<KinCourseSales
+  courseSlug={courseSlug}
+  copy={KIN_BEGINNER_WORKSHOP_SALES_COPY}
+  thumbnailSrc={thumbnailSrc}
+  thumbnailAlt={thumbnailAlt}
+/>

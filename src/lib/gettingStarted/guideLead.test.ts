@@ -92,16 +92,42 @@ describe("Getting Started Guide access", () => {
       "utf8",
     );
     const visible = source.replace(/<template\b[\s\S]*?<\/template>/g, "");
-    expect(source).toContain("1. Identify your machine");
-    expect(source).toContain("2. Do you have your machine’s manual?");
-    expect(source).toContain("3. Check your sponge bar");
-    expect(source).toContain("4. Choose a suitable yarn");
-    expect(source).toContain("5. Get comfortable knitting again");
-    expect(source).toContain("6. Get personal help");
-    expect(visible).not.toContain("1. Identify your machine");
-    expect(visible).not.toContain("2. Do you have your machine’s manual?");
-    expect(visible).not.toContain("3. Check your sponge bar");
-    expect(visible).not.toContain("6. Get personal help");
+    expect(source).toContain("Identify your machine");
+    expect(source).toContain("Do you have your machine’s manual?");
+    expect(source).toContain("Check your sponge bar");
+    expect(source).toContain("Choose a suitable yarn");
+    expect(source).toContain("Knit Your First Practice Swatch");
+    expect(source).toContain("Get Personal Help");
+    const step5 = source.indexOf("Knit Your First Practice Swatch");
+    const workshop = source.indexOf("Ready to build on what you’ve practiced?");
+    const step6 = source.indexOf("Get Personal Help");
+    const thumbnail = source.indexOf('src="/images/courses/beginner.webp"');
+    expect(thumbnail).toBeGreaterThan(step5);
+    expect(thumbnail).toBeLessThan(workshop);
+    expect(workshop).toBeGreaterThan(step5);
+    expect(workshop).toBeLessThan(step6);
+    expect(source.match(/src="\/images\/courses\/beginner\.webp"/g)).toHaveLength(1);
+    expect(source).toContain('alt="Beginner Workshop"');
+    expect(source.match(/Ready to build on what you’ve practiced\?/g)).toHaveLength(1);
+    expect(source).toContain(
+      "Keep going with the Beginner Workshop. Follow step-by-step lessons to build your skills and feel more confident using your knitting machine.",
+    );
+    expect(source).toContain(
+      '<a class="kbm-btn kbm-btn-outline" href="/courses/beginner-workshop">Explore the Beginner Workshop</a>',
+    );
+    expect(source).toContain('<span class="gsg-invite__access">Members only</span>');
+    expect(source).not.toContain('href="/courses/33?');
+    expect(source).toContain('class="gsg-step__badge">1</span>');
+    expect(source).toContain('class="gsg-step__badge">5</span>');
+    expect(source).toContain('class="gsg-step__badge">6</span>');
+    expect(source).not.toContain('gsg-step__badge">7</span>');
+    expect(visible).not.toContain("Identify your machine");
+    expect(visible).not.toContain("Do you have your machine’s manual?");
+    expect(visible).not.toContain("Check your sponge bar");
+    expect(visible).not.toContain("Get Personal Help");
+    expect(visible).not.toContain("Ready to build on what you’ve practiced?");
+    expect(visible).not.toContain("/images/courses/beginner.webp");
+    expect(visible).not.toContain("Explore the Beginner Workshop");
     expect(source).toContain(
       '<a href="/reference/machine-brands" target="_blank" rel="noopener noreferrer">',
     );
