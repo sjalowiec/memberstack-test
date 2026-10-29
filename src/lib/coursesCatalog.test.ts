@@ -198,7 +198,7 @@ describe("public course catalog cleanup", () => {
     expect(sections[0]?.courses[0]?.description).toBe(
       "A guided start-to-finish path for new machine knitters.",
     );
-    expect(sections[0]?.courses[0]?.href).toBe("/courses/beginner-workshop");
+    expect(sections[0]?.courses[0]?.href).toBe("/courses/33");
     expect(sections[0]?.courses[0]?.buttonLabel).toBe("View Course");
     expect(sections[0]?.courses[0]?.access).toBe("member");
     expect(sections[0]?.courses[0]?.status).toBe("available");
@@ -258,7 +258,7 @@ describe("public course catalog cleanup", () => {
       "/courses/34",
       "/courses/50",
       "/courses/51",
-      "/courses/beginner-workshop",
+      "/courses/33",
     ]);
     expect(productionEntries[0]?.href).not.toContain("courses.knititnow.com");
     expect(entries[0]?.access).toBe("purchase");
@@ -349,7 +349,7 @@ describe("groupCourseCatalogSections", () => {
     ]);
     expect(sections[0]?.courses.map((course) => course.slug)).toEqual(["beginner-workshop"]);
     expect(sections[0]?.courses[0]?.access).toBe("member");
-    expect(sections[0]?.courses[0]?.href).toBe("/courses/beginner-workshop");
+    expect(sections[0]?.courses[0]?.href).toBe("/courses/33");
     expect(sections[1]?.courses.map((course) => course.slug)).toEqual([
       "mastering-the-silver-reed-sk840",
       "taitexma-th-tr-160-getting-started",

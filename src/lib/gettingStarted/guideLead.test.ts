@@ -113,7 +113,7 @@ describe("Getting Started Guide access", () => {
       "Keep going with the Beginner Workshop. Follow step-by-step lessons to build your skills and feel more confident using your knitting machine.",
     );
     expect(source).toContain(
-      '<a class="kbm-btn kbm-btn-outline" href="/courses/beginner-workshop">Explore the Beginner Workshop</a>',
+      '<a class="kbm-btn kbm-btn-outline" href="/courses/33">Explore the Beginner Workshop</a>',
     );
     expect(source).toContain('<span class="gsg-invite__access">Members only</span>');
     expect(source).not.toContain('href="/courses/33?');
