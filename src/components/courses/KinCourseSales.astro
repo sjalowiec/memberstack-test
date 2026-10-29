@@ -37,7 +37,20 @@ const purchaseInfoItems = (copy.purchaseInfo?.items ?? [])
 
 <article class="kin-course-sales">
   <header class="kin-course-sales__hero">
-    <h1 class="kin-course-sales__headline">{copy.headline}</h1>
+    <div class="kin-course-sales__titles">
+      {
+        copy.courseTitle ? (
+          <h1 class="kin-course-sales__course-title">{copy.courseTitle}</h1>
+        ) : null
+      }
+      {
+        copy.courseTitle ? (
+          <h2 class="kin-course-sales__headline">{copy.headline}</h2>
+        ) : (
+          <h1 class="kin-course-sales__headline">{copy.headline}</h1>
+        )
+      }
+    </div>
     {
       imageSrc ? (
         <figure class="kin-course-sales__figure">
@@ -264,14 +277,28 @@ const purchaseInfoItems = (copy.purchaseInfo?.items ?? [])
     margin-bottom: 28px;
   }
 
-  .kin-course-sales__headline {
+  .kin-course-sales__titles {
     grid-area: headline;
+  }
+
+  .kin-course-sales__course-title,
+  .kin-course-sales__headline {
     margin: 0;
     font-family: var(--kin-chrome-font, "Poppins", sans-serif);
     font-size: 2rem;
     line-height: 1.2;
     font-weight: 700;
     color: #1a1a1a;
+  }
+
+  .kin-course-sales__course-title {
+    margin-bottom: 4px;
+  }
+
+  h2.kin-course-sales__headline {
+    font-size: 1.35rem;
+    line-height: 1.3;
+    font-weight: 600;
   }
 
   .kin-course-sales__figure {
@@ -498,14 +525,24 @@ const purchaseInfoItems = (copy.purchaseInfo?.items ?? [])
       gap: 16px;
     }
 
+    .kin-course-sales__course-title,
     .kin-course-sales__headline {
       font-size: 1.7rem;
+    }
+
+    h2.kin-course-sales__headline {
+      font-size: 1.2rem;
     }
   }
 
   @media (max-width: 767px) {
+    .kin-course-sales__course-title,
     .kin-course-sales__headline {
       font-size: 1.45rem;
+    }
+
+    h2.kin-course-sales__headline {
+      font-size: 1.15rem;
     }
 
     .kin-course-sales__buy-row :global(.course-home-start),
