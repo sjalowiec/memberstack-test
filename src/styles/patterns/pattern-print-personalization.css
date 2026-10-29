@@ -112,7 +112,8 @@
 
 /* Screen: hide print-only title/notes slots (modal stays usable) */
 .pattern-print-personalization-title,
-.pattern-print-personalization-notes {
+.pattern-print-personalization-notes,
+.pattern-print-member-notes {
   display: none !important;
 }
 
@@ -156,6 +157,53 @@
 
   .pattern-print-personalization-notes[hidden] {
     display: none !important;
+  }
+
+  /*
+   * Saved My Notes. Outside the intro block, which is kept on one page, so a long
+   * note can continue onto the next page. Empty notes stay hidden.
+   */
+  .pattern-print-member-notes:not([hidden]) {
+    display: block !important;
+    position: static !important;
+    float: none !important;
+    clear: both !important;
+    max-width: none !important;
+    max-height: none !important;
+    margin: 0.12in 0 0.2in !important;
+    padding: 0 !important;
+    overflow: visible !important;
+    break-inside: auto !important;
+    page-break-inside: auto !important;
+  }
+
+  .pattern-print-member-notes[hidden] {
+    display: none !important;
+  }
+
+  .pattern-print-member-notes__heading {
+    margin: 0 0 0.06in !important;
+    font-size: 10pt !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.04em !important;
+    text-transform: uppercase !important;
+    color: #52682d !important;
+    page-break-after: avoid !important;
+    break-after: avoid !important;
+  }
+
+  .pattern-print-member-notes__body {
+    margin: 0 !important;
+    font-size: 11.5pt !important;
+    line-height: 1.35 !important;
+    color: #1f2937 !important;
+    white-space: pre-wrap !important;
+    overflow-wrap: anywhere !important;
+    word-wrap: break-word !important;
+    max-height: none !important;
+    overflow: visible !important;
+    break-inside: auto !important;
+    page-break-inside: auto !important;
   }
 
   .pattern-print-personalization-never-print,

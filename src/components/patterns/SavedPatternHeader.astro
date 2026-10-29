@@ -85,6 +85,7 @@ const showIntro = part === "all" || part === "intro";
 
 {
   showIntro && (
+    <>
 <section id="saved-pattern-header" class="sleeveless-pattern-intro" data-saved-pattern-header>
   <div class="sleeveless-pattern-intro__image">
     <div class="saved-pattern-header__thumb">
@@ -154,6 +155,11 @@ const showIntro = part === "all" || part === "intro";
     }
   </div>
 </section>
+<section class="pattern-print-member-notes" data-pattern-print-member-notes hidden>
+  <h2 class="pattern-print-member-notes__heading">My Notes</h2>
+  <p class="pattern-print-member-notes__body" data-pattern-print-member-notes-body></p>
+</section>
+    </>
   )
 }
 

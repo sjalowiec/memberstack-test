@@ -5,6 +5,7 @@
  * other patterns may still use session keys + optional modal.
  */
 
+import { prepareSavedMemberNotesForPrint } from "../lib/patterns/savedPatternMemberNotes";
 import { logPatternActivity } from "../lib/patterns/patternActivityLog";
 import { patternSystemFromPathname } from "../lib/patterns/patternGenerationActivity";
 import { shouldRecordPatternPrint } from "../lib/patterns/patternPrintActivity";
@@ -259,6 +260,7 @@ function syncAllPatternTipDismissBeforePrint(): void {
  * until afterprint, then restored to the title captured at the start of this call.
  */
 function runPatternPrint(opts?: PatternPrintTriggerOptions, printTitle = ""): void {
+  prepareSavedMemberNotesForPrint();
   syncAllPatternTipDismissBeforePrint();
   const originalTitle = document.title;
   let restoreScheduled = false;

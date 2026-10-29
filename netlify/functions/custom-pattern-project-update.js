@@ -9,7 +9,9 @@ import {
   buildProjectRecord,
   getProjectsStore,
   jsonResponse,
+  memberNotesOnlyProject,
   parseJsonBody,
+  preserveStoredMemberNotes,
   projectBlobKey,
   publicProject,
   readProjectJson,
@@ -55,6 +57,35 @@ export default async (req) => {
   const existing = await readProjectJson(store, key);
   if (!existing) {
     return withCors(jsonResponse({ ok: false, error: "Project not found." }, 404));
+  }
+
+  if (body.data.memberNotesOnly === true) {
+    const builtNotes = memberNotesOnlyProject(existing, body.data.memberNotes);
+    if (!builtNotes.ok) {
+      return withCors(jsonResponse({ ok: false, error: builtNotes.error }, 400));
+    }
+    const project = builtNotes.project;
+    try {
+      await store.set(key, JSON.stringify(publicProject(project)), {
+        metadata: {
+          userId: access.userId,
+          family: project.family,
+          projectId: project.id,
+          updatedAt: project.updatedAt,
+        },
+      });
+      await upsertProjectSummaryInIndex(store, project.family, access.userId, project);
+      return withCors(
+        jsonResponse({
+          ok: true,
+          project: publicProject(project),
+          authMode: access.mode,
+        }),
+      );
+    } catch (err) {
+      console.error("custom-pattern-project-update memberNotesOnly failed:", err);
+      return withCors(jsonResponse({ ok: false, error: "Failed to update project." }, 500));
+    }
   }
 
   if (body.data.workflowOnly === true) {
@@ -106,7 +137,7 @@ export default async (req) => {
     return withCors(jsonResponse({ ok: false, error: built.error }, 400));
   }
 
-  const project = built.project;
+  const project = preserveStoredMemberNotes(built.project, existing);
 
   try {
     await store.set(key, JSON.stringify(publicProject(project)), {

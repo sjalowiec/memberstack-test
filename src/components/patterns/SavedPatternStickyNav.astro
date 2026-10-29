@@ -2,9 +2,11 @@
 /**
  * Shared saved-pattern sticky navigation (Pattern System Lego).
  * Section links are filled by syncPatternInpageNav from that pattern's catalog.
- * Top and Print live here. Each page supplies its own Edit Pattern action in the slot
- * so the builder or edit workspace keeps that pattern's saved settings.
+ * Top, My Notes, and Print live here. Each page supplies its own Edit Pattern action
+ * in the slot so the builder or edit workspace keeps that pattern's saved settings.
  */
+import "../../styles/patterns/saved-pattern-member-notes.css";
+
 interface Props {
   /** Attributes on the action group, so each page can keep its print mount target. */
   actionsAttrs?: string[];
@@ -46,6 +48,21 @@ for (const name of actionAttrNames) actionsAttrs[name] = "";
     {...actionsAttrs}
   >
     <slot />
+    <button
+      type="button"
+      class="sleeveless-pattern-edit-action saved-pattern-member-notes-action no-print"
+      data-saved-pattern-member-notes-open
+      data-testid="button-my-notes"
+      aria-haspopup="dialog"
+      aria-controls="saved-pattern-member-notes-dialog"
+      aria-expanded="false"
+      hidden
+    >
+      <i class="fas fa-note-sticky" aria-hidden="true"></i>
+      My Notes
+      <span class="saved-pattern-member-notes-mark" data-saved-pattern-member-notes-mark hidden aria-hidden="true"></span>
+      <span class="saved-pattern-member-notes-sr" data-saved-pattern-member-notes-saved-label hidden>Saved notes</span>
+    </button>
     {
       includePrint && (
         <button
@@ -62,3 +79,63 @@ for (const name of actionAttrNames) actionsAttrs[name] = "";
     }
   </div>
 </nav>
+<dialog
+  id="saved-pattern-member-notes-dialog"
+  class="saved-pattern-member-notes-dialog no-print"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="saved-pattern-member-notes-title"
+  aria-describedby="saved-pattern-member-notes-hint"
+>
+  <form class="saved-pattern-member-notes-dialog__panel" data-saved-pattern-member-notes-form>
+    <h2 id="saved-pattern-member-notes-title" class="saved-pattern-member-notes-dialog__heading">
+      My Notes
+    </h2>
+    <p id="saved-pattern-member-notes-hint" class="saved-pattern-member-notes-dialog__hint">
+      Private notes for this saved pattern. They stay with this pattern and are not printed.
+    </p>
+    <div class="saved-pattern-member-notes-dialog__notes-head">
+      <label class="saved-pattern-member-notes-dialog__label" for="saved-pattern-member-notes-input">
+        Notes
+      </label>
+      <button
+        type="button"
+        class="saved-pattern-member-notes-dialog__insert-date"
+        data-saved-pattern-member-notes-insert-date
+      >
+        Insert Date
+      </button>
+    </div>
+    <textarea
+      id="saved-pattern-member-notes-input"
+      class="saved-pattern-member-notes-dialog__input"
+      name="memberNotes"
+      rows="8"
+      maxlength="8000"
+      autocomplete="off"
+    ></textarea>
+    <p
+      class="saved-pattern-member-notes-dialog__status"
+      data-saved-pattern-member-notes-status
+      role="status"
+      aria-live="polite"
+    ></p>
+    <div class="saved-pattern-member-notes-dialog__actions">
+      <button type="button" class="saved-pattern-member-notes-dialog__btn" data-saved-pattern-member-notes-cancel>
+        Cancel
+      </button>
+      <button
+        type="submit"
+        class="saved-pattern-member-notes-dialog__btn saved-pattern-member-notes-dialog__btn--primary"
+        data-saved-pattern-member-notes-save
+        data-testid="button-my-notes-save"
+      >
+        Save
+      </button>
+    </div>
+  </form>
+</dialog>
+<script>
+  import { bindSavedPatternMemberNotes } from "../../scripts/savedPatternMemberNotes.ts";
+  bindSavedPatternMemberNotes();
+</script>
