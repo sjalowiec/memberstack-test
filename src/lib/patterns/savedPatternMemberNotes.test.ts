@@ -3,6 +3,8 @@ import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { stubLocalStorage } from "./test/stubLocalStorage";
 import {
+  formatMemberNotesDate,
+  insertMemberNotesDate,
   MEMBER_NOTES_MAX_LENGTH,
   memberNotesFeedbackAfterLoad,
   memberNotesFeedbackAfterSave,
@@ -170,6 +172,50 @@ describe("saved pattern My Notes", () => {
     expect(keptTyping.message).toBe("Saved.");
   });
 
+  it("inserts the local date at the selection without passing 8,000 characters", () => {
+    expect(formatMemberNotesDate(new Date(2026, 9, 29))).toBe("Oct 29, 2026");
+    expect(formatMemberNotesDate(new Date(Number.NaN))).toBe("");
+
+    const inserted = insertMemberNotesDate({
+      value: "Yarn before. Yarn after.",
+      selectionStart: 12,
+      selectionEnd: 12,
+      dateText: "Oct 29, 2026",
+    });
+    expect(inserted.inserted).toBe(true);
+    expect(inserted.value).toBe("Yarn before.Oct 29, 2026 Yarn after.");
+    expect(inserted.selectionStart).toBe("Yarn before.Oct 29, 2026".length);
+    expect(inserted.selectionEnd).toBe(inserted.selectionStart);
+
+    const replaced = insertMemberNotesDate({
+      value: "Replace THIS today",
+      selectionStart: 8,
+      selectionEnd: 12,
+      dateText: "Oct 29, 2026",
+    });
+    expect(replaced.value).toBe("Replace Oct 29, 2026 today");
+
+    const full = "x".repeat(MEMBER_NOTES_MAX_LENGTH);
+    const blocked = insertMemberNotesDate({
+      value: full,
+      selectionStart: full.length,
+      selectionEnd: full.length,
+      dateText: "Oct 29, 2026",
+    });
+    expect(blocked.inserted).toBe(false);
+    expect(blocked.value).toBe(full);
+
+    const room = "x".repeat(MEMBER_NOTES_MAX_LENGTH - "Oct 29, 2026".length);
+    const exact = insertMemberNotesDate({
+      value: room,
+      selectionStart: room.length,
+      selectionEnd: room.length,
+      dateText: "Oct 29, 2026",
+    });
+    expect(exact.inserted).toBe(true);
+    expect(exact.value).toHaveLength(MEMBER_NOTES_MAX_LENGTH);
+  });
+
   it("places My Notes in the sticky nav beside Edit Pattern and Print", () => {
     const nav = readFileSync(resolve("src/components/patterns/SavedPatternStickyNav.astro"), "utf8");
     const slot = nav.indexOf("<slot />");
@@ -192,6 +238,8 @@ describe("saved pattern My Notes", () => {
     expect(nav).toContain('maxlength="8000"');
     expect(nav).toContain("data-saved-pattern-member-notes-cancel");
     expect(nav).toContain("data-saved-pattern-member-notes-save");
+    expect(nav).toContain("data-saved-pattern-member-notes-insert-date");
+    expect(nav).toContain("Insert Date");
     expect(nav).toContain('aria-live="polite"');
     expect(nav).toContain("class=\"saved-pattern-member-notes-dialog no-print\"");
 

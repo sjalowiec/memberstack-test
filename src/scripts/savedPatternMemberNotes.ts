@@ -6,6 +6,8 @@
 import { patchCustomPatternProjectMemberNotes, loadCustomPatternProject } from "../lib/patterns/customPatternProjectClient";
 import { isSavedPatternReadOnlyDocument } from "../lib/patterns/savedPatternReadOnlyChrome";
 import {
+  formatMemberNotesDate,
+  insertMemberNotesDate,
   memberNotesFeedbackAfterLoad,
   memberNotesFeedbackAfterSave,
   memberNotesFromProject,
@@ -28,6 +30,7 @@ function applyFeedback(
   els: {
     textarea: HTMLTextAreaElement;
     save: HTMLButtonElement;
+    insertDate: HTMLButtonElement;
     status: HTMLElement;
   },
   phase: "loading" | "ready" | "saving",
@@ -35,9 +38,12 @@ function applyFeedback(
   const viewOnly = isSavedPatternReadOnlyDocument();
   els.textarea.value = feedback.draft;
   els.textarea.readOnly = viewOnly || phase !== "ready";
-  const canSave = feedback.canSave && !viewOnly && phase === "ready";
+  const canEdit = !viewOnly && phase === "ready";
+  const canSave = feedback.canSave && canEdit;
   els.save.disabled = !canSave;
   setShown(els.save, !viewOnly, "inline-flex");
+  els.insertDate.disabled = !canEdit;
+  setShown(els.insertDate, !viewOnly, "inline-flex");
   els.status.textContent =
     viewOnly && phase === "ready" && feedback.tone !== "error"
       ? "An active membership is required to change these notes."
@@ -57,6 +63,7 @@ export function bindSavedPatternMemberNotes(doc: Document = document): void {
   const dialog = doc.getElementById("saved-pattern-member-notes-dialog");
   const textarea = doc.getElementById("saved-pattern-member-notes-input");
   const save = doc.querySelector("[data-saved-pattern-member-notes-save]");
+  const insertDate = doc.querySelector("[data-saved-pattern-member-notes-insert-date]");
   const cancel = doc.querySelector("[data-saved-pattern-member-notes-cancel]");
   const status = doc.querySelector("[data-saved-pattern-member-notes-status]");
   const mark = button.querySelector("[data-saved-pattern-member-notes-mark]");
@@ -66,6 +73,7 @@ export function bindSavedPatternMemberNotes(doc: Document = document): void {
     !(dialog instanceof HTMLDialogElement) ||
     !(textarea instanceof HTMLTextAreaElement) ||
     !(save instanceof HTMLButtonElement) ||
+    !(insertDate instanceof HTMLButtonElement) ||
     !(cancel instanceof HTMLButtonElement) ||
     !(status instanceof HTMLElement) ||
     !(mark instanceof HTMLElement) ||
@@ -75,7 +83,7 @@ export function bindSavedPatternMemberNotes(doc: Document = document): void {
     return;
   }
 
-  const els = { textarea, save, status };
+  const els = { textarea, save, insertDate, status };
   let openId = "";
   let requestToken = 0;
   let phase: "loading" | "ready" | "saving" = "ready";
@@ -108,6 +116,25 @@ export function bindSavedPatternMemberNotes(doc: Document = document): void {
     dialog.close();
   });
 
+  insertDate.addEventListener("click", () => {
+    if (insertDate.disabled || textarea.readOnly) return;
+    const result = insertMemberNotesDate({
+      value: textarea.value,
+      selectionStart: textarea.selectionStart,
+      selectionEnd: textarea.selectionEnd,
+      dateText: formatMemberNotesDate(new Date()),
+    });
+    if (result.inserted) textarea.value = result.value;
+    else {
+      status.textContent = "That date does not fit within 8,000 characters.";
+      status.dataset.tone = "neutral";
+    }
+    textarea.focus();
+    if (typeof textarea.setSelectionRange === "function") {
+      textarea.setSelectionRange(result.selectionStart, result.selectionEnd);
+    }
+  });
+
   form.addEventListener("submit", (event) => {
     event.preventDefault();
     void saveNotes();
@@ -121,7 +148,11 @@ export function bindSavedPatternMemberNotes(doc: Document = document): void {
     button.setAttribute("aria-expanded", "false");
     requestToken += 1;
     phase = "ready";
-    if (typeof button.focus === "function") button.focus();
+    const returnFocus = () => {
+      if (typeof button.focus === "function") button.focus();
+    };
+    if (typeof queueMicrotask === "function") queueMicrotask(returnFocus);
+    else returnFocus();
   });
 
   async function openEditor(): Promise<void> {
@@ -218,16 +249,7 @@ export function bindSavedPatternMemberNotes(doc: Document = document): void {
     stored = notes;
     phase = "ready";
     if (!dialogStillOpen) return;
-    applyFeedback(
-      memberNotesFeedbackAfterSave({
-        draftAtSave,
-        draftNow: textarea.value,
-        previousStored: stored,
-        result: { ok: true, notes },
-      }),
-      els,
-      phase,
-    );
+    dialog.close();
   }
 
   refreshSavedPatternMemberNotes(button);
