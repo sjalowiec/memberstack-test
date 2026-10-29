@@ -130,3 +130,9 @@
   to = "/reference/repairs"
   status = 301
   force = true
+
+# Former Brother cable comparison URL. The guide now lives at DAK-brother-cables.
+[[redirects]]
+  from = "/reference/brother-cable-comparison"
+  to = "/reference/DAK-brother-cables"
+  status = 301
