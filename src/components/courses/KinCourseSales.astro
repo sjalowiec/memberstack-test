@@ -6,12 +6,13 @@
  */
 import CoursePurchaseButton from "./CoursePurchaseButton.astro";
 import { getCourseCatalogEntries } from "../../lib/coursesCatalog";
+import { getCourseAccessBySlug } from "../../lib/coursesCatalogAccess";
 import { canonicalCourseCatalogSlug } from "../../config/legacyCourseEntitlements";
 import {
   courseCheckoutPriceId,
   coursePurchasePriceLabel,
 } from "../../lib/kinCourse/coursePurchase";
-import type { KinCourseSalesCopy } from "../../lib/kinCourse/courseSalesCopy";
+import type { KinCourseSalesAccessCta, KinCourseSalesCopy } from "../../lib/kinCourse/courseSalesCopy";
 
 interface Props {
   courseSlug: string;
@@ -27,6 +28,8 @@ const imageSrc = (thumbnailSrc || catalogEntry?.thumbnail || "").trim();
 const imageAlt = (thumbnailAlt || catalogEntry?.title || copy.fallbackImageAlt).trim();
 const priceId = courseCheckoutPriceId(courseSlug);
 const priceLabel = coursePurchasePriceLabel(courseSlug);
+const accessCta: KinCourseSalesAccessCta | null = copy.accessCta ?? null;
+const salesAccess = getCourseAccessBySlug(courseSlug);
 const purchaseInfoItems = (copy.purchaseInfo?.items ?? [])
   .map((item) => (priceLabel ? item.replace(/\{price\}/g, priceLabel) : item))
   .filter((item) => !item.includes("{price}"));
@@ -53,46 +56,115 @@ const purchaseInfoItems = (copy.purchaseInfo?.items ?? [])
     </div>
   </header>
 
-  <section class="kin-course-sales__benefits" aria-labelledby="kin-course-sales-benefits-heading">
-    <h2 id="kin-course-sales-benefits-heading">{copy.benefitsHeading}</h2>
-    <ul>
-      {copy.benefits.map((benefit) => (
-        <li>{benefit}</li>
-      ))}
-    </ul>
-    <p class="kin-course-sales__support">{copy.supportingCopy}</p>
-  </section>
+  {
+    copy.blocks?.length ? (
+      copy.blocks.map((block) =>
+        block.kind === "cta" && accessCta ? (
+          <section class="kin-course-sales__cta">
+            <div
+              class="kin-course-sales-cta"
+              data-kin-course-sales-cta
+              data-course-slug={courseSlug}
+              data-course-access={salesAccess}
+            >
+              <p class="kin-course-sales__checkout-status" data-sales-cta="pending" role="status">
+                Checking access…
+              </p>
+              <div data-sales-cta="open" hidden>
+                <div class="kin-course-sales__buy-row">
+                  <a class="course-home-start kin-course-sales__join" href={accessCta.startHref}>
+                    {accessCta.startLabel}
+                  </a>
+                </div>
+              </div>
+              <div data-sales-cta="loggedOut" hidden>
+                <div class="kin-course-sales__buy-row">
+                  <a class="course-home-start kin-course-sales__join" href={accessCta.joinHref}>
+                    {accessCta.joinLabel}
+                  </a>
+                </div>
+                <p class="kin-course-sales__owner">
+                  {accessCta.signInBefore}{" "}
+                  <button type="button" class="kin-course-sales__signin" data-course-111-login>
+                    {accessCta.signInLabel}
+                  </button>{" "}
+                  {accessCta.signInAfter}
+                </p>
+              </div>
+              <div data-sales-cta="loggedInNoAccess" hidden>
+                <div class="kin-course-sales__buy-row">
+                  <a class="course-home-start kin-course-sales__join" href={accessCta.memberHref}>
+                    {accessCta.memberLabel}
+                  </a>
+                </div>
+              </div>
+            </div>
+          </section>
+        ) : block.kind === "prose" ? (
+          <section class="kin-course-sales__benefits">
+            <h2>{block.heading}</h2>
+            {block.paragraphs.map((paragraph) => (
+              <p class="kin-course-sales__prose">{paragraph}</p>
+            ))}
+          </section>
+        ) : block.kind === "points" ? (
+          <section class="kin-course-sales__benefits">
+            <h2>{block.heading}</h2>
+            <ul>
+              {block.points.map((point) => (
+                <li>
+                  <strong>{point.title}:</strong> {point.text}
+                </li>
+              ))}
+            </ul>
+          </section>
+        ) : null,
+      )
+    ) : (
+      <>
+        <section class="kin-course-sales__benefits" aria-labelledby="kin-course-sales-benefits-heading">
+          <h2 id="kin-course-sales-benefits-heading">{copy.benefitsHeading}</h2>
+          <ul>
+            {copy.benefits.map((benefit) => (
+              <li>{benefit}</li>
+            ))}
+          </ul>
+          <p class="kin-course-sales__support">{copy.supportingCopy}</p>
+        </section>
 
-  <section class="kin-course-sales__cta" aria-labelledby="kin-course-sales-cta-heading">
-    <h2 id="kin-course-sales-cta-heading">{copy.ctaHeading}</h2>
-    <div class="kin-course-sales__buy-row">
-      {
-        priceLabel ? (
-          <p class="kin-course-sales__price">
-            <span class="kin-course-sales__price-value">{priceLabel}</span>
+        <section class="kin-course-sales__cta" aria-labelledby="kin-course-sales-cta-heading">
+          <h2 id="kin-course-sales-cta-heading">{copy.ctaHeading}</h2>
+          <div class="kin-course-sales__buy-row">
+            {
+              priceLabel ? (
+                <p class="kin-course-sales__price">
+                  <span class="kin-course-sales__price-value">{priceLabel}</span>
+                </p>
+              ) : null
+            }
+            {
+              priceId ? (
+                <CoursePurchaseButton
+                  courseSlug={courseSlug}
+                  label={copy.purchaseButtonLabel}
+                  className="course-home-start kin-course-sales__buy"
+                />
+              ) : null
+            }
+          </div>
+          <p class="kin-course-sales__checkout-status" data-course-checkout-status hidden role="status"></p>
+          <p class="kin-course-sales__owner" data-gate-copy="loggedOut">
+            {copy.ownerBefore}{" "}
+            <button type="button" class="kin-course-sales__signin" data-course-111-login>
+              {copy.ownerAction}
+            </button>{" "}
+            {copy.ownerAfter}
           </p>
-        ) : null
-      }
-      {
-        priceId ? (
-          <CoursePurchaseButton
-            courseSlug={courseSlug}
-            label={copy.purchaseButtonLabel}
-            className="course-home-start kin-course-sales__buy"
-          />
-        ) : null
-      }
-    </div>
-    <p class="kin-course-sales__checkout-status" data-course-checkout-status hidden role="status"></p>
-    <p class="kin-course-sales__owner" data-gate-copy="loggedOut">
-      {copy.ownerBefore}{" "}
-      <button type="button" class="kin-course-sales__signin" data-course-111-login>
-        {copy.ownerAction}
-      </button>{" "}
-      {copy.ownerAfter}
-    </p>
-    <div data-gate-copy="loggedInNoAccess" hidden></div>
-  </section>
+          <div data-gate-copy="loggedInNoAccess" hidden></div>
+        </section>
+      </>
+    )
+  }
 
   {
     copy.purchaseInfo && purchaseInfoItems.length ? (
@@ -183,6 +255,48 @@ const purchaseInfoItems = (copy.purchaseInfo?.items ?? [])
   .kin-course-sales__intro p:last-child,
   .kin-course-sales__support {
     margin-bottom: 0;
+  }
+
+  .kin-course-sales__prose {
+    margin: 0 0 12px;
+    font-size: 1.05rem;
+    line-height: 1.55;
+    color: #222;
+  }
+
+  .kin-course-sales__prose:last-child {
+    margin-bottom: 0;
+  }
+
+  .kin-course-sales :global(a.kin-course-sales__join) {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 52px;
+    padding: 12px 22px;
+    border-radius: 4px;
+    border: 2px solid #52682d;
+    background: #52682d;
+    color: #fff;
+    font-size: 18px;
+    line-height: 1.3;
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .kin-course-sales :global(a.kin-course-sales__join:link),
+  .kin-course-sales :global(a.kin-course-sales__join:visited),
+  .kin-course-sales :global(a.kin-course-sales__join:hover),
+  .kin-course-sales :global(a.kin-course-sales__join:focus),
+  .kin-course-sales :global(a.kin-course-sales__join:focus-visible) {
+    color: #fff;
+    text-decoration: none;
+  }
+
+  .kin-course-sales :global(a.kin-course-sales__join:hover),
+  .kin-course-sales :global(a.kin-course-sales__join:focus-visible) {
+    background: #3f5123;
+    border-color: #3f5123;
   }
 
   .kin-course-sales__benefits,
@@ -343,8 +457,15 @@ const purchaseInfoItems = (copy.purchaseInfo?.items ?? [])
       font-size: 1.45rem;
     }
 
-    .kin-course-sales__buy-row :global(.course-home-start) {
+    .kin-course-sales__buy-row :global(.course-home-start),
+    .kin-course-sales__buy-row :global(a.kin-course-sales__join) {
       flex: 1 1 100%;
     }
   }
 </style>
+
+<script>
+  import { runKinCourseSalesCtaBoot } from "../../scripts/kinCourseSalesCta";
+
+  runKinCourseSalesCtaBoot();
+</script>

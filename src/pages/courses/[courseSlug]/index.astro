@@ -1,7 +1,9 @@
 ---
 import KinCourseHomeView from "../../../components/kinCourse/KinCourseHomeView.astro";
 import KinCourseAdminPreviewBootstrap from "../../../components/kinCourse/KinCourseAdminPreviewBootstrap.astro";
+import BeginnerWorkshopSalesPage from "../../../components/courses/BeginnerWorkshopSalesPage.astro";
 import CourseNamedLanding from "../../../components/courses/CourseNamedLanding.astro";
+import { BEGINNER_WORKSHOP_COURSE_SLUG } from "../../../config/legacyCourseEntitlements";
 import { parseKinCourseId } from "../../../lib/kinCourse/hrefs";
 import { loadKinCourseBundle } from "../../../lib/kinCourse/load";
 import {
@@ -27,13 +29,15 @@ if (courseId && !bundle && !showAdminPreviewBootstrap) {
 }
 
 const landingSlug = courseId ? "" : (Astro.params.courseSlug ?? "");
-const publishedPlayerHref = landingSlug ? publishedAvailablePlayerHref(landingSlug) : undefined;
+const showBeginnerWorkshopSales = landingSlug === BEGINNER_WORKSHOP_COURSE_SLUG;
+const publishedPlayerHref =
+  landingSlug && !showBeginnerWorkshopSales ? publishedAvailablePlayerHref(landingSlug) : undefined;
 if (publishedPlayerHref) {
   return Astro.redirect(publishedPlayerHref);
 }
 
-const landing = courseId ? null : getCourseLandingBySlug(landingSlug);
-if (!courseId && !landing) {
+const landing = courseId || showBeginnerWorkshopSales ? null : getCourseLandingBySlug(landingSlug);
+if (!courseId && !landing && !showBeginnerWorkshopSales) {
   return new Response("Course not found", { status: 404 });
 }
 
@@ -43,7 +47,9 @@ if (showAdminPreviewBootstrap) {
 ---
 
 {
-  bundle ? (
+  showBeginnerWorkshopSales ? (
+    <BeginnerWorkshopSalesPage />
+  ) : bundle ? (
     <KinCourseHomeView bundle={bundle} preview={loadOptions.preview} />
   ) : landing ? (
     <CourseNamedLanding landing={landing} />
