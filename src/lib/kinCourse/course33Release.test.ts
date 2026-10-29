@@ -114,7 +114,7 @@ describe("published Beginner Workshop", () => {
       category: "Getting Started",
       status: "available",
       access: "member",
-      href: "/courses/33",
+      href: "/courses/beginner-workshop",
       description: "A guided start-to-finish path for new machine knitters.",
       thumbnail: "/images/courses/beginner.webp",
       buttonLabel: "View Course",

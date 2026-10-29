@@ -5,6 +5,7 @@
  * {@link hasIndividualCoursePurchase} / {@link canAccessCourse}.
  */
 import {
+  BEGINNER_WORKSHOP_COURSE_SLUG,
   canonicalCourseCatalogSlug,
   COURSE_INDIVIDUAL_SALES,
   KIN_TAITEXMA_160_COURSE_SLUG,
@@ -57,16 +58,24 @@ export function isSk840CourseSlug(courseSlug: string | null | undefined): boolea
   return canonicalCourseCatalogSlug(courseSlug) === LEGACY_SK840_COURSE_SLUG;
 }
 
+export function isBeginnerWorkshopCourseSlug(courseSlug: string | null | undefined): boolean {
+  return canonicalCourseCatalogSlug(courseSlug) === BEGINNER_WORKSHOP_COURSE_SLUG;
+}
+
 /**
- * Course 86 and Course 111 sales pages replace the generic locked card for
- * visitors without access. Members and owners of that course keep the player.
+ * Sales pages replace the generic locked card for visitors without access.
+ * Members and owners of that course keep the player.
  */
 export function shouldShowKinCourseSalesPage(args: {
   courseSlug: string | null | undefined;
   hasAccess: boolean;
 }): boolean {
   if (args.hasAccess) return false;
-  return isTaitexma160CourseSlug(args.courseSlug) || isSk840CourseSlug(args.courseSlug);
+  return (
+    isTaitexma160CourseSlug(args.courseSlug) ||
+    isSk840CourseSlug(args.courseSlug) ||
+    isBeginnerWorkshopCourseSlug(args.courseSlug)
+  );
 }
 
 export function shouldShowKinCourseSalesPageForViewer(args: {
