@@ -20,8 +20,7 @@ export const printableResources: PrintableResource[] = [
     subtitle:
       "Printable reference cards to record the machine settings you use for your favorite techniques.",
     intro: [
-      "Keep track of successful machine settings so you don't have to remember them the next time you knit.",
-      "Print as many cards as you like and build your own personal machine knitting reference library.",
+      "Keep a handy record of the settings that work on your machine for different techniques. Print the cards, fill in your settings as you practice, and refer back to them the next time you use that technique.",
     ],
     techniqueIntro: "Perfect for recording settings for techniques such as:",
     techniqueExamples: [
