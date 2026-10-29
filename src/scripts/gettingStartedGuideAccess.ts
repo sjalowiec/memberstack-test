@@ -7,6 +7,7 @@
 
 import { initGatedVimeoEmbeds } from "./gatedVimeoEmbedClient";
 import { initGettingStartedMachineIdentity } from "./gettingStartedMachineIdentity";
+import { initGettingStartedSpongeVideoTabs } from "./gettingStartedSpongeVideoTabs";
 import {
   guideSignupUnlock,
   readGettingStartedGuideMember,
@@ -40,6 +41,7 @@ export function revealGettingStartedGuide(
     mount.hidden = false;
     mount.setAttribute("data-gsg-ready", "true");
     initGettingStartedMachineIdentity(doc);
+    initGettingStartedSpongeVideoTabs(mount);
     initGatedVimeoEmbeds(mount);
   }
 

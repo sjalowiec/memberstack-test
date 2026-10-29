@@ -292,8 +292,8 @@ const swatchVideo = guideVideo(2189, SWATCH_VIDEO_TITLE);
             <p>
               Need a replacement? Check our <a href="/reference/repairs">Repairs and Service directory</a> for businesses that may supply sponge bars or replacement sponge. Confirm that the replacement is suitable for your machine model before ordering.
             </p>
-            <p>This photo shows a worn sponge bar on a metal-bed machine.</p>
-            <figure class="gsg-figure">
+            <figure class="gsg-sponge-example">
+              <figcaption>This photo shows a worn sponge bar on a metal-bed machine.</figcaption>
               <img
                 src="/images/reference/sponge-bar.png"
                 alt="A worn sponge bar on a metal-bed knitting machine, marked past time to replace. The sponge is crumbling and compressed, so it no longer holds the needles evenly."
@@ -302,23 +302,41 @@ const swatchVideo = guideVideo(2189, SWATCH_VIDEO_TITLE);
               />
             </figure>
             <p>Watch the video for your machine.</p>
-            <div class="gsg-videos">
-              <div class="gsg-video-choice">
-                <h3>LK150</h3>
-                {lk150SpongeVideo ? (
-                  <GatedVimeoEmbed
-                    videoId={lk150SpongeVideo.vimeoId}
-                    contentId={lk150SpongeVideo.contentId}
-                    title={lk150SpongeVideo.title}
-                    access_level={lk150SpongeVideo.accessLevel}
-                    thumbUrl={lk150SpongeVideo.posterUrl}
-                  />
-                ) : (
-                  <p class="gsg-note">The LK150 sponge bar video could not be matched in the video library.</p>
-                )}
+            <div class="gsg-sponge-player" data-gsg-sponge-tabs>
+              <div
+                class="gsg-sponge-tabs"
+                role="tablist"
+                aria-label="Sponge bar videos"
+                aria-orientation="horizontal"
+              >
+                <button
+                  class="gsg-sponge-tabs__tab"
+                  type="button"
+                  role="tab"
+                  id="gsg-sponge-tab-metal"
+                  aria-controls="gsg-sponge-panel-metal"
+                  aria-selected="true"
+                  tabindex="0"
+                  data-gsg-sponge-tab="metal"
+                >Metal-bed machines</button>
+                <button
+                  class="gsg-sponge-tabs__tab"
+                  type="button"
+                  role="tab"
+                  id="gsg-sponge-tab-lk150"
+                  aria-controls="gsg-sponge-panel-lk150"
+                  aria-selected="false"
+                  tabindex="-1"
+                  data-gsg-sponge-tab="lk150"
+                >LK150</button>
               </div>
-              <div class="gsg-video-choice">
-                <h3>Metal bed machines</h3>
+              <div
+                class="gsg-sponge-panel gsg-video-choice"
+                role="tabpanel"
+                id="gsg-sponge-panel-metal"
+                aria-labelledby="gsg-sponge-tab-metal"
+                data-gsg-sponge-panel="metal"
+              >
                 {metalSpongeVideo ? (
                   <GatedVimeoEmbed
                     videoId={metalSpongeVideo.vimeoId}
@@ -329,6 +347,26 @@ const swatchVideo = guideVideo(2189, SWATCH_VIDEO_TITLE);
                   />
                 ) : (
                   <p class="gsg-note">The metal bed sponge bar video could not be matched in the video library.</p>
+                )}
+              </div>
+              <div
+                class="gsg-sponge-panel gsg-video-choice"
+                role="tabpanel"
+                id="gsg-sponge-panel-lk150"
+                aria-labelledby="gsg-sponge-tab-lk150"
+                data-gsg-sponge-panel="lk150"
+                hidden
+              >
+                {lk150SpongeVideo ? (
+                  <GatedVimeoEmbed
+                    videoId={lk150SpongeVideo.vimeoId}
+                    contentId={lk150SpongeVideo.contentId}
+                    title={lk150SpongeVideo.title}
+                    access_level={lk150SpongeVideo.accessLevel}
+                    thumbUrl={lk150SpongeVideo.posterUrl}
+                  />
+                ) : (
+                  <p class="gsg-note">The LK150 sponge bar video could not be matched in the video library.</p>
                 )}
               </div>
             </div>
@@ -410,7 +448,7 @@ const swatchVideo = guideVideo(2189, SWATCH_VIDEO_TITLE);
             )}
             <h3>Knitted your practice swatch? That’s progress!</h3>
             <p>
-              It doesn’t need to be perfect. Every row helps you get more familiar with your machine and how the yarn behaves. Before moving on, give yourself time to practice.
+              It doesn’t need to be perfect. Every row you practice here helps build the confidence and control you’ll use in your next project.
             </p>
           </div>
         </div>
@@ -428,14 +466,14 @@ const swatchVideo = guideVideo(2189, SWATCH_VIDEO_TITLE);
             height="338"
           />
           <div class="gsg-invite__copy">
-            <h2 id="gsg-workshop" class="gsg-invite__title">Ready to build on what you’ve practiced?</h2>
+            <h2 id="gsg-workshop" class="gsg-invite__title">From your practice swatch to your first hat</h2>
             <p>
-              Keep going with the Beginner Workshop. Follow step-by-step lessons to build your skills and feel more confident using your knitting machine.
+              Ready to make something you can wear? Join Knit It Now and follow the Beginner Workshop to build your skills and work toward knitting a hat using our free Hat Builder.
             </p>
             <p class="gsg-action gsg-invite__action">
-              <a class="kbm-btn kbm-btn-outline" href="/courses/33">Explore the Beginner Workshop</a>
-              <span class="gsg-invite__access">Members only</span>
+              <a class="kbm-btn kbm-btn-primary" href="/courses/33">Explore the Beginner Workshop</a>
             </p>
+            <p class="gsg-invite__access">Beginner Workshop included with membership</p>
           </div>
         </div>
       </aside>
@@ -691,10 +729,11 @@ const swatchVideo = guideVideo(2189, SWATCH_VIDEO_TITLE);
     align-items: center;
     gap: 1.15rem;
     min-width: 0;
-    padding: 0.95rem 1rem 1rem;
-    border: 1px dashed rgba(82, 104, 45, 0.4);
+    padding: 1rem 1.05rem 1.05rem;
+    border: 2px solid var(--kbm-green, #52682d);
     border-radius: 12px;
-    background: #f7f8f4;
+    background: linear-gradient(180deg, rgba(82, 104, 45, 0.12) 0%, #fff 72%);
+    box-shadow: 0 2px 10px rgba(82, 104, 45, 0.08);
   }
 
   .gsg-invite__thumb {
@@ -711,8 +750,9 @@ const swatchVideo = guideVideo(2189, SWATCH_VIDEO_TITLE);
 
   .gsg-invite__title {
     margin: 0 0 0.45rem;
-    font-size: 1.15rem;
-    font-weight: 600;
+    color: var(--kbm-green, #52682d);
+    font-size: clamp(1.25rem, 2.4vw, 1.5rem);
+    font-weight: 700;
     line-height: 1.3;
   }
 
@@ -732,17 +772,16 @@ const swatchVideo = guideVideo(2189, SWATCH_VIDEO_TITLE);
     gap: 0.65rem 0.75rem;
   }
 
-  .gsg-invite__access {
-    display: inline-flex;
-    align-items: center;
-    padding: 0.2rem 0.6rem;
-    border-radius: 999px;
-    background: rgba(82, 104, 45, 0.12);
+  .gsg-invite p.gsg-invite__action {
+    margin-bottom: 0.45rem;
+  }
+
+  .gsg-invite p.gsg-invite__access {
+    margin: 0;
     color: var(--kbm-green, #52682d);
-    font-size: 0.8rem;
+    font-size: 0.95rem;
     font-weight: 700;
-    letter-spacing: 0.03em;
-    line-height: 1.3;
+    line-height: 1.35;
   }
 
   .gsg-section {
@@ -774,7 +813,6 @@ const swatchVideo = guideVideo(2189, SWATCH_VIDEO_TITLE);
     margin-bottom: 0;
   }
 
-  .gsg-split__media .gsg-videos,
   .gsg-split__media .gsg-video-choice {
     margin: 0;
   }
@@ -802,17 +840,30 @@ const swatchVideo = guideVideo(2189, SWATCH_VIDEO_TITLE);
     box-shadow: 0 2px 10px rgba(138, 75, 50, 0.08);
   }
 
-  /* Keep the example photo a supporting image under the text, not a full-width banner. */
-  .gsg-section--critical .gsg-figure {
-    max-width: 40rem;
+  /* Caption beside a modest photo on wide screens; stacked on smaller ones. */
+  .gsg-sponge-example {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(14rem, 20rem);
+    gap: 0.75rem 1.15rem;
+    align-items: center;
+    max-width: 48rem;
+    margin: 0.15rem 0 1rem;
   }
 
-  @media (min-width: 1041px) {
-    .gsg-section--critical .gsg-videos {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-      align-items: start;
-    }
+  .gsg-sponge-example figcaption {
+    margin: 0;
+    max-width: 36rem;
+    line-height: 1.5;
+  }
+
+  .gsg-sponge-example img {
+    display: block;
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    border-radius: 12px;
+    border: 1px solid rgba(138, 75, 50, 0.25);
   }
 
   .gsg-kicker {
@@ -845,19 +896,62 @@ const swatchVideo = guideVideo(2189, SWATCH_VIDEO_TITLE);
     border: 1px solid rgba(138, 75, 50, 0.25);
   }
 
-  .gsg-videos {
-    display: flex;
-    flex-direction: column;
-    gap: 1.15rem;
-    margin: 0.35rem 0 1rem;
-  }
-
   .gsg-video-choice {
     min-width: 0;
     margin: 0.35rem 0 1rem;
   }
 
-  .gsg-videos .gsg-video-choice {
+  .gsg-sponge-player {
+    width: 100%;
+    max-width: 40rem;
+    margin-top: 0.15rem;
+  }
+
+  .gsg-sponge-tabs {
+    display: flex;
+    gap: 0.5rem;
+    margin: 0 0 0.75rem;
+  }
+
+  .gsg-sponge-tabs__tab {
+    flex: 1 1 0;
+    min-width: 0;
+    min-height: 48px;
+    margin: 0;
+    padding: 0.55rem 0.75rem;
+    border: 2px solid #c7d8a4;
+    border-radius: 12px;
+    background: #fff;
+    color: #243015;
+    font: inherit;
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1.3;
+    text-align: center;
+    cursor: pointer;
+  }
+
+  .gsg-sponge-tabs__tab:hover {
+    border-color: var(--kbm-green, #52682d);
+  }
+
+  .gsg-sponge-tabs__tab[aria-selected="true"] {
+    border-color: var(--kbm-green, #52682d);
+    background: rgba(82, 104, 45, 0.12);
+    color: var(--kbm-green, #52682d);
+  }
+
+  .gsg-sponge-tabs__tab:focus-visible {
+    outline: none;
+    border-color: var(--kbm-green, #52682d);
+    box-shadow: 0 0 0 3px rgba(82, 104, 45, 0.18);
+  }
+
+  .gsg-sponge-panel[hidden] {
+    display: none;
+  }
+
+  .gsg-sponge-panel.gsg-video-choice {
     margin: 0;
   }
 
@@ -1069,6 +1163,12 @@ const swatchVideo = guideVideo(2189, SWATCH_VIDEO_TITLE);
       grid-template-columns: minmax(0, 1fr);
       row-gap: 1rem;
     }
+
+    .gsg-sponge-example {
+      grid-template-columns: minmax(0, 1fr);
+      justify-items: start;
+      max-width: 20rem;
+    }
   }
 
   @media (max-width: 640px) {
@@ -1104,7 +1204,6 @@ const swatchVideo = guideVideo(2189, SWATCH_VIDEO_TITLE);
     }
 
     .gsg-invite__action {
-      flex-direction: column-reverse;
       align-items: flex-start;
     }
 
