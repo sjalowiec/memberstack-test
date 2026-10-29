@@ -70,6 +70,64 @@ export function savedPatternHasMemberNotes(notes: string): boolean {
   return normalizeMemberNotes(notes).length > 0;
 }
 
+const MEMBER_NOTES_DATE_MONTHS = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
+] as const;
+
+/** Local calendar date, such as Oct 29, 2026. */
+export function formatMemberNotesDate(date: Date): string {
+  const month = MEMBER_NOTES_DATE_MONTHS[date.getMonth()];
+  if (!month || Number.isNaN(date.getTime())) return "";
+  return `${month} ${date.getDate()}, ${date.getFullYear()}`;
+}
+
+/**
+ * Insert a date at the selection. Replaces selected text and keeps everything else.
+ * Returns the original value when the result would pass the notes limit.
+ */
+export function insertMemberNotesDate(input: {
+  value: string;
+  selectionStart: number | null;
+  selectionEnd: number | null;
+  dateText: string;
+  maxLength?: number;
+}): { value: string; selectionStart: number; selectionEnd: number; inserted: boolean } {
+  const maxLength = input.maxLength ?? MEMBER_NOTES_MAX_LENGTH;
+  const value = input.value;
+  const length = value.length;
+  let start = input.selectionStart ?? length;
+  let end = input.selectionEnd ?? start;
+  if (!Number.isFinite(start) || start < 0) start = 0;
+  if (!Number.isFinite(end) || end < 0) end = 0;
+  if (start > length) start = length;
+  if (end > length) end = length;
+  if (end < start) {
+    const swap = start;
+    start = end;
+    end = swap;
+  }
+  if (!input.dateText) {
+    return { value, selectionStart: start, selectionEnd: end, inserted: false };
+  }
+  const next = `${value.slice(0, start)}${input.dateText}${value.slice(end)}`;
+  if (next.length > maxLength) {
+    return { value, selectionStart: start, selectionEnd: end, inserted: false };
+  }
+  const cursor = start + input.dateText.length;
+  return { value: next, selectionStart: cursor, selectionEnd: cursor, inserted: true };
+}
+
 /**
  * Saved pattern view that these notes belong to.
  * The URL `project` id wins. Otherwise the active id for that pattern type is used.

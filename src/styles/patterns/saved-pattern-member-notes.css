@@ -59,10 +59,38 @@
   color: #4b5563;
 }
 
+.saved-pattern-member-notes-dialog__notes-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
 .saved-pattern-member-notes-dialog__label {
   font-size: 0.88rem;
   font-weight: 600;
   color: #374151;
+}
+
+.saved-pattern-member-notes-dialog__insert-date {
+  cursor: pointer;
+  padding: 0.2rem 0.55rem;
+  border-radius: 6px;
+  border: 1px solid #9ca3af;
+  background: #fff;
+  color: var(--kbm-green, #52682d);
+  font-weight: 600;
+  font-size: 0.82rem;
+}
+
+.saved-pattern-member-notes-dialog__insert-date:focus-visible {
+  outline: 2px solid var(--kbm-green, #52682d);
+  outline-offset: 2px;
+}
+
+.saved-pattern-member-notes-dialog__insert-date:disabled {
+  cursor: default;
+  opacity: 0.65;
 }
 
 .saved-pattern-member-notes-dialog__input {
