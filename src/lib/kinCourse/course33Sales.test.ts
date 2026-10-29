@@ -95,29 +95,31 @@ describe("Beginner Workshop sales page", () => {
     const copy = KIN_BEGINNER_WORKSHOP_SALES_COPY;
     expect(copy.blocks).toBeUndefined();
     expect(copy.courseTitle).toBe("Beginner Workshop");
-    expect(copy.headline).toBe("Start Machine Knitting with Confidence");
+    expect(copy.headline).toBe("Get Comfortable with Your Knitting Machine");
     expect(sales).toContain("kin-course-sales__course-title");
     expect(sales).toContain("copy.courseTitle");
     expect(sales).toContain('<h2 class="kin-course-sales__headline">{copy.headline}</h2>');
     expect(copy.intro).toEqual([
-      "Ready to use your knitting machine but unsure where to begin?",
-      "Follow a clear, step-by-step path through the basics, then put your skills to work knitting three hats.",
+      "New to machine knitting, or feeling rusty after a break?",
+      "Get familiar with the basics, from threading your machine and choosing yarn to casting on and knitting. Watch the demonstrations, practice at your machine, and revisit anything you need to see again.",
     ]);
-    expect(copy.benefitsHeading).toBe("With this workshop, you’ll learn to:");
+    expect(copy.benefitsHeading).toBe("With this workshop, you can:");
     expect(copy.benefits).toEqual([
-      "Choose suitable yarn and get your knitting started",
-      "Cast on, bind off, and shape your knitting",
-      "Swatch and measure gauge for the size you want",
-      "Put it all together in three hat projects",
+      "Get familiar with threading and basic machine operation",
+      "Learn ways to cast on and bind off",
+      "Explore swatching, gauge, and basic shaping",
+      "Practice your skills with the included hat projects",
     ]);
     expect(copy.supportingCopy).toBe(
-      "Watch, practice, and repeat at your own pace. Return to any lesson when you need a refresher.",
+      "Take your time, repeat the demonstrations, and build confidence with practice.",
     );
-    expect(copy.ctaHeading).toBe("Ready to get knitting?");
+    expect(copy.ctaHeading).toBe("Ready to get comfortable with the basics?");
     expect(copy.accessLine).toBe(
       "Available to Knit It Now members and previous course owners.",
     );
     const text = salesText();
+    expect(text).not.toContain("three hats");
+    expect(text).not.toContain("step-by-step");
     expect(text).not.toContain("Know what to practice next");
     expect(text).not.toContain("Double Warm Hat");
     expect(text).not.toContain("Shaped Watch Cap");

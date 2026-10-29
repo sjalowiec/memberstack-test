@@ -156,21 +156,21 @@ const MEMBERSHIP_HREF = "/membership";
 
 export const KIN_BEGINNER_WORKSHOP_SALES_COPY: KinCourseSalesCopy = {
   courseTitle: "Beginner Workshop",
-  headline: "Start Machine Knitting with Confidence",
+  headline: "Get Comfortable with Your Knitting Machine",
   intro: [
-    "Ready to use your knitting machine but unsure where to begin?",
-    "Follow a clear, step-by-step path through the basics, then put your skills to work knitting three hats.",
+    "New to machine knitting, or feeling rusty after a break?",
+    "Get familiar with the basics, from threading your machine and choosing yarn to casting on and knitting. Watch the demonstrations, practice at your machine, and revisit anything you need to see again.",
   ],
-  benefitsHeading: "With this workshop, you’ll learn to:",
+  benefitsHeading: "With this workshop, you can:",
   benefits: [
-    "Choose suitable yarn and get your knitting started",
-    "Cast on, bind off, and shape your knitting",
-    "Swatch and measure gauge for the size you want",
-    "Put it all together in three hat projects",
+    "Get familiar with threading and basic machine operation",
+    "Learn ways to cast on and bind off",
+    "Explore swatching, gauge, and basic shaping",
+    "Practice your skills with the included hat projects",
   ],
   supportingCopy:
-    "Watch, practice, and repeat at your own pace. Return to any lesson when you need a refresher.",
-  ctaHeading: "Ready to get knitting?",
+    "Take your time, repeat the demonstrations, and build confidence with practice.",
+  ctaHeading: "Ready to get comfortable with the basics?",
   accessLine: "Available to Knit It Now members and previous course owners.",
   purchaseButtonLabel: "",
   ownerBefore: "Already have access?",
@@ -178,7 +178,7 @@ export const KIN_BEGINNER_WORKSHOP_SALES_COPY: KinCourseSalesCopy = {
   ownerAfter: "to continue.",
   fallbackImageAlt: "Beginner Workshop",
   metaDescription:
-    "Start machine knitting with confidence. Follow a step-by-step path through the basics, then knit three hats. Available to Knit It Now members and previous course owners.",
+    "Get comfortable with your knitting machine. Get familiar with the basics, from threading and choosing yarn to casting on and knitting. Available to Knit It Now members and previous course owners.",
   accessCta: {
     startLabel: "Start the Beginner Workshop",
     startHref: kinCourseHomeHref(COURSE_INDIVIDUAL_SALES.beginnerWorkshop.courseId),
