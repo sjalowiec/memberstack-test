@@ -576,6 +576,10 @@
     .sleeveless-pattern-page .sleeveless-pattern-inpage-nav__actions {
       order: 2;
       margin-left: auto;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      max-width: calc(100% - 2.4rem);
+      row-gap: 0.35rem;
     }
 
     .sleeveless-pattern-page .sleeveless-pattern-inpage-nav__track {

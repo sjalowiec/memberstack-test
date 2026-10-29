@@ -17,8 +17,13 @@ export type CustomPatternProjectSource = "express" | "custom-build";
 export interface CustomPatternProject {
   id: string;
   name: string;
-  /** Optional project notes (mirrors `pattern.patternProject.notes`). */
+  /** Optional project notes (mirrors `pattern.patternProject.notes`). Printed with the pattern. */
   notes?: string;
+  /**
+   * Private My Notes for this saved pattern. Shared across pattern sections.
+   * Not printed. Omitted on older projects and when the knitter clears the note.
+   */
+  memberNotes?: string;
   family: CustomPatternFamily;
   source: CustomPatternProjectSource;
   createdAt: string;
