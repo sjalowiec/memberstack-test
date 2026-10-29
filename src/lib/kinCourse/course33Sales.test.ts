@@ -41,10 +41,6 @@ const member = payloadWithPlan(MEMBERSHIPS.membership.memberstackPlanId);
 const owner = payloadWithPlan(LEGACY_BEGINNER_WORKSHOP_COURSE_PLAN_ID);
 const otherCourseOwner = payloadWithPlan(LEGACY_SK840_COURSE_PLAN_ID);
 
-const salesPage = readFileSync(
-  resolve("src/components/courses/BeginnerWorkshopSalesPage.astro"),
-  "utf8",
-);
 const sales = readFileSync(resolve("src/components/courses/KinCourseSales.astro"), "utf8");
 const wrapper = readFileSync(resolve("src/components/courses/KinCourse33Sales.astro"), "utf8");
 const layout = readFileSync(resolve("src/layouts/KinCourseLayout.astro"), "utf8");
@@ -66,12 +62,10 @@ describe("Beginner Workshop sales page", () => {
     expect(getKinCourseSalesCopy(BEGINNER_WORKSHOP_COURSE_SLUG)).toBe(
       KIN_BEGINNER_WORKSHOP_SALES_COPY,
     );
-    expect(courseIndex).toContain("showBeginnerWorkshopSales");
-    expect(courseIndex).toContain("BeginnerWorkshopSalesPage");
+    expect(courseIndex).toContain("loadNumberedCoursePlayerBundle");
+    expect(courseIndex).toContain('Astro.redirect(kinCourseHomeHref(COURSE_INDIVIDUAL_SALES.beginnerWorkshop.courseId), 301)');
+    expect(courseIndex).not.toContain("BeginnerWorkshopSalesPage");
     expect(courseIndex).not.toContain("course_33_beginner_workshop");
-    expect(salesPage).not.toContain("vimeo");
-    expect(salesPage).not.toContain("set:html");
-    expect(salesPage).toContain('thumbnailSrc="/images/courses/beginner.webp"');
     expect(wrapper).toContain("KIN_BEGINNER_WORKSHOP_SALES_COPY");
     expect(layout).toContain("KinCourse33Sales");
     expect(layout).toContain("isBeginnerWorkshopCourseSlug");
@@ -97,21 +91,36 @@ describe("Beginner Workshop sales page", () => {
     expect(salesText()).not.toContain("prc_");
   });
 
-  it("corrects the overview to the current course: one hat project, no named legacy hats", () => {
+  it("uses the compact Taitexma sales layout with one closing access CTA", () => {
+    const copy = KIN_BEGINNER_WORKSHOP_SALES_COPY;
+    expect(copy.blocks).toBeUndefined();
+    expect(copy.headline).toBe("Start Machine Knitting with Confidence");
+    expect(copy.intro).toEqual([
+      "Ready to use your knitting machine but unsure where to begin?",
+      "Follow a clear, step-by-step path through the basics, then put your skills to work knitting three hats.",
+    ]);
+    expect(copy.benefitsHeading).toBe("With this workshop, you’ll learn to:");
+    expect(copy.benefits).toEqual([
+      "Choose suitable yarn and get your knitting started",
+      "Cast on, bind off, and shape your knitting",
+      "Swatch and measure gauge for the size you want",
+      "Put it all together in three hat projects",
+    ]);
+    expect(copy.supportingCopy).toBe(
+      "Watch, practice, and repeat at your own pace. Return to any lesson when you need a refresher.",
+    );
+    expect(copy.ctaHeading).toBe("Ready to get knitting?");
+    expect(copy.accessLine).toBe(
+      "Available to Knit It Now members and previous course owners.",
+    );
     const text = salesText();
-    expect(text).toContain("your first hat");
-    expect(text).toContain("Project: Let’s Knit a Hat!");
-    expect(text).toContain("Hat Pattern Builder");
-    expect(text).toContain("Yarn Estimator");
-    expect(text).toContain("worksheets");
-    expect(text).toContain("not appropriate for the LK150");
-    expect(text).not.toContain("three hat");
-    expect(text).not.toContain("three finished hats");
+    expect(text).not.toContain("Know what to practice next");
     expect(text).not.toContain("Double Warm Hat");
     expect(text).not.toContain("Shaped Watch Cap");
-    expect(text).not.toContain("Brother");
-    expect(text).not.toContain("Silver Reed");
-    expect(text).not.toContain("machine manual");
+    expect(text).not.toContain("Purchase");
+    expect(sales).toContain("copy.accessLine");
+    expect(sales).toContain("kin-course-sales__benefits");
+    expect(sales).toContain('aria-labelledby="kin-course-sales-cta-heading"');
   });
 
   it("shows Start to members and legacy owners, and membership actions to everyone else", () => {
@@ -183,7 +192,7 @@ describe("Beginner Workshop sales page", () => {
     const entry = getCourseCatalogEntries().find(
       (course) => course.slug === BEGINNER_WORKSHOP_COURSE_SLUG,
     );
-    expect(entry?.href).toBe("/courses/beginner-workshop");
+    expect(entry?.href).toBe("/courses/33");
     expect(entry?.buttonLabel).toBe("View Course");
     expect(entry?.access).toBe("member");
     expect(entry?.title).toBe("Beginner Workshop");

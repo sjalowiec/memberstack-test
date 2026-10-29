@@ -1,3 +1,4 @@
+import { COURSE_INDIVIDUAL_SALES } from "../../config/legacyCourseEntitlements";
 import {
   isAllowedCourseId,
   loadCourseContentDocument,
@@ -40,6 +41,27 @@ async function loadPlayerCourseDocument(
     // Keep the unpublished overlay/document; the caller 404s.
   }
   return poc;
+}
+
+/**
+ * Published courses load with the caller's options. Course 33's local content
+ * file can still be draft; in that case load it without admin preview so
+ * `/courses/33` can show the sales page or the course instead of 404ing.
+ * A published bundle is returned as-is, so draft lessons stay out of production.
+ */
+export async function loadNumberedCoursePlayerBundle(
+  courseId: number,
+  options: CourseContentWriteOptions & { includeDrafts?: boolean } = {},
+): Promise<KinCourseBundle | null> {
+  const bundle = await loadKinCourseBundle(courseId, options);
+  if (
+    bundle ||
+    options.includeDrafts === true ||
+    courseId !== COURSE_INDIVIDUAL_SALES.beginnerWorkshop.courseId
+  ) {
+    return bundle;
+  }
+  return loadKinCourseBundle(courseId, { ...options, includeDrafts: true });
 }
 
 export async function loadKinCourseBundle(
