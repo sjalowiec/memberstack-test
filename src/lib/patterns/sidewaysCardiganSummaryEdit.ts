@@ -215,7 +215,7 @@ export const SIDEWAYS_CARDIGAN_SUMMARY_SLEEVE_FIELDS: PatternSummaryMeasurementF
     label: SLEEVE_CUFF_RIBBING_DEPTH_LABEL,
     previewTab: "sleeve",
     targetId: SIDEWAYS_SUMMARY_MEASUREMENT_TARGETS.cuffDepth,
-    transform: "translate(8px, -50%)",
+    transform: "translate(calc(-100% - 10px), -50%)",
     inputId: "sideways-edit-cuff-depth",
     inputDataAttr: "data-sideways-edit-cuff-depth",
     extraInputAttrs: { "data-cb-measure-input": "cuffDepth" },

@@ -24,6 +24,7 @@ export const PATTERN_SUMMARY_MEASUREMENT_TARGETS = {
   upperArm: "target_upper_arm",
   cuffCircumference: "target_cuff_circumference",
   armLength: "target_arm_length",
+  cuffDepth: "target_cuff_depth",
 } as const;
 
 /** Drop Shoulder summary blueprint (`drop_shoulder_summary.svg`) — orange target_* anchors only. */
