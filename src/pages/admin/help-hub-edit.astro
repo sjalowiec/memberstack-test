@@ -472,13 +472,16 @@ const chooserBoxes = [
                   </div>
                   <div class="help-hub-edit__field">
                     <label for="help-hub-solution-text" class="help-hub-edit__label">Explanation</label>
+                    <button type="button" id="helpHubInsertSolutionImage" class="kbm-btn kbm-btn-outline help-hub-edit__insert-image">
+                      Insert image
+                    </button>
                     <textarea
                       id="help-hub-solution-text"
                       class="help-hub-edit__textarea"
                       name="solutionText"
                       rows="6">{valueFor("solutionText", "")}</textarea>
                     <p class="help-hub-edit__hint">
-                      The section under the question. Leave blank to hide it. Existing formatting is kept.
+                      The section under the question. Insert an image and add a short paragraph if you want one. Leave blank to hide it.
                     </p>
                   </div>
                 </div>
@@ -1501,6 +1504,10 @@ const chooserBoxes = [
       font-size: 0.95rem;
       color: #1e293b;
       font-weight: 600;
+    }
+
+    .help-hub-edit__insert-image {
+      margin: 0 0 0.45rem;
     }
 
     .help-hub-edit__input,

@@ -113,6 +113,19 @@ describe("prepareHelpHubTipPage member resources", () => {
     expect(tip.solutionText).toBe(stored);
   });
 
+  it("renders a repeatedly escaped explanation image without rewriting the stored entry", () => {
+    const stored =
+      "&amp;amp;amp;amp;lt;img src=&amp;amp;amp;quot;/images/thank-you.jpg&amp;amp;amp;quot;&amp;amp;amp;amp;gt;";
+    const tip = {
+      slug: "encoding-check",
+      status: "published",
+      solutionText: stored,
+    };
+    const view = prepareHelpHubTipPage(tip, lessons, videosPublic);
+    expect(view.whyBody).toBe('<img src="/images/thank-you.jpg">');
+    expect(tip.solutionText).toBe(stored);
+  });
+
   it("still uses legacy bridge text when solutionText is empty", () => {
     const view = prepareHelpHubTipPage(
       {
