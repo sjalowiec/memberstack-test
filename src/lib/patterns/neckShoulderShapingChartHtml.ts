@@ -773,7 +773,7 @@ export function renderActiveShoulderChartIntroHtml(options: ActiveShoulderChartI
     }
   }
   innerParts.push(
-    `<p>${activeShoulderChartIntroSentenceHtml(options.shouldersShaped !== false, introIdentity)}</p>`,
+    `<p class="pattern-print-checklist-pointer">${activeShoulderChartIntroSentenceHtml(options.shouldersShaped !== false, introIdentity)}</p>`,
   );
   const inner = innerParts.join("\n  ");
 

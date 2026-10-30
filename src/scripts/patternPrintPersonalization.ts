@@ -23,6 +23,9 @@ import {
   resolvePatternPrintDocumentTitle,
   syncPatternProjectToPrintSession,
 } from "../lib/patterns/sleevelessPatternProjectMeta";
+import type { PatternPrintChoice } from "../lib/patterns/patternPrintChoice";
+import { applyPatternPrintLayout } from "../lib/patterns/patternPrintLayout";
+import { openPatternPrintChoiceDialog } from "./patternPrintChoiceDialog";
 
 /** Ensures Ctrl+P / system print also suggest the user pattern name as the PDF filename. */
 function syncDocumentTitleForNativePrint(): void {
@@ -60,6 +63,8 @@ export interface PatternPrintTriggerOptions {
 let listenersBound = false;
 let lastTrigger: HTMLElement | null = null;
 let pendingOpts: PatternPrintTriggerOptions | undefined;
+let pendingPrintChoice: PatternPrintChoice = "both";
+let pendingPrintRestore: (() => void) | null = null;
 
 function getDialog(): HTMLDialogElement | null {
   const el = document.getElementById("pattern-print-personalization-modal");
@@ -226,9 +231,10 @@ function bindModalListenersOnce(): void {
     runPatternPrint(opts, title.trim());
   });
 
-  /** Escape closes without printing — drop deferred callbacks. */
+  /** Escape closes without printing — drop deferred callbacks and any print layout. */
   dialog.addEventListener("cancel", () => {
     pendingOpts = undefined;
+    restorePatternPrintLayout();
   });
 }
 
@@ -259,9 +265,22 @@ function syncAllPatternTipDismissBeforePrint(): void {
  * Callers that already set document.title in onBeforePrint (e.g. diy-blanket) are left alone
  * until afterprint, then restored to the title captured at the start of this call.
  */
+function restorePatternPrintLayout(): void {
+  const restore = pendingPrintRestore;
+  pendingPrintRestore = null;
+  restore?.();
+}
+
 function runPatternPrint(opts?: PatternPrintTriggerOptions, printTitle = ""): void {
   prepareSavedMemberNotesForPrint();
   syncAllPatternTipDismissBeforePrint();
+  restorePatternPrintLayout();
+  pendingPrintRestore = applyPatternPrintLayout(document, pendingPrintChoice);
+  const restoreAfterPrint = (): void => {
+    window.removeEventListener("afterprint", restoreAfterPrint);
+    restorePatternPrintLayout();
+  };
+  window.addEventListener("afterprint", restoreAfterPrint);
   const originalTitle = document.title;
   let restoreScheduled = false;
 
@@ -301,10 +320,7 @@ function runPatternPrint(opts?: PatternPrintTriggerOptions, printTitle = ""): vo
   }
 }
 
-export function triggerPatternPrint(
-  triggerEl: HTMLElement | null,
-  opts?: PatternPrintTriggerOptions,
-): void {
+function beginPatternPrint(triggerEl: HTMLElement | null, opts: PatternPrintTriggerOptions | undefined): void {
   bindModalListenersOnce();
   const { title, notes } = readStoredPrintPersonalization();
   applyPatternPrintPersonalizationToDom(title, notes);
@@ -335,5 +351,16 @@ export function triggerPatternPrint(
   const { titleInput } = getFields(dialog);
   window.requestAnimationFrame(() => {
     titleInput?.focus();
+  });
+}
+
+export function triggerPatternPrint(
+  triggerEl: HTMLElement | null,
+  opts?: PatternPrintTriggerOptions,
+): void {
+  void openPatternPrintChoiceDialog(triggerEl).then((choice) => {
+    if (!choice) return;
+    pendingPrintChoice = choice;
+    beginPatternPrint(triggerEl, opts);
   });
 }
