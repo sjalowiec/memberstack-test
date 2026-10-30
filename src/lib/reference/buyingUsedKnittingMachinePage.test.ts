@@ -15,6 +15,14 @@ const machineChooserSource = readFileSync(
   resolve("src/pages/reference/machines/choose.astro"),
   "utf8",
 );
+const machineChooserScript = readFileSync(
+  resolve("public/scripts/wizards/wf-machine-choice.js"),
+  "utf8",
+);
+const machineChooserWizard = readFileSync(
+  resolve("public/wizards/wf-machine-choice.json"),
+  "utf8",
+);
 
 describe("buying a used knitting machine reference page", () => {
   it("is a public prerendered reference page", () => {
@@ -36,8 +44,19 @@ describe("buying a used knitting machine reference page", () => {
     expect(pageSource).toContain(
       "Answer a few questions to share what you’re looking for with Sue.",
     );
-    expect(machineChooserSource).not.toContain("/reference/buying-a-used-knitting-machine");
     expect(machineChooserSource).not.toContain("Get Help Choosing a Machine");
+    expect(machineChooserScript).toContain('step.stepId === "step-buying"');
+    expect(machineChooserScript).toContain(
+      "Considering a used machine? Read our buying checklist.",
+    );
+    expect(machineChooserScript).toContain(
+      'href="/reference/buying-a-used-knitting-machine/" target="_blank" rel="noopener noreferrer"',
+    );
+    expect(machineChooserScript).toContain("Opens in a new tab.");
+    expect(machineChooserWizard).toContain('"thoughtText": "What\'s your buying preference?"');
+    expect(machineChooserWizard).toContain("I want a new machine with full support and warranty");
+    expect(machineChooserWizard).toContain("I'm open to used machines if they meet my needs");
+    expect(machineChooserWizard).not.toContain("buying-a-used-knitting-machine");
   });
 
   it("uses the sponge bar glossary entry and decorative card icons", () => {
@@ -81,8 +100,22 @@ describe("buying a used knitting machine reference page", () => {
   });
 
   it("is listed on the References catalog and favorite catalog", () => {
-    expect(referenceIndexSource).toContain('title: "Buying a Used Knitting Machine"');
-    expect(referenceIndexSource).toContain('href: "/reference/buying-a-used-knitting-machine"');
+    const newToStart = referenceIndexSource.indexOf("const newToMkCards");
+    const newToBlock = referenceIndexSource.slice(
+      newToStart,
+      referenceIndexSource.indexOf("];", newToStart),
+    );
+    const machineStart = referenceIndexSource.indexOf('id: "machine-reference"');
+    const machineBlock = referenceIndexSource.slice(
+      machineStart,
+      referenceIndexSource.indexOf('id: "designaknit"'),
+    );
+    expect(newToBlock).toContain('title: "Buying a Used Knitting Machine"');
+    expect(newToBlock).toContain('href: "/reference/buying-a-used-knitting-machine/"');
+    expect(newToBlock).toContain(
+      "Know what to ask, what to check, and what to budget before you buy.",
+    );
+    expect(machineBlock).not.toContain("Buying a Used Knitting Machine");
     expect(favoriteCatalogSource).toContain('title: "Buying a Used Knitting Machine"');
     expect(favoriteCatalogSource).toContain('href: "/reference/buying-a-used-knitting-machine"');
   });
