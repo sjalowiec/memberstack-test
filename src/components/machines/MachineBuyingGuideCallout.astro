@@ -1,0 +1,60 @@
+---
+/**
+ * Compact link to the knitting machine buying guide.
+ * Used above machine listings on the shop and the machine database.
+ */
+---
+
+<aside class="machine-buying-guide">
+  <div class="machine-buying-guide__body">
+    <h2 class="machine-buying-guide__title">Not sure which knitting machine to buy?</h2>
+    <p class="machine-buying-guide__text">
+      Explore your options and find a machine that fits the knitting you want to do.
+    </p>
+  </div>
+  <a class="kbm-btn kbm-btn-primary machine-buying-guide__btn" href="/reference/machines/choose">
+    Help Me Choose a Machine
+  </a>
+</aside>
+
+<style>
+  .machine-buying-guide {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem 1.25rem;
+    background: #f5f7f2;
+    border: 1px solid #d6dcc8;
+    border-left: 4px solid #52682d;
+    border-radius: 6px;
+    padding: 14px 16px;
+    margin: 0 0 1.25rem;
+  }
+
+  .machine-buying-guide__body {
+    flex: 1 1 16rem;
+    min-width: 0;
+  }
+
+  .machine-buying-guide__title {
+    margin: 0 0 0.35rem;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #52682d;
+    line-height: 1.3;
+  }
+
+  .machine-buying-guide__text {
+    margin: 0;
+    font-size: 0.95rem;
+    line-height: 1.45;
+    color: #374151;
+  }
+
+  .machine-buying-guide__btn {
+    flex: 0 0 auto;
+    white-space: nowrap;
+    text-align: center;
+  }
+</style>
