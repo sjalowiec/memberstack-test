@@ -15,6 +15,7 @@ import {
   type HelpHubSaveIntent,
 } from "./adminForm";
 import { openerPreviewBaseHref, requestHelpHubPreview } from "./adminEditorClient";
+import { canonicalHelpHubSolutionHtml, helpHubSolutionImageTag } from "./solutionHtml";
 import {
   addMemberResource,
   describeSelectedMemberResources,
@@ -736,6 +737,34 @@ export function initHelpHubAdminEditor(): boolean {
   syncTryStepsStore();
   syncImageFields();
 
+  const solutionField = form.elements.namedItem("solutionText");
+  if (solutionField instanceof HTMLTextAreaElement) {
+    const repaired = canonicalHelpHubSolutionHtml(solutionField.value);
+    if (repaired !== solutionField.value) solutionField.value = repaired;
+  }
+
+  document.getElementById("helpHubInsertSolutionImage")?.addEventListener("click", () => {
+    if (!(solutionField instanceof HTMLTextAreaElement)) return;
+    const src = window.prompt("Image address on this site", "/images/");
+    if (src == null) return;
+    const alt = window.prompt("Alt text (short description of the image)", "") ?? "";
+    const tag = helpHubSolutionImageTag(src, alt);
+    if (!tag) {
+      setSaveStatus("Use a site image address such as /images/thank-you.jpg.", "err");
+      return;
+    }
+    const start = solutionField.selectionStart ?? solutionField.value.length;
+    const end = solutionField.selectionEnd ?? start;
+    const prefix = start > 0 && solutionField.value[start - 1] !== "\n" ? "\n" : "";
+    const inserted = `${prefix}${tag}\n`;
+    solutionField.value =
+      solutionField.value.slice(0, start) + inserted + solutionField.value.slice(end);
+    const cursor = start + inserted.length;
+    solutionField.focus();
+    solutionField.setSelectionRange(cursor, cursor);
+    solutionField.dispatchEvent(new Event("input", { bubbles: true }));
+  });
+
   const baselineSnapshot = JSON.stringify(snapshotForm(form));
   let savedSnapshot = baselineSnapshot;
   let pendingDraft: Record<string, string | boolean> | null = null;
@@ -1070,6 +1099,10 @@ export function initHelpHubAdminEditor(): boolean {
         /* ignore */
       }
       updateSaveButtonLabel(form);
+      if (solutionField instanceof HTMLTextAreaElement) {
+        const repaired = canonicalHelpHubSolutionHtml(solutionField.value);
+        if (repaired !== solutionField.value) solutionField.value = repaired;
+      }
       setSaveStatus(nextStatus === "published" ? "Published" : "Saved", "ok");
       savedSnapshot = JSON.stringify(snapshotForm(form));
       const savedSlug =

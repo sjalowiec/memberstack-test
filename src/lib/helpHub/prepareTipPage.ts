@@ -17,6 +17,7 @@ import {
 } from "./memberResources";
 import { isMemberOnlyToolPath } from "../tools/toolMembership";
 import { helpHubRelatedToolButton, type HelpHubRelatedToolButton } from "./adminForm";
+import { canonicalHelpHubSolutionHtml } from "./solutionHtml";
 import { resolveHelpHubPublicVideo } from "./publicVideo";
 import {
   helpHubRelatedToolModal,
@@ -147,7 +148,7 @@ export function prepareHelpHubTipPage(
       : typeof tip.bridge === "string" && tip.bridge.trim() !== ""
         ? tip.bridge.trim()
         : "";
-  const whyBodyRaw = solutionHtmlWithLoadableImages(whyBodySource);
+  const whyBodyRaw = solutionHtmlWithLoadableImages(canonicalHelpHubSolutionHtml(whyBodySource));
   const appliesToList = Array.isArray(tip.appliesTo)
     ? tip.appliesTo.map((item) => (typeof item === "string" ? item.trim() : "")).filter(Boolean)
     : [];
