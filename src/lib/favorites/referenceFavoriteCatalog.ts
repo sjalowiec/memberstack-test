@@ -26,6 +26,10 @@ const RAW_REFERENCE_ITEMS: RefItem[] = [
     title: "Silver Reed vs. Taitexma",
     href: "/reference/machines/silver-reed-vs-taitexma",
   },
+  {
+    title: "Buying a Used Knitting Machine",
+    href: "/reference/buying-a-used-knitting-machine",
+  },
   { title: "Machine Knitter's Bookshelf", href: "/reference/bookshelf" },
   {
     title: "The Best Knitting Machine Table... Ever!",
