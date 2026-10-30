@@ -23,6 +23,7 @@ import {
   helpHubRelatedToolModal,
   type HelpHubRelatedToolModal,
 } from "./relatedToolModal";
+import { canonicalHelpHubSolutionHtml } from "./solutionHtml";
 
 export type HelpHubTryThis = {
   quickActionTitle?: string;
@@ -150,7 +151,7 @@ export function prepareHelpHubTipPage(
       : typeof tip.bridge === "string" && tip.bridge.trim() !== ""
         ? tip.bridge.trim()
         : "";
-  const whyBodyRaw = solutionHtmlWithLoadableImages(whyBodySource);
+  const whyBodyRaw = solutionHtmlWithLoadableImages(canonicalHelpHubSolutionHtml(whyBodySource));
   const appliesToList = Array.isArray(tip.appliesTo)
     ? tip.appliesTo.map((item) => (typeof item === "string" ? item.trim() : "")).filter(Boolean)
     : [];

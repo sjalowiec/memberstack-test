@@ -64,6 +64,20 @@ describe("explanationForAdminForm", () => {
       }),
     ).toBe("Use solution text.");
   });
+
+  it("loads a repeatedly escaped image as HTML the editor can save again", () => {
+    const encoded =
+      "&amp;amp;amp;amp;lt;img src=&amp;amp;amp;quot;/images/thank-you.jpg&amp;amp;amp;quot;&amp;amp;amp;amp;gt;";
+    const loaded = explanationForAdminForm({ solutionText: encoded });
+    expect(loaded).toBe('<img src="/images/thank-you.jpg">');
+    const saved = applyAdminFormToDocument(
+      { id: 1, solutionText: encoded },
+      form({ solutionText: loaded }),
+    );
+    expect(saved.solutionText).toBe(loaded);
+    const again = applyAdminFormToDocument(saved, form({ solutionText: String(saved.solutionText) }));
+    expect(again.solutionText).toBe(loaded);
+  });
 });
 
 describe("applyAdminFormToDocument", () => {
