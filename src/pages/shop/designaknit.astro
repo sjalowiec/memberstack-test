@@ -2,12 +2,19 @@
 import Layout from "../../layouts/Layout.astro";
 import PageHead from "../../components/PageHead.astro";
 import CardRibbon from "../../components/ui/CardRibbon.astro";
-import allProducts from "../../data/designaknit-products.json";
 import { withDesignaknitUtm } from "../../lib/shop/designaknitUtm";
+import {
+  loadPublicDesignaknitProducts,
+  STORE_CATALOG_CACHE_CONTROL,
+} from "../../lib/shop/storeItemPublicCatalog";
 
 const pageTitle = "DesignaKnit Comparison & Buying Guide";
 const pageDescription =
   "Compare DesignaKnit versions and choose the right option for your knitting goals.";
+
+Astro.response.headers.set("Cache-Control", STORE_CATALOG_CACHE_CONTROL);
+
+const allProducts = await loadPublicDesignaknitProducts(Astro.url.hostname);
 
 const products = allProducts.filter(
   (product) => product.active && product.category === "DesignaKnit"
