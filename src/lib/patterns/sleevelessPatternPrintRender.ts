@@ -9,6 +9,11 @@ import { parseInlineMarkedLine } from "./inlineRcHeading";
 import { renderSleevelessBodyShapingChartHtml } from "./sleevelessBodyShapingChartHtml";
 import { renderDropShoulderSleeveShapingChartHtml } from "./dropShoulderSleeveShapingChart";
 import { renderBustDartCustomizationPrintHtml } from "./bustDartFrontSlotHtml";
+import {
+  alinePrintWrittenParagraphs,
+  instructionParagraphClass,
+  printWrittenShapingBlockHtml,
+} from "./patternPrintWrittenShaping";
 
 function escapeHtml(s: string): string {
   return String(s)
@@ -68,15 +73,26 @@ function renderPrintBlockRow(
       }
       const plain = stripTrustedPatternHtmlToPlain(t);
       if (isOmittedTipParagraph(plain)) continue;
-      leftBits.push(`<p class="print-line">${p}</p>`);
+      if (/^<(ol|ul|div)\b/i.test(t)) {
+        leftBits.push(t);
+        continue;
+      }
+      leftBits.push(`<p class="${instructionParagraphClass(p, "print-line")}">${p}</p>`);
     }
   } else {
     for (const p of row.paragraphs) {
       const raw = String(p);
       if (isOmittedTipParagraph(raw)) continue;
       const t = String(p).trim();
-      if (t) leftBits.push(`<p class="print-line">${escapeHtml(t)}</p>`);
+      if (t) leftBits.push(`<p class="${instructionParagraphClass(t, "print-line")}">${escapeHtml(t)}</p>`);
     }
+  }
+  const printParagraphs = [
+    ...(row.printInstructionParagraphs ?? []),
+    ...alinePrintWrittenParagraphs(row.bodyShapingChartRows),
+  ];
+  if (printParagraphs.length > 0) {
+    leftBits.push(printWrittenShapingBlockHtml(printParagraphs, escapeHtml, "print-line"));
   }
   if (row.bodyShapingChartRows && row.bodyShapingChartRows.length > 0) {
     leftBits.push(

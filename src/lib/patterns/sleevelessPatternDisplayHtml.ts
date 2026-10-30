@@ -9,6 +9,11 @@ import { rowCounterResetBlockHtml } from "./rowCounterReset";
 import { renderDropShoulderSleeveShapingChartHtml } from "./dropShoulderSleeveShapingChart";
 import { renderSleevelessBodyShapingChartHtml } from "./sleevelessBodyShapingChartHtml";
 import { patternTipWrapperHtml, type SleevelessPatternDisplayRow } from "./sleevelessPatternOutput";
+import {
+  alinePrintWrittenParagraphs,
+  instructionParagraphClass,
+  printWrittenShapingBlockHtml,
+} from "./patternPrintWrittenShaping";
 
 export function escapePatternDisplayHtml(s: string): string {
   return String(s)
@@ -72,13 +77,28 @@ export function renderPatternDisplayBlockHtml(
         leftBits.push(`<p class="${cls}">${escapePatternDisplayHtml(marked.text)}</p>`);
         continue;
       }
-      leftBits.push(`<p class="sleeveless-pattern-line">${p}</p>`);
+      if (/^<(ol|ul|div)\b/i.test(t)) {
+        leftBits.push(t);
+        continue;
+      }
+      leftBits.push(`<p class="${instructionParagraphClass(p, "sleeveless-pattern-line")}">${p}</p>`);
     }
   } else {
     for (const p of row.paragraphs) {
       const t = String(p).trim();
-      if (t) leftBits.push(`<p class="sleeveless-pattern-line">${escapePatternDisplayHtml(t)}</p>`);
+      if (t) {
+        leftBits.push(
+          `<p class="${instructionParagraphClass(t, "sleeveless-pattern-line")}">${escapePatternDisplayHtml(t)}</p>`,
+        );
+      }
     }
+  }
+  const printParagraphs = [
+    ...(row.printInstructionParagraphs ?? []),
+    ...alinePrintWrittenParagraphs(row.bodyShapingChartRows),
+  ];
+  if (printParagraphs.length > 0) {
+    leftBits.push(printWrittenShapingBlockHtml(printParagraphs, escapePatternDisplayHtml));
   }
   if (row.bodyShapingChartRows && row.bodyShapingChartRows.length > 0) {
     leftBits.push(

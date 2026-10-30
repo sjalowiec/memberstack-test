@@ -108,7 +108,7 @@ function ensureBadge(): HTMLElement | null {
 
   el = document.createElement("aside");
   el.id = BADGE_ID;
-  el.setAttribute("data-kbm-sleeveless-access-debug", "");
+  el.className = "no-print";
   el.style.cssText = [
     "position:fixed",
     "bottom:12px",
