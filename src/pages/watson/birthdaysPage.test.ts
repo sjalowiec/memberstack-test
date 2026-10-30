@@ -18,6 +18,9 @@ describe("Watson Member Birthdays page", () => {
     expect(page).toContain('export const prerender = false');
     expect(shell).toContain('href="/watson/birthdays"');
     expect(shell).toContain("Birthdays");
+    expect(shell.indexOf('href="/watson/member-thank-yous"')).toBeGreaterThan(
+      shell.indexOf('href="/watson/birthdays"'),
+    );
   });
 
   it("links member records and notes to existing customer routes", () => {
