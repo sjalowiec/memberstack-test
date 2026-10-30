@@ -303,6 +303,16 @@ export interface NormalizedStripeCharge {
   billingReason: string | null;
   /** Checkout / payment link / subscription / invoice / other. */
   channel: StripePaymentChannel;
+  /** Stripe customer id (`cus_...`) when the charge included one. */
+  customerId: string | null;
+  /** Invoice or charge email. Not a mailing address. */
+  customerEmail: string | null;
+  /** Invoice or billing name. Not used as a mailing address. */
+  customerName: string | null;
+  /** Stripe subscription id when this charge paid a subscription invoice. */
+  subscriptionId: string | null;
+  /** True when Stripe marks the charge refunded. Partial refunds also set amountRefunded. */
+  refunded: boolean;
 }
 
 export type StripePaymentChannel =
@@ -315,11 +325,17 @@ export type StripePaymentChannel =
 interface RawStripePrice {
   id?: string | null;
   product?: string | { id?: string | null } | null;
+  recurring?: { interval?: string | null; interval_count?: number | null } | null;
 }
 
 interface RawStripeInvoiceLine {
-  price?: RawStripePrice | null;
-  plan?: { id?: string | null; product?: string | null } | null;
+  price?: string | RawStripePrice | null;
+  plan?: {
+    id?: string | null;
+    product?: string | null;
+    interval?: string | null;
+    interval_count?: number | null;
+  } | null;
 }
 
 interface RawStripeCharge {
@@ -333,6 +349,10 @@ interface RawStripeCharge {
   paid?: boolean | null;
   status?: string | null;
   description?: string | null;
+  refunded?: boolean | null;
+  receipt_email?: string | null;
+  customer?: string | { id?: string | null } | null;
+  billing_details?: { email?: string | null; name?: string | null } | null;
   metadata?: Record<string, string> | null;
   invoice?:
     | string
@@ -340,6 +360,10 @@ interface RawStripeCharge {
     | {
         id?: string;
         billing_reason?: string | null;
+        customer_email?: string | null;
+        customer_name?: string | null;
+        customer?: string | { id?: string | null } | null;
+        subscription?: string | { id?: string | null } | null;
         collection_method?: string | null;
         paid_out_of_band?: boolean | null;
         charge?: string | { id?: string | null } | null;
@@ -373,16 +397,58 @@ function productIdOf(price: RawStripePrice | null | undefined): string | null {
   return product.id ?? null;
 }
 
-function lineRefsOf(charge: RawStripeCharge): StripeChargeLineRef[] {
+const RECURRING_INTERVALS = new Set(["day", "week", "month", "year"]);
+
+function normalizeRecurringInterval(
+  value: string | null | undefined,
+): StripeChargeLineRef["recurringInterval"] {
+  const interval = (value ?? "").trim().toLowerCase();
+  if (RECURRING_INTERVALS.has(interval)) {
+    return interval as "day" | "week" | "month" | "year";
+  }
+  return null;
+}
+
+function normalizeIntervalCount(value: number | null | undefined): number | null {
+  if (typeof value !== "number" || !Number.isFinite(value) || value <= 0) return null;
+  return value;
+}
+
+function textOrNull(value: string | null | undefined): string | null {
+  const text = value?.trim();
+  return text ? text : null;
+}
+
+function expandedInvoice(charge: RawStripeCharge) {
   const invoice = charge.invoice;
-  if (!invoice || typeof invoice === "string") return [];
+  if (!invoice || typeof invoice === "string") return null;
+  return invoice;
+}
+
+function idFromRef(value: string | { id?: string | null } | null | undefined): string | null {
+  if (!value) return null;
+  if (typeof value === "string") return textOrNull(value);
+  return textOrNull(value.id);
+}
+
+function lineRefsOf(charge: RawStripeCharge): StripeChargeLineRef[] {
+  const invoice = expandedInvoice(charge);
+  if (!invoice) return [];
   const lines = invoice.lines?.data ?? [];
   return lines.map((line) => {
-    const price = line.price ?? null;
-    const planProduct = line.plan?.product ?? null;
+    const rawPrice = line.price ?? null;
+    const price = rawPrice && typeof rawPrice === "object" ? rawPrice : null;
+    const priceIdFromString = typeof rawPrice === "string" ? textOrNull(rawPrice) : null;
+    const plan = line.plan ?? null;
     return {
-      priceId: price?.id ?? line.plan?.id ?? null,
-      productId: productIdOf(price) ?? planProduct,
+      priceId: textOrNull(price?.id) ?? priceIdFromString ?? textOrNull(plan?.id),
+      productId: productIdOf(price) ?? textOrNull(plan?.product),
+      recurringInterval: normalizeRecurringInterval(
+        price?.recurring?.interval ?? plan?.interval,
+      ),
+      recurringIntervalCount: normalizeIntervalCount(
+        price?.recurring?.interval_count ?? plan?.interval_count,
+      ),
     };
   });
 }
@@ -462,6 +528,30 @@ function invoiceIdOf(charge: RawStripeCharge): string | null {
   return invoice.id ?? null;
 }
 
+function customerIdOf(charge: RawStripeCharge): string | null {
+  const invoice = expandedInvoice(charge);
+  return idFromRef(charge.customer) ?? idFromRef(invoice?.customer);
+}
+
+function customerEmailOf(charge: RawStripeCharge): string | null {
+  const invoice = expandedInvoice(charge);
+  return (
+    textOrNull(invoice?.customer_email) ??
+    textOrNull(charge.billing_details?.email) ??
+    textOrNull(charge.receipt_email)
+  );
+}
+
+function customerNameOf(charge: RawStripeCharge): string | null {
+  const invoice = expandedInvoice(charge);
+  return textOrNull(invoice?.customer_name) ?? textOrNull(charge.billing_details?.name);
+}
+
+function subscriptionIdOf(charge: RawStripeCharge): string | null {
+  const invoice = expandedInvoice(charge);
+  return idFromRef(invoice?.subscription);
+}
+
 function billingReasonOf(charge: RawStripeCharge): string | null {
   const invoice = charge.invoice;
   if (!invoice || typeof invoice === "string") return null;
@@ -506,6 +596,11 @@ export function normalizeStripeCharge(charge: RawStripeCharge): NormalizedStripe
       description,
       metadata: charge.metadata,
     }),
+    customerId: customerIdOf(charge),
+    customerEmail: customerEmailOf(charge),
+    customerName: customerNameOf(charge),
+    subscriptionId: subscriptionIdOf(charge),
+    refunded: charge.refunded === true,
   };
 }
 
@@ -522,6 +617,11 @@ export interface FetchStripeChargesOptions {
   /** Explicit fetch (tests/mocks). When omitted, TLS opt-in is honored. */
   fetchImpl?: typeof fetch;
   env?: NodeJS.ProcessEnv;
+  /**
+   * Stripe list expands. Defaults to the invoice only. That invoice includes
+   * line price ids and recurring intervals. Do not expand past four levels.
+   */
+  expand?: string[];
 }
 
 /**
@@ -549,6 +649,10 @@ export async function fetchStripeChargesInRange(
   const seen = new Set<string>();
   let startingAfter: string | null = null;
   let page = 0;
+  const listExpands = options.expand?.length ? options.expand : ["data.invoice"];
+  const chargeExpands = listExpands.map((item) =>
+    item.startsWith("data.") ? item.slice("data.".length) : item,
+  );
 
   while (page < MAX_PAGES) {
     page += 1;
@@ -556,7 +660,7 @@ export async function fetchStripeChargesInRange(
     params.set("limit", String(PAGE_LIMIT));
     params.set("created[gte]", String(createdGte));
     params.set("created[lt]", String(createdLt));
-    params.append("expand[]", "data.invoice");
+    for (const expand of listExpands) params.append("expand[]", expand);
     if (startingAfter) params.set("starting_after", startingAfter);
 
     const url = `${config.apiBase}/charges?${params.toString()}`;
@@ -592,6 +696,7 @@ export async function fetchStripeChargesInRange(
     createdLt,
     config,
     fetchImpl,
+    chargeExpands,
   });
 
   return charges;
@@ -617,8 +722,9 @@ async function appendMissingInvoiceCharges(options: {
   createdLt: number;
   config: StripeReportingConfig;
   fetchImpl: typeof fetch;
+  chargeExpands: string[];
 }): Promise<void> {
-  const { charges, seen, createdGte, createdLt, config, fetchImpl } = options;
+  const { charges, seen, createdGte, createdLt, config, fetchImpl, chargeExpands } = options;
   let startingAfter: string | null = null;
   let page = 0;
 
@@ -656,7 +762,7 @@ async function appendMissingInvoiceCharges(options: {
             ? invoice.charge
             : invoice.charge?.id ?? null;
         if (!chargeId || seen.has(chargeId)) continue;
-        const extra = await fetchStripeChargeById(chargeId, config, fetchImpl);
+        const extra = await fetchStripeChargeById(chargeId, config, fetchImpl, chargeExpands);
         if (!extra) continue;
         if (extra.created < createdGte || extra.created >= createdLt) continue;
         seen.add(extra.id);
@@ -672,13 +778,14 @@ async function appendMissingInvoiceCharges(options: {
   }
 }
 
-async function fetchStripeChargeById(
+export async function fetchStripeChargeById(
   chargeId: string,
   config: StripeReportingConfig,
   fetchImpl: typeof fetch,
+  expand: string[] = ["invoice"],
 ): Promise<NormalizedStripeCharge | null> {
   const params = new URLSearchParams();
-  params.append("expand[]", "invoice");
+  for (const item of expand) params.append("expand[]", item);
   const url = `${config.apiBase}/charges/${encodeURIComponent(chargeId)}?${params.toString()}`;
   const response = await fetchStripeWithRetry(
     url,

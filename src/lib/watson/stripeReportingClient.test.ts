@@ -61,7 +61,14 @@ describe("normalizeStripeCharge", () => {
     expect(normalized.amount).toBe(228);
     expect(normalized.amountRefunded).toBe(50);
     expect(normalized.currency).toBe("usd");
-    expect(normalized.lines).toEqual([{ priceId: "price_a", productId: "prod_mem" }]);
+    expect(normalized.lines).toEqual([
+      {
+        priceId: "price_a",
+        productId: "prod_mem",
+        recurringInterval: null,
+        recurringIntervalCount: null,
+      },
+    ]);
     expect(normalized.hasShopifyMarker).toBe(false);
     expect(normalized.invoiceId).toBe("in_1");
     expect(normalized.billingReason).toBeNull();

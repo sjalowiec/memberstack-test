@@ -15,6 +15,10 @@ export type StripeChargeCategory = MembershipCategory | "not_membership";
 export interface StripeChargeLineRef {
   priceId: string | null;
   productId: string | null;
+  /** Stripe price recurring.interval, when the invoice line included it. */
+  recurringInterval?: "day" | "week" | "month" | "year" | null;
+  /** Stripe price recurring.interval_count, when the invoice line included it. */
+  recurringIntervalCount?: number | null;
 }
 
 /**

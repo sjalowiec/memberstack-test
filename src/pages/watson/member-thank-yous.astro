@@ -1,0 +1,384 @@
+---
+import WatsonPageShell from "../../components/watson/WatsonPageShell.astro";
+import { loadMemberThankYouPage } from "../../lib/watson/memberThankYouLoad";
+import { MEMBER_THANK_YOU_START_YMD } from "../../lib/watson/memberThankYouRules";
+
+export const prerender = false;
+
+Astro.response.headers.set("Cache-Control", "no-store");
+
+const page = await loadMemberThankYouPage({
+  now: new Date(),
+  from: Astro.url.searchParams.get("from"),
+  to: Astro.url.searchParams.get("to"),
+  filter: Astro.url.searchParams.get("show"),
+});
+
+const filters = [
+  { id: "all", label: "All" },
+  { id: "video", label: "Video needed" },
+  { id: "card", label: "Card needed" },
+  { id: "address", label: "Missing address" },
+  { id: "completed", label: "Completed" },
+] as const;
+---
+
+<WatsonPageShell
+  title="Member Thank-Yous | Watson"
+  description="Track video and handwritten-card thank-yous for annual membership payments."
+  heading="Member Thank-Yous"
+  intro="One card for each successful annual membership payment since October 30, 2026."
+>
+  <div class="watson-thanks" data-member-thank-yous data-statuses-available={page.statusesAvailable ? "true" : "false"}>
+    <form class="watson-thanks__filters" method="get" action="/watson/member-thank-yous">
+      <label class="watson-thanks__filter">
+        <span>Show</span>
+        <select name="show">
+          {filters.map((filter) => (
+            <option value={filter.id} selected={page.filter === filter.id}>
+              {filter.label}
+            </option>
+          ))}
+        </select>
+      </label>
+      <label class="watson-thanks__filter">
+        <span>From</span>
+        <input type="date" name="from" min={MEMBER_THANK_YOU_START_YMD} value={page.fromCivil} />
+      </label>
+      <label class="watson-thanks__filter">
+        <span>To</span>
+        <input type="date" name="to" min={MEMBER_THANK_YOU_START_YMD} value={page.toCivil} />
+      </label>
+      <button class="watson__button" type="submit">Apply</button>
+    </form>
+
+    {page.error ? (
+      <p class="watson__status watson__status--error" role="alert">{page.error}</p>
+    ) : null}
+    {page.warnings.map((warning) => (
+      <p class="watson-thanks__warning" role="status">{warning}</p>
+    ))}
+
+    <p class="watson-thanks__count">
+      Showing {page.rows.length} of {page.totalInRange} payment{page.totalInRange === 1 ? "" : "s"} in this date range.
+    </p>
+
+    {page.rows.length === 0 && !page.error ? (
+      <p class="watson-thanks__empty">No annual membership payments match this view.</p>
+    ) : null}
+
+    <div class="watson-thanks__list">
+      {page.rows.map((row) => (
+        <article class="watson-thanks__card" data-thanks-card data-charge-id={row.stripeChargeId}>
+          <header class="watson-thanks__card-head">
+            <h2 class="watson-thanks__name">{row.displayName}</h2>
+            <p class="watson-thanks__kind">{row.kindLabel}</p>
+          </header>
+
+          {row.email ? (
+            <p class="watson-thanks__email-row">
+              <a class="watson-thanks__email" href={`mailto:${row.email}`}>{row.email}</a>
+              <button type="button" class="watson-thanks__copy" data-thanks-copy data-email={row.email}>
+                Copy email
+              </button>
+              <span class="watson-thanks__copy-note" data-thanks-copy-note></span>
+            </p>
+          ) : (
+            <p class="watson-thanks__email">Email not on file</p>
+          )}
+
+          <dl class="watson-thanks__facts">
+            <div>
+              <dt>Payment date</dt>
+              <dd>{row.paymentDateLabel}</dd>
+            </div>
+            <div>
+              <dt>Membership plan</dt>
+              <dd>{row.planLabel}</dd>
+            </div>
+          </dl>
+
+          <div class="watson-thanks__address">
+            {row.addressLines ? (
+              <>
+                <p class="watson-thanks__address-label">{row.addressLabel}</p>
+                <p class="watson-thanks__address-lines">{row.addressLines}</p>
+              </>
+            ) : (
+              <p class="watson-thanks__address-missing">{row.noAddressMessage}</p>
+            )}
+            {row.addressNote ? <p class="watson-thanks__address-flag">{row.addressNote}</p> : null}
+          </div>
+
+          {row.profileHref ? (
+            <p class="watson-thanks__profile">
+              <a href={row.profileHref}>Open member record</a>
+            </p>
+          ) : null}
+
+          <div class="watson-thanks__checks">
+            <label class="watson-thanks__check">
+              <input
+                type="checkbox"
+                data-thanks-field="video"
+                checked={row.videoSent}
+                disabled={!page.statusesAvailable}
+                aria-label={`Video sent for ${row.displayName}`}
+              />
+              <span>
+                <span class="watson-thanks__check-label">Video sent</span>
+                <span class="watson-thanks__sent-date" data-thanks-video-date hidden={!row.videoSentLabel}>
+                  {row.videoSentLabel}
+                </span>
+              </span>
+            </label>
+            <label class="watson-thanks__check">
+              <input
+                type="checkbox"
+                data-thanks-field="card"
+                checked={row.cardSent}
+                disabled={!page.statusesAvailable}
+                aria-label={`Card sent for ${row.displayName}`}
+              />
+              <span>
+                <span class="watson-thanks__check-label">Card sent</span>
+                <span class="watson-thanks__sent-date" data-thanks-card-date hidden={!row.cardSentLabel}>
+                  {row.cardSentLabel}
+                </span>
+              </span>
+            </label>
+          </div>
+          <p class="watson-thanks__save" data-thanks-save hidden></p>
+        </article>
+      ))}
+    </div>
+  </div>
+</WatsonPageShell>
+
+<script>
+  import { initWatsonMemberThankYous } from "../../scripts/watsonMemberThankYous";
+  initWatsonMemberThankYous();
+</script>
+
+<style is:global>
+  .watson:has(.watson-thanks) {
+    max-width: 44rem;
+  }
+
+  .watson-thanks {
+    display: grid;
+    gap: 1rem;
+    min-width: 0;
+  }
+
+  .watson-thanks__filters {
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  .watson-thanks__filter {
+    display: grid;
+    gap: 0.35rem;
+    font-weight: 700;
+    color: #243015;
+  }
+
+  .watson-thanks__filter span {
+    font-size: 0.85rem;
+  }
+
+  .watson-thanks__filter select,
+  .watson-thanks__filter input {
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    min-height: 2.75rem;
+    padding: 0.45rem 0.7rem;
+    font: inherit;
+    font-size: 1rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    background: #fff;
+  }
+
+  .watson-thanks__warning,
+  .watson-thanks__count,
+  .watson-thanks__empty {
+    margin: 0;
+    line-height: 1.45;
+  }
+
+  .watson-thanks__warning {
+    padding: 0.75rem 0.85rem;
+    border: 1px solid #fde68a;
+    border-radius: 8px;
+    background: #fffbeb;
+    color: #92400e;
+  }
+
+  .watson-thanks__list {
+    display: grid;
+    gap: 0.9rem;
+  }
+
+  .watson-thanks__card {
+    display: grid;
+    gap: 0.75rem;
+    min-width: 0;
+    padding: 1rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    background: #fff;
+  }
+
+  .watson-thanks__card-head {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0.4rem 0.8rem;
+    align-items: baseline;
+  }
+
+  .watson-thanks__name {
+    margin: 0;
+    font-size: 1.25rem;
+    line-height: 1.3;
+    overflow-wrap: anywhere;
+  }
+
+  .watson-thanks__kind {
+    margin: 0;
+    font-weight: 700;
+    color: #3f6212;
+  }
+
+  .watson-thanks__email-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.45rem 0.75rem;
+    margin: 0;
+    min-width: 0;
+  }
+
+  .watson-thanks__email {
+    overflow-wrap: anywhere;
+    font-size: 1.05rem;
+  }
+
+  .watson-thanks__copy {
+    min-height: 2.75rem;
+    padding: 0.4rem 0.8rem;
+    font: inherit;
+    font-weight: 700;
+    color: #243015;
+    background: #fff;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+  }
+
+  .watson-thanks__copy-note {
+    font-size: 0.9rem;
+    color: #3f6212;
+  }
+
+  .watson-thanks__facts {
+    display: grid;
+    gap: 0.55rem;
+    margin: 0;
+  }
+
+  .watson-thanks__facts div {
+    display: grid;
+    gap: 0.1rem;
+  }
+
+  .watson-thanks__facts dt {
+    margin: 0;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: #64748b;
+  }
+
+  .watson-thanks__facts dd,
+  .watson-thanks__address-lines,
+  .watson-thanks__address-label,
+  .watson-thanks__address-missing,
+  .watson-thanks__address-flag,
+  .watson-thanks__profile {
+    margin: 0;
+  }
+
+  .watson-thanks__address-lines {
+    white-space: pre-line;
+    overflow-wrap: anywhere;
+    font-size: 1.05rem;
+    line-height: 1.45;
+  }
+
+  .watson-thanks__address-label,
+  .watson-thanks__address-missing {
+    font-weight: 700;
+  }
+
+  .watson-thanks__address-flag {
+    color: #9a3412;
+    font-weight: 700;
+  }
+
+  .watson-thanks__checks {
+    display: grid;
+    gap: 0.65rem;
+  }
+
+  .watson-thanks__check {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.8rem;
+    min-height: 3rem;
+    padding: 0.8rem 0.9rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 12px;
+    background: #f8fafc;
+  }
+
+  .watson-thanks__check input {
+    width: 1.6rem;
+    height: 1.6rem;
+    margin-top: 0.1rem;
+    accent-color: #3f6212;
+  }
+
+  .watson-thanks__check-label {
+    display: block;
+    font-size: 1.05rem;
+    font-weight: 700;
+  }
+
+  .watson-thanks__sent-date {
+    display: block;
+    margin-top: 0.15rem;
+    color: #475569;
+  }
+
+  .watson-thanks__save {
+    margin: 0;
+    font-weight: 700;
+  }
+
+  .watson-thanks__save--ok {
+    color: #3f6212;
+  }
+
+  .watson-thanks__save--error {
+    color: #b91c1c;
+  }
+
+  .watson-thanks a {
+    color: #3f6212;
+    font-weight: 700;
+  }
+</style>
