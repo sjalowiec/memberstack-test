@@ -24,6 +24,8 @@ export default defineConfig({
       "./public/challenge/**",
       "./public/downloads/**",
       "./public/pdfs/**",
+      // Store image saves trace public/. Stitch charts stay static files.
+      "./public/stitch-patterns/**",
       "./src/data/legacy_kin/cleaned/backups/**",
       // Member transcript text is inlined into catalog-video-embed by esbuild.
       // Keep that JSON out of the public SSR upload.
