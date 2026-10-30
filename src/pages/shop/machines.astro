@@ -2,6 +2,7 @@
 import Layout from "../../layouts/Layout.astro";
 import PageHead from "../../components/PageHead.astro";
 import MachinesShopSubnav from "../../components/shop/MachinesShopSubnav.astro";
+import MachineBuyingGuideCallout from "../../components/machines/MachineBuyingGuideCallout.astro";
 import {
   getMachinesForSale,
   primaryImageUrl,
@@ -73,6 +74,9 @@ function formatPrice(value: number | null): string | null {
                 Machines are available for customers in the United States only. Questions?
                 <a href="/contact/" class="contact-modal-trigger" data-contact-source="shop-machines">Contact Sue</a>.
               </p>
+            </div>
+            <div class="shop-top-callout">
+              <MachineBuyingGuideCallout />
             </div>
             {holdListings.length > 0 && (
               <div class="brand-switch" role="group" aria-label="Choose a brand">
@@ -257,6 +261,8 @@ function formatPrice(value: number | null): string | null {
 
         <MachinesShopSubnav current="machines" />
 
+        <MachineBuyingGuideCallout />
+
         {machines.length === 0 ? (
           <p class="machines-empty">
             No machines are listed for sale right now. Please check back soon.
@@ -363,11 +369,34 @@ function formatPrice(value: number | null): string | null {
     margin-bottom: 0.35rem;
   }
 
+  .shop-top-callout {
+    min-width: 0;
+  }
+
+  .shop-top-callout :global(.machine-buying-guide) {
+    margin: 0.85rem 0 0;
+  }
+
   @media (min-width: 760px) {
     .shop-top {
       grid-template-columns: minmax(0, 1.15fr) minmax(15.5rem, 0.85fr);
       column-gap: 1.25rem;
       row-gap: 0;
+    }
+
+    .shop-top-intro {
+      grid-column: 1;
+      grid-row: 1;
+    }
+
+    .shop-top .brand-switch {
+      grid-column: 2;
+      grid-row: 1;
+    }
+
+    .shop-top-callout {
+      grid-column: 1 / -1;
+      grid-row: 2;
     }
   }
 
