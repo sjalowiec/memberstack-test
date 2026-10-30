@@ -1,4 +1,5 @@
 import { normalizeRelatedLessonRefs } from "./document";
+import { canonicalHelpHubSolutionHtml } from "./solutionHtml";
 import {
   normalizeMemberResourceOrder,
   normalizeRelatedLibraryVideos,
@@ -54,9 +55,9 @@ function asTrimmed(value: unknown): string {
 /** Load Explanation from solutionText, or legacy bridge when solutionText is empty. */
 export function explanationForAdminForm(entry: Record<string, unknown> | null | undefined): string {
   if (!entry) return "";
-  const solution = asTrimmed(entry.solutionText);
+  const solution = canonicalHelpHubSolutionHtml(asTrimmed(entry.solutionText));
   if (solution) return solution;
-  return asTrimmed(entry.bridge);
+  return canonicalHelpHubSolutionHtml(asTrimmed(entry.bridge));
 }
 
 export function tryThisIntroForForm(entry: Record<string, unknown> | null | undefined): string {
@@ -266,7 +267,8 @@ export function applyAdminFormToDocument(
   else delete out.hook;
   if (form.aboutTitle) out.aboutTitle = form.aboutTitle;
   else delete out.aboutTitle;
-  if (form.solutionText) out.solutionText = form.solutionText;
+  const solutionText = canonicalHelpHubSolutionHtml(form.solutionText);
+  if (solutionText) out.solutionText = solutionText;
   else delete out.solutionText;
   const publicVideoUrl = form.publicVideoUrl.trim();
   const publicVideoTitle = form.publicVideoTitle.trim();
