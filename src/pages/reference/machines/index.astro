@@ -4,6 +4,7 @@ export const prerender = true;
 import Layout from "../../../layouts/Layout.astro";
 import ReferencePageShell from "../../../components/ReferencePageShell.astro";
 import MachineCard from "../../../components/machines/MachineCard.astro";
+import MachineBuyingGuideCallout from "../../../components/machines/MachineBuyingGuideCallout.astro";
 import {
   getAllMachines,
   getAllBrands,
@@ -33,17 +34,7 @@ const introText =
     wide
   >
     <div class="machine-library">
-      <aside class="machine-library__crosslink">
-        <div class="machine-library__crosslink-body">
-          <h2 class="machine-library__crosslink-title">Not sure which machine is right for you?</h2>
-          <p class="machine-library__crosslink-text">
-            Answer a few questions to discover which knitting machine type and features fit your goals.
-          </p>
-        </div>
-        <a class="kbm-btn kbm-btn-primary machine-library__crosslink-btn" href="/reference/machines/choose">
-          Choose a Knitting Machine →
-        </a>
-      </aside>
+      <MachineBuyingGuideCallout />
 
       <aside class="machine-library__crosslink">
         <div class="machine-library__crosslink-body">
