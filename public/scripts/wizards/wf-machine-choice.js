@@ -417,6 +417,23 @@
         color: ${COLORS.textMuted};
         margin-top: 0.5rem;
       }
+      .wizard-used-guide {
+        position: relative;
+        margin-top: 0.75rem;
+        font-size: 1rem;
+        line-height: 1.5;
+      }
+      .wizard-sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+      }
       .wizard-choices {
         display: flex;
         flex-direction: column;
@@ -688,6 +705,11 @@
             <div>
               <p class="wizard-thought">${escapeHtml(step.thoughtText)}</p>
               ${step.helperText ? `<p class="wizard-helper">${escapeHtml(step.helperText)}</p>` : ""}
+              ${step.stepId === "step-buying" ? `
+                <p class="wizard-used-guide">
+                  <a class="wizard-machine-link" href="/reference/buying-a-used-knitting-machine/" target="_blank" rel="noopener noreferrer">Considering a used machine? Read our buying checklist.<span class="wizard-sr-only"> Opens in a new tab.</span></a>
+                </p>
+              ` : ""}
             </div>
           </div>
           <div class="wizard-bubble-tail"></div>
