@@ -15,9 +15,6 @@
     "name": "Screen Link USB Cable",
     "price": 119.5,
     "stripeLink": "https://vjzu11-86.myshopify.com/products/screen-link-usb-cable",
-
-
-
     "thumbnail": "screen_link.jpg",
     "shortdescription": "Interactive Knitting for non-electronic machines",
     "longDescription": "The ScreenLinks enable DesignaKnit to provide the full range of row by row instructions and audible alerts during Interactive Knitting  with NON ELECTRONIC MACHINES. However, they are not able to download patterns to the knitting machine.\n\nThis is the cable needed for the Silver Reed LK-150 Passap Vario, Brother KH-400 and Brother KX-350 or any non- electronic machine (including punchcard machines)",
@@ -56,5 +53,49 @@
     "longDescription": "The SilverLink 5 connects via the Silver Reed curl cord to the main carriage, lace carriage, or the AG50 intarsia carriage on the Silver Reed electronic machines, and also on the Knitmaster 550, 560, and 580 machines. It also connects to a USB port on the computer.\n\nThese links all enable downloading of stitch patterns from DesignaKnit to the PE1 memory, and uploading from the PE1 memory to DesignaKnit. Intarsia patterns may be downloaded to the PE1 for knitting with the AG50 carriage.\n\nThese links connect DesignaKnit to machines manufactured by Silver Seiko or Knitmaster. We do not currently offer a cable link for the Singer machines manufactured by Superba (however please see the ScreenLink for those machines).\n\nIntarsia knitting with the AG50 carriage is fully supported.\n\nThe SilverLink 5 has its own processor and memory and has replaced the earlier SilverLink 1 and 2, which were discontinued because they are unsuitable for recent versions of Windows.\n\nThis group of knitting machines do not have any memory, and no separate stage of downloading the pattern is required. The pattern is automatically transferred to the SilverLink memory at the start of interactive knitting.",
     "active": "TRUE",
     "sortOrder": 5
+  },
+  {
+    "id": 106,
+    "name": "Large DesignaKnit Magnet (KnitLink Arm)",
+    "price": 21,
+    "stripeLink": "https://vjzu11-86.myshopify.com/products/large-designaknit-magnet",
+    "thumbnail": "magnet.jpg",
+    "shortdescription": "A large metal KnitLink Arm with an adjustable screw fitting.",
+    "longDescription": "<p>A magnetic KnitLink Arm can be used to convert a USB BrotherLink 1 to a USB BrotherLink 5, a USB BrotherLink 3 to a USB BrotherLink 3 Plus, or a USB E6000 Link 1 to a USB E6000 Link 2. They add the Interactive Knitting feature to these links so that they can be used with any machine, including non-electronic ones.</p><p>An additional Arm is also required when interactively knitting patterns made with the Lace Tool on Brother machines (except the KH940 and KH950i when used with a USB or serial BrotherLink 1) and on Toyota machines. The additional Arm attaches to the lace carriage.</p><p>The larger Arms attach to any carriage using fabric fastener. The metallic arm is supplied with USB cables and the black plastic arm with serial cables, but they work in the same way and are interchangeable.</p><p>The small Arm attaches to Brother carriages that have a KnitLeader tripper arm. Brother lace carriages do not have the tripper and therefore require one of the larger Arms that attaches with fabric fastener.</p><p>This large metal KnitLink Arm is supplied as part of some USB cable links. The screw fixing makes it easily adjustable to fit any carriage, including the Brother or Toyota lace carriage. This is the only Arm currently supplied.</p>",
+    "active": "TRUE",
+    "sortOrder": 6
+  },
+  {
+    "id": 107,
+    "name": "Passap E6000 Link 2 (EL3) Full Featured Cable USB",
+    "price": 185,
+    "stripeLink": "https://vjzu11-86.myshopify.com/products/passap-e6000-link-2-el3-full-featured-cable-usb",
+    "thumbnail": "[38DAKCPE62-USB] Passap E6000 Link 2 (EL3) Full Featured Cable USB.png",
+    "shortdescription": "A Passap E6000 USB cable with a switch so the link can stay connected.",
+    "longDescription": "<p>This link has a switch that enables the selection of either downloading or Interactive Knitting. It means that the cable can be kept permanently attached to both the E6000 console and bed. This avoids the need for repeated connection and disconnection of the link, and therefore also avoids wear and tear on the E6000’s sockets.</p><p>The other links do not have the switch and need to be disconnected after downloading, so even if Interactive Knitting is not required, we recommend using the E6000 Link 2.</p><div class=\"cable-compare\"><table><thead><tr><th scope=\"col\">Cable Link</th><th scope=\"col\">Downloading</th><th scope=\"col\">Interactive Knitting</th></tr></thead><tbody><tr><td>USB E6000 Link 1</td><td>Yes</td><td>No</td></tr><tr><td>USB E6000 Link 2</td><td>Yes</td><td>Yes</td></tr></tbody></table></div>",
+    "active": "TRUE",
+    "sortOrder": 7
+  },
+  {
+    "id": 108,
+    "name": "Passap E6000 Link Switch (EL13SW)",
+    "price": 99.75,
+    "stripeLink": "https://vjzu11-86.myshopify.com/products/passap-e6000-link-switch-el13sw",
+    "thumbnail": "[38DAKCPELS] Passap E6000 Link Switch (EL13SW).jpg",
+    "shortdescription": "A switch that keeps an E6000 link connected and protects the Passap connectors.",
+    "longDescription": "<p>The E6000 Link Switch can be used with the USB E6000 Link 1 or 2, or the serial E6000 Link 1, to provide the same protection of the Passap connectors. The Switch enables the link to stay connected without the need for repeated connection and disconnection.</p>",
+    "active": "TRUE",
+    "sortOrder": 8
+  },
+  {
+    "id": 109,
+    "name": "Passap USB E8000 Link 1 Cable",
+    "price": 195,
+    "stripeLink": "https://vjzu11-86.myshopify.com/products/passap-usb-e8000-link-1-cable",
+    "thumbnail": "[38DAKCPE8000USB] Passap USB E8000 Link 1 Cable.png",
+    "shortdescription": "A USB cable link for the Passap / Pfaff E8000.",
+    "longDescription": "<p>E8000 Links are available with USB connection or the older 9-pin serial connection. If you already have a serial cable and want to use it with a computer that has only USB ports, you can attach it to a USB port using a USB to serial converter.</p><p>The E8000 Links are for the Passap / Pfaff E8000.</p><div class=\"cable-compare\"><table><thead><tr><th scope=\"col\">Cable Link</th><th scope=\"col\">Downloading</th><th scope=\"col\">Interactive Knitting</th></tr></thead><tbody><tr><td>USB E8000 Link 1</td><td>Yes</td><td>No</td></tr><tr><td>USB E8000 Link 2</td><td>Yes</td><td>Yes</td></tr><tr><td>Serial E8000 Link 1 (discontinued)</td><td>Yes</td><td>No</td></tr><tr><td>Serial E8000 Link 2 (discontinued)</td><td>Yes</td><td>Yes</td></tr></tbody></table></div><p>Either type of E8000 Link 1 may be converted to a Link 2 by adding a Magnet Arm.</p>",
+    "active": "TRUE",
+    "sortOrder": 9
   }
 ]

@@ -174,20 +174,24 @@ export function mapLegacyEbookStorefrontProduct(
   };
 }
 
-/** Active legacy eBooks with download + thumbnail, ready for storefront use. */
-export function loadLegacyEbookStorefrontProducts(): LegacyEbookStorefrontProduct[] {
-  const rows = loadLegacyEbooksActiveCsv();
+/** Active legacy eBooks with download + thumbnail, in item-number order. */
+export function legacyEbookStorefrontProductsFromRows(
+  rows: LegacyEbooksActiveCsvRow[],
+): LegacyEbookStorefrontProduct[] {
   const products: LegacyEbookStorefrontProduct[] = [];
-
   for (const row of rows) {
     const product = mapLegacyEbookStorefrontProduct(row);
     if (product) products.push(product);
   }
-
   return products.sort((a, b) => {
     const ai = Number.parseInt(a.itemId, 10);
     const bi = Number.parseInt(b.itemId, 10);
     if (Number.isFinite(ai) && Number.isFinite(bi)) return ai - bi;
     return a.itemId.localeCompare(b.itemId);
   });
+}
+
+/** Active legacy eBooks with download + thumbnail, ready for storefront use. */
+export function loadLegacyEbookStorefrontProducts(): LegacyEbookStorefrontProduct[] {
+  return legacyEbookStorefrontProductsFromRows(loadLegacyEbooksActiveCsv());
 }

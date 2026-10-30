@@ -3,7 +3,7 @@ import Layout from "../../layouts/Layout.astro";
 import PageHead from "../../components/PageHead.astro";
 import { EBOOK_SALES_PAUSED } from "../../lib/legacy/legacyEbookSalesHold";
 import { plainTextFromLegacyEbookBrief } from "../../lib/legacy/legacyEbookPlainText";
-import { loadLegacyEbookStorefrontWithSlugs } from "../../lib/legacy/legacyEbookSlug";
+import { loadPublicEbooks, STORE_CATALOG_CACHE_CONTROL } from "../../lib/shop/storeItemPublicCatalog";
 import {
   formatLegacyEbookPrice,
   isLegacyEbookTemporarilyUnavailable,
@@ -15,12 +15,14 @@ import {
 // TEMPORARY: Flip EBOOK_SALES_PAUSED to false in legacyEbookSalesHold.ts to restore the catalog.
 const salesPaused = EBOOK_SALES_PAUSED;
 
+Astro.response.headers.set("Cache-Control", STORE_CATALOG_CACHE_CONTROL);
+
 const title = "eBooks | Knit it Now";
 const description = salesPaused
   ? "eBook sales are temporarily unavailable."
   : "Downloadable machine knitting eBooks — techniques, patterns, and reference from experienced teachers.";
 
-const products = salesPaused ? [] : loadLegacyEbookStorefrontWithSlugs();
+const products = salesPaused ? [] : await loadPublicEbooks(Astro.url.hostname);
 ---
 
 <Layout {title} {description}>
