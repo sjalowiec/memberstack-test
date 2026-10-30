@@ -4,7 +4,16 @@
  * Upper Arm → armhole relationship. Quick edits may change style/fit/size.
  */
 
+import { parseCuffDepthOverrideInches } from "./customBuildEffectiveCuffDepth";
 import { formatSwatchCountForGaugeInput } from "./gaugeDisplayFormat";
+import { getDefaultCuffLengthInches } from "./hemDefaults";
+import {
+  formatEditableSleeveCuffDepthDisplay,
+  formatStoredSleeveCuffDepthInches,
+  parseEditableSleeveCuffDepthInches,
+  SLEEVE_CUFF_RIBBING_DEPTH_ERROR,
+  SLEEVE_CUFF_RIBBING_DEPTH_LABEL,
+} from "./sleeveCuffRibbingDepth";
 import type { PatternSummaryMeasurementField } from "./patternSummaryMeasurementField";
 import {
   formatMeasurementDisplayFromInches,
@@ -57,6 +66,7 @@ export const SIDEWAYS_CARDIGAN_SUMMARY_MEASUREMENT_OVERRIDE_KEYS = {
   finishedUpperArm: "upperArm",
   sleeveLength: "sleeveLength",
   wrist: "wrist",
+  cuffDepth: "cuffDepth",
 } as const;
 
 export type SidewaysCardiganSummaryMeasurementKey =
@@ -64,6 +74,8 @@ export type SidewaysCardiganSummaryMeasurementKey =
 
 export type SidewaysCardiganSummaryMeasurements = SidewaysCardiganStyleMeasurements & {
   finishedBust: string;
+  /** Canonical inches, including `"0"` for no ribbing. Empty only before the first read. */
+  cuffDepth: string;
 };
 
 const SELECTED_MEASUREMENT_KEYS: Partial<Record<SidewaysCardiganSummaryMeasurementKey, string>> = {
@@ -196,6 +208,20 @@ export const SIDEWAYS_CARDIGAN_SUMMARY_SLEEVE_FIELDS: PatternSummaryMeasurementF
     testId: "sideways-edit-chip-wrist",
     inputTestId: "sideways-edit-wrist",
   },
+  {
+    ...MEASURE_INPUT,
+    min: "0",
+    id: "cuffDepth",
+    label: SLEEVE_CUFF_RIBBING_DEPTH_LABEL,
+    previewTab: "sleeve",
+    targetId: SIDEWAYS_SUMMARY_MEASUREMENT_TARGETS.cuffDepth,
+    transform: "translate(8px, -50%)",
+    inputId: "sideways-edit-cuff-depth",
+    inputDataAttr: "data-sideways-edit-cuff-depth",
+    extraInputAttrs: { "data-cb-measure-input": "cuffDepth" },
+    testId: "sideways-edit-chip-cuff-depth",
+    inputTestId: "sideways-edit-cuff-depth",
+  },
 ];
 
 export const SIDEWAYS_CARDIGAN_SUMMARY_MEASUREMENT_FIELDS: PatternSummaryMeasurementField[] = [
@@ -230,6 +256,7 @@ export function emptySidewaysCardiganSummaryMeasurements(): SidewaysCardiganSumm
     finishedUpperArm: "",
     sleeveLength: "",
     wrist: "",
+    cuffDepth: "",
   };
 }
 
@@ -246,9 +273,16 @@ export function readSidewaysCardiganSummaryMeasurements(
     (resolveEffectiveFinishedBustInches(pattern) !== undefined
       ? formatSwatchCountForGaugeInput(roundQuarter(resolveEffectiveFinishedBustInches(pattern)!))
       : "");
+  const storedCuff = parseCuffDepthOverrideInches(overrides.cuffDepth);
+  const audience = stringField(section(pattern.style).recipientCategory) || stringField(fit.sizingChart);
+  const cuffDepth =
+    storedCuff === undefined
+      ? formatSwatchCountForGaugeInput(getDefaultCuffLengthInches(audience))
+      : formatStoredSleeveCuffDepthInches(storedCuff);
   return {
     ...fromDraft.styleMeasurements,
     finishedBust,
+    cuffDepth,
   };
 }
 
@@ -271,6 +305,11 @@ export function summaryMeasurementsToInches(
 ): Partial<Record<SidewaysCardiganSummaryMeasurementKey, number>> {
   const inches: Partial<Record<SidewaysCardiganSummaryMeasurementKey, number>> = {};
   for (const key of SIDEWAYS_CARDIGAN_SUMMARY_MEASUREMENT_KEYS) {
+    if (key === "cuffDepth") {
+      const cuff = parseEditableSleeveCuffDepthInches(measurements.cuffDepth, unit);
+      if (cuff !== undefined) inches.cuffDepth = cuff;
+      continue;
+    }
     const parsed = parseMeasurementInputToInches(measurements[key], unit);
     if (parsed !== undefined) inches[key] = parsed;
   }
@@ -283,6 +322,13 @@ export function displaySidewaysCardiganSummaryMeasurements(
 ): SidewaysCardiganSummaryMeasurements {
   const next = emptySidewaysCardiganSummaryMeasurements();
   for (const key of SIDEWAYS_CARDIGAN_SUMMARY_MEASUREMENT_KEYS) {
+    if (key === "cuffDepth") {
+      next.cuffDepth = formatEditableSleeveCuffDepthDisplay(
+        parseCuffDepthOverrideInches(measurements.cuffDepth),
+        unit,
+      );
+      continue;
+    }
     next[key] = formatMeasurementDisplayFromInches(
       parseStoredInchesForDisplay(measurements[key]),
       unit,
@@ -298,6 +344,12 @@ export function applySidewaysCardiganSummaryMeasurementEdits(
   const current = readSidewaysCardiganSummaryMeasurements();
   const styleMeasurements = mergeSidewaysCardiganSummaryMeasurements(current, edits);
   for (const key of SIDEWAYS_CARDIGAN_SUMMARY_MEASUREMENT_KEYS) {
+    if (key === "cuffDepth") {
+      if (parseCuffDepthOverrideInches(styleMeasurements.cuffDepth) === undefined) {
+        return { ok: false, message: SLEEVE_CUFF_RIBBING_DEPTH_ERROR };
+      }
+      continue;
+    }
     if (parsePositiveInchesField(styleMeasurements[key]) === undefined) {
       return { ok: false, message: "Enter a positive value for every measurement." };
     }
@@ -313,6 +365,12 @@ export function applySidewaysCardiganSummaryMeasurementEdits(
   const overrides: Record<string, string> = { ...loadMeasurementOverrides() };
   const selectedPatch: Record<string, number> = {};
   for (const key of SIDEWAYS_CARDIGAN_SUMMARY_MEASUREMENT_KEYS) {
+    if (key === "cuffDepth") {
+      const cuffInches = parseCuffDepthOverrideInches(styleMeasurements.cuffDepth);
+      if (cuffInches === undefined) continue;
+      overrides.cuffDepth = formatStoredSleeveCuffDepthInches(cuffInches);
+      continue;
+    }
     const inches = parsePositiveInchesField(styleMeasurements[key]);
     if (inches === undefined) continue;
     const rounded = roundQuarter(inches);
@@ -344,7 +402,7 @@ export function applySidewaysCardiganSummaryMeasurementEdits(
     sleeveLength: state.sleeveLengthChoice,
   });
 
-  const { finishedBust: _bust, ...styleOnly } = styleMeasurements;
+  const { finishedBust: _bust, cuffDepth: _cuff, ...styleOnly } = styleMeasurements;
   const next: SidewaysCardiganBuilderDraftState = {
     ...state,
     garmentStyle,
@@ -500,6 +558,7 @@ export function buildSidewaysCardiganSummaryDiagramInput(
       finishedUpperArmInches: inches.finishedUpperArm,
       sleeveLengthInches: inches.sleeveLength,
       wristInches: inches.wrist,
+      cuffDepthInches: inches.cuffDepth ?? getDefaultCuffLengthInches("misses"),
       ...(backNeckDepthInches !== undefined && backNeckDepthInches > 0
         ? { backNeckDepthInches }
         : {}),

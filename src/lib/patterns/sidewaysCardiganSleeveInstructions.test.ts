@@ -505,4 +505,27 @@ describe("sideways sleeve pattern instructions", () => {
       `hand knit ribbing ${topDown.calc.cuffRows} rows`,
     );
   });
+
+  it("omits the ribbing section when cuff depth is zero and keeps the sleeve length", () => {
+    const baseline = sleeveOk();
+    const cuffUp = sleeveOk({ ...SAMPLE, cuffDepthInches: 0 });
+    const topDown = sleeveOk({ ...SAMPLE, direction: "top-down", cuffDepthInches: 0 });
+    expect(cuffUp.calc.cuffRows).toBe(0);
+    expect(cuffUp.calc.sleeveTotalRows).toBe(baseline.calc.sleeveTotalRows);
+    expect(cuffUp.calc.sleeveBodyRows).toBe(cuffUp.calc.sleeveTotalRows);
+    expect(topDown.calc.sleeveTotalRows).toBe(baseline.calc.sleeveTotalRows);
+    const cuffText = renderSidewaysCardiganSleeveSequenceHtml(cuffUp).replace(/<[^>]+>/g, " ");
+    const topText = renderSidewaysCardiganSleeveSequenceHtml(topDown).replace(/<[^>]+>/g, " ");
+    expect(cuffText).toContain(`Cast on ${cuffUp.calc.wristSts} stitches and continue the sleeve.`);
+    expect(cuffText).not.toContain("CUFF");
+    expect(cuffText).not.toContain("ribbing");
+    expect(cuffText).not.toContain("0 rows");
+    expect(topText).toContain("Bind off the live stitches.");
+    expect(topText).not.toContain("CUFF");
+    expect(topText).not.toContain("ribbing");
+    expect(topText).not.toContain("0 rows");
+    expect(topText).not.toContain("Finish the cuff");
+    expect(topText).not.toContain("begin the cuff");
+    expect(topText).toContain("then bind off at");
+  });
 });

@@ -280,6 +280,21 @@
   margin-top: 0;
 }
 
+/* Set-In Sleeve offers three adult ranges before a size is chosen. */
+.express-page .express-options--who-ranges.express-options--who-text.hat-length-picker__grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+@media (max-width: 479px) {
+  .express-page .express-options--who-ranges.express-options--who-text.hat-length-picker__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.express-page .express-options--who-ranges .hat-length-picker__option-label {
+  white-space: normal;
+}
+
 /* Sideways starting-size charts: five families. Other builders keep the four-column Who row. */
 .express-page .sideways-chart-picker.express-options--who-text.hat-length-picker__grid {
   grid-template-columns: repeat(auto-fit, minmax(6.75rem, 1fr));

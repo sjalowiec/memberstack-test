@@ -34,7 +34,12 @@ import { shapingActionRowNumbers } from "../evenShapingSchedule";
 import { formatRepeatedShapingInstruction } from "../legoBlocks/repeatedShapingInstruction";
 import { formatParentheticalRcList, normalizeParentheticalRcLists } from "../parentheticalRcList";
 import { RESET_ROW_COUNTER_TEXT } from "../rowCounterReset";
+import { cuffUpSleeveBodyRowCounterResetBlock } from "../legoBlocks/cuffUpSleeveRowCounter";
 import { sidewaysCuffUpCuffChoiceLines } from "../sidewaysCardiganSleeveCuffCopy";
+import {
+  cuffUpNoRibbingCastOnSentence,
+  sleeveCuffRibbingOmitted,
+} from "../sleeveCuffRibbingDepth";
 import { sweaterBodyHemChoiceLines } from "../sweaterBodyHemInstructions";
 import { buildNeckShoulderTimelineAndChartRows } from "../neckShoulderShapingChartRows";
 import {
@@ -547,18 +552,28 @@ export function buildSetInCuffUpSleevePresentation(
   const taperRows = setInSleeveTaperChartRows(input);
   const capModel = buildSleeveCapInstructionModel(input.cap, input.rowsCuffToUpperArm);
   const capLines = capModel.lines.map((line) => line.text);
-  const cuffChoiceHtml = sidewaysCuffUpCuffChoiceLines(input.wristStitches, input.cuffRows);
-  const cuffChoicePlain = sidewaysCuffUpCuffChoiceLines(input.wristStitches, input.cuffRows, {
-    plainText: true,
-  });
-  const cuffLines = [
-    "Make 2 sleeves.",
-    ...sidewaysCuffUpCuffChoiceLines(input.wristStitches, input.cuffRows, {
-      plainText: true,
-      rcPrefix: formatRcColon(0),
-    }),
-    SET_IN_ROW_COUNTER_RESET,
-  ];
+  const omitRibbing = sleeveCuffRibbingOmitted(input.cuffRows);
+  const cuffChoiceHtml = omitRibbing
+    ? []
+    : sidewaysCuffUpCuffChoiceLines(input.wristStitches, input.cuffRows);
+  const cuffChoicePlain = omitRibbing
+    ? [cuffUpNoRibbingCastOnSentence(input.wristStitches)]
+    : sidewaysCuffUpCuffChoiceLines(input.wristStitches, input.cuffRows, {
+        plainText: true,
+      });
+  const cuffLines = omitRibbing
+    ? [
+        "Make 2 sleeves.",
+        `${formatRcColon(0)} ${cuffUpNoRibbingCastOnSentence(input.wristStitches)}`,
+      ]
+    : [
+        "Make 2 sleeves.",
+        ...sidewaysCuffUpCuffChoiceLines(input.wristStitches, input.cuffRows, {
+          plainText: true,
+          rcPrefix: formatRcColon(0),
+        }),
+        SET_IN_ROW_COUNTER_RESET,
+      ];
 
   const sleeveBodyLines: string[] = [];
   const lastShapingRc = shapingRcs[shapingRcs.length - 1];
@@ -593,8 +608,8 @@ export function buildSetInCuffUpSleevePresentation(
       : ["There is no side shaping on this sleeve. Continue to the sleeve cap."];
 
   const blocks: SetInInstructionBlock[] = [
-    { heading: "CUFF", lines: cuffLines },
-    { heading: "SLEEVE BODY", lines: sleeveBodyLines },
+    ...(omitRibbing ? [] : [{ heading: "CUFF", lines: cuffLines }]),
+    { heading: "SLEEVE BODY", lines: omitRibbing ? [...cuffLines, ...sleeveBodyLines] : sleeveBodyLines },
     { heading: "SLEEVE SHAPING CHART", lines: chartLines },
     { heading: "SLEEVE CAP", lines: capLines },
     { heading: "SLEEVE CAP SHAPING CHART", lines: capModel.chartRows.map(chartLine) },
@@ -603,18 +618,26 @@ export function buildSetInCuffUpSleevePresentation(
   const displayRows: SleevelessPatternDisplayRow[] = [
     { kind: "piece", title: "SLEEVE" },
     { kind: "block", paragraphs: ["Make 2 sleeves."] },
-    { kind: "section", title: "CUFF" },
-    {
-      kind: "block",
-      rc: formatRcColon(0),
-      paragraphs: cuffChoicePlain,
-      trustedParagraphs: cuffChoiceHtml,
-      stitchCount: input.wristStitches > 0 ? input.wristStitches : undefined,
-    },
-    {
-      kind: "block",
-      paragraphs: [SET_IN_ROW_COUNTER_RESET],
-    },
+    ...(omitRibbing
+      ? [
+          {
+            kind: "block" as const,
+            rc: formatRcColon(0),
+            paragraphs: cuffChoicePlain,
+            stitchCount: input.wristStitches > 0 ? input.wristStitches : undefined,
+          },
+        ]
+      : [
+          { kind: "section" as const, title: "CUFF" },
+          {
+            kind: "block" as const,
+            rc: formatRcColon(0),
+            paragraphs: cuffChoicePlain,
+            trustedParagraphs: cuffChoiceHtml,
+            stitchCount: input.wristStitches > 0 ? input.wristStitches : undefined,
+          },
+          cuffUpSleeveBodyRowCounterResetBlock(),
+        ]),
     { kind: "section", title: "SLEEVE BODY" },
   ];
 

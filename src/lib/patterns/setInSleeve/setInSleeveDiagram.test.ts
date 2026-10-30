@@ -299,9 +299,15 @@ describe("set-in sleeve diagram presentation", () => {
     expect(sts.match(/data-role="sleeve-outline" d="([^"]+)"/)?.[1]).toBe(
       shaping.match(/data-role="sleeve-outline" d="([^"]+)"/)?.[1],
     );
-    for (const role of ["wrist-width", "upper-arm-width", "cap-top-width", "cuff-depth", "sleeve-body-length", "cap-height"]) {
+    for (const role of ["wrist-width", "upper-arm-width", "cap-top-width", "cuff-depth", "sleeve-body-length", "cap-height", "sleeve-length"]) {
       expect(sts).toContain(`data-${role}="true"`);
     }
+    expect(sts).toContain("cuff to underarm, not including the cap");
+    expect(Number(diagramAttr(sts, "data-sleeve-length-inches"))).toBeCloseTo(
+      Number(diagramAttr(sts, "data-cuff-depth-inches")) +
+        Number(diagramAttr(sts, "data-sleeve-body-inches")),
+      2,
+    );
     expect(sts).toContain('fill="#52682d"');
     for (const inches of [
       finished.wristInches,
@@ -347,6 +353,55 @@ describe("set-in sleeve diagram presentation", () => {
     const atUnderarm = points.filter((point) => Math.abs(point.y - capStartY) < 0.05 && point.x > 215);
     expect(new Set(atUnderarm.map((point) => point.x)).size).toBeGreaterThan(1);
     expect(diagramTexts(sts).some((node) => /^(?:bo\d+|1s-)/.test(node.text))).toBe(false);
+  });
+
+  it("labels a 17 in sleeve as a 14 in body under a 3 in cuff, with the cap above", () => {
+    const measurements = computeDefaultMeasurementsFromChartRow(MISSES_7, "standard", {
+      bodyShape: "straight",
+    });
+    const result = generateSetInSleevePattern({
+      fit: {
+        sizingChart: "misses",
+        easeChoice: "standard",
+        selectedMeasurements: measurements,
+        cbMeasurementOverrides: { cuffDepth: "3", sleeveLength: "17" },
+      },
+      style: withSetInSleeveConstructionAuthored(
+        {
+          recipientCategory: "misses",
+          garmentStyle: "pullover",
+          neckline: "round",
+          bodyShape: "straight",
+          patternMode: "custom-build",
+        },
+        "long",
+      ),
+      yarnGaugeMachine: {
+        gaugeStitchesPerInch: 7,
+        gaugeRowsPerInch: 10,
+        availableNeedles: 200,
+      },
+    });
+    const sts = tryBuildSetInSleeveStitchesRowsSvg(diagramInputFor(result))!;
+    const shaping = tryBuildSetInSleeveShapingNotationSvg(diagramInputFor(result))!;
+    expect(result.sleeveFinishedInches?.sleeveLengthInches).toBe(17);
+    expect(result.sleeveFinishedInches?.cuffDepthInches).toBe(3);
+    expect(Number(diagramAttr(sts, "data-sleeve-length-inches"))).toBeCloseTo(17, 2);
+    expect(Number(diagramAttr(sts, "data-cuff-depth-inches"))).toBeCloseTo(3, 2);
+    expect(Number(diagramAttr(sts, "data-sleeve-body-inches"))).toBeCloseTo(14, 2);
+    expect(Number(diagramAttr(sts, "data-cap-start-y"))).toBeGreaterThan(Number(diagramAttr(sts, "data-cap-top-y")));
+    expect(sts).toContain("Sleeve length 17 in");
+    expect(sts).toContain(formatPatternDiagramMeasurement(14, "in"));
+    expect(sts).toContain(formatPatternDiagramMeasurement(3, "in"));
+    expect(shaping.match(/data-role="sleeve-outline" d="([^"]+)"/)?.[1]).toBe(
+      sts.match(/data-role="sleeve-outline" d="([^"]+)"/)?.[1],
+    );
+    const capStartY = Number(diagramAttr(sts, "data-cap-start-y"));
+    const points = [...(sts.match(/data-role="sleeve-outline" d="([^"]+)"/)?.[1] ?? "").matchAll(/[ML] ([-\d.]+) ([-\d.]+)/g)].map(
+      (match) => ({ x: Number(match[1]), y: Number(match[2]) }),
+    );
+    const atUnderarm = points.filter((point) => Math.abs(point.y - capStartY) < 0.05);
+    expect(new Set(atUnderarm.map((point) => point.x)).size).toBeGreaterThan(2);
   });
 
   it("places Japanese notation from the underarm bind-off upward to the final bind-off", () => {
@@ -547,9 +602,9 @@ function expectProportionalSleeve(svg: string, result: ReturnType<typeof generat
   const upperW = groupWidth(svg, "upper-arm-width");
   const wristW = groupWidth(svg, "wrist-width");
   const topW = groupWidth(svg, "cap-top-width");
-  expect(upperW / cap.sleeve.finishedUpperArmInches).toBeCloseTo(pxPerInch, 1);
-  expect(wristW / finished.wristInches!).toBeCloseTo(pxPerInch, 1);
-  expect(topW / cap.totals.finalWidthInches).toBeCloseTo(pxPerInch, 1);
+  expect(upperW / (cap.sleeve.finishedUpperArmInches / 2)).toBeCloseTo(pxPerInch, 1);
+  expect(wristW / (finished.wristInches! / 2)).toBeCloseTo(pxPerInch, 1);
+  expect(topW / (cap.totals.finalWidthInches / 2)).toBeCloseTo(pxPerInch, 1);
   const capStartY = Number(diagramAttr(svg, "data-cap-start-y"));
   const path = svg.match(/data-role="sleeve-outline" d="([^"]+)"/)?.[1] ?? "";
   const points = [...path.matchAll(/[ML] ([-\d.]+) ([-\d.]+)/g)].map((match) => ({

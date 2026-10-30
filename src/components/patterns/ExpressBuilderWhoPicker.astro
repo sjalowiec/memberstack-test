@@ -21,10 +21,16 @@ const defaultWhoOptions = [
 ] as const;
 
 const { labelledBy, whoOptions = defaultWhoOptions } = Astro.props;
+const usesAdultRanges = whoOptions.some((opt) => opt.value === "plus");
 ---
 
 <div
-  class="express-options--who express-options--who-text hat-length-picker__grid"
+  class:list={[
+    "express-options--who",
+    "express-options--who-text",
+    "hat-length-picker__grid",
+    { "express-options--who-ranges": usesAdultRanges },
+  ]}
   role="group"
   aria-labelledby={labelledBy}
 >

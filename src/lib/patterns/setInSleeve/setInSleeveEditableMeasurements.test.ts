@@ -11,6 +11,11 @@ import { withSetInSleeveConstructionAuthored } from "../setInSleeveConstructionI
 import { DROP_SHOULDER_USER_EDITED_SLEEVE_FIELDS_KEY } from "../dropShoulderUserEditedSleeveFields";
 import { setInSleeveSleeveStateAfterLengthPreset } from "./setInSleeveLengthPreset";
 import { setInSleeveTaperProblem } from "./setInSleeveTaper";
+import { calculateCuffRowsFromInches, getDefaultCuffLengthInches } from "../hemDefaults";
+import { renderPatternDisplayRowsHtml } from "../sleevelessPatternDisplayHtml";
+import { renderSleevelessPrintPieceHtml } from "../sleevelessPatternPrintRender";
+import { tryBuildSetInSleeveStitchesRowsSvg } from "./setInSleeveDiagram";
+import { formatPatternDiagramMeasurement } from "../legoBlocks/stitchesRowsDiagramLabel";
 
 const MISSES_7: ChartRow = {
   size: "7",
@@ -35,6 +40,10 @@ const editDrawerSrc = readFileSync(
 
 function textOf(rows: { paragraphs?: string[] }[]): string {
   return rows.flatMap((row) => row.paragraphs ?? []).join("\n");
+}
+
+function visible(html: string): string {
+  return html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
 }
 
 function pattern(options?: {
@@ -212,6 +221,97 @@ describe("set-in sleeve editable measurements", () => {
     expect(deeper.sleeveCap?.armhole.totalRows).not.toBe(baseline.sleeveCap?.armhole.totalRows);
     expect(deeper.sleeveCap?.sleeve.upperArmStitches).toBe(baseline.sleeveCap?.sleeve.upperArmStitches);
     expect(deeper.setInArmholePlan?.totalRows).toBe(deeper.sleeveCap?.armhole.totalRows);
+  });
+
+  it("keeps a saved pattern without a cuff override on the audience default", () => {
+    const result = generateSetInSleevePattern(pattern());
+    expect(result.sleeveFinishedInches?.cuffDepthInches).toBe(getDefaultCuffLengthInches("misses"));
+  });
+
+  it("uses an express cuff depth without changing the requested sleeve length", () => {
+    const baseline = generateSetInSleevePattern(pattern({ patternMode: "express" }));
+    const custom = generateSetInSleevePattern(
+      pattern({ patternMode: "express", overrides: { cuffDepth: "3.5" } }),
+    );
+    const cuffRows = calculateCuffRowsFromInches(10, 3.5);
+    expect(custom.sleeveFinishedInches?.cuffDepthInches).toBe(3.5);
+    expect(custom.sleeveFinishedInches?.sleeveLengthInches).toBe(
+      baseline.sleeveFinishedInches?.sleeveLengthInches,
+    );
+    expect(custom.sleevePiece?.cuffRows).toBe(cuffRows);
+    expect(custom.sleevePiece?.sleeveTotalRows).toBe(baseline.sleevePiece?.sleeveTotalRows);
+    expect(custom.sleevePiece?.sleeveBodyRows).toBe(
+      (custom.sleevePiece?.sleeveTotalRows ?? 0) - cuffRows,
+    );
+    expect(custom.sleevePiece?.sleeveBodyRows).toBeLessThan(baseline.sleevePiece?.sleeveBodyRows ?? 0);
+    expect(visible(renderPatternDisplayRowsHtml(custom.sleeveDisplayRows, { pieceSectionId: "sleeve" }))).toContain(
+      `knit ${cuffRows} rows of ribbing`,
+    );
+  });
+
+  it("treats a zero cuff depth as no ribbing inside the same sleeve length", () => {
+    const baseline = generateSetInSleevePattern(pattern({ patternMode: "express" }));
+    const none = generateSetInSleevePattern(
+      pattern({ patternMode: "express", overrides: { cuffDepth: "0" } }),
+    );
+    expect(none.sleeveFinishedInches?.cuffDepthInches).toBe(0);
+    expect(none.sleevePiece?.cuffRows).toBe(0);
+    expect(none.sleeveFinishedInches?.sleeveLengthInches).toBe(
+      baseline.sleeveFinishedInches?.sleeveLengthInches,
+    );
+    expect(none.sleevePiece?.sleeveTotalRows).toBe(baseline.sleevePiece?.sleeveTotalRows);
+    expect(none.sleevePiece?.sleeveBodyRows).toBe(none.sleevePiece?.sleeveTotalRows);
+    const text = visible(renderPatternDisplayRowsHtml(none.sleeveDisplayRows, { pieceSectionId: "sleeve" }));
+    expect(text).toContain(`Cast on ${none.sleevePiece?.wristSts} stitches and continue the sleeve.`);
+    expect(text).not.toContain("CUFF");
+    expect(text).not.toContain("ribbing");
+    expect(text).not.toContain("0 rows");
+  });
+
+  it("includes a custom cuff in the requested sleeve length, instructions, and diagram", () => {
+    const baseline = generateSetInSleevePattern(pattern({ patternMode: "custom-build" }));
+    const custom = generateSetInSleevePattern(
+      pattern({ patternMode: "custom-build", overrides: { cuffDepth: "3.5" } }),
+    );
+    const cuffRows = calculateCuffRowsFromInches(10, 3.5);
+    expect(custom.sleeveSaveBlocker).toBeNull();
+    expect(custom.sleeveFinishedInches?.cuffDepthInches).toBe(3.5);
+    expect(custom.sleeveFinishedInches?.sleeveLengthInches).toBe(
+      baseline.sleeveFinishedInches?.sleeveLengthInches,
+    );
+    expect(custom.sleevePiece?.cuffRows).toBe(cuffRows);
+    expect(custom.sleevePiece?.sleeveTotalRows).toBe(baseline.sleevePiece?.sleeveTotalRows);
+    expect(custom.sleevePiece?.sleeveBodyRows).toBe(
+      (custom.sleevePiece?.sleeveTotalRows ?? 0) - cuffRows,
+    );
+    expect(custom.sleevePiece?.sleeveBodyRows).toBeLessThan(baseline.sleevePiece?.sleeveBodyRows ?? 0);
+    expect(custom.sleeveCap).toEqual(baseline.sleeveCap);
+    expect(custom.setInArmholePlan).toEqual(baseline.setInArmholePlan);
+
+    const screen = visible(renderPatternDisplayRowsHtml(custom.sleeveDisplayRows, { pieceSectionId: "sleeve" }));
+    const print = visible(renderSleevelessPrintPieceHtml(custom.sleeveDisplayRows, "", "sleeve"));
+    for (const html of [screen, print]) {
+      expect(html).toContain("Choose one way to begin");
+      expect(html).toContain(`knit ${cuffRows} rows of ribbing`);
+      expect(html).toContain(`for ${cuffRows * 2} rows so the hem can be folded`);
+    }
+
+    const svg = tryBuildSetInSleeveStitchesRowsSvg({
+      sleevePiece: custom.sleevePiece,
+      sleeveCap: custom.sleeveCap,
+      unit: "in",
+      wristInches: custom.sleeveFinishedInches?.wristInches,
+      cuffDepthInches: custom.sleeveFinishedInches?.cuffDepthInches,
+      sleeveLengthInches: custom.sleeveFinishedInches?.sleeveLengthInches,
+    });
+    expect(svg).toContain('data-cuff-depth="true"');
+    expect(svg).toContain(formatPatternDiagramMeasurement(3.5, "in"));
+    expect(svg).toContain(
+      formatPatternDiagramMeasurement(
+        (custom.sleeveFinishedInches?.sleeveLengthInches ?? 0) - 3.5,
+        "in",
+      ),
+    );
   });
 
   it("blocks save when the sleeve taper does not fit, including a wider cuff that does not fit", () => {

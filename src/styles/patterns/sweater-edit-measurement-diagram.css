@@ -160,6 +160,18 @@
   overflow: visible;
 }
 
+/*
+ * Set-In Sleeve diagrams use one scale for width and length. Keep that viewBox
+ * ratio at every column width instead of stretching the sleeve to fill a canvas.
+ */
+.sl-measure-workspace__body.express-measurements-confirm-page[data-express-construction="set-in-sleeve"]
+  .express-mbp-art {
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  aspect-ratio: auto;
+}
+
 @container sl-edit-workspace (min-width: 1100px) {
   .sl-edit-workspace__measure .sl-measure-workspace__body {
     min-height: 0;
