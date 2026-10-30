@@ -1,0 +1,364 @@
+/* Pattern print choices. Screen dialog plus print-only show/hide. */
+
+.pattern-print-choice-dialog {
+  border: none;
+  border-radius: 12px;
+  padding: 0;
+  max-width: 36rem;
+  width: calc(100% - 2rem);
+  color: #1f2937;
+  box-shadow: 0 18px 50px rgba(17, 24, 39, 0.28);
+}
+
+.pattern-print-choice-dialog::backdrop {
+  background: rgba(17, 24, 39, 0.45);
+}
+
+.pattern-print-choice-dialog__panel {
+  margin: 0;
+  padding: 1.25rem 1.35rem 1.15rem;
+}
+
+.pattern-print-choice-dialog__heading {
+  margin: 0 0 0.35rem;
+  font-size: 1.25rem;
+  line-height: 1.3;
+  color: #52682d;
+}
+
+.pattern-print-choice-dialog__lead,
+.pattern-print-choice-dialog__reminder {
+  margin: 0 0 0.9rem;
+  font-size: 0.95rem;
+  line-height: 1.45;
+}
+
+.pattern-print-choice-dialog__reminder {
+  margin-top: 0.85rem;
+  margin-bottom: 1rem;
+  padding: 0.65rem 0.75rem;
+  border-left: 4px solid #52682d;
+  background: #f4f7ee;
+}
+
+.pattern-print-choice-dialog__options {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.pattern-print-choice-dialog__option {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  column-gap: 0.65rem;
+  align-items: start;
+  margin: 0;
+  cursor: pointer;
+}
+
+.pattern-print-choice-dialog__option input {
+  margin-top: 0.2rem;
+}
+
+.pattern-print-choice-dialog__option-title {
+  display: block;
+  font-weight: 700;
+}
+
+.pattern-print-choice-dialog__option-text {
+  display: block;
+  margin-top: 0.15rem;
+  font-size: 0.92rem;
+  line-height: 1.4;
+  color: #374151;
+}
+
+.pattern-print-choice-dialog__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.pattern-print-choice-dialog__btn {
+  border: 1px solid #d1d5db;
+  background: #fff;
+  color: #374151;
+  border-radius: 6px;
+  padding: 0.55rem 0.9rem;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.pattern-print-choice-dialog__btn--primary {
+  background: #52682d;
+  border-color: #52682d;
+  color: #fff;
+}
+
+.pattern-print-written-shaping {
+  display: none !important;
+}
+
+@media print {
+  .pattern-print-choice-dialog {
+    display: none !important;
+  }
+
+  .sleeveless-pattern-page a.pattern-video-modal-link,
+  .sleeveless-pattern-page .pattern-help-link,
+  .sleeveless-pattern-page .pattern-finishing-video-help,
+  .sleeveless-pattern-page .pattern-finishing-neck-help__links,
+  .wizard-page a.pattern-video-modal-link,
+  .wizard-page .pattern-help-link__button,
+  .ns-visual-guides__actions,
+  .ns-shaping-chart__progress-toolbar {
+    display: none !important;
+  }
+
+  #pattern-content .pattern-section__header,
+  #pattern-content .pattern-section__heading,
+  #pattern-content .sleeveless-pattern-piece,
+  #pattern-content h2,
+  #pattern-content h3,
+  .pattern-print-chart-banner,
+  .pattern-print-charts-appendix__title {
+    break-after: avoid;
+    page-break-after: avoid;
+  }
+
+  .ns-shaping-chart__table tr,
+  .pattern-print-chart-repeat-banner {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .ns-shaping-chart__table thead {
+    display: table-header-group;
+  }
+
+  html[data-pattern-print-choice] .ns-shaping-chart {
+    font-size: 10pt;
+  }
+
+  html[data-pattern-print-choice="instructions"] .pattern-print-written-shaping[hidden],
+  html[data-pattern-print-choice="both"] .pattern-print-written-shaping[hidden] {
+    display: block !important;
+  }
+
+  html[data-pattern-print-choice="instructions"] .pattern-print-checklist-pointer,
+  html[data-pattern-print-choice="both"] .pattern-print-checklist-pointer {
+    display: none !important;
+  }
+
+  html[data-pattern-print-choice="instructions"] .pattern-print-unresolved-pointer,
+  html[data-pattern-print-choice="both"] .pattern-print-unresolved-pointer {
+    display: block !important;
+  }
+
+  html[data-pattern-print-choice="instructions"] .ns-shaping-chart,
+  html[data-pattern-print-choice="instructions"] .ns-visual-guides,
+  html[data-pattern-print-choice="instructions"] .shaping-map,
+  html[data-pattern-print-choice="instructions"] .neckline-chart-print-only-header,
+  html[data-pattern-print-choice="instructions"] .neckline-chart-print-only-footer,
+  html[data-pattern-print-choice="both"] .ns-shaping-chart,
+  html[data-pattern-print-choice="both"] .ns-visual-guides,
+  html[data-pattern-print-choice="both"] .shaping-map,
+  html[data-pattern-print-choice="both"] .neckline-chart-print-only-header,
+  html[data-pattern-print-choice="both"] .neckline-chart-print-only-footer {
+    display: none !important;
+  }
+
+  html[data-pattern-print-choice="instructions"] .pattern-print-keep-charts .ns-shaping-chart,
+  html[data-pattern-print-choice="instructions"] .pattern-print-keep-charts .ns-visual-guides,
+  html[data-pattern-print-choice="instructions"] .pattern-print-keep-charts .shaping-map,
+  html[data-pattern-print-choice="both"] .pattern-print-keep-charts .ns-shaping-chart,
+  html[data-pattern-print-choice="both"] .pattern-print-keep-charts .ns-visual-guides,
+  html[data-pattern-print-choice="both"] .pattern-print-keep-charts .shaping-map,
+  html[data-pattern-print-choice="both"] .pattern-print-charts-appendix .ns-shaping-chart,
+  html[data-pattern-print-choice="both"] .pattern-print-charts-appendix .ns-visual-guides,
+  html[data-pattern-print-choice="both"] .pattern-print-charts-appendix .ns-visual-guides__card,
+  html[data-pattern-print-choice="both"] .pattern-print-charts-appendix .shaping-map {
+    display: block !important;
+  }
+
+  html[data-pattern-print-choice="both"] .pattern-print-chart-only-section,
+  html[data-pattern-print-choice="both"] .pattern-print-chart-only-row,
+  html[data-pattern-print-choice="instructions"] .pattern-section:has(.ns-shaping-chart):not(:has(.sleeveless-pattern-line)):not(:has(.pattern-print-written-shaping)):not(:has(.sleeveless-pattern-rc)):not(:has(.row-counter-reset)),
+  html[data-pattern-print-choice="instructions"] .sleeveless-pattern-row:has(.ns-shaping-chart):not(:has(.sleeveless-pattern-line)):not(:has(.pattern-print-written-shaping)):not(:has(.sleeveless-pattern-rc)):not(:has(.row-counter-reset)),
+  html[data-pattern-print-choice="both"] .pattern-section:has(.ns-shaping-chart):not(:has(.sleeveless-pattern-line)):not(:has(.pattern-print-written-shaping)):not(:has(.sleeveless-pattern-rc)):not(:has(.row-counter-reset)),
+  html[data-pattern-print-choice="both"] .sleeveless-pattern-row:has(.ns-shaping-chart):not(:has(.sleeveless-pattern-line)):not(:has(.pattern-print-written-shaping)):not(:has(.sleeveless-pattern-rc)):not(:has(.row-counter-reset)) {
+    display: none !important;
+  }
+
+  html[data-pattern-print-choice="instructions"] #pattern-content .sleeveless-piece-split:not(:has(svg)):not(:has(img)),
+  html[data-pattern-print-choice="instructions"] #pattern-content .pattern-layout.pattern-layout--garment-columns:not(:has(svg)):not(:has(img)) {
+    display: block !important;
+    grid-template-columns: 1fr !important;
+  }
+
+  html[data-pattern-print-choice="charts"] .sleeveless-pattern-intro,
+  html[data-pattern-print-choice="charts"] .sg-pattern-print-at-a-glance,
+  html[data-pattern-print-choice="charts"] .pattern-print-member-notes,
+  html[data-pattern-print-choice="charts"] .pattern-print-personalization-title,
+  html[data-pattern-print-choice="charts"] .pattern-print-personalization-notes,
+  html[data-pattern-print-choice="charts"] .sleeveless-pattern-piece,
+  html[data-pattern-print-choice="charts"] #pattern-content .pattern-section:not(:has(.ns-shaping-chart)):not(:has(.ns-visual-guides)):not(:has(.shaping-map)):not(:has(.pattern-print-chart-setup)),
+  html[data-pattern-print-choice="charts"] #pattern-content .sleeveless-pattern-row:not(:has(.ns-shaping-chart)):not(:has(.ns-visual-guides)):not(:has(.shaping-map)):not(:has(.pattern-print-chart-setup)),
+  html[data-pattern-print-choice="charts"] #pattern-content .sleeveless-piece-split__diagram,
+  html[data-pattern-print-choice="charts"] #pattern-content .pattern-layout__sidebar,
+  html[data-pattern-print-choice="charts"] .pattern-print-written-shaping,
+  html[data-pattern-print-choice="charts"] .pattern-finishing-steps,
+  html[data-pattern-print-choice="charts"] .pattern-finishing-list {
+    display: none !important;
+  }
+
+  html[data-pattern-print-choice="charts"] .pattern-print-chart-piece,
+  html[data-pattern-print-choice="charts"] .pattern-print-charts-empty {
+    display: block !important;
+  }
+
+  html[data-pattern-print-choice="charts"] #pattern-content .pattern-layout.pattern-layout--garment-columns,
+  html[data-pattern-print-choice="charts"] #pattern-content .sleeveless-piece-split {
+    display: block !important;
+    grid-template-columns: 1fr !important;
+  }
+
+  html[data-pattern-print-choice="charts"] #pattern-content .ns-shaping-chart,
+  html[data-pattern-print-choice="charts"] #pattern-content .shaping-map,
+  html[data-pattern-print-choice="charts"] #pattern-content .ns-visual-guides {
+    width: 100% !important;
+    max-width: none !important;
+    margin-right: 0 !important;
+  }
+
+  /*
+   * Second-shoulder setup sits just before the second checklist. Start that page with the
+   * setup note, and keep the checklist on the same page. A break on the checklist itself
+   * left the note's last lines alone on a blank page.
+   */
+  html[data-pattern-print-choice="charts"] .pattern-section:has(.pattern-print-chart-break),
+  html[data-pattern-print-choice="charts"] .pattern-print-chart-break,
+  html[data-pattern-print-choice="charts"] .ns-shaping-chart__tabpanel + .ns-shaping-chart__tabpanel,
+  html[data-pattern-print-choice="charts"] .ns-shaping-chart__active-side-note--collapsed,
+  html[data-pattern-print-choice="both"] .pattern-print-charts-appendix,
+  html[data-pattern-print-choice="both"] .pattern-print-chart-unit + .pattern-print-chart-unit,
+  html[data-pattern-print-choice="both"] .pattern-print-charts-appendix .ns-shaping-chart__tabpanel + .ns-shaping-chart__tabpanel,
+  html[data-pattern-print-choice="both"] .ns-shaping-chart__active-side-note--collapsed {
+    break-before: page;
+    page-break-before: always;
+  }
+
+  html[data-pattern-print-choice="charts"] .ns-shaping-chart__active-side-note--collapsed,
+  html[data-pattern-print-choice="both"] .ns-shaping-chart__active-side-note--collapsed {
+    break-after: avoid;
+    page-break-after: avoid;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  html[data-pattern-print-choice="charts"] .pattern-section:has(.pattern-print-chart-break) .pattern-print-chart-break,
+  html[data-pattern-print-choice="charts"] .ns-shaping-chart--second-shoulder,
+  html[data-pattern-print-choice="both"] .pattern-print-charts-appendix .ns-shaping-chart--second-shoulder {
+    break-before: avoid;
+    page-break-before: avoid;
+  }
+
+  .pattern-print-chart-banner,
+  .pattern-print-chart-repeat-banner th {
+    margin: 0 0 0.35rem;
+    font-size: 10pt;
+    font-weight: 700;
+    line-height: 1.35;
+    text-align: left;
+  }
+
+  .pattern-print-chart-banner {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .pattern-print-charts-appendix__title {
+    margin: 0 0 0.5rem;
+    font-size: 14pt;
+  }
+
+  .pattern-print-chart-unit {
+    break-inside: auto;
+    page-break-inside: auto;
+  }
+
+  /*
+   * Instructions-only leaves the chart wrappers in the garment column. Those
+   * wrappers are sized wider than the page so a visible chart can cover the
+   * diagram track. With the chart hidden, that extra width and a heading
+   * kept with the hidden chart were opening a blank page after the last
+   * instruction.
+   */
+  html[data-pattern-print-choice="instructions"] #pattern-content .sleeveless-piece-split__text .sleeveless-piece-chart-fullwidth,
+  html[data-pattern-print-choice="instructions"] #pattern-content .pattern-layout__content .sleeveless-piece-chart-fullwidth,
+  html[data-pattern-print-choice="instructions"] #pattern-content .sleeveless-piece-split__text .pattern-subsection.sleeveless-piece-chart-fullwidth,
+  html[data-pattern-print-choice="instructions"] #pattern-content .pattern-layout__content .pattern-subsection.sleeveless-piece-chart-fullwidth,
+  html[data-pattern-print-choice="instructions"] #pattern-content .sleeveless-piece-split__text #neckline-shoulder-chart-print-area,
+  html[data-pattern-print-choice="instructions"] #pattern-content .pattern-layout__content #neckline-shoulder-chart-print-area,
+  html[data-pattern-print-choice="instructions"] #pattern-content .sleeveless-piece-split__text #front-neckline-shoulder-chart-print-area,
+  html[data-pattern-print-choice="instructions"] #pattern-content .pattern-layout__content #front-neckline-shoulder-chart-print-area,
+  html[data-pattern-print-choice="instructions"] #pattern-content .sleeveless-piece-split__text .sg-neck-chart-print-block,
+  html[data-pattern-print-choice="instructions"] #pattern-content .pattern-layout__content .sg-neck-chart-print-block,
+  html[data-pattern-print-choice="instructions"] #pattern-content .sleeveless-piece-split__text .ns-shaping-chart,
+  html[data-pattern-print-choice="instructions"] #pattern-content .pattern-layout__content .ns-shaping-chart,
+  html[data-pattern-print-choice="instructions"] #pattern-content .ns-shaping-chart__table-wrap,
+  html[data-pattern-print-choice="instructions"] #pattern-content .ns-shaping-chart__table-scroll {
+    width: auto !important;
+    max-width: 100% !important;
+    margin-right: 0 !important;
+    break-before: auto !important;
+    break-after: auto !important;
+    page-break-before: auto !important;
+    page-break-after: auto !important;
+  }
+
+  html[data-pattern-print-choice="instructions"] #pattern-content .ns-shaping-chart,
+  html[data-pattern-print-choice="instructions"] #pattern-content .ns-shaping-chart__tabpanel,
+  html[data-pattern-print-choice="instructions"] #pattern-content .ns-shaping-chart--second-shoulder,
+  html[data-pattern-print-choice="instructions"] #pattern-content .ns-shaping-chart--collapsible::details-content,
+  html[data-pattern-print-choice="instructions"] #pattern-content .ns-visual-guides,
+  html[data-pattern-print-choice="instructions"] #pattern-content .shaping-map {
+    display: none !important;
+    content-visibility: hidden !important;
+    break-before: auto !important;
+    break-after: auto !important;
+    page-break-before: auto !important;
+    page-break-after: auto !important;
+  }
+
+  /*
+   * The shared print rule gives every div and section a 10px bottom margin.
+   * Instructions end on the last line of the page, so that margin was the only
+   * thing on the following page.
+   */
+  html[data-pattern-print-choice="instructions"] #sg-sleeveless-results,
+  html[data-pattern-print-choice="instructions"] .sleeveless-pattern-mount,
+  html[data-pattern-print-choice="instructions"] #pattern-content,
+  html[data-pattern-print-choice="instructions"] #pattern-content > :last-child,
+  html[data-pattern-print-choice="instructions"] #pattern-content .pattern-finishing-steps,
+  html[data-pattern-print-choice="instructions"] #pattern-content .pattern-finishing-step:last-child,
+  html[data-pattern-print-choice="instructions"] #pattern-content .pattern-finishing-step:last-child * {
+    break-after: auto !important;
+    page-break-after: auto !important;
+    margin-bottom: 0 !important;
+    padding-bottom: 0 !important;
+  }
+
+  html[data-pattern-print-choice="instructions"] #pattern-content .pattern-print-keep-charts .ns-shaping-chart,
+  html[data-pattern-print-choice="instructions"] #pattern-content .pattern-print-keep-charts .ns-visual-guides,
+  html[data-pattern-print-choice="instructions"] #pattern-content .pattern-print-keep-charts .shaping-map,
+  html[data-pattern-print-choice="instructions"] #pattern-content .pattern-print-keep-charts .ns-shaping-chart__tabpanel,
+  html[data-pattern-print-choice="instructions"] #pattern-content .pattern-print-keep-charts .ns-shaping-chart--collapsible::details-content {
+    display: block !important;
+    content-visibility: visible !important;
+  }
+}

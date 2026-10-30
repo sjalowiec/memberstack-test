@@ -72,6 +72,7 @@ import {
 import { cardiganFrontInitialNeckBindOffStitches } from "./roundNeckNotation";
 import { dropShoulderShoulderBindOffVideoRow } from "./dropShoulderShoulderBindOffVideo";
 import { dropShoulderRoundNecklineVideoRow } from "./dropShoulderRoundNecklineVideoTip";
+import { attachNecklinePrintInstructions } from "./patternPrintWrittenShaping";
 import { roundBackNecklineShapingVideoRow } from "./roundBackNecklineShapingVideoTip";
 import {
   castOnMethodQuickTipInnerHtml,
@@ -1898,8 +1899,8 @@ export function generateDropShoulderPattern(
   return {
     warnings,
     lines,
-    displayRows,
-    frontDisplayRows,
+    displayRows: attachNecklinePrintInstructions(displayRows, backNeckShoulderTimeline),
+    frontDisplayRows: attachNecklinePrintInstructions(frontDisplayRows, frontNeckChartBuilt?.timeline),
     sleeveDisplayRows,
     debug,
     neckShoulderShapingChart: EMPTY_CHART,

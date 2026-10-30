@@ -691,7 +691,7 @@ export function renderActiveShoulderChartIntroHtml(options: ActiveShoulderChartI
       );
     }
   }
-  innerParts.push(`<p>${activeShoulderChartIntroSentenceHtml(options.shouldersShaped !== false)}</p>`);
+  innerParts.push(`<p class="pattern-print-checklist-pointer">${activeShoulderChartIntroSentenceHtml(options.shouldersShaped !== false)}</p>`);
   const inner = innerParts.join("\n  ");
 
   return wrapActiveShoulderChartIntroHtml(

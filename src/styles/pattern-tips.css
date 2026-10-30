@@ -242,6 +242,12 @@
     border-left: 1px solid #333 !important;
   }
 
+  /* Online-only cards are marked no-print. The tips-on rule above is more specific, so name it again. */
+  .pattern-tips-scope[data-show-tips="true"] .pattern-tip.no-print,
+  #pattern-content[data-show-tips="true"] .pattern-tip.no-print {
+    display: none !important;
+  }
+
   .pattern-tips-scope[data-show-tips="true"] .pattern-tip.pattern-print-personalization-never-print,
   .pattern-tips-scope[data-show-tips="true"] .pattern-tip[data-pattern-print-personalization-tip],
   .pattern-tips-scope[data-show-tips="true"] .pattern-tips-control-box,
