@@ -10,7 +10,16 @@ export default defineConfig({
     // Those trees must stay static/on-disk, not inside the SSR zip (Netlify
     // rejects oversized function uploads). Runtime still reads live POC JSON
     // from src/data/legacy_kin/cleaned/*.poc.json.
+    includeFiles: [
+      "./src/data/cables.json",
+      "./src/data/printables.json",
+      "./src/data/designaknit-products.json",
+      "./src/data/legacy/legacy-ebooks-active.csv",
+      "./src/data/legacy/legacy-ebook-shopify-urls.json",
+    ],
     excludeFiles: [
+      "./.env",
+      "./.env.*",
       "./public/images/**",
       "./public/challenge/**",
       "./public/downloads/**",

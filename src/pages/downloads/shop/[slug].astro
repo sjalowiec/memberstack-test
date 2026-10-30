@@ -1,23 +1,17 @@
 ---
-export const prerender = true;
+export const prerender = false;
 
 import Layout from "../../../layouts/Layout.astro";
 import PrintableResourceLayout from "../../../components/downloads/PrintableResourceLayout.astro";
 import {
   findPrintableResourceBySlug,
-  printableResources,
 } from "../../../data/printableResources";
+import { STORE_CATALOG_CACHE_CONTROL } from "../../../lib/shop/storeItemPublicCatalog";
 
-export function getStaticPaths() {
-  return printableResources.map((resource) => ({
-    params: { slug: resource.slug },
-    props: { resource },
-  }));
-}
+Astro.response.headers.set("Cache-Control", STORE_CATALOG_CACHE_CONTROL);
 
-const propResource = (Astro.props as { resource?: (typeof printableResources)[number] }).resource;
 const slugParam = Astro.params.slug ?? "";
-const resource = propResource ?? findPrintableResourceBySlug(slugParam);
+const resource = findPrintableResourceBySlug(slugParam);
 
 if (!resource) {
   return Astro.redirect("/");

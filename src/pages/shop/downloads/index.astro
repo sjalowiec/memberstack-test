@@ -1,10 +1,12 @@
 ---
 import Layout from "../../../layouts/Layout.astro";
 import PageHead from "../../../components/PageHead.astro";
-import { printables } from "../../../data/printables";
+import { loadPublicPrintables, STORE_CATALOG_CACHE_CONTROL } from "../../../lib/shop/storeItemPublicCatalog";
 
 const title = "Printables | Knit it Now";
 const description = "Printable templates and other resources for machine knitters.";
+
+Astro.response.headers.set("Cache-Control", STORE_CATALOG_CACHE_CONTROL);
 
 const previewMember = Astro.url.searchParams.get("previewMember"); // 'member' | 'nonmember'
 const previewMode = previewMember === "member" || previewMember === "nonmember";
@@ -20,7 +22,7 @@ const isMember =
       ? false
       : actualIsMember;
 
-      const downloads = printables;
+const downloads = await loadPublicPrintables(Astro.url.hostname);
 ---
 <Layout title={title} description="Printable templates and tools to help you measure, plan, and work more accurately.">
   <a class="back-link back-to-shop-link" id="back-to-shop" href="/shop">← Back to Shop</a>

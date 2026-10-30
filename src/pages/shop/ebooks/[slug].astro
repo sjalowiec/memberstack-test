@@ -1,5 +1,5 @@
 ---
-export const prerender = true;
+export const prerender = false;
 
 import Layout from "../../../layouts/Layout.astro";
 import PageHead from "../../../components/PageHead.astro";
@@ -7,10 +7,6 @@ import {
   sanitizeLegacyEbookDescriptionHtml,
   stripLegacyEbookDescriptionImages,
 } from "../../../lib/legacy/legacyEbookDescriptionHtml";
-import {
-  findLegacyEbookStorefrontBySlug,
-  loadLegacyEbookStorefrontWithSlugs,
-} from "../../../lib/legacy/legacyEbookSlug";
 import { plainTextFromLegacyEbookBrief } from "../../../lib/legacy/legacyEbookPlainText";
 import { EBOOK_SALES_PAUSED } from "../../../lib/legacy/legacyEbookSalesHold";
 import {
@@ -20,27 +16,18 @@ import {
   legacyStoreThumbnailPath,
   SHOW_LEGACY_EBOOK_MEMBER_FREE_BADGE,
 } from "../../../lib/legacy/legacyEbookStorefrontUi";
+import { loadPublicEbooks, STORE_CATALOG_CACHE_CONTROL } from "../../../lib/shop/storeItemPublicCatalog";
 
-export function getStaticPaths() {
-  const storefrontProducts = loadLegacyEbookStorefrontWithSlugs();
-  return storefrontProducts.map((product) => ({
-    params: { slug: product.slug },
-    props: { product },
-  }));
-}
+Astro.response.headers.set("Cache-Control", STORE_CATALOG_CACHE_CONTROL);
 
 // TEMPORARY: Flip EBOOK_SALES_PAUSED to false in legacyEbookSalesHold.ts to restore product pages.
 if (EBOOK_SALES_PAUSED) {
   return Astro.redirect("/shop/ebooks");
 }
 
-const products = loadLegacyEbookStorefrontWithSlugs();
-
-const propProduct = (Astro.props as { product?: (typeof products)[number] })
-  .product;
+const products = await loadPublicEbooks(Astro.url.hostname);
 const slugParam = Astro.params.slug ?? "";
-const product =
-  propProduct ?? findLegacyEbookStorefrontBySlug(slugParam, products);
+const product = products.find((item) => item.slug.toLowerCase() === slugParam.trim().toLowerCase());
 
 if (!product) {
   return Astro.redirect("/shop/ebooks");
