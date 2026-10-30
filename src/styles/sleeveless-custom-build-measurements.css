@@ -134,6 +134,16 @@
   max-width: min(42%, 8.5rem);
 }
 
+/* Cuff depth sits on the sleeve drawing, left of its dimension line, so the edit column does not clip it. */
+.cb-measure-page .express-mbp-box--cuff-length {
+  z-index: 3;
+  max-width: 8.75rem;
+}
+
+.cb-measure-page label.express-mbp-box__lab {
+  cursor: pointer;
+}
+
 .cb-measure-page .express-mbp-box__field {
   display: flex;
   align-items: center;

@@ -170,6 +170,11 @@ describe("Set-In Sleeve edit measurement diagram — Body / Sleeve preview", () 
     expect(measurementsPageSrc).toContain("buildSetInSleeveEditSleeveMeasurementDiagramSvg");
     expect(measurementsPageSrc).toContain("SLEEVE_CUFF_RIBBING_DEPTH_LABEL");
     expect(measurementsPageSrc).toContain("SLEEVE_CUFF_RIBBING_DEPTH_ERROR");
+    expect(measurementsPageSrc).toContain('anchorTransform: "translate(calc(-100% - 10px), -50%)"');
+    expect(measurementsPageSrc).toContain("lab.htmlFor = `cb-measure-${field.key}`");
+    expect(measurementsPageSrc).toContain(
+      "formatEditableSleeveCuffDepthDisplay(parseCuffDepthOverrideInches(valueInches), unit)",
+    );
     expect(measurementsPageSrc).toContain("includeSetInSleeveMeasurements: false");
     expect(measurementsPageSrc).toContain("stampSetInSleeveMeasurementPageShell");
     expect(measurementsPageSrc).toContain(

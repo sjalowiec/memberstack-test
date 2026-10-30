@@ -327,6 +327,12 @@ describe("Sideways Summary/Edit live measurement edits", () => {
       "wrist",
       "cuffDepth",
     ]);
+    expect(SIDEWAYS_CARDIGAN_SUMMARY_SLEEVE_FIELDS.find((field) => field.id === "cuffDepth")).toMatchObject({
+      label: "Sleeve cuff / ribbing depth",
+      previewTab: "sleeve",
+      min: "0",
+      transform: "translate(calc(-100% - 10px), -50%)",
+    });
   });
 
   it("hides Sets armhole depth under the Pullover Armhole depth chip only", () => {

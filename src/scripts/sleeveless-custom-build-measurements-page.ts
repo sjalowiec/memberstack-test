@@ -501,6 +501,11 @@ const DIAGRAM_FIELDS: DiagramFieldDef[] = [
     label: SLEEVE_CUFF_RIBBING_DEPTH_LABEL,
     labelLines: [...SLEEVE_CUFF_RIBBING_DEPTH_LABEL_LINES],
     axis: "vertical",
+    /**
+     * Sit the chip on the drawing, just left of the cuff-depth dimension.
+     * A chip that grows to the right of that line is clipped by the edit column.
+     */
+    anchorTransform: "translate(calc(-100% - 10px), -50%)",
     dropShoulderOnly: true,
     defaultInches: (_row, _computed, audience) => getDefaultCuffLengthInches(audience),
   },
@@ -1085,8 +1090,9 @@ function createDiagramFieldBox(
   const box = document.createElement("div");
   box.className = `express-mbp-box express-mbp-box--${field.positionMod}`;
 
-  const lab = document.createElement("span");
+  const lab = document.createElement("label");
   lab.className = "express-mbp-box__lab";
+  lab.htmlFor = `cb-measure-${field.key}`;
   const lines = opts?.labelLines?.filter((s) => s.trim());
   if (opts?.axis === "vertical" || opts?.axis === "horizontal") {
     const icon = document.createElement("span");
@@ -1135,12 +1141,12 @@ function createDiagramFieldBox(
   input.inputMode = "decimal";
   input.autocomplete = "off";
   input.className = "measurement-input express-mbp-box__input";
+  input.id = `cb-measure-${field.key}`;
   input.setAttribute("data-cb-measure-input", field.key);
   input.setAttribute("aria-label", `${field.label} in ${unit === "cm" ? "centimeters" : "inches"}`);
-  input.value = formatMeasurementDisplayFromInches(
-    parseStoredInchesForDisplay(valueInches),
-    unit,
-  );
+  input.value = isSleeveCuffDepthField(field.key)
+    ? formatEditableSleeveCuffDepthDisplay(parseCuffDepthOverrideInches(valueInches), unit)
+    : formatMeasurementDisplayFromInches(parseStoredInchesForDisplay(valueInches), unit);
 
   const unitEl = document.createElement("span");
   unitEl.className = "measurement-unit express-mbp-box__unit";
