@@ -50,8 +50,14 @@ export function sleevelessFrontMeasurementLastArmholeY(
   return armholeStartY - span * SLEEVELESS_FRONT_MEASUREMENT_LAST_ARMHOLE_FRACTION;
 }
 
+/**
+ * Start-anchored row labels ("218 rows") begin just right of the body.
+ * Garment geometry stays on the 400-wide canvas; this extra viewBox width
+ * only keeps those labels inside the SVG.
+ */
+export const SLEEVELESS_FRONT_STS_ROWS_RIGHT_LABEL_CLEARANCE = 96;
 export const SLEEVELESS_FRONT_STS_ROWS_VIEWBOX = {
-  width: SLEEVELESS_FRONT_GARMENT_VB_W,
+  width: SLEEVELESS_FRONT_GARMENT_VB_W + SLEEVELESS_FRONT_STS_ROWS_RIGHT_LABEL_CLEARANCE,
   height: SLEEVELESS_FRONT_GARMENT_VB_H,
 } as const;
 

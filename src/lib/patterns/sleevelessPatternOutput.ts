@@ -19,6 +19,7 @@ import {
   type NeedleRange,
   type ShapingAction,
 } from "./legoBlocks/neckShoulderExecution";
+import { attachNecklinePrintInstructions } from "./patternPrintWrittenShaping";
 import { resolveEffectiveArmholeDepthInches } from "./customBuildEffectiveArmholeDepth";
 import { resolveDiagramFinishedHipInches } from "./customBuildEffectiveFinishedHip";
 import { diagramGuidesForAppliedBodyShaping } from "./sleevelessBodyShapeDiagramGuides";
@@ -571,6 +572,11 @@ export type SleevelessPatternDisplayRow =
        * When set, use instead of {@link paragraphs} for that block’s instruction text.
        */
       trustedParagraphs?: string[];
+      /**
+       * Print-only shaping prose from the same timeline as the checklist.
+       * Hidden on screen. Shown for instructions-only and combined printing.
+       */
+      printInstructionParagraphs?: string[];
       /** Trusted HTML only (e.g. a Help Card built by {@link buildPatternHelpCardInnerHtml}); rendered as innerHTML in the pattern tab. */
       tipHtml?: string;
       /** When true, {@link tipHtml} is the full `.pattern-tip` inner HTML (no extra “Tip:” prefix). */
@@ -4138,8 +4144,12 @@ export function generateSleevelessBackPattern(
   return {
     warnings,
     lines,
-    displayRows,
-    frontDisplayRows,
+    displayRows: attachNecklinePrintInstructions(displayRows, backNeckShoulderTimeline, firstArmholeRCNum),
+    frontDisplayRows: attachNecklinePrintInstructions(
+      frontDisplayRows,
+      frontNeckShoulderTimeline,
+      firstArmholeRCNum,
+    ),
     debug,
     neckShoulderShapingChart,
     frontNeckShoulderShapingChart,
