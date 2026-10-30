@@ -325,6 +325,7 @@ describe("Sideways Summary/Edit live measurement edits", () => {
       "finishedUpperArm",
       "sleeveLength",
       "wrist",
+      "cuffDepth",
     ]);
   });
 
@@ -365,6 +366,32 @@ describe("Sideways Summary/Edit live measurement edits", () => {
     expect(overrides.wrist).toBe("8");
     expect(overrides.finishedNeckOpeningWidth).toBe("8");
     expect(overrides.upperArm).toBe("14.5");
+  });
+
+  it("keeps the 2 inch cuff default, a saved zero, and a changed depth", () => {
+    saveBuild(cardiganValues);
+    expect(readSidewaysCardiganSummaryMeasurements().cuffDepth).toBe("2");
+    const zero = applySidewaysCardiganSummaryMeasurementEdits({ cuffDepth: "0" });
+    expect(zero.ok).toBe(true);
+    expect(readSidewaysCardiganSummaryMeasurements().cuffDepth).toBe("0");
+    expect(getCurrentPattern().fit?.cbMeasurementOverrides?.cuffDepth).toBe("0");
+    expect(
+      displaySidewaysCardiganSummaryMeasurements(readSidewaysCardiganSummaryMeasurements(), "cm").cuffDepth,
+    ).toBe("0");
+    const deeper = applySidewaysCardiganSummaryMeasurementEdits({ cuffDepth: "3.5" });
+    expect(deeper.ok).toBe(true);
+    expect(readSidewaysCardiganSummaryMeasurements().cuffDepth).toBe("3.5");
+    expect(readSidewaysCardiganSummaryMeasurements().sleeveLength).toBe("17");
+    const svg = buildSidewaysCardiganEditMeasurementDiagramSvg(
+      buildSidewaysCardiganSummaryDiagramInput(
+        readSidewaysCardiganSummaryMeasurements(),
+        "cardigan",
+        "in",
+      )!,
+      "sleeve",
+    );
+    expect(svg).toContain('data-cuff-depth-inches="3.5"');
+    expect(svg).toContain('id="target_sideways_cuff_depth"');
   });
 
   it("editing a Cardigan does not silently change it to a Pullover", () => {
@@ -466,7 +493,7 @@ describe("Sideways Summary/Edit shared workspace structure", () => {
     );
     expect(
       SIDEWAYS_CARDIGAN_SUMMARY_MEASUREMENT_FIELDS.filter((f) => f.previewTab === "sleeve").map((f) => f.id),
-    ).toEqual(["finishedUpperArm", "sleeveLength", "wrist"]);
+    ).toEqual(["finishedUpperArm", "sleeveLength", "wrist", "cuffDepth"]);
     expect(SIDEWAYS_CARDIGAN_SUMMARY_SLEEVE_FIELDS.find((f) => f.id === "wrist")?.label).toBe(
       "Wrist/Cuff",
     );

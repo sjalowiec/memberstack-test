@@ -66,6 +66,13 @@ export function sidewaysCardiganSleeveFinishedMeasurementPairs(
       term: "Wrist/Cuff",
       def: inchesAndStitches(calc.finished.wristInches, calc.wristSts),
     },
+    {
+      term: "Sleeve cuff / ribbing depth",
+      def:
+        calc.finished.cuffDepthInches > 0
+          ? inchesAndRows(calc.finished.cuffDepthInches, calc.cuffRows)
+          : "No ribbing",
+    },
   ];
 }
 

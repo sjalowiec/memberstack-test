@@ -17,7 +17,6 @@ import {
   calculateHemRowsFromInches,
   roundUpToEvenRows,
 } from "./hemDefaults";
-import { resolveEffectiveCuffDepthInches } from "./customBuildEffectiveCuffDepth";
 import { resolveEffectiveFinishedBustInches } from "./customBuildEffectiveFinishedBust";
 import { resolveEffectiveFinishedLengthInches } from "./customBuildEffectiveFinishedLength";
 import { resolveEffectiveShoulderWidthInches } from "./customBuildEffectiveShoulderWidth";
@@ -48,7 +47,7 @@ import {
 } from "./customBuildEffectiveArmholeDepth";
 import { isDropShoulderPatternData } from "./dropShoulderSleeveMeasurementOverrides";
 import { resolveDropShoulderSleeveInches } from "./dropShoulderSleeveMeasurementOverrides";
-import { calculateDropShoulderSleevePieceNumbers } from "./dropShoulderSleevePieceNumbers";
+import { resolveCuffUpSweaterSleevePiece } from "./legoBlocks/sweaterSleeveCuff";
 import { readEffectiveDropShoulderUserEditedSleeveFields } from "./dropShoulderUserEditedSleeveFields";
 import { findExpressChartRow } from "./sleevelessExpressSizeChartClient";
 import {
@@ -126,6 +125,12 @@ import {
   sidewaysCuffUpCuffChoiceLines,
   sidewaysTopDownCuffChoiceLines,
 } from "./sidewaysCardiganSleeveCuffCopy";
+import {
+  cuffUpNoRibbingCastOnSentence,
+  SLEEVE_NO_RIBBING_CHART_FINISH,
+  sleeveCuffRibbingOmitted,
+  topDownNoRibbingFinishSentence,
+} from "./sleeveCuffRibbingDepth";
 
 /** Drop shoulder result reuses the sleeveless contract and adds the sleeve piece. */
 export type DropShoulderPatternResult = SleevelessBackPatternResult & {
@@ -264,12 +269,16 @@ function sleeveBodyRemainderLine(
   shapingVerb: "increase" | "decrease" = "increase",
   hadShaping = false,
   cuffStartRc?: number,
+  omitCuffRibbing = false,
 ): string {
   if (rowsAfterShaping <= 0) return "";
   if (hadShaping && direction === "cuff-up") {
     return knitEvenAfterFinalShapingLine(rowsAfterShaping, sleeveTotalRows, shapingVerb);
   }
   if (hadShaping && direction === "top-down" && cuffStartRc !== undefined) {
+    if (omitCuffRibbing) {
+      return knitEvenAfterFinalShapingLine(rowsAfterShaping, cuffStartRc, shapingVerb);
+    }
     const rowWord = rowsAfterShaping === 1 ? "1 row even" : `${rowsAfterShaping} rows even`;
     const noun = shapingVerb === "decrease" ? "decrease" : "increase";
     return `After the final ${noun}, knit ${rowWord} in pattern, then begin the cuff at ${formatRcColon(cuffStartRc)}.`;
@@ -1244,7 +1253,9 @@ export function buildDropShoulderSleeveDisplayRows(
   const sleeveShapingChartRows = buildDropShoulderSleeveShapingChartRows(chartInput, {
     finalAction:
       args.direction === "top-down"
-        ? SIDEWAYS_TOP_DOWN_CHART_FINISH
+        ? sleeveCuffRibbingOmitted(args.cuffRows)
+          ? SLEEVE_NO_RIBBING_CHART_FINISH
+          : SIDEWAYS_TOP_DOWN_CHART_FINISH
         : args.optionalRibbing
           ? SIDEWAYS_CUFF_UP_CHART_FINISH
           : undefined,
@@ -1268,6 +1279,7 @@ export function buildDropShoulderSleeveDisplayRows(
       shapingPlan.shapingDirection,
       hadShaping,
       args.sleeveBodyRows,
+      sleeveCuffRibbingOmitted(args.cuffRows),
     ),
   ].filter((p) => p.length > 0);
   const preShaping = dropShoulderSleevePreShapingSpan(chartInput);
@@ -1361,17 +1373,26 @@ export function buildDropShoulderSleeveDisplayRows(
       stitchesOnNeedlesAtBodyStart > 0 ? stitchesOnNeedlesAtBodyStart : undefined,
     );
     appendSleeveShapingChartSection();
-    rows.push({ kind: "section", title: "CUFF" });
-    rows.push({
-      kind: "block",
-      rc: formatRcColon(args.sleeveBodyRows),
-      paragraphs: [],
-      trustedParagraphs: sidewaysTopDownCuffChoiceLines(
-        stitchesAfterSleeveBodyShaping,
-        args.cuffRows,
-      ),
-      stitchCount: stitchesAfterSleeveBodyShaping > 0 ? stitchesAfterSleeveBodyShaping : undefined,
-    });
+    if (sleeveCuffRibbingOmitted(args.cuffRows)) {
+      rows.push({
+        kind: "block",
+        rc: formatRcColon(args.sleeveBodyRows),
+        paragraphs: [topDownNoRibbingFinishSentence()],
+        stitchCount: stitchesAfterSleeveBodyShaping > 0 ? stitchesAfterSleeveBodyShaping : undefined,
+      });
+    } else {
+      rows.push({ kind: "section", title: "CUFF" });
+      rows.push({
+        kind: "block",
+        rc: formatRcColon(args.sleeveBodyRows),
+        paragraphs: [],
+        trustedParagraphs: sidewaysTopDownCuffChoiceLines(
+          stitchesAfterSleeveBodyShaping,
+          args.cuffRows,
+        ),
+        stitchCount: stitchesAfterSleeveBodyShaping > 0 ? stitchesAfterSleeveBodyShaping : undefined,
+      });
+    }
     return rows;
   }
 
@@ -1380,15 +1401,24 @@ export function buildDropShoulderSleeveDisplayRows(
     kind: "block",
     paragraphs: sidewaysOptionalRibbingIntro(args),
   });
-  rows.push({ kind: "section", title: "CUFF" });
-  rows.push({
-    kind: "block",
-    rc: formatRcColon(0),
-    paragraphs: [],
-    trustedParagraphs: sidewaysCuffUpCuffChoiceLines(args.wristSts, args.cuffRows),
-    stitchCount: args.wristSts > 0 ? args.wristSts : undefined,
-  });
-  rows.push(cuffUpSleeveBodyRowCounterResetBlock());
+  if (sleeveCuffRibbingOmitted(args.cuffRows)) {
+    rows.push({
+      kind: "block",
+      rc: formatRcColon(0),
+      paragraphs: [cuffUpNoRibbingCastOnSentence(args.wristSts)],
+      stitchCount: args.wristSts > 0 ? args.wristSts : undefined,
+    });
+  } else {
+    rows.push({ kind: "section", title: "CUFF" });
+    rows.push({
+      kind: "block",
+      rc: formatRcColon(0),
+      paragraphs: [],
+      trustedParagraphs: sidewaysCuffUpCuffChoiceLines(args.wristSts, args.cuffRows),
+      stitchCount: args.wristSts > 0 ? args.wristSts : undefined,
+    });
+    rows.push(cuffUpSleeveBodyRowCounterResetBlock());
+  }
   appendSleeveBodyBlocks(
     stitchesOnNeedlesAtBodyStart > 0 ? stitchesOnNeedlesAtBodyStart : undefined,
   );
@@ -1442,7 +1472,6 @@ export function generateDropShoulderPattern(
   const backNeckDepthIn = resolveEffectiveBackNeckDepthInches(patternData);
   const frontNeckDepthIn = resolveEffectiveFrontNeckDepthInches(patternData);
   const hemDepthIn = resolveEffectiveHemDepthInches(patternData, audience);
-  const cuffDepthIn = resolveEffectiveCuffDepthInches(patternData, audience);
 
   const sm = selectedMeasurements(patternData);
   const fitSection = section(patternData.fit);
@@ -1601,14 +1630,16 @@ export function generateDropShoulderPattern(
   const backNeckSts = Math.max(0, bustBodySts - 2 * shoulderStsEach);
 
   // ---- Sleeve math (flat piece width = circumference; top edge = upper arm) ----
-  const sleevePiece = calculateDropShoulderSleevePieceNumbers({
+  const sleevePiece = resolveCuffUpSweaterSleevePiece({
+    patternData,
+    audience,
     finishedUpperArmInches: upperArmIn,
     finishedWristInches: wristIn,
     sleeveLengthInches: sleeveLengthIn,
     stitchesPerInch: spi,
     rowsPerInch: rpi,
-    cuffDepthInches: cuffDepthIn,
   });
+  const cuffDepthIn = sleevePiece.cuffDepthInches;
   const { topSts, wristSts, cuffRows, sleeveBodyRows, sleeveTotalRows } = sleevePiece;
   const sleeveValid = topSts > 0 && wristSts > 0 && sleeveTotalRows > 0;
 

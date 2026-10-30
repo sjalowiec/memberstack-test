@@ -8,7 +8,8 @@
  *
  * The outline uses one scale for width and height, taken from the finished
  * inches: cuff depth, cuff-to-upper-arm body (sleeve length minus cuff), and
- * sleeve-cap height. Labels sit outside that shape.
+ * sleeve-cap height. Labels sit outside that shape. Stitches & Rows names the
+ * sleeve length as cuff to underarm and draws the calculated cap above it.
  */
 
 import type { DropShoulderSleevePieceNumbers } from "../dropShoulderSleevePieceNumbers";
@@ -93,6 +94,8 @@ export type SetInSleeveDiagramModel = {
   topWidthInches: number;
   cuffDepthInches: number;
   sleeveBodyInches: number;
+  /** Cuff plus sleeve body. The cap is not included. */
+  sleeveLengthInches: number;
   wristWidthLabel: string;
   upperArmWidthLabel: string;
   topWidthLabel: string;
@@ -129,12 +132,26 @@ function storedInches(n: number | undefined): number | undefined {
   return typeof n === "number" && Number.isFinite(n) && n > 0 ? n : undefined;
 }
 
+/** `0` is a real cuff depth (no ribbing). Missing values stay missing. */
+function storedCuffInches(n: number | undefined): number | undefined {
+  return typeof n === "number" && Number.isFinite(n) && n >= 0 ? n : undefined;
+}
+
+/**
+ * Flat sleeve schematic width. Circumference measurements are drawn at half
+ * their finished inches so a 13" upper arm is 6.5" wide on the page.
+ */
+export function setInSleeveFlatWidthInches(circumferenceInches: number): number {
+  if (!Number.isFinite(circumferenceInches) || circumferenceInches <= 0) return 0;
+  return circumferenceInches / 2;
+}
+
 function sleeveBodyLengthInches(
   sleeveLengthInches: number | undefined,
   cuffDepthInches: number | undefined,
 ): number | undefined {
   const length = storedInches(sleeveLengthInches);
-  const cuff = storedInches(cuffDepthInches);
+  const cuff = storedCuffInches(cuffDepthInches);
   if (length === undefined || cuff === undefined) return undefined;
   const body = length - cuff;
   return body > 0 ? body : undefined;
@@ -350,7 +367,7 @@ export function buildSetInSleeveDiagramModel(input: {
   const rowsPerInch = cap.totals.capRows / capHeightInches;
   const wristInches = storedInches(input.wristInches) ?? piece.wristSts / stitchesPerInch;
   const cuffDepthInches =
-    storedInches(input.cuffDepthInches) ?? (rowsPerInch > 0 ? piece.cuffRows / rowsPerInch : 0);
+    storedCuffInches(input.cuffDepthInches) ?? (rowsPerInch > 0 ? piece.cuffRows / rowsPerInch : 0);
   const bodyInches =
     sleeveBodyLengthInches(input.sleeveLengthInches, cuffDepthInches) ??
     (rowsPerInch > 0 ? piece.sleeveBodyRows / rowsPerInch : 1);
@@ -370,6 +387,7 @@ export function buildSetInSleeveDiagramModel(input: {
     topWidthInches,
     cuffDepthInches,
     sleeveBodyInches: bodyInches,
+    sleeveLengthInches: cuffDepthInches + bodyInches,
     wristWidthLabel: formatStitchesRowsDiagramLabel(
       piece.wristSts,
       "sts",
@@ -432,9 +450,9 @@ type SleeveFrame = {
 };
 
 /**
- * One pixel scale for every finished inch. The upper arm fills the drawing
- * column; cuff, body, and cap then take their own inch heights. Sleeve length
- * is the cuff plus the body, so the cuff is not added again.
+ * One pixel scale for every finished inch. Widths are the flat schematic
+ * (half the circumference). Sleeve length is the cuff plus the body, measured
+ * from the cuff to the underarm. The cap is drawn above that length.
  */
 function sleeveScale(model: SetInSleeveDiagramModel, padTop = DS_PAD_TOP): {
   pxPerInch: number;
@@ -443,7 +461,8 @@ function sleeveScale(model: SetInSleeveDiagramModel, padTop = DS_PAD_TOP): {
   capH: number;
   height: number;
 } {
-  const pxPerInch = DS_BODY_MAX_W / Math.max(model.upperArmInches, 0.25);
+  const flatUpper = Math.max(setInSleeveFlatWidthInches(model.upperArmInches), 0.125);
+  const pxPerInch = DS_BODY_MAX_W / flatUpper;
   const cuffH = Math.max(0, model.cuffDepthInches) * pxPerInch;
   const bodyH = Math.max(model.sleeveBodyInches, 0.25) * pxPerInch;
   const capH = Math.max(model.capHeightInches, 0.25) * pxPerInch;
@@ -465,15 +484,15 @@ function buildSleeveFrame(model: SetInSleeveDiagramModel, padTop = DS_PAD_TOP): 
   const scale = sleeveScale(model, padTop);
   const { cuffH, bodyH, capH, pxPerInch } = scale;
   const wristY = scale.height - DS_PAD_BOTTOM;
-  const wristW = model.wristInches * pxPerInch;
-  const upperW = model.upperArmInches * pxPerInch;
-  const topW = model.topWidthInches * pxPerInch;
+  const wristW = setInSleeveFlatWidthInches(model.wristInches) * pxPerInch;
+  const upperW = setInSleeveFlatWidthInches(model.upperArmInches) * pxPerInch;
+  const topW = setInSleeveFlatWidthInches(model.topWidthInches) * pxPerInch;
   const capStartY = wristY - cuffH - bodyH;
   const capTopY = capStartY - capH;
   const capRows = Math.max(1, model.capRows);
   const capEdge = model.capMarks.map((mark) => {
     const rowsUp = Math.max(0, Math.min(capRows, mark.rowsFromCapStart));
-    const width = widthInchesForStitches(model, mark.stitches) * pxPerInch;
+    const width = setInSleeveFlatWidthInches(widthInchesForStitches(model, mark.stitches)) * pxPerInch;
     return {
       y: capStartY - (rowsUp / capRows) * capH,
       left: midX - width / 2,
@@ -660,6 +679,18 @@ function drawOverview(frame: SleeveFrame): string {
   ].join("");
 }
 
+function sleeveLengthCaption(frame: SleeveFrame, model: SetInSleeveDiagramModel): string {
+  const measure = formatPatternDiagramMeasurement(model.sleeveLengthInches, model.unit);
+  if (!measure) return "";
+  const y = Math.max(22, frame.capTopY - 78);
+  return [
+    `<g class="set-in-sleeve-diagram__sleeve-length" data-sleeve-length="true">`,
+    `<text data-role="sleeve-length-caption" x="${fmtNum(frame.midX)}" y="${fmtNum(y)}" text-anchor="middle" fill="${DS_STROKE}" ${textFont(DS_FS_TITLE, DS_FW_TITLE)}>Sleeve length ${escapeXml(measure)}</text>`,
+    `<text data-role="sleeve-length-note" x="${fmtNum(frame.midX)}" y="${fmtNum(y + 16)}" text-anchor="middle" fill="${DS_MUTED}" ${textFont(11)}>cuff to underarm, not including the cap</text>`,
+    `</g>`,
+  ].join("");
+}
+
 function drawStitchesRowsDimensions(frame: SleeveFrame, model: SetInSleeveDiagramModel): string {
   const wristLineY = frame.wristY + 20;
   const topLineY = frame.capTopY - 18;
@@ -667,6 +698,7 @@ function drawStitchesRowsDimensions(frame: SleeveFrame, model: SetInSleeveDiagra
   const upperLineY = frame.capStartY + Math.min(22, Math.max(8, bodyH * 0.18));
   const lengthX = frame.upperRight + 18;
   return [
+    sleeveLengthCaption(frame, model),
     horizontalWidth(frame.wristLeft, frame.wristRight, wristLineY, wristLineY + 16, model.wristWidthLabel, "wrist-width"),
     horizontalWidth(frame.topLeft, frame.topRight, topLineY, topLineY - 22, model.topWidthLabel, "cap-top-width"),
     `<g class="set-in-sleeve-diagram__upper-arm-width" data-upper-arm-width="true">`,
@@ -1025,8 +1057,13 @@ function drawSleeveSvg(model: SetInSleeveDiagramModel, mode: "sts-rows" | "shapi
       "data-cap-top-y": fmtNum(frame.capTopY),
       "data-cuff-depth-inches": fmtNum(model.cuffDepthInches),
       "data-sleeve-body-inches": fmtNum(model.sleeveBodyInches),
+      "data-sleeve-length-inches": fmtNum(model.sleeveLengthInches),
       "data-cap-height-inches": fmtNum(model.capHeightInches),
       "data-wrist-inches": fmtNum(model.wristInches),
+      "data-sleeve-geometry": "flat",
+      "data-sleeve-px-per-inch": fmtNum(
+        DS_BODY_MAX_W / Math.max(setInSleeveFlatWidthInches(model.upperArmInches), 0.125),
+      ),
       "data-upper-arm-inches": fmtNum(model.upperArmInches),
       "data-top-width-inches": fmtNum(model.topWidthInches),
     },

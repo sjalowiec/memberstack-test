@@ -15,6 +15,14 @@ import {
   type MeasurementDisplayUnit,
 } from "../lib/patterns/patternMeasurementDisplayUnit";
 import { getDefaultHemLengthInches, getDefaultCuffLengthInches } from "../lib/patterns/hemDefaults";
+import { parseCuffDepthOverrideInches } from "../lib/patterns/customBuildEffectiveCuffDepth";
+import {
+  formatEditableSleeveCuffDepthDisplay,
+  parseEditableSleeveCuffDepthInches,
+  SLEEVE_CUFF_RIBBING_DEPTH_ERROR,
+  SLEEVE_CUFF_RIBBING_DEPTH_LABEL,
+  SLEEVE_CUFF_RIBBING_DEPTH_LABEL_LINES,
+} from "../lib/patterns/sleeveCuffRibbingDepth";
 import {
   getCurrentPattern,
   getPatternData,
@@ -122,8 +130,11 @@ import {
   DROP_SHOULDER_SUMMARY_ASPECT_RATIO_CSS,
   SLEEVELESS_MEASUREMENT_BLUEPRINT_SVG_URL,
 } from "../lib/patterns/measurementBlueprintSvgUrl";
+import { buildCustomBuildEffectivePatternInput } from "../lib/patterns/buildCustomBuildEffectivePatternInput";
 import { isSetInSleeveWorkspaceMeasurementSummaryPage } from "../lib/patterns/setInSleeveConstructionIdentity";
 import { buildSetInSleeveEditSleeveMeasurementDiagramSvg } from "../lib/patterns/setInSleeve/setInSleeveEditMeasurementDiagramSvg";
+import { generateSetInSleevePattern } from "../lib/patterns/setInSleevePatternOutput";
+import type { SetInSleeveCapSuccess } from "../lib/patterns/setInSleeve/sleeveCapMath";
 import { mapExpressStyleKey } from "../lib/patterns/syncSleevelessExpressDesignToStorage";
 import {
   markDropShoulderSleeveOverrideKeyUserEdited,
@@ -321,7 +332,7 @@ export type CustomBuildMeasurementsInitOptions = {
 /**
  * Diagram fields (inches, stored as decimal strings). The first 8 are the shared body
  * fields. The sleeve fields render for Drop Shoulder and Set-In Sleeve (see
- * {@link getActiveDiagramFields}). Set-In Sleeve omits cuff depth.
+ * {@link getActiveDiagramFields}), including the shared cuff length.
  */
 const DIAGRAM_FIELD_KEYS = [
   "finishedNeckOpeningWidth",
@@ -485,9 +496,10 @@ const DIAGRAM_FIELDS: DiagramFieldDef[] = [
   {
     key: "cuffDepth",
     positionMod: "cuff-length",
-    targetId: PATTERN_SUMMARY_MEASUREMENT_TARGETS.armLength,
+    targetId: PATTERN_SUMMARY_MEASUREMENT_TARGETS.cuffDepth,
     dropShoulderTargetId: DROP_SHOULDER_SUMMARY_MEASUREMENT_TARGETS.cuffDepth,
-    label: "Cuff length",
+    label: SLEEVE_CUFF_RIBBING_DEPTH_LABEL,
+    labelLines: [...SLEEVE_CUFF_RIBBING_DEPTH_LABEL_LINES],
     axis: "vertical",
     dropShoulderOnly: true,
     defaultInches: (_row, _computed, audience) => getDefaultCuffLengthInches(audience),
@@ -616,6 +628,11 @@ function parseInchesInput(raw: string): number | undefined {
   const n = parseFloat(s.replace(/[^\d.-]/g, ""));
   if (!Number.isFinite(n) || n <= 0) return undefined;
   return roundQuarter(n);
+}
+
+/** Sleeve cuff depth may be 0 (no ribbing) on every sleeved sweater editor. Other fields stay positive. */
+function isSleeveCuffDepthField(key: DiagramFieldKey): boolean {
+  return key === "cuffDepth";
 }
 
 
@@ -761,7 +778,7 @@ function dropShoulderMeasurementInputFromMerged(
     upperArmInches: parseMergedInches(merged.upperArm, 12),
     cuffCircumferenceInches: parseMergedInches(merged.wrist, 8),
     sleeveLengthInches: parseMergedInches(merged.sleeveLength, 18),
-    cuffDepthInches: parseMergedInches(merged.cuffDepth, 2),
+    cuffDepthInches: parseCuffDepthOverrideInches(merged.cuffDepth) ?? 2,
   };
 }
 
@@ -806,6 +823,34 @@ function usesBodySleeveEditPreview(): boolean {
   return isDropShoulderConstruction() || isSetInSleeveWorkspaceMeasurementSummaryPage();
 }
 
+function recordSection(value: unknown): Record<string, unknown> {
+  return value && typeof value === "object" ? { ...(value as Record<string, unknown>) } : {};
+}
+
+/** Reads the existing cap so the edit diagram can draw it. Does not change the calculation. */
+function setInSleeveCapForEditDiagram(
+  merged: Record<DiagramFieldKey, string>,
+): SetInSleeveCapSuccess | null {
+  try {
+    const base = buildCustomBuildEffectivePatternInput();
+    const fit = recordSection(base.fit);
+    const style = recordSection(base.style);
+    const overrides = recordSection(fit.cbMeasurementOverrides);
+    for (const key of ["upperArm", "wrist", "sleeveLength", "cuffDepth"] as const) {
+      const value = merged[key]?.trim();
+      if (value) overrides[key] = value;
+    }
+    const generated = generateSetInSleevePattern({
+      ...base,
+      style: { ...style, patternMode: "custom-build" },
+      fit: { ...fit, cbMeasurementOverrides: overrides },
+    });
+    return generated.sleeveCap?.ok ? generated.sleeveCap : null;
+  } catch {
+    return null;
+  }
+}
+
 function adoptSetInSleeveGeneratedMeasurementArt(
   merged: Record<DiagramFieldKey, string>,
   piece: DropShoulderEditPreviewTab = DROP_SHOULDER_EDIT_PREVIEW_DEFAULT_TAB,
@@ -816,6 +861,8 @@ function adoptSetInSleeveGeneratedMeasurementArt(
           upperArmInches: parseMergedInches(merged.upperArm, 12),
           cuffCircumferenceInches: parseMergedInches(merged.wrist, 8),
           sleeveLengthInches: parseMergedInches(merged.sleeveLength, 18),
+          cuffDepthInches: parseCuffDepthOverrideInches(merged.cuffDepth) ?? 2,
+          cap: setInSleeveCapForEditDiagram(merged),
         })
       : buildSleevelessEditMeasurementDiagramSvg({
           ...sleevelessEditDiagramInput(merged),
@@ -1236,6 +1283,16 @@ function collectValues(
   for (const key of activeFieldKeys()) {
     const input = root.querySelector<HTMLInputElement>(`[data-cb-measure-input="${key}"]`);
     const raw = input?.value.trim() ?? "";
+    if (isSleeveCuffDepthField(key)) {
+      const inches = parseEditableSleeveCuffDepthInches(raw, displayUnit ?? null);
+      out[key] =
+        inches === 0
+          ? "0"
+          : inches !== undefined
+            ? formatCanonicalInchesForUnit(inches, displayUnit)
+            : raw;
+      continue;
+    }
     if (displayUnit == null) {
       out[key] = raw;
       continue;
@@ -1293,6 +1350,13 @@ function validateFields(root: HTMLElement, displayUnit: UiLengthUnit | null): bo
       ok = false;
       continue;
     }
+    if (isSleeveCuffDepthField(field.key)) {
+      if (parseCuffDepthOverrideInches(raw) === undefined) {
+        setFieldError(root, field.key, SLEEVE_CUFF_RIBBING_DEPTH_ERROR);
+        ok = false;
+      }
+      continue;
+    }
     if (parseInchesInput(raw) === undefined) {
       setFieldError(root, field.key, "Enter a positive number");
       ok = false;
@@ -1313,6 +1377,12 @@ function persistFromRoot(root: HTMLElement, displayUnit: UiLengthUnit | null): v
     // quarter-inch snap in parseInchesInput/formatInchesInput does not re-shrink a cm entry.
     const raw = values[key];
     if (!raw) continue;
+    if (isSleeveCuffDepthField(key)) {
+      const cuffInches = parseCuffDepthOverrideInches(raw);
+      if (cuffInches === undefined) continue;
+      toStore[key] = cuffInches === 0 ? "0" : formatCanonicalInchesForUnit(cuffInches, displayUnit);
+      continue;
+    }
     const n = parseFloat(raw.replace(/[^\d.-]/g, ""));
     if (!Number.isFinite(n) || n <= 0) continue;
     toStore[key] = formatCanonicalInchesForUnit(n, displayUnit);
@@ -1450,12 +1520,17 @@ function wireFieldPersistence(root: HTMLElement, getDisplayUnit: () => UiLengthU
     // Both listeners call this function; persist + art refresh must run once.
     if (!shouldCommitField(key, el.value)) return;
     const displayUnit = getDisplayUnit();
-    const n =
-      displayUnit == null
+    const n = isSleeveCuffDepthField(key)
+      ? parseEditableSleeveCuffDepthInches(el.value, displayUnit)
+      : displayUnit == null
         ? parseInchesInput(el.value)
         : parseMeasurementInputToInches(el.value, displayUnit);
     if (el.value.trim() && n === undefined) {
-      setFieldError(root, key, "Enter a positive number");
+      setFieldError(
+        root,
+        key,
+        isSleeveCuffDepthField(key) ? SLEEVE_CUFF_RIBBING_DEPTH_ERROR : "Enter a positive number",
+      );
       refreshPatternValidationUi(root, displayUnit);
       return;
     }
@@ -1589,7 +1664,13 @@ function applyDiagramUnitDisplay(
         box.querySelector("[data-cb-measure-readonly-value]") ??
         box.querySelector(".express-mbp-box__value");
       if (valEl instanceof HTMLElement) {
-        valEl.textContent = formatReadonlyMeasurementDisplay(inchesRaw, unit);
+        const zeroCuff =
+          isSleeveCuffDepthField(field.key) && parseCuffDepthOverrideInches(inchesRaw) === 0;
+        valEl.textContent = zeroCuff
+          ? unit === "cm"
+            ? "0 cm"
+            : "0 in"
+          : formatReadonlyMeasurementDisplay(inchesRaw, unit);
         valuesUpdated += 1;
       }
       continue;
@@ -1598,9 +1679,13 @@ function applyDiagramUnitDisplay(
     const input = box.querySelector<HTMLInputElement>(`[data-cb-measure-input="${field.key}"]`);
     const unitEl =
       box.querySelector("[data-cb-measure-unit-suffix]") ?? box.querySelector(".express-mbp-box__unit");
-    const inches = parseStoredInchesForDisplay(inchesRaw);
+    const inches = isSleeveCuffDepthField(field.key)
+      ? parseCuffDepthOverrideInches(inchesRaw)
+      : parseStoredInchesForDisplay(inchesRaw);
     if (input) {
-      input.value = formatMeasurementDisplayFromInches(inches, unit);
+      input.value = isSleeveCuffDepthField(field.key)
+        ? formatEditableSleeveCuffDepthDisplay(inches, unit)
+        : formatMeasurementDisplayFromInches(inches, unit);
       const fieldLabel =
         isSetInSleeveWorkspaceMeasurementSummaryPage() && field.key === "wrist"
           ? "Cuff circumference"
@@ -2075,6 +2160,7 @@ export function initCustomBuildMeasurementsPage(options?: CustomBuildMeasurement
       oldSize: meta?.oldSize,
       overrides: loadMeasurementOverrides(),
       persist: true,
+      setInSleeve: isSetInSleeveWorkspaceMeasurementSummaryPage(),
     });
 
     const normalizedSize = normalizeChartRowSize(row) || sizing.selectedSize;

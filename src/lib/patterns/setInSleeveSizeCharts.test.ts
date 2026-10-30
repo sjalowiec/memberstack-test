@@ -45,7 +45,7 @@ describe("Set-In Sleeve adult size charts", () => {
     expect(expressWhoToChartAudience("plus")).toBe("plus");
     expect(expressWhoToChartAudience("men")).toBe("men");
     expect(setInSleeveWhoIsSupported("women")).toBe(true);
-    expect(setInSleeveWhoIsSupported("plus")).toBe(false);
+    expect(setInSleeveWhoIsSupported("plus")).toBe(true);
     expect(setInSleeveWhoIsSupported("men")).toBe(true);
     expect(setInSleeveWhoIsSupported("kids")).toBe(false);
     expect(setInSleeveWhoIsSupported("baby")).toBe(false);
@@ -96,8 +96,7 @@ describe("Set-In Sleeve adult size charts", () => {
 
     const freshWomens: Record<string, string> = { who: "plus", selectedSize: "1X" };
     omitUnsupportedSetInSleeveWho(freshWomens, { editingSavedProject: false });
-    expect(freshWomens.who).toBeUndefined();
-    expect(freshWomens.selectedSize).toBeUndefined();
+    expect(freshWomens).toEqual({ who: "plus", selectedSize: "1X" });
 
     const savedWomens: Record<string, string> = { who: "plus", selectedSize: "X" };
     omitUnsupportedSetInSleeveWho(savedWomens, { editingSavedProject: true });
