@@ -1,39 +1,27 @@
 ---
 import Layout from "../../../layouts/Layout.astro";
 import PageHead from "../../../components/PageHead.astro";
-import cables from "../../../data/cables.json";
+import { requireAdminForRequest } from "../../../lib/admin/requireAdminRequest";
+import { sanitizeLegacyEbookDescriptionHtml } from "../../../lib/legacy/legacyEbookDescriptionHtml";
+import { cableImageUrl } from "../../../lib/shop/storeItemCatalog";
+import { loadPublicCables, STORE_CATALOG_CACHE_CONTROL } from "../../../lib/shop/storeItemPublicCatalog";
 
-interface Cable {
-  id: number | string;
-  name: string;
-  price: number;
-  stripeLink: string;
-  thumbnail: string;
-  shortdescription: string;
-  longDescription: string;
-  active?: boolean | string;
-  sortOrder?: number;
-}
+export const prerender = false;
 
-export function getStaticPaths() {
-  return (cables as Cable[])
-    .filter((item) => item.active === true || item.active === "TRUE")
-    .map((item) => ({
-      params: { id: String(item.id) },
-      props: { cable: item },
-    }));
-}
+Astro.response.headers.set("Cache-Control", STORE_CATALOG_CACHE_CONTROL);
 
-const propCable = (Astro.props as { cable?: Cable }).cable;
+const cables = await loadPublicCables(Astro.url.hostname);
 const idParam = Astro.params.id;
-const cable =
-  propCable ??
-  (cables as Cable[])
-    .filter((item) => item.active === true || item.active === "TRUE")
-    .find((item) => String(item.id) === String(idParam));
+const cable = cables.find((item) => String(item.id) === String(idParam));
 
 if (!cable) {
-  throw new Error("Cable not found");
+  return new Response("Not found", { status: 404 });
+}
+
+const visible = cable.active === true || String(cable.active).toUpperCase() === "TRUE";
+if (!visible) {
+  const auth = await requireAdminForRequest(Astro.request, Astro.cookies);
+  if (!auth.ok) return new Response("Not found", { status: 404 });
 }
 
 const title = `${cable.name} | Knit by Machine`;
@@ -59,7 +47,7 @@ function formatPrice(price: number): string {
     <div class="cable-detail-layout">
       <div class="cable-detail-image-wrap">
         <img
-          src={`/images/shop/designaknit/${cable.thumbnail}`}
+          src={cableImageUrl(cable.thumbnail) ?? ""}
           alt={cable.name}
           class="cable-detail-thumbnail"
           width="400"
@@ -69,17 +57,24 @@ function formatPrice(price: number): string {
 
       <div class="cable-detail-content">
         <h1 class="cable-detail-name">{cable.name}</h1>
+        {!visible && (
+          <p class="cable-hidden-preview" role="status">
+            Hidden preview. Visitors do not see this item until Show on the shop is saved.
+          </p>
+        )}
         <p class="cable-detail-price">{formatPrice(cable.price)}</p>
         <!--<p class="cable-detail-short">{cable.shortdescription}</p>-->
-        <div class="cable-detail-long" set:html={cable.longDescription} />
-        <a
-          href={cable.stripeLink}
-          class="cable-btn-buy kbm-cta-guide"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Buy Now
-        </a>
+        <div class="cable-detail-long" set:html={sanitizeLegacyEbookDescriptionHtml(cable.longDescription)} />
+        {cable.stripeLink?.startsWith("https://") && (
+          <a
+            href={cable.stripeLink}
+            class="cable-btn-buy kbm-cta-guide"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Buy Now
+          </a>
+        )}
       </div>
     </div>
   </div>
@@ -146,6 +141,14 @@ function formatPrice(price: number): string {
     margin: 0 0 0.5rem 0;
   }
 
+  .cable-hidden-preview {
+    margin: 0 0 1rem;
+    padding: 0.6rem 0.8rem;
+    background: #fff6d8;
+    border: 1px solid #e2c56a;
+    border-radius: 6px;
+  }
+
   .cable-detail-price {
     font-size: 1.25rem;
     font-weight: 700;
@@ -166,6 +169,46 @@ function formatPrice(price: number): string {
     line-height: 1.7;
     margin-bottom: 1.5rem;
     white-space: pre-line;
+  }
+
+  .cable-detail-long :global(p) {
+    margin: 0 0 1rem;
+    white-space: normal;
+  }
+
+  .cable-detail-long :global(.cable-compare) {
+    overflow-x: auto;
+    margin: 0 0 1rem;
+    max-width: 100%;
+    white-space: normal;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .cable-detail-long :global(table) {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0 0 1rem;
+    white-space: normal;
+  }
+
+  .cable-detail-long :global(.cable-compare table) {
+    margin: 0;
+    min-width: 22rem;
+  }
+
+  .cable-detail-long :global(th),
+  .cable-detail-long :global(td) {
+    border: 1px solid #c5d0b8;
+    padding: 0.55rem 0.7rem;
+    text-align: left;
+    vertical-align: top;
+    white-space: normal;
+  }
+
+  .cable-detail-long :global(th) {
+    background: #eef3e6;
+    color: #2d3a1f;
+    font-weight: 600;
   }
 
   .cable-btn-buy {

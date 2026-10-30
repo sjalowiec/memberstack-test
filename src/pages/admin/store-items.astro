@@ -1,0 +1,741 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import HtmlHelperToolbar from "../../components/admin/HtmlHelperToolbar.astro";
+import { EBOOK_SALES_PAUSED } from "../../lib/legacy/legacyEbookSalesHold";
+import "../../styles/admin-machines.css";
+---
+
+<BaseLayout
+  title="Store Items | Knit it Now"
+  description="Admin: add and edit cables, downloads, DesignaKnit versions, and eBooks."
+  bodyClass="admin-machines-body"
+>
+  <main class="am">
+    <header class="am__head am__head--row">
+      <div>
+        <h1 class="am__title">Store Items</h1>
+        <p class="am__sub">
+          Add and edit cables, other physical accessories such as the DesignaKnit magnet,
+          downloads, DesignaKnit versions, and eBooks shown in the shop. Knitting machines stay in
+          <a href="/admin/shop-machines">Machines for Sale</a>.
+          A cable or accessory keeps its shop address under /shop/cables/.
+          Checkout still opens the existing Shopify product or Stripe Payment Link.
+          Nothing is permanently deleted from this screen.
+        </p>
+      </div>
+      <div class="am__head-actions">
+        <a href="/admin" class="am__btn am__btn--outline">Admin</a>
+        <a href="/shop" class="am__btn am__btn--outline" target="_blank" rel="noopener">View shop</a>
+      </div>
+    </header>
+
+    <p id="si-status" class="am__status" role="status" aria-live="polite"></p>
+
+    {EBOOK_SALES_PAUSED && (
+      <p class="am__hint">
+        eBook sales are paused, so <a href="/shop/ebooks">/shop/ebooks</a> does not
+        list titles until that pause is lifted. Saved eBook text is what the shop
+        will show when sales resume.
+      </p>
+    )}
+
+    <p id="si-write-note" class="am__hint" hidden></p>
+
+    <div class="am__actionbar">
+      <button type="button" id="si-add-cable" class="am__btn">+ Add cable or accessory</button>
+      <button type="button" id="si-add-download" class="am__btn am__btn--outline">+ Add download</button>
+      <button type="button" id="si-add-ebook" class="am__btn am__btn--outline">+ Add eBook</button>
+    </div>
+
+    <section class="am__panel" aria-labelledby="si-list-heading">
+      <div class="am__toolbar">
+        <h2 id="si-list-heading" class="am__panel-title">Shop catalog</h2>
+        <label class="am__search-label">
+          <span class="sr-only">Product type</span>
+          <select id="si-kind-filter" aria-label="Product type">
+            <option value="all">All types</option>
+            <option value="cable">Cables and accessories</option>
+            <option value="download">Downloads</option>
+            <option value="software">DesignaKnit</option>
+            <option value="ebook">eBooks</option>
+          </select>
+        </label>
+        <label class="am__search-label">
+          <span class="sr-only">Search store items</span>
+          <input type="search" id="si-search" placeholder="Search name or id" autocomplete="off" />
+        </label>
+      </div>
+      <p id="si-count" class="am__count"></p>
+      <div class="am__table-wrap">
+        <table class="am__table">
+          <thead>
+            <tr>
+              <th scope="col">Type</th>
+              <th scope="col">Name</th>
+              <th scope="col">Shown</th>
+              <th scope="col">Order</th>
+              <th scope="col"><span class="sr-only">Actions</span></th>
+            </tr>
+          </thead>
+          <tbody id="si-rows"></tbody>
+        </table>
+      </div>
+      <p id="si-empty" class="am__empty" hidden>No items match this search.</p>
+    </section>
+
+    <section class="am__panel am__form-panel" id="si-form-panel" aria-labelledby="si-form-heading" hidden>
+      <div class="am__form-topbar">
+        <h2 id="si-form-heading" class="am__panel-title">Edit item</h2>
+        <div class="am__form-topbar-actions">
+          <span id="si-form-status" class="am__form-status" role="status" aria-live="polite"></span>
+          <button type="button" id="si-save" class="am__btn">Save</button>
+          <button type="button" id="si-cancel" class="am__btn am__btn--outline">Cancel</button>
+          <a id="si-view" class="am__btn am__btn--accent" href="/shop" target="_blank" rel="noopener" hidden>
+            View on shop
+          </a>
+        </div>
+      </div>
+      <p id="si-mode" class="am__mode"></p>
+      <ul id="si-notes" class="am__hint"></ul>
+
+      <form id="si-form" class="am__form" autocomplete="off">
+        <input type="hidden" id="si-kind" />
+        <input type="hidden" id="si-id" />
+
+        <div class="am__grid">
+          <label class="am__full">
+            <span>Name <em class="req">*</em></span>
+            <input type="text" id="si-title" required maxlength="200" />
+            <span class="am__hint" data-kind-note="cable">
+              Use this for a cable or another physical accessory, such as the DesignaKnit magnet.
+              The shop address stays /shop/cables/ and is chosen when you save.
+            </span>
+            <span class="am__hint" data-kind-note="ebook">
+              The eBook shop address is created from this name. Changing it can change the address.
+            </span>
+            <span class="am__hint" data-kind-note="software">
+              The comparison chart uses this name, so it cannot be changed.
+            </span>
+          </label>
+
+          <label class="am__full" data-field="summary">
+            <span id="si-summary-label">Short description</span>
+            <textarea id="si-summary" rows="3"></textarea>
+            <span class="am__hint" data-kind-note="cable">
+              Plain text on the cable list. Put links in the description below.
+            </span>
+            <span class="am__hint" data-kind-note="download">
+              Plain text on the download card. Put links in the description below.
+            </span>
+            <span class="am__hint" data-kind-note="ebook">
+              Shown as plain text on the eBook list. Line breaks in the stored text are kept.
+            </span>
+            <span class="am__hint" data-kind-note="software">
+              Plain text under the version name on the DesignaKnit page.
+            </span>
+          </label>
+
+          <label class="am__full" data-field="description">
+            <span>Description</span>
+            <HtmlHelperToolbar target="si-description" />
+            <textarea id="si-description" rows="12"></textarea>
+            <span class="am__hint">
+              Use Link for a video or reference page. Paragraphs, lists, and emphasis are kept.
+              The shop removes scripts and embedded players. Leave the HTML in place when you
+              only need to change a sentence.
+            </span>
+          </label>
+
+          <label data-field="price">
+            <span>Price shown on the shop</span>
+            <input type="text" id="si-price" inputmode="decimal" />
+            <span class="am__hint">
+              This is the amount printed on Knit it Now. Shopify or Stripe still charges the
+              price on the linked product.
+            </span>
+          </label>
+
+          <label data-field="sort">
+            <span>Display order</span>
+            <input type="number" id="si-sort" step="1" />
+            <span class="am__hint">Lower numbers appear first. Downloads use this as their position on the page.</span>
+          </label>
+
+          <label class="am__full" data-field="checkout">
+            <span>Checkout link</span>
+            <input type="url" id="si-checkout" placeholder="https://" />
+            <span class="am__hint" data-kind-note="download">
+              An existing Stripe Payment Link (https://buy.stripe.com/…). Leave blank to show the
+              download without a Buy button. Locked links are matched by My Downloads and stay as they are.
+            </span>
+            <span class="am__hint" data-kind-note="cable">
+              An existing Shopify product link, such as https://vjzu11-86.myshopify.com/products/your-product.
+              Set the real price, shipping, and inventory in Shopify. Leave blank to show the item without a Buy button.
+            </span>
+            <span class="am__hint" data-kind-note="ebook">
+              An existing Shopify product link. Leave blank to show the eBook without a Buy button.
+            </span>
+            <span class="am__hint" data-kind-note="software">
+              The existing Shopify product link for this version.
+            </span>
+          </label>
+
+          <label class="am__check" data-field="visible">
+            <input type="checkbox" id="si-visible" />
+            <span>Show on the shop</span>
+          </label>
+
+          <label class="am__check" data-field="recommended">
+            <input type="checkbox" id="si-recommended" />
+            <span>Mark as recommended on the comparison page</span>
+          </label>
+
+          <label class="am__check" data-field="subscriber">
+            <input type="checkbox" id="si-subscriber" />
+            <span>Subscriber free</span>
+            <span class="am__hint">
+              Stored with the eBook. The Member Free badge is not shown on the shop yet, and this
+              does not change checkout.
+            </span>
+          </label>
+
+          <p class="am__hint am__full" data-field="always-shown">
+            Downloads do not have a hide switch. This version cannot remove an item from the shop.
+          </p>
+
+          <label class="am__full" data-field="download-file">
+            <span>Download file</span>
+            <input type="text" id="si-download-file" />
+            <span class="am__hint" data-kind-note="ebook">
+              File name only, such as book.pdf. A visible eBook needs this and a cover image.
+              Customer delivery after purchase stays on Shopify.
+            </span>
+            <span class="am__hint" data-kind-note="download">
+              Public path starting with /downloads/. This does not upload the PDF.
+            </span>
+          </label>
+
+          <label class="am__full" data-field="vimeo">
+            <span>Vimeo video id</span>
+            <input type="text" id="si-vimeo" inputmode="numeric" />
+            <span class="am__hint">
+              The number from the Vimeo URL. Leave blank if this download has no video.
+            </span>
+          </label>
+
+          <label class="am__full" data-field="sales-focus">
+            <span>Sales focus</span>
+            <textarea id="si-sales-focus" rows="2"></textarea>
+            <span class="am__hint">Plain text under the description on the download page.</span>
+          </label>
+
+          <label class="am__full" data-field="includes">
+            <span>What's included</span>
+            <textarea id="si-includes" rows="4"></textarea>
+            <span class="am__hint">One item per line. These become the bullet list on the download page.</span>
+          </label>
+        </div>
+
+        <fieldset class="am__sales" data-field="image">
+          <legend class="am__sales-legend">Image</legend>
+          <p class="am__hint">
+            Upload a JPG, PNG, or WebP, or keep an existing cover by leaving its file name (GIF covers already on the site are fine).
+          </p>
+          <div class="si-image-preview-wrap">
+            <img id="si-image-preview" class="si-image-preview" alt="" hidden />
+            <p id="si-image-empty" class="am__hint">No image selected yet.</p>
+          </div>
+          <label>
+            <span>Image file</span>
+            <input type="text" id="si-image-file" />
+            <span class="am__hint" data-kind-note="download">
+              Public path under /images/, such as /images/shop/downloads/cover.jpg, or the uploaded image path. Uploading fills this in.
+            </span>
+            <span class="am__hint" data-kind-note="cable">
+              File name of an existing cover, such as curl_cord.jpg, or the uploaded image path. Uploading fills this in.
+            </span>
+            <span class="am__hint" data-kind-note="ebook">
+              File name only, such as cover.jpg. Uploading fills this in.
+            </span>
+          </label>
+          <label>
+            <span>Upload a new or replacement image</span>
+            <input type="file" id="si-image-upload" accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp" />
+          </label>
+        </fieldset>
+
+        <fieldset class="am__sales" data-field="detail-image">
+          <legend class="am__sales-legend">Detail image</legend>
+          <p class="am__hint">Shown on the download page. The shop card uses the image above.</p>
+          <div class="si-image-preview-wrap">
+            <img id="si-detail-preview" class="si-image-preview" alt="" hidden />
+            <p id="si-detail-empty" class="am__hint">No detail image selected yet.</p>
+          </div>
+          <label>
+            <span>Detail image file</span>
+            <input type="text" id="si-detail-file" />
+            <span class="am__hint">Public path under /images/, or the uploaded image path. Uploading fills this in.</span>
+          </label>
+          <label>
+            <span>Upload a detail image</span>
+            <input type="file" id="si-detail-upload" accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp" />
+          </label>
+        </fieldset>
+
+        <div class="am__form-actions">
+          <button type="button" id="si-save-bottom" class="am__btn">Save</button>
+          <button type="button" id="si-cancel-bottom" class="am__btn am__btn--outline">Cancel</button>
+        </div>
+      </form>
+    </section>
+  </main>
+
+  <script>
+    import type { StoreItem, StoreItemKind } from "../../lib/shop/storeItemCatalog";
+    import { fetchAdminJson, type AdminJsonResult } from "../../lib/admin/adminAuthClient";
+    import { initHtmlHelperToolbars } from "../../lib/machines/htmlHelperToolbar";
+
+    const KIND_LABELS: Record<StoreItemKind, string> = {
+      cable: "Cable or accessory",
+      download: "Download",
+      software: "DesignaKnit",
+      ebook: "eBook",
+    };
+
+    const statusEl = document.getElementById("si-status");
+    const formStatusEl = document.getElementById("si-form-status");
+    const rowsEl = document.getElementById("si-rows");
+    const emptyEl = document.getElementById("si-empty");
+    const countEl = document.getElementById("si-count");
+    const formPanel = document.getElementById("si-form-panel");
+    const headingEl = document.getElementById("si-form-heading");
+    const modeEl = document.getElementById("si-mode");
+    const notesEl = document.getElementById("si-notes");
+    const viewEl = document.getElementById("si-view");
+    const searchEl = document.getElementById("si-search");
+    const kindFilterEl = document.getElementById("si-kind-filter");
+
+    let items: StoreItem[] = [];
+    let mode: "none" | "new" | "edit" = "none";
+    let saving = false;
+
+    function field(id: string): HTMLInputElement | HTMLTextAreaElement | null {
+      const el = document.getElementById(id);
+      return el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement ? el : null;
+    }
+
+    function val(id: string): string {
+      return field(id)?.value ?? "";
+    }
+
+    function setVal(id: string, value: string): void {
+      const el = field(id);
+      if (el) el.value = value;
+    }
+
+    function checked(id: string): boolean {
+      const el = field(id);
+      return el instanceof HTMLInputElement ? el.checked : false;
+    }
+
+    function setChecked(id: string, value: boolean): void {
+      const el = field(id);
+      if (el instanceof HTMLInputElement) el.checked = value;
+    }
+
+    function setStatus(message: string, kind: "ok" | "err" | "neutral" = "neutral"): void {
+      if (!(statusEl instanceof HTMLElement)) return;
+      statusEl.textContent = message;
+      statusEl.classList.toggle("is-ok", kind === "ok");
+      statusEl.classList.toggle("is-error", kind === "err");
+    }
+
+    function setFormStatus(message: string, kind: "ok" | "err" | "neutral" = "neutral"): void {
+      if (!(formStatusEl instanceof HTMLElement)) return;
+      formStatusEl.textContent = message;
+      formStatusEl.classList.toggle("is-ok", kind === "ok");
+      formStatusEl.classList.toggle("is-error", kind === "err");
+    }
+
+    function failureMessage(result: Pick<AdminJsonResult, "error" | "needsSignIn" | "forbidden">, fallback: string): string {
+      if (result.needsSignIn) {
+        return "Sign in with your Knit it Now account to continue. Everything you entered is still in this form.";
+      }
+      if (result.forbidden) {
+        return "This Knit it Now account does not have admin access. Everything you entered is still in this form.";
+      }
+      return `${result.error?.trim() || fallback} Everything you entered is still in this form.`;
+    }
+
+    function escapeHtml(value: string): string {
+      return value
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    function shownLabel(item: StoreItem): string {
+      if (item.visible === null) return "Always";
+      return item.visible ? "Shown" : "Hidden";
+    }
+
+    function filteredItems(): StoreItem[] {
+      const query = (searchEl instanceof HTMLInputElement ? searchEl.value : "").trim().toLowerCase();
+      const kind = kindFilterEl instanceof HTMLSelectElement ? kindFilterEl.value : "all";
+      return items.filter((item) => {
+        if (kind !== "all" && item.kind !== kind) return false;
+        if (!query) return true;
+        return `${item.title} ${item.id} ${item.summary}`.toLowerCase().includes(query);
+      });
+    }
+
+    function renderRows(): void {
+      if (!(rowsEl instanceof HTMLElement) || !(countEl instanceof HTMLElement)) return;
+      const visible = filteredItems();
+      countEl.textContent = `${visible.length} of ${items.length} items`;
+      rowsEl.replaceChildren();
+      if (emptyEl instanceof HTMLElement) emptyEl.hidden = visible.length > 0;
+      for (const item of visible) {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${escapeHtml(KIND_LABELS[item.kind])}</td>
+          <td>${escapeHtml(item.title)}</td>
+          <td>${escapeHtml(shownLabel(item))}</td>
+          <td>${item.sortOrder == null ? "—" : String(item.sortOrder)}</td>
+          <td><button type="button" class="am__btn am__btn--outline" data-edit="${escapeHtml(item.key)}">Edit</button></td>
+        `;
+        rowsEl.appendChild(tr);
+      }
+    }
+
+    function showPreview(previewId: string, emptyId: string, src: string | null): void {
+      const preview = document.getElementById(previewId);
+      const empty = document.getElementById(emptyId);
+      if (!(preview instanceof HTMLImageElement)) return;
+      if (!src) {
+        preview.hidden = true;
+        preview.removeAttribute("src");
+        if (empty instanceof HTMLElement) empty.hidden = false;
+        return;
+      }
+      preview.src = src;
+      preview.hidden = false;
+      if (empty instanceof HTMLElement) empty.hidden = true;
+    }
+
+    function setFieldVisible(name: string, visible: boolean): void {
+      document.querySelectorAll(`[data-field="${name}"]`).forEach((el) => {
+        if (el instanceof HTMLElement) el.hidden = !visible;
+      });
+    }
+
+    function setKindNotes(kind: StoreItemKind): void {
+      document.querySelectorAll("[data-kind-note]").forEach((el) => {
+        if (el instanceof HTMLElement) el.hidden = el.dataset.kindNote !== kind;
+      });
+    }
+
+    function applyCapabilities(item: StoreItem | null, kind: StoreItemKind): void {
+      const caps = item?.capabilities;
+      const summaryLabel = document.getElementById("si-summary-label");
+      if (summaryLabel) summaryLabel.textContent = kind === "software" ? "Description" : "Short description";
+      const title = field("si-title");
+      if (title) title.readOnly = caps ? !caps.canEditTitle : kind === "software";
+      const price = field("si-price");
+      if (price) price.readOnly = caps ? !caps.canEditPrice : kind === "download";
+      const checkout = field("si-checkout");
+      if (checkout) checkout.readOnly = caps ? !caps.canEditCheckout : false;
+      setFieldVisible("description", kind !== "software");
+      setFieldVisible("price", kind !== "download");
+      setFieldVisible("sort", caps ? caps.canEditSortOrder : kind === "cable" || kind === "download");
+      setFieldVisible("checkout", true);
+      setFieldVisible("visible", caps ? caps.canEditVisibility : kind !== "download");
+      setFieldVisible("recommended", caps ? caps.canEditRecommended : false);
+      setFieldVisible("subscriber", caps ? caps.canEditSubscriberFree : kind === "ebook");
+      setFieldVisible("always-shown", kind === "download");
+      setFieldVisible("download-file", caps ? caps.canEditDownloadFile : kind === "ebook" || kind === "download");
+      setFieldVisible("vimeo", caps ? caps.canEditVimeo : kind === "download");
+      setFieldVisible("sales-focus", kind === "download");
+      setFieldVisible("includes", caps ? caps.canEditIncludes : kind === "download");
+      setFieldVisible("image", caps ? caps.canEditImage : kind !== "software");
+      setFieldVisible("detail-image", caps ? caps.canEditDetailImage : kind === "download");
+      setKindNotes(kind);
+    }
+
+    function showNotes(notes: string[]): void {
+      if (!(notesEl instanceof HTMLElement)) return;
+      notesEl.replaceChildren();
+      for (const note of notes) {
+        const li = document.createElement("li");
+        li.textContent = note;
+        notesEl.appendChild(li);
+      }
+    }
+
+    function fillForm(item: StoreItem | null, kind: StoreItemKind): void {
+      if (!(formPanel instanceof HTMLElement)) return;
+      formPanel.hidden = false;
+      mode = item ? "edit" : "new";
+      setVal("si-kind", kind);
+      setVal("si-id", item?.id ?? "");
+      setVal("si-title", item?.title ?? "");
+      setVal("si-summary", item?.summary ?? "");
+      setVal("si-description", item?.description ?? "");
+      setVal("si-price", item?.displayPrice ?? "");
+      setVal("si-sort", item?.sortOrder == null ? "" : String(item.sortOrder));
+      setVal("si-checkout", item?.checkoutUrl ?? "");
+      setChecked("si-visible", item ? item.visible !== false : true);
+      setChecked("si-recommended", item?.recommended === true);
+      setChecked("si-subscriber", item?.subscriberFree === true);
+      setVal("si-download-file", item?.downloadFile ?? "");
+      setVal("si-vimeo", item?.vimeoId ?? "");
+      setVal("si-sales-focus", item?.salesFocus ?? "");
+      setVal("si-includes", item?.includesText ?? "");
+      setVal("si-image-file", item?.imageFile ?? "");
+      setVal("si-detail-file", item?.detailImageFile ?? "");
+      showPreview("si-image-preview", "si-image-empty", item?.imageUrl ?? null);
+      showPreview("si-detail-preview", "si-detail-empty", item?.detailImageUrl ?? null);
+      const upload = document.getElementById("si-image-upload");
+      const detailUpload = document.getElementById("si-detail-upload");
+      if (upload instanceof HTMLInputElement) upload.value = "";
+      if (detailUpload instanceof HTMLInputElement) detailUpload.value = "";
+      applyCapabilities(item, kind);
+      if (headingEl) headingEl.textContent = item ? `Edit ${KIND_LABELS[kind]}` : `New ${KIND_LABELS[kind]}`;
+      if (modeEl) {
+        modeEl.textContent = item
+          ? `Editing ${KIND_LABELS[kind]} ${item.id}.`
+          : `New ${KIND_LABELS[kind]}. It is saved only after you click Save.`;
+      }
+      showNotes(item?.notes ?? []);
+      if (viewEl instanceof HTMLAnchorElement) {
+        if (item?.shopHref) {
+          viewEl.href = item.shopHref;
+          viewEl.hidden = false;
+        } else {
+          viewEl.hidden = true;
+        }
+      }
+      setFormStatus("", "neutral");
+      formPanel.scrollIntoView({ block: "start" });
+    }
+
+    function nextSort(kind: StoreItemKind): number {
+      const orders = items.filter((item) => item.kind === kind && item.sortOrder != null).map((item) => item.sortOrder as number);
+      if (orders.length === 0) return kind === "download" ? 1 : 10;
+      return Math.max(...orders) + (kind === "download" ? 1 : 10);
+    }
+
+    function payload(): Record<string, unknown> {
+      const kind = val("si-kind");
+      return {
+        kind,
+        id: val("si-id"),
+        title: val("si-title"),
+        summary: field("si-summary")?.value ?? "",
+        description: field("si-description")?.value ?? "",
+        imageFile: val("si-image-file"),
+        detailImageFile: val("si-detail-file"),
+        visible: checked("si-visible"),
+        sortOrder: val("si-sort") ? Number(val("si-sort")) : null,
+        displayPrice: val("si-price"),
+        checkoutUrl: val("si-checkout"),
+        downloadFile: val("si-download-file"),
+        subscriberFree: checked("si-subscriber"),
+        vimeoId: val("si-vimeo"),
+        includesText: field("si-includes")?.value ?? "",
+        salesFocus: field("si-sales-focus")?.value ?? "",
+        recommended: checked("si-recommended"),
+      };
+    }
+
+    async function save(): Promise<void> {
+      if (saving || mode === "none") return;
+      const title = val("si-title").trim();
+      if (!title) {
+        setFormStatus("Enter a name. Everything you entered is still in this form.", "err");
+        field("si-title")?.focus();
+        return;
+      }
+      saving = true;
+      setFormStatus("Saving…", "neutral");
+      const result = await fetchAdminJson<{ ok: boolean; item?: StoreItem; error?: string }>("/api/admin/store-items", {
+        method: "POST",
+        body: { mode: mode === "new" ? "create" : "edit", item: payload() },
+      });
+      saving = false;
+      if (!result.ok || !result.data?.item) {
+        setFormStatus(failureMessage(result, "Could not save this item."), "err");
+        return;
+      }
+      const saved = result.data.item;
+      const index = items.findIndex((item) => item.key === saved.key);
+      if (index >= 0) items[index] = saved;
+      else items.push(saved);
+      items.sort((a, b) => KIND_LABELS[a.kind].localeCompare(KIND_LABELS[b.kind]) || a.title.localeCompare(b.title));
+      renderRows();
+      fillForm(saved, saved.kind);
+      const message = `Saved “${saved.title}”. Refresh the shop page to see it.`;
+      sessionStorage.setItem("si-save-notice", message);
+      setFormStatus(message, "ok");
+      setStatus(message, "ok");
+    }
+
+    function readFile(file: File): Promise<string> {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(typeof reader.result === "string" ? reader.result : "");
+        reader.onerror = () => reject(new Error("Could not read that image."));
+        reader.readAsDataURL(file);
+      });
+    }
+
+    async function uploadImage(file: File, target: "image" | "detail"): Promise<void> {
+      const kind = val("si-kind");
+      if (kind !== "cable" && kind !== "ebook" && kind !== "download") return;
+      setFormStatus("Uploading image…", "neutral");
+      let dataBase64 = "";
+      try {
+        dataBase64 = await readFile(file);
+      } catch (error) {
+        setFormStatus(`${error instanceof Error ? error.message : "Could not read that image."} Everything you entered is still in this form.`, "err");
+        return;
+      }
+      const result = await fetchAdminJson<{ ok: boolean; url?: string; stored?: string; error?: string }>(
+        "/api/admin/store-item-image",
+        { method: "POST", body: { kind, filename: file.name, mimeType: file.type, dataBase64 } },
+      );
+      if (!result.ok || !result.data?.stored || !result.data.url) {
+        setFormStatus(failureMessage(result, "Could not save the image."), "err");
+        return;
+      }
+      if (target === "image") {
+        setVal("si-image-file", result.data.stored);
+        showPreview("si-image-preview", "si-image-empty", result.data.url);
+      } else {
+        setVal("si-detail-file", result.data.stored);
+        showPreview("si-detail-preview", "si-detail-empty", result.data.url);
+      }
+      setFormStatus("Image ready. Click Save to keep it with this item.", "ok");
+    }
+
+    function closeForm(): void {
+      mode = "none";
+      if (formPanel instanceof HTMLElement) formPanel.hidden = true;
+      setFormStatus("", "neutral");
+    }
+
+    async function load(): Promise<void> {
+      setStatus("Loading store items…", "neutral");
+      const result = await fetchAdminJson<{ ok: boolean; items?: StoreItem[]; error?: string; writeBlocked?: string | null }>("/api/admin/store-items", {
+        method: "GET",
+      });
+      if (!result.ok || !result.data?.items) {
+        setStatus(failureMessage(result, "Could not load store items."), "err");
+        return;
+      }
+      items = result.data.items;
+      const writeNote = document.getElementById("si-write-note");
+      if (writeNote instanceof HTMLElement) {
+        const blocked = result.data.writeBlocked?.trim() ?? "";
+        writeNote.hidden = blocked.length === 0;
+        writeNote.textContent = blocked;
+      }
+      renderRows();
+      const notice = sessionStorage.getItem("si-save-notice");
+      if (notice) {
+        sessionStorage.removeItem("si-save-notice");
+        setStatus(notice, "ok");
+      } else {
+        setStatus("", "neutral");
+      }
+    }
+
+    function startNew(kind: StoreItemKind): void {
+      const sort = nextSort(kind);
+      fillForm(null, kind);
+      setVal("si-sort", String(sort));
+      setChecked("si-visible", true);
+      if (kind === "download") {
+        showNotes([
+          "Downloads do not have a hide switch.",
+          "The shop does not display a separate price. Stripe charges the Payment Link.",
+          "Put links to videos or reference pages in the description.",
+        ]);
+      } else if (kind === "ebook") {
+        showNotes([
+          "A visible eBook needs a cover image and a download filename.",
+          "eBooks are ordered by item number.",
+          "Put links to videos or reference pages in the description.",
+        ]);
+      } else {
+        showNotes([
+          "Hidden cables stay in this list and are left off the shop.",
+          "Put links to videos or reference pages in the description.",
+        ]);
+      }
+    }
+
+    rowsEl?.addEventListener("click", (event) => {
+      const target = event.target;
+      if (!(target instanceof HTMLElement)) return;
+      const button = target.closest("[data-edit]");
+      if (!(button instanceof HTMLElement)) return;
+      const key = button.dataset.edit || "";
+      const item = items.find((row) => row.key === key);
+      if (item) fillForm(item, item.kind);
+    });
+
+    document.getElementById("si-add-cable")?.addEventListener("click", () => startNew("cable"));
+    document.getElementById("si-add-download")?.addEventListener("click", () => startNew("download"));
+    document.getElementById("si-add-ebook")?.addEventListener("click", () => startNew("ebook"));
+    document.getElementById("si-save")?.addEventListener("click", () => void save());
+    document.getElementById("si-save-bottom")?.addEventListener("click", () => void save());
+    document.getElementById("si-cancel")?.addEventListener("click", closeForm);
+    document.getElementById("si-cancel-bottom")?.addEventListener("click", closeForm);
+    searchEl?.addEventListener("input", renderRows);
+    kindFilterEl?.addEventListener("change", renderRows);
+
+    document.getElementById("si-image-upload")?.addEventListener("change", (event) => {
+      const input = event.target;
+      if (!(input instanceof HTMLInputElement) || !input.files?.[0]) return;
+      void uploadImage(input.files[0], "image");
+    });
+    document.getElementById("si-detail-upload")?.addEventListener("change", (event) => {
+      const input = event.target;
+      if (!(input instanceof HTMLInputElement) || !input.files?.[0]) return;
+      void uploadImage(input.files[0], "detail");
+    });
+
+    document.getElementById("si-form")?.addEventListener("submit", (event) => {
+      event.preventDefault();
+      void save();
+    });
+
+    initHtmlHelperToolbars();
+    void load();
+  </script>
+
+  <style>
+    .si-image-preview-wrap {
+      margin: 0 0 0.85rem;
+    }
+    .si-image-preview {
+      display: block;
+      width: 220px;
+      max-width: 100%;
+      max-height: 280px;
+      object-fit: contain;
+      border-radius: 10px;
+      background: #eef3e6;
+      border: 1px solid #dbe6c5;
+    }
+    #si-notes {
+      margin: 0 0 1rem;
+      padding-left: 1.2rem;
+    }
+    #si-notes li + li {
+      margin-top: 0.35rem;
+    }
+  </style>
+</BaseLayout>

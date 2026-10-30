@@ -1,24 +1,15 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 import PageHead from "../../components/PageHead.astro";
-import cablesData from "../../data/cables.json";
+import { cableImageUrl } from "../../lib/shop/storeItemCatalog";
+import { loadPublicCables, STORE_CATALOG_CACHE_CONTROL } from "../../lib/shop/storeItemPublicCatalog";
 
 const title = "Knitting Machine Cables | Knit it Now";
 const description = "Find the cable you need for your machine setup. DesignaKnit links and machine-specific cables.";
 
-interface Cable {
-  id: number;
-  name: string;
-  price: number;
-  stripeLink: string;
-  thumbnail: string;
-  shortdescription: string;
-  longDescription: string;
-  active: boolean | string;
-  sortOrder: number;
-}
+Astro.response.headers.set("Cache-Control", STORE_CATALOG_CACHE_CONTROL);
 
-const cables = (cablesData as Cable[])
+const cables = (await loadPublicCables(Astro.url.hostname))
   .filter((c) => c.active === true || String(c.active).toUpperCase() === "TRUE")
   .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
 
@@ -45,7 +36,7 @@ function formatPrice(price: number): string {
     <div class="cables-grid">
       {cables.map((cable) => (
         <a href={`/shop/cables/${cable.id}`} class="cable-card kbm-card">
-          <img src={`/images/shop/designaknit/${cable.thumbnail}`} alt={cable.name} class="cable-card-image" />
+          <img src={cableImageUrl(cable.thumbnail) ?? ""} alt={cable.name} class="cable-card-image" />
 
           <div class="cable-card-body">
             <h2 class="kbm-card__title">{cable.name}</h2>
