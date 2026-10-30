@@ -70,6 +70,11 @@ function charge(overrides: Partial<NormalizedStripeCharge>): NormalizedStripeCha
     paymentMethodType: null,
     billingReason: null,
     channel: "other",
+    customerId: null,
+    customerEmail: null,
+    customerName: null,
+    subscriptionId: null,
+    refunded: false,
     ...overrides,
   };
 }
