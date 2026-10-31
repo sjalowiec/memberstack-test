@@ -1,8 +1,10 @@
 # Watson membership reports
 
-Read-only reports under `/watson/reports` that help support and migration work using imported legacy Postgres data.
+Read-only reports under `/watson/reports`.
 
-These reports are **not** live Memberstack/Stripe status. They use the Watson legacy import snapshot.
+**Current Members** (`/watson/reports/current-members`) is the live membership-access census. It uses `hasMemberAccess`, counts one person per mailbox, and is the list ActiveCampaign’s Current membership access field is reconciled against.
+
+The other membership reports below use the Watson legacy import snapshot. They are not that census.
 
 ## Public membership status (related)
 
@@ -16,6 +18,33 @@ Rules that also apply here:
 - Legacy expiration never grants current access and must not be worded as current access.
 - Future/today legacy paid-through (America/Los_Angeles calendar compare) ? contact support before purchase; past ? ?ended on? + purchase allowed.
 - Checkout protection on the sales page stays independent of this summary.
+
+## Current Members
+
+**Route:** `/watson/reports/current-members`
+
+### Purpose
+
+Show who currently has Knit It Now membership access. This is the same calculation as the ActiveCampaign field `Current membership access`.
+
+### Universe
+
+One person per mailbox. Gmail and Googlemail are one person. Access is `hasMemberAccess` on the America/Los_Angeles calendar:
+
+- an active or trialing paid membership plan, including a legacy paid plan shell
+- an active or trialing complimentary plan whose saved access-through date is today or later, or open when no date is saved
+- a logged-in person whose Watson `subscriptionexpiring` date is today or later
+
+A scheduled cancellation still counts while the plan status remains active or trialing. Two Memberstack accounts on one mailbox stay unresolved and are not counted. Someone who cannot log in is not a current member, even with a future legacy date.
+
+### Display
+
+- Current members, no-access count, and unresolved count
+- Current members split by the rule that granted access
+- The current-member rows, and the unresolved identities
+- The no-access count is a total only. Those people are not listed.
+
+Do not replace this total with Current Legacy Members.
 
 ## Current Legacy Members
 
@@ -43,6 +72,7 @@ One row per `legacy_members` row. Active status is **not** taken from `legacy_su
 - Null/blank `subscriptiontype` is shown as **Membership, legacy type blank**.
 - Latest subscription amount, processor, rate ID, and expiration are enrichment from the member?s latest `legacy_subscriptions` row (`ORDER BY datebought DESC`). They are not what the legacy screen used to decide ?active.?
 - This report reflects imported current-state fields. It does **not** claim perfect accuracy.
+- It is not the Current Members census. Do not reconcile ActiveCampaign against this total.
 
 ### Summary cards
 

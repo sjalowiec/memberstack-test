@@ -185,7 +185,7 @@ export function buildCurrentLegacyMembersReport(
     rows,
     summary: buildCurrentLegacyMembersSummary(rows),
     note:
-      "This report reflects current-state fields used by the legacy application (betaactive = 0 and subscriptionexpiring >= today). It is historical import data and is not claimed to be perfectly accurate. Latest subscription columns are enrichment from legacy_subscriptions and are not what the legacy active-member screen used for status.",
+      "This report reflects current-state fields used by the legacy application (betaactive = 0 and subscriptionexpiring >= today). It is historical import data and is not claimed to be perfectly accurate. It counts legacy rows, not people, and it does not include a paid or complimentary Memberstack plan that replaced an expired legacy date. It is not the Current Members report. Latest subscription columns are enrichment from legacy_subscriptions and are not what the legacy active-member screen used for status.",
   };
 }
 

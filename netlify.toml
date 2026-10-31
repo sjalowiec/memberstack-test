@@ -68,6 +68,14 @@
 [functions."legacy-renewal-reminders"]
   schedule = "0 9 * * *"
 
+# Current membership access reconciliation (daily at 09:45 UTC, after legacy
+# expiry, complimentary expiry, and the complimentary date sync). Writes the
+# ActiveCampaign text field "Current membership access" only. Scheduled writes
+# require CURRENT_MEMBERSHIP_ACCESS_SYNC_LIVE_ENABLED === "true" on the
+# production site. Does not send email or change other contact fields.
+[functions."current-membership-access-sync"]
+  schedule = "45 9 * * *"
+
 # Former beta domain → canonical production host (path-preserving).
 # Does not affect legacy.knititnow.com (separate host, not matched here).
 [[redirects]]

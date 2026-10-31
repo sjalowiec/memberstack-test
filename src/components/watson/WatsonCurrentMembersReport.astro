@@ -1,0 +1,121 @@
+---
+import type { CurrentMembersReport } from "../../lib/watson/currentMembersReport";
+import { CURRENT_MEMBER_BASIS_LABELS } from "../../lib/watson/currentMembersReport";
+
+interface Props {
+  report: CurrentMembersReport;
+}
+
+const { report } = Astro.props;
+---
+
+<section class="watson__panel watson--report-wide" aria-labelledby="current-members-heading">
+  <h2 id="current-members-heading" class="watson__panel-title">Current Members</h2>
+  <p class="watson-report__note">{report.note}</p>
+  <p class="watson-report__meta">
+    As of {report.asOfDate} (America/Los_Angeles). One person per mailbox.
+    <a href="/watson/reports/current-legacy-members">Current Legacy Members</a> is a separate report.
+  </p>
+
+  {
+    report.blockedReason ? (
+      <p class="watson__status watson__status--error" role="alert">
+        {report.blockedReason}
+      </p>
+    ) : (
+      <div class="watson-report__cards">
+        <article class="watson-report__card">
+          <h3 class="watson-report__card-label">Current members</h3>
+          <p class="watson-report__card-value" data-summary="yes">
+            {report.yesCount.toLocaleString("en-US")}
+          </p>
+        </article>
+        <article class="watson-report__card">
+          <h3 class="watson-report__card-label">No current access</h3>
+          <p class="watson-report__card-value" data-summary="no">
+            {report.noCount.toLocaleString("en-US")}
+          </p>
+        </article>
+        <article class="watson-report__card">
+          <h3 class="watson-report__card-label">Unresolved</h3>
+          <p class="watson-report__card-value" data-summary="unresolved">
+            {report.unresolvedCount.toLocaleString("en-US")}
+          </p>
+        </article>
+        <article class="watson-report__card">
+          <h3 class="watson-report__card-label">{CURRENT_MEMBER_BASIS_LABELS.current_paid}</h3>
+          <p class="watson-report__card-value">{report.yesByBasis.current_paid.toLocaleString("en-US")}</p>
+        </article>
+        <article class="watson-report__card">
+          <h3 class="watson-report__card-label">{CURRENT_MEMBER_BASIS_LABELS.legacy_paid_shell}</h3>
+          <p class="watson-report__card-value">
+            {report.yesByBasis.legacy_paid_shell.toLocaleString("en-US")}
+          </p>
+        </article>
+        <article class="watson-report__card">
+          <h3 class="watson-report__card-label">{CURRENT_MEMBER_BASIS_LABELS.complimentary}</h3>
+          <p class="watson-report__card-value">{report.yesByBasis.complimentary.toLocaleString("en-US")}</p>
+        </article>
+        <article class="watson-report__card">
+          <h3 class="watson-report__card-label">{CURRENT_MEMBER_BASIS_LABELS.legacy_date}</h3>
+          <p class="watson-report__card-value">{report.yesByBasis.legacy_date.toLocaleString("en-US")}</p>
+        </article>
+      </div>
+    )
+  }
+
+  {
+    report.unresolved.length > 0 ? (
+      <>
+        <h3 class="watson__panel-title">Unresolved identities</h3>
+        <p class="watson-report__meta">
+          These people are not counted as current members. ActiveCampaign is left blank for them.
+        </p>
+        <div class="watson__table-wrap">
+          <table class="watson-table">
+            <thead>
+              <tr>
+                <th>Email</th>
+                <th>Reason</th>
+                <th>Memberstack ids</th>
+              </tr>
+            </thead>
+            <tbody>
+              {report.unresolved.map((row) => (
+                <tr>
+                  <td>{row.email}</td>
+                  <td>{row.reason}</td>
+                  <td>{row.memberstackIds.join(", ")}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </>
+    ) : null
+  }
+
+  <h3 class="watson__panel-title">People with current access</h3>
+  <div class="watson__table-wrap">
+    <table class="watson-table">
+      <thead>
+        <tr>
+          <th>Email</th>
+          <th>Access rule</th>
+          <th>Memberstack id</th>
+        </tr>
+      </thead>
+      <tbody>
+        {
+          report.currentMembers.map((row) => (
+            <tr>
+              <td>{row.email}</td>
+              <td>{row.basisLabel}</td>
+              <td>{row.memberstackId ?? ""}</td>
+            </tr>
+          ))
+        }
+      </tbody>
+    </table>
+  </div>
+</section>

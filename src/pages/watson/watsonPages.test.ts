@@ -163,10 +163,19 @@ describe("Watson member search pages", () => {
       "utf8",
     );
 
+    const currentAccess = fs.readFileSync(
+      path.resolve("src/pages/watson/reports/current-members.astro"),
+      "utf8",
+    );
+
+    expect(reportsIndex).toContain("/watson/reports/current-members");
     expect(reportsIndex).toContain("/watson/reports/current-legacy-members");
     expect(reportsIndex).toContain("/watson/reports/remaining-annual-access");
     expect(reportsIndex).toContain("/watson/reports/former-members-no-memberstack");
     expect(reportsIndex).toContain("/watson/pattern-inspector");
+    expect(currentAccess).toContain("loadCurrentMembersReport");
+    expect(currentAccess).toContain('export const prerender = false');
+    expect(currentAccess).toContain("Current Members");
     expect(currentMembers).toContain("loadCurrentLegacyMembersReport");
     expect(currentMembers).toContain('export const prerender = false');
     expect(annualAccess).toContain("loadRemainingAnnualAccessReport");
