@@ -301,7 +301,7 @@ function renderResourceOptions(
   });
 }
 
-function resourceKey(source: string, id: number): string {
+function resourceKey(source: string, id: number | string): string {
   return `${source}:${id}`;
 }
 

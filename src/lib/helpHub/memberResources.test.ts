@@ -38,6 +38,46 @@ describe("Learning Library member resource search", () => {
     expect(matches.some((item) => item.id === 1027)).toBe(true);
   });
 
+  it("finds a database-only published video and older text content ids", () => {
+    const items = libraryVideosForPicker([
+      { content_id: "249", title: "Cut and Sew intro", slug: "cut-and-sew-intro" },
+      { content_id: "249-1", title: "Cut and Sew clip", slug: "cut-and-sew-clip", status: "published" },
+      { content_id: 5004, title: "New catalog video", slug: "new-catalog-video", status: "published" },
+      { content_id: 5005, title: "Hidden draft", slug: "hidden-draft", status: "draft" },
+    ]);
+    expect(items.find((item) => item.id === 249)?.title).toBe("Cut and Sew intro");
+    expect(items.find((item) => item.id === "249-1")?.title).toBe("Cut and Sew clip");
+    expect(memberResourcePickerResults(items, "5004").map((item) => item.id)).toEqual([5004]);
+    expect(memberResourcePickerResults(items, "249-1").map((item) => item.id)).toEqual(["249-1"]);
+    expect(items.some((item) => item.id === 5005)).toBe(false);
+
+    const stored = selectionFromStoredResources(
+      [],
+      [{ type: "library", contentId: 5004 }],
+      [],
+      items,
+    );
+    expect(describeSelectedMemberResources(stored, [], items)).toEqual([
+      expect.objectContaining({
+        source: "library",
+        id: 5004,
+        title: "New catalog video",
+        state: "published",
+      }),
+    ]);
+    expect(normalizeRelatedLibraryVideos(["249-1", { contentId: "249" }, 5004])).toEqual([
+      { type: "library", contentId: "249-1" },
+      { type: "library", contentId: 249 },
+      { type: "library", contentId: 5004 },
+    ]);
+    const cards = resolveRelatedLibraryVideoCards(
+      [{ type: "library", contentId: "249-1" }],
+      [{ content_id: "249-1", title: "Cut and Sew clip", status: "published" }],
+    );
+    expect(cards[0]?.href).toBe("/videos/249-1");
+    expect(cards[0]?.title).toBe("Cut and Sew clip");
+  });
+
   it("does not include Vimeo ID 502818680 in picker items", () => {
     const item = library.find((row) => itemId(row) === 1027);
     expect(item).toBeDefined();

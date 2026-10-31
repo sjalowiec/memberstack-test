@@ -1,7 +1,7 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
-import videosPublic from "../../data/videos-public.json";
 import { loadHelpHubTipBySlug, loadHelpHubTipsForAdmin } from "../../lib/helpHub/loadTips";
+import { loadMergedVideoCatalog } from "../../lib/videos/videoCatalogStore";
 import { loadLessonsForAdmin } from "../../lib/lessons/loadLessons";
 import type { HelpHubLessonRecord } from "../../lib/helpHubMemberLesson";
 import {
@@ -35,7 +35,7 @@ const currentEntry = slug ? await loadHelpHubTipBySlug(slug) : null;
 const isEditing = Boolean(currentEntry);
 
 const lessonRecords = (await loadLessonsForAdmin()) as HelpHubLessonRecord[];
-const libraryPickerItems = libraryVideosForPicker(Array.isArray(videosPublic) ? videosPublic : []);
+const libraryPickerItems = libraryVideosForPicker(await loadMergedVideoCatalog());
 const lessonPickerItems = memberLessonsForResourcePicker(lessonRecords);
 
 const clientPayload = helpHubAdminEditorPayload({
