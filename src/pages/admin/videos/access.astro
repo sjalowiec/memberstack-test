@@ -19,9 +19,8 @@ const helpHubEntries = await loadHelpHubTipsForAdmin();
       <p class="help-hub-admin__sub">
         Audit every catalog video and set <code>access_level</code> to
         <code>public</code>, <code>member</code>, or <code>draft</code>.
-        Access is stored in <code>src/data/videos-public.json</code>. A save changes only
-        <code>access_level</code> in that file, and video pages read the same field.
-        Hosted sites cannot update the file, so those saves show an error and do not report success.
+        Data lives in <code>src/data/videos-public.json</code> and saves via
+        <code>/api/admin/videos</code>. This tool does not change frontend gating yet.
       </p>
     </header>
 
@@ -440,7 +439,6 @@ const helpHubEntries = await loadHelpHubTipsForAdmin();
   </style>
 
   <script>
-    import { fetchAdminJson, promptAdminSignIn } from "../../../lib/admin/adminAuthClient";
     import { stableVideoKey } from "../../../lib/lessonVideo";
     import {
       VIDEO_ACCESS_LEVELS,
@@ -904,47 +902,32 @@ const helpHubEntries = await loadHelpHubTipsForAdmin();
       }
 
       try {
-        const saved = await fetchAdminJson<{
-          updated?: Array<{ content_id: string | number; access_level: string }>;
-        }>(ACCESS_LEVELS_API, {
+        const res = await fetch(ACCESS_LEVELS_API, {
           method: "POST",
-          body: { updates },
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ updates }),
         });
-        const updated = saved.data.updated;
-        if (!saved.ok || !Array.isArray(updated) || updated.length === 0) {
-          if (saved.needsSignIn) promptAdminSignIn("/admin/videos/access");
-          setStatus(saved.error || "The access change was not saved.", "err");
+        const data = (await res.json()) as {
+          ok?: boolean;
+          error?: string;
+          updated?: Array<{ content_id: string | number; access_level: string }>;
+        };
+        if (!res.ok || !data?.ok || !Array.isArray(data.updated)) {
+          setStatus(data?.error || `Save failed (${res.status})`, "err");
           updateSaveButtons();
           return;
         }
 
-        const reloaded = await fetchAdminJson<{ videos?: VideoRow[] }>(VIDEOS_API, { method: "GET" });
-        const videos = reloaded.data.videos;
-        const confirmed =
-          reloaded.ok &&
-          Array.isArray(videos) &&
-          updated.every((patch) => {
-            const id = asString(patch.content_id).trim();
-            const row = videos.find((video) => contentIdKey(video) === id);
-            return normalizeAccessLevelRaw(row?.access_level) === patch.access_level;
-          });
-        if (!confirmed || !Array.isArray(videos)) {
-          if (Array.isArray(videos)) originalVideos = videos;
-          setStatus(
-            "The access change could not be confirmed in the catalog. Reload this page before trying again.",
-            "err",
-          );
-          updateSaveButtons();
-          renderTable();
-          return;
+        for (const patch of data.updated) {
+          const id = asString(patch.content_id).trim();
+          const row = originalVideos.find((v) => contentIdKey(v) === id);
+          if (row) row.access_level = patch.access_level;
         }
-
-        originalVideos = videos;
         pendingAccess.clear();
-        setStatus(describeVideoAccessPatchSuccess(updated, titles), "ok");
+        setStatus(describeVideoAccessPatchSuccess(data.updated, titles), "ok");
         renderTable();
       } catch {
-        setStatus("Network error while saving. The access change was not confirmed.", "err");
+        setStatus("Network error while saving.", "err");
         updateSaveButtons();
       }
     }

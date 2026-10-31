@@ -3,9 +3,6 @@ import { changedCatalogFields, videoContentIdKey } from "./videoPosterOverrides"
 export const HOSTED_CATALOG_SAVE_ERROR =
   "This save would change the video catalog in src/data/videos-public.json. The hosted site cannot update that file, and thumbnail storage only keeps pictures, so nothing was saved.";
 
-export const HOSTED_ACCESS_LEVEL_SAVE_ERROR =
-  "This access change was not saved. Hosted sites cannot update src/data/videos-public.json. Change the access level in the local workspace, then deploy that file. Nothing was saved.";
-
 /**
  * Hosted Netlify (including kin-dev) serves a deployed copy of the catalog file.
  * A function write there does not update the repo or the next deploy.
@@ -28,7 +25,6 @@ export type CatalogTextUpdate =
       text: string;
       added: string[];
       updated: string[];
-      deleted: string[];
     }
   | { ok: false; error: string };
 
@@ -102,66 +98,6 @@ export function splitCatalogObjects(raw: string): CatalogSplit | { error: string
   return { error: "Catalog file ended before the array closed." };
 }
 
-const ACCESS_LEVEL_PROPERTY = /("access_level"\s*:\s*")((?:[^"\\]|\\.)*)(")/;
-
-/** Replace only the access_level string. Every other byte in the record stays. */
-export function replaceAccessLevelProperty(
-  objectText: string,
-  accessLevel: string,
-): { ok: true; text: string } | { ok: false; error: string } {
-  const matches = objectText.match(new RegExp(ACCESS_LEVEL_PROPERTY.source, "g"));
-  if (!matches || matches.length !== 1) {
-    return {
-      ok: false,
-      error: "The catalog record has no single access_level field, so nothing was saved.",
-    };
-  }
-  return {
-    ok: true,
-    text: objectText.replace(ACCESS_LEVEL_PROPERTY, `$1${accessLevel}$3`),
-  };
-}
-
-/**
- * Change access_level on the named records and leave every other record,
- * including line endings and blank lines, byte-for-byte.
- */
-export function patchCatalogAccessLevelText(
-  raw: string,
-  updates: Array<{ content_id: string | number; access_level: string }>,
-): { ok: true; text: string } | { ok: false; error: string } {
-  const split = splitCatalogObjects(raw);
-  if ("error" in split) return { ok: false, error: `${split.error} Nothing was saved.` };
-
-  const indexById = new Map<string, number>();
-  for (let index = 0; index < split.objects.length; index += 1) {
-    let parsed: unknown;
-    try {
-      parsed = JSON.parse(split.objects[index]);
-    } catch {
-      return { ok: false, error: "A catalog record could not be read, so nothing was saved." };
-    }
-    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
-      return { ok: false, error: "A catalog record could not be read, so nothing was saved." };
-    }
-    const id = videoContentIdKey((parsed as { content_id?: unknown }).content_id);
-    if (id) indexById.set(id, index);
-  }
-
-  for (const update of updates) {
-    const id = videoContentIdKey(update.content_id);
-    const index = id ? indexById.get(id) : undefined;
-    if (index === undefined) {
-      return { ok: false, error: `No matching videos found for content_id: ${id}.` };
-    }
-    const replaced = replaceAccessLevelProperty(split.objects[index], update.access_level);
-    if (!replaced.ok) return { ok: false, error: `Video ${id}: ${replaced.error}` };
-    split.objects[index] = replaced.text;
-  }
-
-  return { ok: true, text: joinCatalog(split) };
-}
-
 function joinCatalog(split: CatalogSplit): string {
   let out = split.separators[0] ?? "";
   for (let index = 0; index < split.objects.length; index += 1) {
@@ -174,21 +110,6 @@ function formatCatalogRecord(record: Record<string, unknown>, newline: "\n" | "\
   const lines = JSON.stringify(record, null, 2).split("\n");
   const indented = lines.map((line, index) => (index === 0 ? line : `  ${line}`)).join("\n");
   return newline === "\r\n" ? indented.replace(/\n/g, "\r\n") : indented;
-}
-
-function deleteCatalogObject(split: CatalogSplit, index: number) {
-  if (split.objects.length === 1) {
-    split.objects = [];
-    split.separators = [`[${split.newline}]${split.newline}`];
-    return;
-  }
-  if (index === 0) {
-    split.objects.splice(0, 1);
-    split.separators.splice(1, 1);
-    return;
-  }
-  split.objects.splice(index, 1);
-  split.separators.splice(index, 1);
 }
 
 function appendCatalogObject(split: CatalogSplit, text: string) {
@@ -207,7 +128,6 @@ function appendCatalogObject(split: CatalogSplit, text: string) {
 type RowEdit =
   | { op: "keep"; sourceIndex: number }
   | { op: "replace"; sourceIndex: number; record: Record<string, unknown>; id: string }
-  | { op: "delete"; sourceIndex: number; id: string }
   | { op: "append"; record: Record<string, unknown>; id: string };
 
 function posterValue(video: Record<string, unknown>): string {
@@ -215,7 +135,7 @@ function posterValue(video: Record<string, unknown>): string {
 }
 
 /** Copy only fields that actually changed onto the original record. */
-function recordToStore(source: Record<string, unknown>, submitted: Record<string, unknown>): Record<string, unknown> {
+export function catalogRecordToStore(source: Record<string, unknown>, submitted: Record<string, unknown>): Record<string, unknown> {
   const changes = changedCatalogFields(source, submitted);
   const next: Record<string, unknown> = { ...source };
   if (changes.ok) {
@@ -260,42 +180,31 @@ function planRowEdits(
     submittedIds.push(id);
   }
 
+  // Video numbers are permanent: links, lessons, and transcripts point at them.
+  // A missing number is a rename or a delete, and both are refused. Archive instead.
   const sourceOnly = sourceIds.filter((id) => !submittedById.has(id));
   const submittedOnly = submittedIds.filter((id) => !sourceById.has(id));
-  const inPlaceNumberChange =
-    source.length === submitted.length && sourceOnly.length === 1 && submittedOnly.length === 1;
-  const replacedSourceIndex = inPlaceNumberChange ? sourceById.get(sourceOnly[0]) ?? -1 : -1;
-  const replacement = inPlaceNumberChange ? submittedById.get(submittedOnly[0]) : undefined;
+  if (sourceOnly.length > 0) {
+    return {
+      ok: false,
+      error: `This save would remove or renumber video ${sourceOnly.join(", ")}, so nothing was saved. Video numbers cannot change; archive a video instead of deleting it.`,
+    };
+  }
 
   const edits: RowEdit[] = [];
   for (let index = 0; index < source.length; index += 1) {
     const id = sourceIds[index];
-    if (!submittedById.has(id)) {
-      if (index === replacedSourceIndex && replacement) {
-        edits.push({
-          op: "replace",
-          sourceIndex: index,
-          record: recordToStore(source[index], replacement),
-          id: submittedOnly[0],
-        });
-      } else {
-        edits.push({ op: "delete", sourceIndex: index, id });
-      }
-      continue;
-    }
     const next = submittedById.get(id)!;
     const changes = changedCatalogFields(source[index], next);
     if (!changes.ok) return changes;
     if (changes.fields.length > 0) {
-      edits.push({ op: "replace", sourceIndex: index, record: recordToStore(source[index], next), id });
+      edits.push({ op: "replace", sourceIndex: index, record: catalogRecordToStore(source[index], next), id });
     }
     else edits.push({ op: "keep", sourceIndex: index });
   }
-  if (!inPlaceNumberChange) {
-    for (const id of submittedOnly) {
-      const record = submittedById.get(id);
-      if (record) edits.push({ op: "append", record, id });
-    }
+  for (const id of submittedOnly) {
+    const record = submittedById.get(id);
+    if (record) edits.push({ op: "append", record, id });
   }
   return { ok: true, edits };
 }
@@ -340,38 +249,60 @@ export function updateCatalogText(
 
   const added: string[] = [];
   const updated: string[] = [];
-  const deleted: string[] = [];
-  const deleteIndexes: number[] = [];
   for (const edit of planned.edits) {
     if (edit.op === "replace") {
       split.objects[edit.sourceIndex] = formatCatalogRecord(edit.record, split.newline);
       updated.push(edit.id);
-    } else if (edit.op === "delete") {
-      deleteIndexes.push(edit.sourceIndex);
-      deleted.push(edit.id);
     } else if (edit.op === "append") {
       appendCatalogObject(split, formatCatalogRecord(edit.record, split.newline));
       added.push(edit.id);
     }
   }
-  if (deleted.length > 1) {
-    return {
-      ok: false,
-      error: `This save would remove ${deleted.length} videos, so nothing was saved.`,
-    };
+
+  return { ok: true, text: joinCatalog(split), added, updated };
+}
+
+/**
+ * Replace one stored record (matched by video number) or append a new one.
+ * Only that record's text changes. `record` is written exactly as given.
+ */
+export function upsertCatalogRecordText(
+  raw: string,
+  record: Record<string, unknown>,
+): { ok: true; text: string; added: boolean } | { ok: false; error: string } {
+  const id = contentIdOf(record);
+  if (!id) return { ok: false, error: "The video is missing a video number, so nothing was saved." };
+  const split = splitCatalogObjects(raw);
+  if ("error" in split) return { ok: false, error: `${split.error} Nothing was saved.` };
+
+  let found = -1;
+  for (let index = 0; index < split.objects.length; index += 1) {
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(split.objects[index]);
+    } catch {
+      return { ok: false, error: "A catalog record could not be read, so nothing was saved." };
+    }
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+      return { ok: false, error: "A catalog record could not be read, so nothing was saved." };
+    }
+    if (contentIdOf(parsed as Record<string, unknown>) !== id) continue;
+    if (found >= 0) {
+      return { ok: false, error: `Video number ${id} appears more than once, so nothing was saved.` };
+    }
+    found = index;
   }
 
-  deleteIndexes.sort((a, b) => b - a);
-  for (const index of deleteIndexes) deleteCatalogObject(split, index);
-
-  return { ok: true, text: joinCatalog(split), added, updated, deleted };
+  const text = formatCatalogRecord(record, split.newline);
+  if (found >= 0) split.objects[found] = text;
+  else appendCatalogObject(split, text);
+  return { ok: true, text: joinCatalog(split), added: found < 0 };
 }
 
 export function catalogSaveMessage(update: Extract<CatalogTextUpdate, { ok: true }>): string {
   const parts: string[] = [];
   if (update.added.length) parts.push(`Added video ${update.added.join(", ")}`);
   if (update.updated.length) parts.push(`Updated video ${update.updated.join(", ")}`);
-  if (update.deleted.length) parts.push(`Removed video ${update.deleted.join(", ")}`);
   const lead = parts.length ? `${parts.join(". ")}.` : "Saved.";
   return `${lead} The change is in src/data/videos-public.json.`;
 }

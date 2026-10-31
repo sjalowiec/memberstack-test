@@ -66,6 +66,23 @@ export async function replaceVideoPosterOverrides(
   });
 }
 
+export const VIDEO_POSTER_DELETE_ONE_SQL = `DELETE FROM video_poster_overrides WHERE content_id = $1`;
+
+/**
+ * Store one video's thumbnail. A catalog save calls this so the stored picture
+ * matches the saved record right away, before the next deploy carries it.
+ */
+export async function setVideoPosterOverride(
+  override: VideoPosterOverride,
+  transaction?: (run: (query: PosterQuery) => Promise<void>) => Promise<void>,
+): Promise<void> {
+  const run = transaction ?? withPosterTransaction;
+  await run(async (query) => {
+    await query(VIDEO_POSTER_DELETE_ONE_SQL, [override.contentId]);
+    await query(VIDEO_POSTER_INSERT_SQL, [override.contentId, override.posterUrl]);
+  });
+}
+
 /** Public pages keep the catalog poster when storage cannot be read. */
 export async function loadPublicVideoPosterOverrides(): Promise<Map<string, string>> {
   try {
