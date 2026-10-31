@@ -1243,6 +1243,15 @@
     height: auto;
   }
 
+  #pattern-content .set-in-sleeve-diagram {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    max-height: none;
+    overflow: visible;
+  }
+
   /* Ensure inlined garment SVG paints (same-origin HTML fragment insertion). */
   #pattern-content .sleeveless-piece-split__diagram-svg > svg {
     display: block;
@@ -1864,6 +1873,13 @@
     max-width: 90vw;
     max-height: 90vh;
     height: auto;
+  }
+
+  .sleeveless-diagram-modal__content svg.set-in-sleeve-diagram {
+    width: min(90vw, 900px);
+    max-width: 90vw;
+    height: auto;
+    max-height: none;
   }
 
   /* Video help modal: iframe lives inside a constrained column; do not inherit diagram min(90vw) width (avoids horizontal overflow). */

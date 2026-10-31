@@ -1,11 +1,13 @@
 /**
  * Set-In Sleeve Edit Pattern — Sleeve tab diagram.
  *
- * The silhouette is a flat sleeve at one scale. Drawn width is half the
- * circumference, so a 13" upper arm is 6.5" wide. Lengths stay full inches.
- * Cap stitches and rows are converted through their gauges before that scale.
- * Sleeve length is cuff to underarm. The cap is drawn above it.
- * Label gutters sit outside the silhouette. This file does not compute pattern math.
+ * The silhouette is the whole sleeve laid open before seaming, at one scale.
+ * Upper-arm width is the full upper-arm circumference. Cuff width is the full
+ * cuff circumference. Lengths stay full inches. Cap stitches and rows are
+ * converted through their gauges before that scale. Sleeve length is cuff to
+ * underarm, and cuff depth is included in that length. The cap is drawn above
+ * the underarm. Label gutters sit outside the silhouette. This file does not
+ * compute pattern math.
  */
 
 import {
@@ -20,7 +22,13 @@ import {
   type DropShoulderSleeveDiagramFrame,
 } from "../dropShoulderSleeveDiagramSvgShared";
 import { PATTERN_SUMMARY_MEASUREMENT_TARGETS } from "../patternSummaryMeasurementOverlay";
-import { setInSleeveCapOutlineMarks, setInSleeveFlatWidthInches } from "./setInSleeveDiagram";
+import { setInSleeveCapOutlineMarks } from "./setInSleeveDiagram";
+import {
+  SET_IN_SLEEVE_PX_PER_INCH,
+  SET_IN_SLEEVE_SCHEMATIC_ID,
+  buildSetInSleeveLaidOpenGeometry,
+  setInSleeveCapEdgeInches,
+} from "./setInSleeveSchematicGeometry";
 import type { SetInSleeveCapSuccess } from "./sleeveCapMath";
 
 export const SET_IN_SLEEVE_EDIT_SLEEVE_MEASUREMENT_TARGET_IDS = [
@@ -30,24 +38,28 @@ export const SET_IN_SLEEVE_EDIT_SLEEVE_MEASUREMENT_TARGET_IDS = [
   PATTERN_SUMMARY_MEASUREMENT_TARGETS.cuffDepth,
 ] as const;
 
-/** Finished inch → user unit. The same value is used on both axes. */
-const PX_PER_INCH = 20;
-
 /** Dimension lines sit outside the silhouette, in user units, not in inches. */
 const DIM = {
-  upperArm: 26,
-  cuffCirc: 30,
-  sleeveLength: 40,
-  cuffDepth: 28,
+  upperArm: 56,
+  cuffCirc: 52,
+  sleeveLength: 72,
+  /**
+   * The cuff-depth chip hangs to the left of this line. The gap has to clear
+   * that chip at a 640px stage, where one user unit is about one screen pixel.
+   */
+  cuffDepth: 168,
 } as const;
 
-/** Extra viewBox room so HTML chips can sit on those lines without resizing the sleeve. */
+/**
+ * Extra viewBox room so HTML chips can sit on those lines without covering the
+ * sleeve or each other. Sized for the desktop overlay at a 640px stage.
+ */
 const CHIP = {
-  top: 28,
-  bottom: 36,
-  left: 78,
-  right: 70,
-  edge: 10,
+  top: 56,
+  bottom: 52,
+  left: 150,
+  right: 36,
+  edge: 12,
 } as const;
 
 export type SetInSleeveEditSleeveMeasurementInput = {
@@ -110,10 +122,11 @@ function capEdgeInches(cap: SetInSleeveCapSuccess): { widthInches: number; upInc
   const capInches = finishedInches(cap.totals.capHeightInches, 0.25);
   const stitchesPerInch = cap.sleeve.upperArmStitches / upperInches;
   const rowsPerInch = cap.totals.capRows / capInches;
-  return setInSleeveCapOutlineMarks(cap).map((mark) => ({
-    widthInches: stitchesPerInch > 0 ? mark.stitches / stitchesPerInch : upperInches,
-    upInches: rowsPerInch > 0 ? mark.rowsFromCapStart / rowsPerInch : 0,
-  }));
+  return setInSleeveCapEdgeInches(setInSleeveCapOutlineMarks(cap), stitchesPerInch, rowsPerInch, {
+    upperArmInches: upperInches,
+    topWidthInches: cap.totals.finalWidthInches,
+    capHeightInches: capInches,
+  });
 }
 
 function sleeveOutline(frame: DropShoulderSleeveDiagramFrame, edge: CapPoint[]): string {
@@ -147,39 +160,38 @@ export function buildSetInSleeveEditSleeveMeasurementDiagramSvg(
     0,
     Math.min(measurements.cuffDepthInches, sleeveLengthInches),
   );
-  const bodyInches = Math.max(0, sleeveLengthInches - cuffDepthInches);
   const capInches = cap ? Math.max(0, cap.totals.capHeightInches) : 0;
   const edgeInches = cap && capInches > 0 ? capEdgeInches(cap) : [];
-
-  const upperW = setInSleeveFlatWidthInches(upperArmInches) * PX_PER_INCH;
-  const wristW = setInSleeveFlatWidthInches(wristInches) * PX_PER_INCH;
-  const cuffH = cuffDepthInches * PX_PER_INCH;
-  const bodyH = bodyInches * PX_PER_INCH;
-  const capH = capInches * PX_PER_INCH;
-  const midX = 0;
-  const top = 0;
-  const bottom = bodyH + cuffH;
-  const cuffJoinY = bottom - cuffH;
-  const edge: CapPoint[] = edgeInches.map((point) => ({
-    y: top - point.upInches * PX_PER_INCH,
-    left: midX - (setInSleeveFlatWidthInches(point.widthInches) * PX_PER_INCH) / 2,
-    right: midX + (setInSleeveFlatWidthInches(point.widthInches) * PX_PER_INCH) / 2,
-  }));
-  const capTopY = edge.length > 0 ? edge[edge.length - 1]!.y : top;
+  const geo = buildSetInSleeveLaidOpenGeometry({
+    upperArmInches,
+    wristInches,
+    sleeveLengthInches,
+    cuffDepthInches,
+    capHeightInches: capInches,
+    topWidthInches: edgeInches.length > 0 ? edgeInches[edgeInches.length - 1]!.widthInches : upperArmInches,
+    capEdgeInches: edgeInches,
+    midX: 0,
+    underarmY: 0,
+  });
+  const upperW = geo.upperWidthPx;
+  const wristW = geo.wristWidthPx;
+  const cuffH = geo.cuffDepthPx;
+  const edge: CapPoint[] = geo.capEdge;
+  const capTopY = geo.capTopY;
   const frame: DropShoulderSleeveDiagramFrame = {
     direction: "cuff-up",
-    midX,
-    top,
-    bottom,
-    cuffJoinY,
-    wristY: bottom,
-    upperArmY: top,
-    wristLeft: midX - wristW / 2,
-    wristRight: midX + wristW / 2,
-    upperLeft: midX - upperW / 2,
-    upperRight: midX + upperW / 2,
-    cuffJoinLeft: midX - wristW / 2,
-    cuffJoinRight: midX + wristW / 2,
+    midX: geo.midX,
+    top: geo.underarmY,
+    bottom: geo.wristY,
+    cuffJoinY: geo.cuffJoinY,
+    wristY: geo.wristY,
+    upperArmY: geo.underarmY,
+    wristLeft: geo.wristLeft,
+    wristRight: geo.wristRight,
+    upperLeft: geo.upperLeft,
+    upperRight: geo.upperRight,
+    cuffJoinLeft: geo.wristLeft,
+    cuffJoinRight: geo.wristRight,
   };
   const hasCap = edge.length > 1 && capTopY < frame.top - 0.5;
   const upperDimY = capTopY - DIM.upperArm;
@@ -194,12 +206,12 @@ export function buildSetInSleeveEditSleeveMeasurementDiagramSvg(
   const viewHeight = maxY - minY;
   const t = PATTERN_SUMMARY_MEASUREMENT_TARGETS;
   const cuffMidY = (frame.cuffJoinY + frame.bottom) / 2;
+  const widthToLength = sleeveLengthInches > 0 ? upperArmInches / sleeveLengthInches : 0;
   return [
-    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${fmtNum(minX)} ${fmtNum(minY)} ${fmtNum(viewWidth)} ${fmtNum(viewHeight)}" width="100%" height="auto" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Set-in sleeve sleeve measurement diagram" focusable="false" class="express-mbp-art" data-set-in-sleeve-edit-diagram="true" data-set-in-sleeve-edit-piece="sleeve" data-sleeve-geometry="flat" data-sleeve-px-per-inch="${fmtNum(PX_PER_INCH)}" data-finished-upper-arm-inches="${fmtNum(upperArmInches)}" data-wrist-inches="${fmtNum(wristInches)}" data-sleeve-length-inches="${fmtNum(sleeveLengthInches)}" data-cuff-depth-inches="${fmtNum(cuffDepthInches)}" data-cap-height-inches="${fmtNum(capInches)}" data-upper-width="${fmtNum(upperW)}" data-wrist-width="${fmtNum(wristW)}" data-sleeve-length-px="${fmtNum(bottom - top)}" data-cuff-depth-px="${fmtNum(cuffH)}" data-cap-height-px="${fmtNum(frame.top - capTopY)}" data-sleeve-cap="${hasCap ? "true" : "false"}" data-underarm-y="${fmtNum(frame.top)}" data-cap-top-y="${fmtNum(capTopY)}" data-display-unit="in">`,
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${fmtNum(minX)} ${fmtNum(minY)} ${fmtNum(viewWidth)} ${fmtNum(viewHeight)}" width="100%" height="auto" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Set-in sleeve sleeve measurement diagram" focusable="false" class="express-mbp-art" style="width:100%;height:auto;max-height:none;aspect-ratio:${fmtNum(viewWidth)} / ${fmtNum(viewHeight)}" data-set-in-sleeve-edit-diagram="true" data-set-in-sleeve-edit-piece="sleeve" data-sleeve-geometry="flat" data-sleeve-schematic="${SET_IN_SLEEVE_SCHEMATIC_ID}" data-sleeve-px-per-inch="${fmtNum(SET_IN_SLEEVE_PX_PER_INCH)}" data-sleeve-width-to-length="${fmtNum(widthToLength)}" data-finished-upper-arm-inches="${fmtNum(upperArmInches)}" data-wrist-inches="${fmtNum(wristInches)}" data-sleeve-length-inches="${fmtNum(sleeveLengthInches)}" data-cuff-depth-inches="${fmtNum(cuffDepthInches)}" data-cap-height-inches="${fmtNum(capInches)}" data-upper-width="${fmtNum(upperW)}" data-wrist-width="${fmtNum(wristW)}" data-sleeve-length-px="${fmtNum(geo.sleeveLengthPx)}" data-cuff-depth-px="${fmtNum(cuffH)}" data-cap-height-px="${fmtNum(frame.top - capTopY)}" data-sleeve-cap="${hasCap ? "true" : "false"}" data-underarm-y="${fmtNum(frame.top)}" data-cap-top-y="${fmtNum(capTopY)}" data-display-unit="in">`,
     `<path data-role="sleeve-outline" data-sleeve-cap="${hasCap ? "true" : "false"}" d="${sleeveOutline(frame, edge)}" fill="${DS_FILL}" stroke="${DS_STROKE}" stroke-width="1.6" stroke-linejoin="round"/>`,
-    hasCap
-      ? `<line data-role="underarm" x1="${fmtNum(frame.upperLeft)}" y1="${fmtNum(frame.top)}" x2="${fmtNum(frame.upperRight)}" y2="${fmtNum(frame.top)}" fill="none" stroke="${DS_STROKE}" stroke-width="1.2"/>`
-      : "",
+    `<line data-role="underarm" data-sleeve-upper-arm-axis="true" x1="${fmtNum(frame.upperLeft)}" y1="${fmtNum(frame.top)}" x2="${fmtNum(frame.upperRight)}" y2="${fmtNum(frame.top)}" fill="none" stroke="${DS_STROKE}" stroke-width="1.2"/>`,
+    `<line data-sleeve-length-axis="true" x1="${fmtNum(frame.midX)}" y1="${fmtNum(frame.top)}" x2="${fmtNum(frame.midX)}" y2="${fmtNum(frame.bottom)}" stroke="transparent" stroke-width="1" fill="none"/>`,
     drawSleeveCuffJoin(frame),
     leader(frame.upperLeft, frame.top, frame.upperLeft, upperDimY),
     leader(frame.upperRight, frame.top, frame.upperRight, upperDimY),

@@ -7,9 +7,10 @@
  * does not size the sleeve or change the written instructions.
  *
  * The outline uses one scale for width and height, taken from the finished
- * inches: cuff depth, cuff-to-upper-arm body (sleeve length minus cuff), and
- * sleeve-cap height. Labels sit outside that shape. Stitches & Rows names the
- * sleeve length as cuff to underarm and draws the calculated cap above it.
+ * inches. This is the whole sleeve laid open before seaming, so upper-arm and
+ * cuff widths are the full circumferences. Cuff depth sits inside the
+ * cuff-to-underarm length. The calculated cap is drawn above the underarm.
+ * The viewBox grows around that shape. Labels sit outside it.
  */
 
 import type { DropShoulderSleevePieceNumbers } from "../dropShoulderSleevePieceNumbers";
@@ -25,17 +26,12 @@ import {
 import type { DropShoulderSleeveDiagramFrame } from "../dropShoulderSleeveDiagramSvgShared";
 import {
   DS_ARROW,
-  DS_BODY_MAX_W,
   DS_FILL,
   DS_FONT,
   DS_FS_TITLE,
   DS_FW_TITLE,
   DS_MUTED,
-  DS_PAD_BOTTOM,
-  DS_PAD_LEFT,
-  DS_PAD_TOP,
   DS_STROKE,
-  DS_VB_W,
   endCap,
   escapeXml,
   fmtNum,
@@ -70,6 +66,15 @@ import {
   type SleeveNotationLabel,
 } from "../sleeveShapingNotationLayout";
 import type { SetInSleeveCapSuccess, SleeveCapPhase } from "./sleeveCapMath";
+import {
+  SET_IN_SLEEVE_PX_PER_INCH,
+  SET_IN_SLEEVE_SCHEMATIC_ID,
+  buildSetInSleeveLaidOpenGeometry,
+  setInSleeveCapEdgeInches,
+  setInSleeveInchesFromRows,
+} from "./setInSleeveSchematicGeometry";
+
+export { setInSleeveFlatWidthInches } from "./setInSleeveSchematicGeometry";
 
 export type SetInSleeveCapNotationEvent = {
   text: string;
@@ -113,6 +118,10 @@ export type SetInSleeveDiagramModel = {
   bodyShapingRcs: number[];
   /** Rows from the start of the cap to each width change, including the start. */
   capMarks: { rowsFromCapStart: number; stitches: number }[];
+  /** Finished stitches per inch. Cap widths use this, not a pixel per stitch. */
+  stitchesPerInch: number;
+  /** Finished rows per inch. Cap and body row positions use this, not a pixel per row. */
+  rowsPerInch: number;
 };
 
 const LABEL_COUNT = 17;
@@ -135,15 +144,6 @@ function storedInches(n: number | undefined): number | undefined {
 /** `0` is a real cuff depth (no ribbing). Missing values stay missing. */
 function storedCuffInches(n: number | undefined): number | undefined {
   return typeof n === "number" && Number.isFinite(n) && n >= 0 ? n : undefined;
-}
-
-/**
- * Flat sleeve schematic width. Circumference measurements are drawn at half
- * their finished inches so a 13" upper arm is 6.5" wide on the page.
- */
-export function setInSleeveFlatWidthInches(circumferenceInches: number): number {
-  if (!Number.isFinite(circumferenceInches) || circumferenceInches <= 0) return 0;
-  return circumferenceInches / 2;
 }
 
 function sleeveBodyLengthInches(
@@ -363,8 +363,8 @@ export function buildSetInSleeveDiagramModel(input: {
     .map((step) => ({ stitches: step.sts, rows: step.rows, times: step.times }));
   const upperArmInches = storedInches(cap.sleeve.finishedUpperArmInches) ?? 1;
   const capHeightInches = storedInches(cap.totals.capHeightInches) ?? 1;
-  const stitchesPerInch = piece.topSts / upperArmInches;
-  const rowsPerInch = cap.totals.capRows / capHeightInches;
+  const stitchesPerInch = upperArmInches > 0 ? piece.topSts / upperArmInches : 0;
+  const rowsPerInch = capHeightInches > 0 ? cap.totals.capRows / capHeightInches : 0;
   const wristInches = storedInches(input.wristInches) ?? piece.wristSts / stitchesPerInch;
   const cuffDepthInches =
     storedCuffInches(input.cuffDepthInches) ?? (rowsPerInch > 0 ? piece.cuffRows / rowsPerInch : 0);
@@ -427,12 +427,15 @@ export function buildSetInSleeveDiagramModel(input: {
     capEvents: setInSleeveCapNotationEvents(cap),
     bodyShapingRcs: dropShoulderSleeveShapingRcSequence(chartInput),
     capMarks: setInSleeveCapOutlineMarks(cap),
+    stitchesPerInch,
+    rowsPerInch,
   };
 }
 
 type Pt = { x: number; y: number };
 
 type SleeveFrame = {
+  canvasWidth: number;
   canvasHeight: number;
   midX: number;
   wristY: number;
@@ -449,70 +452,73 @@ type SleeveFrame = {
   capEdge: { y: number; left: number; right: number }[];
 };
 
+/** Room for stitch/row labels beside the laid-open sleeve. Not used to scale the piece. */
+const SLEEVE_PAD_LEFT = 136;
+const SLEEVE_PAD_RIGHT = 176;
+const SLEEVE_PAD_BOTTOM = 96;
 /**
- * One pixel scale for every finished inch. Widths are the flat schematic
- * (half the circumference). Sleeve length is the cuff plus the body, measured
- * from the cuff to the underarm. The cap is drawn above that length.
+ * Stitches & Rows stacks the sleeve-length caption, its note, then the cap-width
+ * label above the shape. This is the minimum space for that stack.
  */
-function sleeveScale(model: SetInSleeveDiagramModel, padTop = DS_PAD_TOP): {
-  pxPerInch: number;
-  cuffH: number;
-  bodyH: number;
-  capH: number;
-  height: number;
-} {
-  const flatUpper = Math.max(setInSleeveFlatWidthInches(model.upperArmInches), 0.125);
-  const pxPerInch = DS_BODY_MAX_W / flatUpper;
-  const cuffH = Math.max(0, model.cuffDepthInches) * pxPerInch;
-  const bodyH = Math.max(model.sleeveBodyInches, 0.25) * pxPerInch;
-  const capH = Math.max(model.capHeightInches, 0.25) * pxPerInch;
-  const height = Math.ceil(padTop + capH + bodyH + cuffH + DS_PAD_BOTTOM);
-  return { pxPerInch, cuffH, bodyH, capH, height };
-}
+const SLEEVE_ANNOTATION_TOP = 148;
 
-/** Width between the upper arm and the top of the cap, in finished inches. */
-function widthInchesForStitches(model: SetInSleeveDiagramModel, stitches: number): number {
-  const span = model.upperArmStitches - model.topStitches;
-  if (Math.abs(span) < 0.001) return model.topWidthInches;
-  const t = (model.upperArmStitches - stitches) / span;
-  const clamped = Math.max(0, Math.min(1, t));
-  return model.upperArmInches + (model.topWidthInches - model.upperArmInches) * clamped;
-}
-
-function buildSleeveFrame(model: SetInSleeveDiagramModel, padTop = DS_PAD_TOP): SleeveFrame {
-  const midX = DS_PAD_LEFT + DS_BODY_MAX_W / 2;
-  const scale = sleeveScale(model, padTop);
-  const { cuffH, bodyH, capH, pxPerInch } = scale;
-  const wristY = scale.height - DS_PAD_BOTTOM;
-  const wristW = setInSleeveFlatWidthInches(model.wristInches) * pxPerInch;
-  const upperW = setInSleeveFlatWidthInches(model.upperArmInches) * pxPerInch;
-  const topW = setInSleeveFlatWidthInches(model.topWidthInches) * pxPerInch;
-  const capStartY = wristY - cuffH - bodyH;
-  const capTopY = capStartY - capH;
-  const capRows = Math.max(1, model.capRows);
-  const capEdge = model.capMarks.map((mark) => {
-    const rowsUp = Math.max(0, Math.min(capRows, mark.rowsFromCapStart));
-    const width = setInSleeveFlatWidthInches(widthInchesForStitches(model, mark.stitches)) * pxPerInch;
-    return {
-      y: capStartY - (rowsUp / capRows) * capH,
-      left: midX - width / 2,
-      right: midX + width / 2,
-    };
+function buildSleeveFrame(model: SetInSleeveDiagramModel, padTop = SLEEVE_ANNOTATION_TOP): SleeveFrame {
+  const capEdgeInches = setInSleeveCapEdgeInches(
+    model.capMarks,
+    model.stitchesPerInch,
+    model.rowsPerInch,
+    {
+      upperArmInches: model.upperArmInches,
+      topWidthInches: model.topWidthInches,
+      capHeightInches: model.capHeightInches,
+    },
+  );
+  const probe = buildSetInSleeveLaidOpenGeometry({
+    upperArmInches: model.upperArmInches,
+    wristInches: model.wristInches,
+    sleeveLengthInches: model.sleeveLengthInches,
+    cuffDepthInches: model.cuffDepthInches,
+    capHeightInches: model.capHeightInches,
+    topWidthInches: model.topWidthInches,
+    capEdgeInches,
+    midX: 0,
+    underarmY: 0,
+  });
+  const contentW = Math.max(
+    probe.upperWidthPx,
+    probe.wristWidthPx,
+    probe.topWidthPx,
+    ...probe.capEdge.map((point) => point.right - point.left),
+    1,
+  );
+  const midX = SLEEVE_PAD_LEFT + contentW / 2;
+  const underarmY = padTop + (0 - probe.capTopY);
+  const geo = buildSetInSleeveLaidOpenGeometry({
+    upperArmInches: model.upperArmInches,
+    wristInches: model.wristInches,
+    sleeveLengthInches: model.sleeveLengthInches,
+    cuffDepthInches: model.cuffDepthInches,
+    capHeightInches: model.capHeightInches,
+    topWidthInches: model.topWidthInches,
+    capEdgeInches,
+    midX,
+    underarmY,
   });
   return {
-    midX,
-    wristY,
-    cuffJoinY: wristY - cuffH,
-    capStartY,
-    capTopY,
-    wristLeft: midX - wristW / 2,
-    wristRight: midX + wristW / 2,
-    upperLeft: midX - upperW / 2,
-    upperRight: midX + upperW / 2,
-    topLeft: midX - topW / 2,
-    topRight: midX + topW / 2,
-    capEdge,
-    canvasHeight: scale.height,
+    midX: geo.midX,
+    wristY: geo.wristY,
+    cuffJoinY: geo.cuffJoinY,
+    capStartY: geo.underarmY,
+    capTopY: geo.capTopY,
+    wristLeft: geo.wristLeft,
+    wristRight: geo.wristRight,
+    upperLeft: geo.upperLeft,
+    upperRight: geo.upperRight,
+    topLeft: geo.topLeft,
+    topRight: geo.topRight,
+    capEdge: geo.capEdge,
+    canvasWidth: SLEEVE_PAD_LEFT + contentW + SLEEVE_PAD_RIGHT,
+    canvasHeight: Math.ceil(geo.wristY + SLEEVE_PAD_BOTTOM),
   };
 }
 
@@ -674,33 +680,52 @@ function drawOverview(frame: SleeveFrame): string {
   return [
     `<path class="ds-sleeve-diagram__body" data-role="sleeve-outline" d="${sleeveOutlinePath(frame)}" fill="${DS_FILL}" stroke="${DS_STROKE}" stroke-width="1.75" stroke-linejoin="round"/>`,
     `<line data-role="cuff-join" x1="${fmtNum(frame.wristLeft)}" y1="${fmtNum(frame.cuffJoinY)}" x2="${fmtNum(frame.wristRight)}" y2="${fmtNum(frame.cuffJoinY)}" stroke="${DS_STROKE}" stroke-width="1.1" fill="none"/>`,
-    `<line data-role="cap-start" x1="${fmtNum(frame.upperLeft)}" y1="${fmtNum(frame.capStartY)}" x2="${fmtNum(frame.upperRight)}" y2="${fmtNum(frame.capStartY)}" stroke="${DS_STROKE}" stroke-width="1.1" fill="none"/>`,
+    `<line data-role="cap-start" data-sleeve-upper-arm-axis="true" x1="${fmtNum(frame.upperLeft)}" y1="${fmtNum(frame.capStartY)}" x2="${fmtNum(frame.upperRight)}" y2="${fmtNum(frame.capStartY)}" stroke="${DS_STROKE}" stroke-width="1.1" fill="none"/>`,
+    `<line data-sleeve-length-axis="true" x1="${fmtNum(frame.midX)}" y1="${fmtNum(frame.capStartY)}" x2="${fmtNum(frame.midX)}" y2="${fmtNum(frame.wristY)}" stroke="transparent" stroke-width="1" fill="none"/>`,
     `<text data-role="sleeve-piece-label" x="${fmtNum(frame.midX)}" y="${fmtNum(titleY)}" text-anchor="middle" dominant-baseline="middle" fill="${DS_STROKE}" ${textFont(DS_FS_TITLE, DS_FW_TITLE)}>SLEEVE</text>`,
   ].join("");
+}
+
+/**
+ * Bands above the cap, measured upward from the cap top so the sleeve-length
+ * caption cannot sit on the cap-width label.
+ */
+function stitchesRowsBands(capTopY: number): {
+  lengthCaptionY: number;
+  lengthNoteY: number;
+  capLabelY: number;
+  capLineY: number;
+} {
+  const capLineY = capTopY - 18;
+  const capLabelY = capLineY - 42;
+  const lengthNoteY = capLabelY - 40;
+  const lengthCaptionY = lengthNoteY - 24;
+  return { lengthCaptionY, lengthNoteY, capLabelY, capLineY };
 }
 
 function sleeveLengthCaption(frame: SleeveFrame, model: SetInSleeveDiagramModel): string {
   const measure = formatPatternDiagramMeasurement(model.sleeveLengthInches, model.unit);
   if (!measure) return "";
-  const y = Math.max(22, frame.capTopY - 78);
+  const bands = stitchesRowsBands(frame.capTopY);
   return [
     `<g class="set-in-sleeve-diagram__sleeve-length" data-sleeve-length="true">`,
-    `<text data-role="sleeve-length-caption" x="${fmtNum(frame.midX)}" y="${fmtNum(y)}" text-anchor="middle" fill="${DS_STROKE}" ${textFont(DS_FS_TITLE, DS_FW_TITLE)}>Sleeve length ${escapeXml(measure)}</text>`,
-    `<text data-role="sleeve-length-note" x="${fmtNum(frame.midX)}" y="${fmtNum(y + 16)}" text-anchor="middle" fill="${DS_MUTED}" ${textFont(11)}>cuff to underarm, not including the cap</text>`,
+    `<text data-role="sleeve-length-caption" x="${fmtNum(frame.midX)}" y="${fmtNum(bands.lengthCaptionY)}" text-anchor="middle" fill="${DS_STROKE}" ${textFont(DS_FS_TITLE, DS_FW_TITLE)}>Sleeve length ${escapeXml(measure)}</text>`,
+    `<text data-role="sleeve-length-note" x="${fmtNum(frame.midX)}" y="${fmtNum(bands.lengthNoteY)}" text-anchor="middle" fill="${DS_MUTED}" ${textFont(11)}>cuff to underarm, not including the cap</text>`,
     `</g>`,
   ].join("");
 }
 
 function drawStitchesRowsDimensions(frame: SleeveFrame, model: SetInSleeveDiagramModel): string {
-  const wristLineY = frame.wristY + 20;
-  const topLineY = frame.capTopY - 18;
+  const bands = stitchesRowsBands(frame.capTopY);
+  const wristLineY = frame.wristY + 28;
+  const topLineY = bands.capLineY;
   const bodyH = frame.cuffJoinY - frame.capStartY;
-  const upperLineY = frame.capStartY + Math.min(22, Math.max(8, bodyH * 0.18));
-  const lengthX = frame.upperRight + 18;
+  const upperLineY = frame.capStartY + Math.min(36, Math.max(18, bodyH * 0.16));
+  const lengthX = frame.upperRight + 36;
   return [
     sleeveLengthCaption(frame, model),
     horizontalWidth(frame.wristLeft, frame.wristRight, wristLineY, wristLineY + 16, model.wristWidthLabel, "wrist-width"),
-    horizontalWidth(frame.topLeft, frame.topRight, topLineY, topLineY - 22, model.topWidthLabel, "cap-top-width"),
+    horizontalWidth(frame.topLeft, frame.topRight, topLineY, bands.capLabelY, model.topWidthLabel, "cap-top-width"),
     `<g class="set-in-sleeve-diagram__upper-arm-width" data-upper-arm-width="true">`,
     `<line x1="${fmtNum(frame.upperLeft)}" y1="${fmtNum(frame.capStartY)}" x2="${fmtNum(frame.upperLeft)}" y2="${fmtNum(upperLineY)}" stroke="${DS_ARROW}" stroke-width="1" opacity="0.7" fill="none"/>`,
     `<line x1="${fmtNum(frame.upperRight)}" y1="${fmtNum(frame.capStartY)}" x2="${fmtNum(frame.upperRight)}" y2="${fmtNum(upperLineY)}" stroke="${DS_ARROW}" stroke-width="1" opacity="0.7" fill="none"/>`,
@@ -752,8 +777,8 @@ function sectionRcMarks(
         id: stepIndex === 0 ? "first-shaping" : `schedule-${stepIndex}`,
         kind: stepIndex === 0 ? "first-shaping" : "schedule-change",
         text: formatShapingNotationRcLabel(rc),
-        actionY: bodyRcY(frame, rc, model.sleeveBodyRows),
-        outlineX: sideX(frame, bodyRcY(frame, rc, model.sleeveBodyRows), "left"),
+        actionY: bodyRcY(frame, rc, model),
+        outlineX: sideX(frame, bodyRcY(frame, rc, model), "left"),
         priority: 2,
         rowCounter: rc,
       });
@@ -765,8 +790,8 @@ function sectionRcMarks(
         id: "final-shaping",
         kind: "final-shaping",
         text: formatShapingNotationRcLabel(last),
-        actionY: bodyRcY(frame, last, model.sleeveBodyRows),
-        outlineX: sideX(frame, bodyRcY(frame, last, model.sleeveBodyRows), "left"),
+        actionY: bodyRcY(frame, last, model),
+        outlineX: sideX(frame, bodyRcY(frame, last, model), "left"),
         priority: 2,
         rowCounter: last,
       });
@@ -794,8 +819,10 @@ function sectionRcMarks(
   return dedupeRcMarks(marks);
 }
 
-function bodyRcY(frame: SleeveFrame, rc: number, bodyRows: number): number {
-  const t = bodyRows > 0 ? Math.max(0, Math.min(1, rc / bodyRows)) : 0;
+function bodyRcY(frame: SleeveFrame, rc: number, model: SetInSleeveDiagramModel): number {
+  const gaugeBody = setInSleeveInchesFromRows(model.sleeveBodyRows, model.rowsPerInch);
+  const gaugeAt = setInSleeveInchesFromRows(rc, model.rowsPerInch);
+  const t = gaugeBody > 0 ? Math.max(0, Math.min(1, gaugeAt / gaugeBody)) : 0;
   return frame.cuffJoinY + (frame.capStartY - frame.cuffJoinY) * t;
 }
 
@@ -839,7 +866,7 @@ function drawRcLandmarks(
     landmarks: sectionRcMarks(model, frame, includeShaping),
     side: "left",
     fontSize: DS_FS_RC,
-    bounds: { minX: 4, minY: 14, maxX: DS_VB_W - 4, maxY: frame.canvasHeight - 10 },
+    bounds: { minX: 4, minY: 14, maxX: frame.canvasWidth - 4, maxY: frame.canvasHeight - 10 },
     obstacles,
     labelGap: 28,
   });
@@ -871,7 +898,7 @@ function outsideLabel(
   const width = Math.max(DS_FS_NOTATION, text.length * DS_FS_NOTATION * 0.56);
   if (side === "right") {
     const preferred = outline + 10;
-    const maxX = DS_VB_W - 8 - width;
+    const maxX = frame.canvasWidth - 8 - width;
     return { x: Math.max(outline + 4, Math.min(preferred, maxX)), anchor: "start" };
   }
   const preferred = outline - 10;
@@ -989,6 +1016,7 @@ function bodyNotationLabels(model: SetInSleeveDiagramModel, frame: SleeveFrame):
     bindOffLabel: "",
     workingTokens,
     fontSize: DS_FS_NOTATION,
+    canvasRight: frame.canvasWidth,
   });
   return labels.map((label) => {
     if (label.y >= frame.capStartY - 8 && label.y < frame.cuffJoinY) {
@@ -1014,11 +1042,12 @@ function notationLabelsFor(model: SetInSleeveDiagramModel, frame: SleeveFrame): 
 }
 
 function frameForSleeve(model: SetInSleeveDiagramModel): SleeveFrame {
-  const probe = buildSleeveFrame(model);
+  const probe = buildSleeveFrame(model, SLEEVE_ANNOTATION_TOP);
   const labels = notationLabelsFor(model, probe);
-  const top = Math.min(...labels.map((label) => label.y));
+  const captionY = stitchesRowsBands(probe.capTopY).lengthCaptionY;
+  const top = Math.min(captionY, ...labels.map((label) => label.y));
   const overflow = Math.max(0, 18 - top);
-  return overflow > 0 ? buildSleeveFrame(model, DS_PAD_TOP + overflow) : probe;
+  return overflow > 0 ? buildSleeveFrame(model, SLEEVE_ANNOTATION_TOP + overflow) : probe;
 }
 
 function drawSleeveSvg(model: SetInSleeveDiagramModel, mode: "sts-rows" | "shaping-notation"): string {
@@ -1061,14 +1090,18 @@ function drawSleeveSvg(model: SetInSleeveDiagramModel, mode: "sts-rows" | "shapi
       "data-cap-height-inches": fmtNum(model.capHeightInches),
       "data-wrist-inches": fmtNum(model.wristInches),
       "data-sleeve-geometry": "flat",
-      "data-sleeve-px-per-inch": fmtNum(
-        DS_BODY_MAX_W / Math.max(setInSleeveFlatWidthInches(model.upperArmInches), 0.125),
+      "data-sleeve-schematic": SET_IN_SLEEVE_SCHEMATIC_ID,
+      "data-sleeve-px-per-inch": fmtNum(SET_IN_SLEEVE_PX_PER_INCH),
+      "data-sleeve-width-to-length": fmtNum(
+        model.sleeveLengthInches > 0 ? model.upperArmInches / model.sleeveLengthInches : 0,
       ),
       "data-upper-arm-inches": fmtNum(model.upperArmInches),
       "data-top-width-inches": fmtNum(model.topWidthInches),
     },
     title,
+    viewBoxWidth: frame.canvasWidth,
     viewBoxHeight: frame.canvasHeight,
+    style: `width:100%;height:auto;max-height:none;aspect-ratio:${fmtNum(frame.canvasWidth)} / ${fmtNum(frame.canvasHeight)}`,
     body: parts.join(""),
   });
 }

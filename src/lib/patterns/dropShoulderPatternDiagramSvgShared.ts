@@ -872,23 +872,29 @@ export function wrapGeneratedDiagramSvg(attrs: {
   dataAttrs: Record<string, string | number>;
   title: string;
   body: string;
-  /** Defaults to the Drop Shoulder canvas. Set-in sleeve grows this when the cap has more labels. */
+  /** Defaults to the Drop Shoulder canvas. Set-in sleeve grows both axes around the laid-open sleeve. */
+  viewBoxWidth?: number;
   viewBoxHeight?: number;
+  /** Inline style. Wins over a parent aspect-ratio so the viewBox is not stretched. */
+  style?: string;
 }): string {
+  const width = attrs.viewBoxWidth && attrs.viewBoxWidth > 0 ? attrs.viewBoxWidth : DS_VB_W;
   const height = attrs.viewBoxHeight && attrs.viewBoxHeight > 0 ? attrs.viewBoxHeight : DS_VB_H;
   const data = Object.entries(attrs.dataAttrs)
     .map(([k, v]) => ` ${k}="${escapeXml(String(v))}"`)
     .join("");
+  const style = attrs.style ? ` style="${escapeXml(attrs.style)}"` : "";
   const safeBody = attrs.body.replace(/\bNaN\b/g, "0").replace(/\bInfinity\b/g, "0");
   return (
-    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${DS_VB_W} ${fmtNum(height)}"` +
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${fmtNum(width)} ${fmtNum(height)}"` +
     ` width="100%" height="auto" preserveAspectRatio="xMidYMid meet" role="img"` +
     ` aria-label="${escapeXml(attrs.ariaLabel)}"` +
     ` class="${escapeXml(attrs.className)}"` +
+    style +
     data +
     `>` +
     `<title>${escapeXml(attrs.title)}</title>` +
-    `<rect x="0" y="0" width="${DS_VB_W}" height="${fmtNum(height)}" fill="#fff"/>` +
+    `<rect x="0" y="0" width="${fmtNum(width)}" height="${fmtNum(height)}" fill="#fff"/>` +
     safeBody +
     `</svg>`
   );

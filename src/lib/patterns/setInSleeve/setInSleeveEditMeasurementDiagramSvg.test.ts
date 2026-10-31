@@ -52,8 +52,8 @@ describe("Set-In Sleeve edit measurement diagram — Sleeve tab", () => {
     expect(svg).toContain('data-sleeve-cuff-join="true"');
     expect(svg).toContain('data-role="dim-cuff-depth"');
     expect(svg).not.toContain('data-role="body-outline"');
-    expect(attr(svg, "data-upper-width") / (SLEEVE.upperArmInches / 2)).toBeCloseTo(px, 4);
-    expect(attr(svg, "data-wrist-width") / (SLEEVE.cuffCircumferenceInches / 2)).toBeCloseTo(px, 4);
+    expect(attr(svg, "data-upper-width") / SLEEVE.upperArmInches).toBeCloseTo(px, 4);
+    expect(attr(svg, "data-wrist-width") / SLEEVE.cuffCircumferenceInches).toBeCloseTo(px, 4);
     expect(attr(svg, "data-sleeve-length-px") / SLEEVE.sleeveLengthInches).toBeCloseTo(px, 4);
     expect(attr(svg, "data-cuff-depth-px") / SLEEVE.cuffDepthInches).toBeCloseTo(px, 4);
     expect(attr(deep, "data-sleeve-length-px")).toBeCloseTo(attr(shallow, "data-sleeve-length-px"), 4);
@@ -130,34 +130,50 @@ describe("Set-In Sleeve edit measurement diagram — Sleeve tab", () => {
     expect(new Set(underarmXs.map((x) => x.toFixed(2))).size).toBeGreaterThan(2);
     expect(Number(length?.[1])).toBeCloseTo(underarmY, 1);
     expect(Number(length?.[2])).toBeCloseTo(underarmY + SLEEVE.sleeveLengthInches * px, 1);
-    expect(attr(svg, "data-upper-width") / (upperInches / 2)).toBeCloseTo(px, 4);
+    expect(attr(svg, "data-upper-width") / upperInches).toBeCloseTo(px, 4);
     expect(attr(svg, "data-sleeve-length-px") / SLEEVE.sleeveLengthInches).toBeCloseTo(px, 4);
     expect(attr(svg, "data-cap-height-px") / capInches).toBeCloseTo(px, 4);
     expect(attr(svg, "data-cuff-depth-px") / SLEEVE.cuffDepthInches).toBeCloseTo(px, 4);
     const pxPerStitch = attr(svg, "data-upper-width") / cap!.sleeve.upperArmStitches;
     const pxPerRow = attr(svg, "data-cap-height-px") / cap!.totals.capRows;
     expect(pxPerStitch).not.toBeCloseTo(pxPerRow, 1);
-    expect(pxPerStitch * 7 * 2).toBeCloseTo(pxPerRow * 10, 1);
+    expect(pxPerStitch * 7).toBeCloseTo(pxPerRow * 10, 1);
   });
 });
 
-describe("Set-In Sleeve edit measurement diagram — example flat sleeve", () => {
-  it("draws 13 by 6.5 by 17 inches as a 6.5 by 3.25 flat sleeve at one scale", () => {
+describe("Set-In Sleeve edit measurement diagram — laid-open sleeve", () => {
+  it("draws a 14 by 7.5 by 16.5 inch sleeve at full circumference and one scale", () => {
     const svg = buildSetInSleeveEditSleeveMeasurementDiagramSvg({
-      upperArmInches: 13,
-      cuffCircumferenceInches: 6.5,
-      sleeveLengthInches: 17,
+      upperArmInches: 14,
+      cuffCircumferenceInches: 7.5,
+      sleeveLengthInches: 16.5,
       cuffDepthInches: 2,
     });
     const px = attr(svg, "data-sleeve-px-per-inch");
-    const viewBox = svg.match(/viewBox="([^"]+)"/)?.[1]?.split(/\s+/).map(Number) ?? [];
-    expect(attr(svg, "data-upper-width")).toBeCloseTo(6.5 * px, 4);
-    expect(attr(svg, "data-wrist-width")).toBeCloseTo(3.25 * px, 4);
-    expect(attr(svg, "data-sleeve-length-px")).toBeCloseTo(17 * px, 4);
-    expect(attr(svg, "data-cuff-depth-px")).toBeCloseTo(2 * px, 4);
-    expect(viewBox[2]! / viewBox[3]!).toBeGreaterThan(0);
+    const upper = attr(svg, "data-upper-width");
+    const wrist = attr(svg, "data-wrist-width");
+    const length = attr(svg, "data-sleeve-length-px");
+    const cuff = attr(svg, "data-cuff-depth-px");
+    expect(upper).toBeCloseTo(14 * px, 4);
+    expect(wrist).toBeCloseTo(7.5 * px, 4);
+    expect(length).toBeCloseTo(16.5 * px, 4);
+    expect(cuff).toBeCloseTo(2 * px, 4);
+    expect(cuff).toBeLessThan(length);
+    expect(upper / length).toBeCloseTo(14 / 16.5, 4);
+    expect(upper / length).toBeCloseTo(0.8485, 3);
+    const saved = buildSetInSleeveEditSleeveMeasurementDiagramSvg({
+      upperArmInches: 11.75,
+      cuffCircumferenceInches: 9,
+      sleeveLengthInches: 16.25,
+      cuffDepthInches: 2,
+    });
+    expect(attr(saved, "data-upper-width") / attr(saved, "data-sleeve-length-px")).toBeCloseTo(11.75 / 16.25, 4);
+    expect(attr(saved, "data-upper-width") / attr(saved, "data-sleeve-length-px")).toBeCloseTo(0.7231, 3);
+    expect(saved).toContain('data-sleeve-schematic="laid-open-gauge-v1"');
+    expect(saved).toContain("aspect-ratio:");
     expect(svg).toContain('preserveAspectRatio="xMidYMid meet"');
     expect(svg).toContain('height="auto"');
+    expect(svg).not.toContain('viewBox="0 0 430 520"');
   });
 });
 
