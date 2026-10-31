@@ -75,7 +75,11 @@ describe("planCurrentMembershipAccessUpdates", () => {
     ]);
     expect(plan.missingFromActiveCampaign).toEqual(["nocontact@example.com"]);
     expect(plan.duplicateContacts).toEqual([
-      { email: "shared@example.com", contactIds: ["ac_dup_1", "ac_dup_2"] },
+      {
+        email: "shared@example.com",
+        contactIds: ["ac_dup_1", "ac_dup_2"],
+        outcome: "unresolved",
+      },
     ]);
     expect(plan.unresolved.map((item) => item.reason)).toContain("ambiguous_memberstack_email");
     expect(plan.missingFromWatson.map((item) => item.contactId)).toContain("ac_dup_1");
