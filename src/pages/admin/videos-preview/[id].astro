@@ -12,8 +12,8 @@ import { catalogTranscriptVimeoId } from "../../../lib/transcripts/generateCatal
 import { normalizeVideoCatalogStatus } from "../../../lib/videoPublic";
 import { catalogVideoPlaybackAccess } from "../../../lib/videos/catalogVideoPlaybackAccess";
 import { videoCatalogRepoForHost } from "../../../lib/videos/videoCatalogRepo";
+import { loadMergedVideoCatalog } from "../../../lib/videos/videoCatalogStore";
 import {
-  parseVideoCatalog,
   readableVttParagraphs,
   transcriptFilesForVimeoId,
 } from "../../../lib/videos/videoCatalogSave";
@@ -33,10 +33,19 @@ let paragraphs: string[] = [];
 let transcriptNote = "";
 
 try {
-  const repo = videoCatalogRepoForHost(Astro.url.hostname);
-  const snapshot = await repo.readSnapshot();
-  video = parseVideoCatalog(snapshot.catalogRaw).find((row) => videoContentIdKey(row.content_id) === key);
-  if (video) {
+  const merged = await loadMergedVideoCatalog();
+  video = merged.find(
+    (row): row is Record<string, unknown> =>
+      Boolean(row) && typeof row === "object" && videoContentIdKey((row as Record<string, unknown>).content_id) === key,
+  );
+} catch (readError) {
+  error = readError instanceof Error ? readError.message : "The saved catalog could not be read.";
+}
+
+if (video && !error) {
+  try {
+    const repo = videoCatalogRepoForHost(Astro.url.hostname);
+    const snapshot = await repo.readSnapshot();
     const vimeoId = catalogTranscriptVimeoId(video as PublicVideoRow);
     const files = transcriptFilesForVimeoId(snapshot, vimeoId);
     const stored = files.published[0]
@@ -46,17 +55,13 @@ try {
         : "";
     if (stored) {
       const bytes = await repo.readFile(stored, snapshot.ref);
-      try {
-        paragraphs = bytes ? readableVttParagraphs(bytes, "The saved VTT") : [];
-      } catch (vttError) {
-        transcriptNote = vttError instanceof Error ? vttError.message : "The saved VTT could not be read.";
-      }
+      paragraphs = bytes ? readableVttParagraphs(bytes, "The saved VTT") : [];
     } else {
       transcriptNote = "No English transcript has been uploaded for this video yet.";
     }
+  } catch (vttError) {
+    transcriptNote = vttError instanceof Error ? vttError.message : "The saved VTT could not be read.";
   }
-} catch (readError) {
-  error = readError instanceof Error ? readError.message : "The saved catalog could not be read.";
 }
 
 const title = typeof video?.title === "string" ? video.title : "Video preview";
@@ -78,7 +83,7 @@ const posterUrl = typeof video?.posterUrl === "string" ? video.posterUrl : "";
 const category = [video?.category, video?.subcategory].filter((part) => typeof part === "string" && part).join(" › ");
 const statusLabel =
   status === "published"
-    ? "Published. Visitors see this version once the site finishes rebuilding."
+    ? "Published. Visitors can see this version now."
     : status === "draft"
       ? "Draft. Only admins can see this preview; it is hidden from the Learning Library, search, and the video page."
       : "Archived. Hidden from the Learning Library, search, and the video page.";

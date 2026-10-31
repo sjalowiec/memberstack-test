@@ -17,7 +17,7 @@ import {
   uniqueVideoSlug,
   type VideoSaveInput,
 } from "./videoCatalogSave";
-import { saveCatalogAccessLevels, saveCatalogVideo, videoLiveState } from "./videoCatalogService";
+import { changesKeptForRepo, saveCatalogAccessLevels, saveCatalogVideo, videoLiveState } from "./videoCatalogService";
 
 const EN = "src/data/transcripts/en";
 const DRAFTS = "src/data/transcripts/drafts/en";
@@ -285,6 +285,18 @@ describe("saving a video", () => {
     expect(repo.commits).toHaveLength(1);
     expect(JSON.stringify(generatedOf(repo, "public"))).toContain("Shape the first side");
     expect(JSON.stringify(generatedOf(repo, "member"))).not.toContain("Shape the first side");
+  });
+});
+
+describe("database catalog commits", () => {
+  it("keeps transcript files and leaves the catalog and generated JSON out of the repo commit", () => {
+    const changes: VideoRepoChange[] = [
+      { path: "src/data/videos-public.json", content: Buffer.from("[]") },
+      { path: "src/data/transcripts/generated/public.json", content: Buffer.from("{}") },
+      { path: "src/data/transcripts/en/1.vtt", content: Buffer.from("WEBVTT") },
+    ];
+    expect(changesKeptForRepo(changes, true).map((change) => change.path)).toEqual(["src/data/transcripts/en/1.vtt"]);
+    expect(changesKeptForRepo(changes, false)).toHaveLength(3);
   });
 });
 

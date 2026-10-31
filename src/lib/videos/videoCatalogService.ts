@@ -15,7 +15,56 @@ import {
   type VideoSavePlan,
   type VideoSaveStatus,
 } from "./videoCatalogSave";
+import { loadMergedVideoCatalog, saveVideoCatalogEdits, videoCatalogDatabaseEnabled } from "./videoCatalogStore";
 import { videoContentIdKey } from "./videoPosterOverrides";
+
+/** Catalog and generated transcript JSON stay in the database. Transcript files can still be committed. */
+export function changesKeptForRepo(changes: readonly VideoRepoChange[], database: boolean): VideoRepoChange[] {
+  if (!database) return [...changes];
+  return changes.filter((change) => {
+    const path = change.path.replace(/\\/g, "/");
+    if (path.endsWith("videos-public.json")) return false;
+    if (path.includes("/transcripts/generated/")) return false;
+    return true;
+  });
+}
+
+function catalogTextFromChanges(changes: readonly VideoRepoChange[]): string | null {
+  const change = changes.find((item) => item.path.endsWith("videos-public.json") && "content" in item);
+  if (!change || !("content" in change)) return null;
+  return change.content.toString("utf8");
+}
+
+async function planningSnapshot(snapshot: VideoCatalogSnapshot): Promise<VideoCatalogSnapshot> {
+  if (!videoCatalogDatabaseEnabled()) return snapshot;
+  const merged = await loadMergedVideoCatalog();
+  return { ...snapshot, catalogRaw: `${JSON.stringify(merged, null, 2)}\n` };
+}
+
+async function commitPlannedChanges(
+  repo: VideoCatalogRepo,
+  snapshot: VideoCatalogSnapshot,
+  changes: VideoRepoChange[],
+  message: string,
+): Promise<VideoCatalogCommitResult> {
+  const database = videoCatalogDatabaseEnabled();
+  const catalogText = database ? catalogTextFromChanges(changes) : null;
+  if (catalogText) {
+    let next: unknown;
+    try {
+      next = JSON.parse(catalogText);
+    } catch {
+      throw new VideoSaveError("The video catalog could not be saved. Nothing was saved.");
+    }
+    if (!Array.isArray(next)) throw new VideoSaveError("The video catalog could not be saved. Nothing was saved.");
+    await saveVideoCatalogEdits(next as Record<string, unknown>[]);
+  }
+  const fileChanges = changesKeptForRepo(changes, database);
+  if (database && catalogText && fileChanges.length === 0) return { persistedVia: "database" };
+  const commit = await repo.commit(snapshot, database && catalogText ? fileChanges : changes, message);
+  if (database && catalogText) return { ...commit, persistedVia: "database" };
+  return commit;
+}
 
 export type VideoSaveResult = {
   plan: VideoSavePlan;
@@ -38,8 +87,9 @@ export function saveCatalogVideo(
 ): Promise<VideoSaveResult> {
   return withConflictRetry(async () => {
     const snapshot = await repo.readSnapshot();
-    const plan = await planVideoSave(snapshot, input, (path) => repo.readFile(path, snapshot.ref));
-    const commit = await repo.commit(snapshot, plan.changes, videoSaveCommitMessage(plan, actor));
+    const planning = await planningSnapshot(snapshot);
+    const plan = await planVideoSave(planning, input, (path) => repo.readFile(path, snapshot.ref));
+    const commit = await commitPlannedChanges(repo, snapshot, plan.changes, videoSaveCommitMessage(plan, actor));
     return { plan, commit };
   });
 }
@@ -79,7 +129,7 @@ export function saveCatalogAccessLevels(
 ): Promise<{ updated: AccessLevelUpdate[]; notFound: string[]; commit: VideoCatalogCommitResult | null }> {
   return withConflictRetry(async () => {
     const original = await repo.readSnapshot();
-    let snapshot = original;
+    let snapshot = await planningSnapshot(original);
     const updated: AccessLevelUpdate[] = [];
     const notFound: string[] = [];
     for (const update of updates) {
@@ -129,7 +179,7 @@ export function saveCatalogAccessLevels(
       "",
       `Saved from the hosted video admin${actor ? ` by ${actor}` : ""}.`,
     ].join("\n");
-    const commit = await repo.commit(original, changes, message);
+    const commit = await commitPlannedChanges(repo, original, changes, message);
     return { updated, notFound, commit };
   });
 }

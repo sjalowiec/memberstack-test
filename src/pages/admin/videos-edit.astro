@@ -4,7 +4,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 
 <BaseLayout
   title="Edit Video | Knit it Now"
-  description="Create or edit a catalog video (videos-public.json)"
+  description="Create or edit a catalog video. Saves are stored for the live site."
   bodyClass="videos-admin-body help-hub-admin-body"
 >
   <main class="help-hub-admin">
@@ -1263,8 +1263,10 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
         if (isNew) nextContentId = Math.max(nextContentId, Number(contentId) + 1 || 0);
         loadRowToForm(saved);
 
-        const where =
-          data.persistedVia === "github"
+        const storedNow = data.persistedVia === "database";
+        const where = storedNow
+          ? "Saved on the site. No deploy is needed."
+          : data.persistedVia === "github"
             ? `Saved to GitHub (${data.branch ?? "branch"}), commit ${String(data.commitSha ?? "").slice(0, 7)}.`
             : "Saved to the local catalog files.";
         const statusWord = status === "published" ? "published" : status === "draft" ? "a draft" : "archived";
@@ -1274,13 +1276,22 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
           { text: where, kind: "done" },
         ];
         if (data.posterWarning) lastSaveSteps.push({ text: data.posterWarning, kind: "error" });
-        lastSaveSteps.push({ text: "Site rebuilding. This usually takes a few minutes.", kind: "waiting" });
+        if (storedNow) {
+          lastSaveSteps.push({
+            text: status === "published"
+              ? "Live. The Learning Library and this video page show it now."
+              : "Saved. Visitors will not see it until you publish it.",
+            kind: "done",
+          });
+        } else {
+          lastSaveSteps.push({ text: "Site rebuilding. This usually takes a few minutes.", kind: "waiting" });
+        }
         renderSteps(lastSaveSteps);
         setStatus(`Saved video ${contentId}.`, "ok");
 
         const checkBtn = document.getElementById("btn-check-live");
         if (checkBtn) {
-          checkBtn.hidden = false;
+          checkBtn.hidden = storedNow;
           checkBtn.dataset.contentId = contentId;
         }
         const previewLink = document.getElementById("videos-edit-result-preview");
@@ -1289,13 +1300,16 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
           previewLink.href = `/admin/videos-preview/${encodeURIComponent(contentId)}`;
         }
         const publicLink = document.getElementById("videos-edit-result-public");
-        if (publicLink) publicLink.hidden = true;
+        if (publicLink instanceof HTMLAnchorElement) {
+          publicLink.hidden = !(storedNow && status === "published");
+          if (storedNow && status === "published") publicLink.href = `/videos/${encodeURIComponent(contentId)}`;
+        }
 
         const url = new URL(window.location.href);
         url.searchParams.set("key", stableVideoKey(saved));
         window.history.replaceState({}, "", url.toString());
-        if (data.persistedVia === "github") startLiveChecks(contentId);
-        else void checkLive(contentId, { quiet: true });
+        if (!storedNow && data.persistedVia === "github") startLiveChecks(contentId);
+        else if (!storedNow) void checkLive(contentId, { quiet: true });
       } catch {
         renderSteps([{ text: "Save failed: the site could not be reached. Nothing was saved.", kind: "error" }], true);
         setStatus("Network error. Nothing was saved.", "err");
@@ -1339,9 +1353,11 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
       el.classList.toggle("is-warning", !saveInfo.canSave);
       el.textContent = !saveInfo.canSave
         ? saveInfo.warning || "Saving is turned off on this site."
-        : saveInfo.mode === "github"
-          ? `Saves are committed to GitHub (${saveInfo.branch ?? "branch"}). The site then rebuilds, usually within a few minutes.`
-          : "Local workspace: saves update the catalog files in this checkout.";
+        : saveInfo.mode === "database"
+          ? "Saves are stored on the site. Published videos show up without a deploy."
+          : saveInfo.mode === "github"
+            ? `Saves are committed to GitHub (${saveInfo.branch ?? "branch"}). The site then rebuilds, usually within a few minutes.`
+            : "Local workspace: saves update the catalog files in this checkout.";
       if (posterWarning) el.textContent += ` ${posterWarning}`;
     }
 

@@ -32,7 +32,7 @@ export type VideoCatalogSnapshot = {
 };
 
 export type VideoCatalogCommitResult = {
-  persistedVia: "filesystem" | "github";
+  persistedVia: "filesystem" | "github" | "database";
   branch?: string;
   commitSha?: string;
 };

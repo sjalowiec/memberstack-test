@@ -11,9 +11,9 @@ import {
   videoContentIdKey,
 } from "../../../lib/videos/videoPosterOverrides";
 import { videoCatalogRepoForHost, type VideoCatalogSnapshot } from "../../../lib/videos/videoCatalogRepo";
+import { loadMergedVideoCatalog } from "../../../lib/videos/videoCatalogStore";
 import {
   nextVideoContentId,
-  parseVideoCatalog,
   transcriptStateForVimeoId,
   type VideoTranscriptState,
 } from "../../../lib/videos/videoCatalogSave";
@@ -54,20 +54,19 @@ export const GET: APIRoute = async ({ request, cookies }) => {
   if (!auth.ok) return jsonResponse(adminAuthErrorBody(auth), auth.status);
 
   try {
-    // The latest saved catalog (GitHub on hosted sites), so drafts saved since
-    // the last deploy show up. Falls back to this deploy's copy, read-only.
-    let data: unknown[];
+    // Saved videos live in the database, over this deploy's catalog file.
+    // GitHub is only used to show whether a transcript file exists.
+    const data = await loadMergedVideoCatalog();
+    const save: { canSave: boolean; mode?: string; branch?: string; warning?: string } = {
+      canSave: true,
+      mode: "database",
+    };
     let snapshot: VideoCatalogSnapshot | null = null;
-    let save: { canSave: boolean; mode?: string; branch?: string; warning?: string };
     try {
       const repo = videoCatalogRepoForHost(new URL(request.url).hostname);
       snapshot = await repo.readSnapshot();
-      data = parseVideoCatalog(snapshot.catalogRaw);
-      save = { canSave: true, mode: repo.mode, branch: repo.branch };
-    } catch (error) {
-      data = readVideosFile().videos;
-      const reason = error instanceof Error ? error.message : "The saved catalog could not be read.";
-      save = { canSave: false, warning: `${reason} Showing this deploy's copy; saving is turned off.` };
+    } catch {
+      snapshot = null;
     }
 
     // Editor saves store one video's thumbnail at a time, so showing catalog
