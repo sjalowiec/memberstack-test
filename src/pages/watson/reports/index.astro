@@ -41,6 +41,9 @@ try {
     <a class="watson-reports__nav-link" href="/watson/search-activity">
       Search activity
     </a>
+    <a class="watson-reports__nav-link" href="/watson/reports/current-members">
+      Current Members
+    </a>
     <a class="watson-reports__nav-link" href="/watson/reports/current-legacy-members">
       Current Legacy Members
     </a>
@@ -59,9 +62,15 @@ try {
     <h2 id="membership-reports-heading" class="watson__panel-title">Membership reports</h2>
     <ul class="watson-reports__list">
       <li>
+        <a href="/watson/reports/current-members">Current Members</a>
+        — people who currently have site membership access, one person per mailbox.
+        This is the census written to ActiveCampaign. It is not the legacy import screen.
+      </li>
+      <li>
         <a href="/watson/reports/current-legacy-members">Current Legacy Members</a>
         — reproduces the legacy current-member universe from member fields
         (<code>betaactive = 0</code>, <code>subscriptionexpiring &gt;= today</code>).
+        Separate from Current Members.
       </li>
       <li>
         <a href="/watson/reports/remaining-annual-access">Remaining Annual Access</a>

@@ -66,6 +66,25 @@ export interface ActiveCampaignClient {
   /** Read one custom field value for a contact, or null when unset. */
   readFieldValue?(contactId: string, fieldId: string): Promise<string | null>;
   /**
+   * Write one custom field on an existing contact.
+   * Does not create a contact and does not change any other field.
+   */
+  writeFieldValue?(contactId: string, fieldId: string, value: string): Promise<void>;
+  /** Page contacts. Optionally restrict to one tag. Does not create contacts. */
+  listContacts?(options: {
+    offset: number;
+    limit?: number;
+    tagId?: string;
+  }): Promise<Array<{ id: string; email: string | null }>>;
+  /**
+   * Page values for one custom field.
+   * Returns null when the API will not filter to that field, so the caller
+   * does not mistake other fields for this one.
+   */
+  listFieldValues?(
+    fieldId: string,
+  ): Promise<Array<{ contactId: string; value: string }> | null>;
+  /**
    * Read one automation by exact name. Never creates or starts an automation.
    * Null when no automation has that exact name.
    */
@@ -151,8 +170,13 @@ interface AcFieldResponse {
   field?: AcField;
 }
 interface AcFieldValue {
+  id?: string;
+  contact?: string;
   field?: string;
   value?: string;
+}
+interface AcContactsListResponse {
+  contacts?: Array<{ id?: string; email?: string }>;
 }
 interface AcFieldValuesResponse {
   fieldValues?: AcFieldValue[];
@@ -465,6 +489,66 @@ export function createActiveCampaignClient(
       );
       const value = match?.value?.trim();
       return value || null;
+    },
+
+    async writeFieldValue(contactId, fieldId, value): Promise<void> {
+      const resp = await request(
+        `/api/3/contacts/${encodeURIComponent(contactId)}/fieldValues`,
+      );
+      const data = await readJson<AcFieldValuesResponse>(resp, "field value read");
+      const existing = (data.fieldValues ?? []).find(
+        (entry) => String(entry.field ?? "") === String(fieldId),
+      );
+      const body = JSON.stringify({
+        fieldValue: { contact: contactId, field: fieldId, value },
+      });
+      if (existing?.id) {
+        const update = await request(`/api/3/fieldValues/${encodeURIComponent(existing.id)}`, {
+          method: "PUT",
+          body,
+        });
+        await readJson(update, "field value update");
+        return;
+      }
+      const create = await request("/api/3/fieldValues", { method: "POST", body });
+      await readJson(create, "field value create");
+    },
+
+    async listContacts(options): Promise<Array<{ id: string; email: string | null }>> {
+      const limit = options.limit ?? 100;
+      const params = new URLSearchParams({
+        limit: String(limit),
+        offset: String(options.offset),
+      });
+      if (options.tagId) params.set("tagid", options.tagId);
+      const resp = await request(`/api/3/contacts?${params.toString()}`);
+      const data = await readJson<AcContactsListResponse>(resp, "contact list");
+      return (data.contacts ?? [])
+        .filter((contact) => contact.id)
+        .map((contact) => ({
+          id: String(contact.id),
+          email: contact.email?.trim() || null,
+        }));
+    },
+
+    async listFieldValues(fieldId) {
+      const values: Array<{ contactId: string; value: string }> = [];
+      for (let offset = 0; offset < 100_000; offset += 100) {
+        const resp = await request(
+          `/api/3/fieldValues?limit=100&offset=${offset}&filters[fieldid]=${encodeURIComponent(fieldId)}`,
+        );
+        const data = await readJson<AcFieldValuesResponse>(resp, "field value list");
+        const batch = data.fieldValues ?? [];
+        if (batch.some((entry) => entry.field && String(entry.field) !== String(fieldId))) {
+          return null;
+        }
+        for (const entry of batch) {
+          if (!entry.contact || entry.value == null) continue;
+          values.push({ contactId: String(entry.contact), value: String(entry.value) });
+        }
+        if (batch.length < 100) break;
+      }
+      return values;
     },
   };
 }
