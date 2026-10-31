@@ -1,7 +1,14 @@
 import { describe, expect, it, vi } from "vitest";
 
 import type { ActiveCampaignClient } from "./client";
-import { planCurrentMembershipAccessUpdates } from "./currentMembershipAccessSync";
+import {
+  membershipAccessBatchSize,
+  membershipAccessLockIsActive,
+  membershipAccessShouldChain,
+  MEMBERSHIP_ACCESS_LOCK_MS,
+  MEMBERSHIP_ACCESS_WRITE_BATCH,
+  planCurrentMembershipAccessUpdates,
+} from "./currentMembershipAccessSync";
 import { CURRENT_MEMBERSHIP_ACCESS_FIELD } from "../membership/currentMembershipAccess";
 import type { CurrentMembershipAccessCensus } from "../membership/currentMembershipAccessCensus";
 import { runCurrentMembershipAccessSync } from "./currentMembershipAccessSync";
@@ -206,5 +213,58 @@ describe("runCurrentMembershipAccessSync", () => {
     expect(result.written).toBe(0);
     expect(writeFieldValue).not.toHaveBeenCalled();
     expect(result.errorMessage).toContain("already marked yes");
+  });
+});
+
+describe("membership access continuation", () => {
+  it("caps each live batch and continues while writes remain", () => {
+    expect(membershipAccessBatchSize(undefined)).toBe(MEMBERSHIP_ACCESS_WRITE_BATCH);
+    expect(membershipAccessBatchSize(5000)).toBe(MEMBERSHIP_ACCESS_WRITE_BATCH);
+    expect(membershipAccessBatchSize(40)).toBe(40);
+    expect(
+      membershipAccessShouldChain({
+        liveWrite: true,
+        fieldValuesKnown: true,
+        truncated: false,
+        legacyLoaded: true,
+        written: 1000,
+        remainingWrites: 2000,
+        failures: 1,
+        retry: 0,
+      }),
+    ).toBe(true);
+    expect(
+      membershipAccessShouldChain({
+        liveWrite: true,
+        fieldValuesKnown: true,
+        truncated: false,
+        legacyLoaded: true,
+        written: 0,
+        remainingWrites: 1,
+        failures: 1,
+        retry: 2,
+      }),
+    ).toBe(false);
+    expect(
+      membershipAccessShouldChain({
+        liveWrite: false,
+        fieldValuesKnown: true,
+        truncated: false,
+        legacyLoaded: true,
+        written: 0,
+        remainingWrites: 10,
+        failures: 0,
+        retry: 0,
+      }),
+    ).toBe(false);
+  });
+
+  it("treats a lock younger than 16 minutes as an active worker", () => {
+    const now = Date.parse("2026-10-31T20:00:00.000Z");
+    expect(membershipAccessLockIsActive(new Date(now - 60_000).toISOString(), now)).toBe(true);
+    expect(
+      membershipAccessLockIsActive(new Date(now - MEMBERSHIP_ACCESS_LOCK_MS).toISOString(), now),
+    ).toBe(false);
+    expect(membershipAccessLockIsActive(null, now)).toBe(false);
   });
 });

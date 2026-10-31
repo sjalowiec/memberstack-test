@@ -70,11 +70,13 @@
 
 # Current membership access reconciliation (daily at 09:45 UTC, after legacy
 # expiry, complimentary expiry, and the complimentary date sync). The scheduled
-# function only starts the background worker. The worker writes the ActiveCampaign
-# text field "Current membership access" when CURRENT_MEMBERSHIP_ACCESS_SYNC_LIVE_ENABLED
-# is exactly "true" on the production site. It does not send email or change
-# other contact fields. The sync function itself is not scheduled, so a manual
-# request can return the dry-run totals.
+# function only starts the background worker. Each live run writes at most 1,000
+# contacts, then starts the next run while any value is still missing or a write
+# failed. A second worker exits while that chain holds a lock under 16 minutes.
+# Writes require CURRENT_MEMBERSHIP_ACCESS_SYNC_LIVE_ENABLED exactly "true" on
+# the production site. The worker does not send email or change other contact
+# fields. The sync function itself is not scheduled, so a manual request without
+# next_run stays a dry run.
 [functions."current-membership-access-schedule"]
   schedule = "45 9 * * *"
 
