@@ -60,7 +60,7 @@ export interface MembershipAccessReconciliationPlan {
   /** Contacts already yes who are not a resolved current member. */
   missingFromWatson: Array<{ email: string; contactId: string; reason: string }>;
   unresolved: Array<{ email: string | null; reason: string }>;
-  duplicateContacts: Array<{ email: string; contactIds: string[] }>;
+  duplicateContacts: Array<{ email: string; contactIds: string[]; outcome: string }>;
 }
 
 export function planCurrentMembershipAccessUpdates(input: {
@@ -82,7 +82,7 @@ export function planCurrentMembershipAccessUpdates(input: {
   const wouldWrite: MembershipAccessWrite[] = [];
   const missingFromActiveCampaign: string[] = [];
   const unresolved: Array<{ email: string | null; reason: string }> = [];
-  const duplicateContacts: Array<{ email: string; contactIds: string[] }> = [];
+  const duplicateContacts: Array<{ email: string; contactIds: string[]; outcome: string }> = [];
   let unchanged = 0;
   let matchedYesCount = 0;
   let matchedNoCount = 0;
@@ -100,6 +100,7 @@ export function planCurrentMembershipAccessUpdates(input: {
       duplicateContacts.push({
         email: person.email,
         contactIds: contacts.map((contact) => contact.id),
+        outcome: person.outcome,
       });
     }
     if (person.outcome === "unresolved" || !person.value) {
