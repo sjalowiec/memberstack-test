@@ -100,6 +100,14 @@ export default async (req: Request): Promise<Response> => {
       sampleEmails: ["jigglybaa629@gmail.com", "4theotherbrother@gmail.com"],
     });
     console.log("[current-membership-access-sync]", summarizeCurrentMembershipAccessSync(result));
+    if (result.plan) {
+      console.log("[current-membership-access-sync] gaps", {
+        missingFromActiveCampaign: result.plan.missingFromActiveCampaign,
+        duplicateContacts: result.plan.duplicateContacts,
+        unresolved: result.plan.unresolved,
+        missingFromWatson: result.plan.missingFromWatson,
+      });
+    }
     const summary = summarizeCurrentMembershipAccessSync(result);
     return json(
       {
