@@ -24,6 +24,53 @@ import {
 
 export const CURRENT_MEMBERSHIP_ACCESS_SYNC_FLAG = "CURRENT_MEMBERSHIP_ACCESS_SYNC_LIVE_ENABLED";
 
+/** Stay inside the background-function time limit, then continue in a later run. */
+export const MEMBERSHIP_ACCESS_WRITE_BATCH = 1000;
+
+/** A run still holding the lock inside this window blocks a second worker. */
+export const MEMBERSHIP_ACCESS_LOCK_MS = 16 * 60 * 1000;
+
+export function membershipAccessBatchSize(requested: number | undefined): number {
+  if (requested == null || !Number.isFinite(requested) || requested <= 0) {
+    return MEMBERSHIP_ACCESS_WRITE_BATCH;
+  }
+  return Math.min(Math.floor(requested), MEMBERSHIP_ACCESS_WRITE_BATCH);
+}
+
+export function membershipAccessLockIsActive(
+  startedAtIso: string | null | undefined,
+  nowMs: number,
+): boolean {
+  if (!startedAtIso) return false;
+  const started = Date.parse(startedAtIso);
+  if (!Number.isFinite(started)) return false;
+  return nowMs - started >= 0 && nowMs - started < MEMBERSHIP_ACCESS_LOCK_MS;
+}
+
+/**
+ * Continue only after a live run that can still make progress.
+ * A batch that writes nothing is retried twice, then stopped so a permanent
+ * failure cannot chain forever. Successful writes reset that retry count.
+ */
+export function membershipAccessShouldChain(input: {
+  liveWrite: boolean;
+  fieldValuesKnown: boolean;
+  truncated: boolean;
+  legacyLoaded: boolean;
+  written: number;
+  remainingWrites: number;
+  failures: number;
+  retry: number;
+}): boolean {
+  if (!input.liveWrite || !input.fieldValuesKnown || input.truncated || !input.legacyLoaded) {
+    return false;
+  }
+  const more = input.remainingWrites > 0 || input.failures > 0;
+  if (!more) return false;
+  if (input.written <= 0 && input.retry >= 2) return false;
+  return true;
+}
+
 export function currentMembershipAccessSyncWillWrite(
   env: NodeJS.ProcessEnv = process.env,
 ): boolean {
@@ -186,6 +233,8 @@ export interface CurrentMembershipAccessSyncResult {
   census: CurrentMembershipAccessCensus | null;
   plan: MembershipAccessReconciliationPlan | null;
   fieldReady: boolean;
+  /** ActiveCampaign id of the exact "Current membership access" field. */
+  fieldId: string | null;
   /** False when existing field values could not be listed, so the ActiveCampaign yes count is not a measurement. */
   fieldValuesKnown: boolean;
   written: number;
@@ -251,6 +300,7 @@ export async function runCurrentMembershipAccessSync(
     census: null,
     plan: null,
     fieldReady: false,
+    fieldId: null,
     fieldValuesKnown: false,
     written: 0,
     remainingWrites: 0,
@@ -287,6 +337,7 @@ export async function runCurrentMembershipAccessSync(
       create: false,
       type: "text",
     });
+    result.fieldId = fieldId;
     result.fieldReady = Boolean(fieldId);
     const contacts = await listAllContacts(client);
     const attached = await attachFieldValues(client, contacts, fieldId);
@@ -314,6 +365,7 @@ export async function runCurrentMembershipAccessSync(
         type: "text",
       });
       result.fieldReady = Boolean(writeFieldId);
+      result.fieldId = writeFieldId;
     }
     if (!writeFieldId) {
       result.errorMessage = `Create a text field named "${CURRENT_MEMBERSHIP_ACCESS_FIELD}" before writing contacts.`;
