@@ -6,6 +6,9 @@
  */
 import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
+import publicGenerated from "../../data/transcripts/generated/public.json";
+import memberGenerated from "../../data/transcripts/generated/member.json";
+import auditGenerated from "../../data/transcripts/generated/audit.json";
 import { gitBlobSha } from "../machines/machineSalesGithub";
 import { detectSiteEnvironment, type SiteEnvironment } from "../env/siteEnvironment";
 import {
@@ -22,6 +25,7 @@ import {
   type VideoRepoChange,
   type VideoRepoFileEntry,
 } from "./videoCatalogGithub";
+import { loadMergedVideoCatalog } from "./videoCatalogStore";
 
 export type VideoCatalogSnapshot = {
   /** Commit the files were read from. Null on localhost. */
@@ -151,9 +155,44 @@ export function videoCatalogSiteEnvironment(hostname: string | null | undefined)
   });
 }
 
-/** Localhost edits the working tree. Every hosted site saves through GitHub. */
+/**
+ * Catalog saves do not need GitHub. When the hosted GitHub settings are absent,
+ * read the deployed catalog and transcript JSON and store the video in the database.
+ */
+export function deployedVideoCatalogRepo(): VideoCatalogRepo {
+  return {
+    mode: "filesystem",
+    async readSnapshot() {
+      const merged = await loadMergedVideoCatalog();
+      return {
+        ref: null,
+        catalogRaw: `${JSON.stringify(merged, null, 2)}\n`,
+        generated: {
+          public: JSON.stringify(publicGenerated),
+          member: JSON.stringify(memberGenerated),
+          audit: JSON.stringify(auditGenerated),
+        },
+        transcripts: { published: [], drafts: [] },
+      };
+    },
+    async readFile() {
+      return null;
+    },
+    async commit() {
+      return { persistedVia: "database" };
+    },
+  };
+}
+
+/** Localhost edits the working tree. Hosted sites use GitHub when it is configured, otherwise the database. */
 export function videoCatalogRepoForHost(hostname: string | null | undefined): VideoCatalogRepo {
   const site = videoCatalogSiteEnvironment(hostname);
   if (site === "localhost") return filesystemVideoCatalogRepo();
-  return githubVideoCatalogRepo(resolveVideoCatalogGithubConfig(site));
+  try {
+    return githubVideoCatalogRepo(resolveVideoCatalogGithubConfig(site));
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "";
+    if (/GITHUB_|VIDEO_CATALOG_GITHUB_BRANCH/.test(message)) return deployedVideoCatalogRepo();
+    throw error;
+  }
 }
