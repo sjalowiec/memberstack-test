@@ -1,9 +1,11 @@
 /**
- * Daily reconciliation of ActiveCampaign "Current membership access".
+ * Reconciliation of ActiveCampaign "Current membership access".
  *
- * Scheduled runs write only when CURRENT_MEMBERSHIP_ACCESS_SYNC_LIVE_ENABLED
- * is exactly "true" and this is the production site. kin-dev stays dry-run.
- * Manual HTTP is always a dry run. Does not send email or edit other fields.
+ * This function is not scheduled, so a manual request can return totals.
+ * A request body with next_run writes only when
+ * CURRENT_MEMBERSHIP_ACCESS_SYNC_LIVE_ENABLED is exactly "true" and this is
+ * the production site. kin-dev stays dry-run. Does not send email or edit
+ * other contact fields.
  */
 import { isScheduledInvocation } from "./legacy-annual-expiry";
 import {
