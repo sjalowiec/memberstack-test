@@ -8,7 +8,7 @@
  * Individual course lesson videos are not served here; those stay on gated
  * course pages (`canAccessCourse`, including individual course purchase).
  */
-import videosPublic from "../../src/data/videos-public.json";
+import { loadMergedVideoCatalog } from "../../src/lib/videos/videoCatalogStore";
 import { requireMember } from "./lib/member-auth.js";
 import { jsonResponse, withCors } from "./lib/custom-pattern-projects-store.js";
 import { getMemberstackAdminClient } from "./lib/memberstack-admin.js";
@@ -20,7 +20,10 @@ import { vimeoNumericIdFromPublicVideo, type PublicVideoRow } from "../../src/li
 import memberCatalogTranscripts from "../../src/data/transcripts/generated/member.json";
 import { paragraphsForVimeoId } from "../../src/lib/transcripts/catalogTranscriptData";
 
-const catalog = videosPublic as PublicVideoRow[];
+function noStore(response: Response): Response {
+  response.headers.set("Cache-Control", "private, no-store");
+  return response;
+}
 
 function authorizedEmbedBody(
   resolved: {
@@ -29,6 +32,7 @@ function authorizedEmbedBody(
   },
   contentId: string,
   transcript: string[],
+  catalog: PublicVideoRow[],
 ) {
   const row = findPublicCatalogVideoByContentId(catalog, contentId);
   const jumplinks = resolveVideoDetailJumpLinks(row, contentId).links;
@@ -41,7 +45,7 @@ function authorizedEmbedBody(
   };
 }
 
-function memberTranscriptFor(contentId: string): string[] {
+function memberTranscriptFor(contentId: string, catalog: PublicVideoRow[]): string[] {
   const row = findPublicCatalogVideoByContentId(catalog, contentId);
   const vimeoId =
     (row ? vimeoNumericIdFromPublicVideo(row) : null) ??
@@ -53,44 +57,48 @@ function memberTranscriptFor(contentId: string): string[] {
 
 export default async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {
-    return withCors(new Response(null, { status: 204 }));
+    return noStore(withCors(new Response(null, { status: 204 })));
   }
   if (req.method !== "GET") {
-    return withCors(jsonResponse({ ok: false, error: "Method not allowed." }, 405));
+    return noStore(withCors(jsonResponse({ ok: false, error: "Method not allowed." }, 405)));
   }
+
+  const catalog = (await loadMergedVideoCatalog()) as PublicVideoRow[];
 
   const url = new URL(req.url);
   const contentId = url.searchParams.get("contentId")?.trim() ?? "";
   if (!contentId) {
-    return withCors(jsonResponse({ ok: false, error: "contentId is required." }, 400));
+    return noStore(withCors(jsonResponse({ ok: false, error: "contentId is required." }, 400)));
   }
   const enableVimeoPlayerApi = url.searchParams.get("playerApi") === "1";
 
   const resolved = resolveCatalogVideoEmbed(catalog, contentId, { enableVimeoPlayerApi });
   if (!resolved.ok) {
-    return withCors(jsonResponse({ ok: false, error: "Video is not available." }, 404));
+    return noStore(withCors(jsonResponse({ ok: false, error: "Video is not available." }, 404)));
   }
 
   if (resolved.access === "open") {
-    return withCors(jsonResponse(authorizedEmbedBody(resolved, contentId, [])));
+    return noStore(withCors(jsonResponse(authorizedEmbedBody(resolved, contentId, [], catalog))));
   }
 
   const auth = await requireMember(req);
   if (!auth.ok) {
-    return withCors(jsonResponse({ ok: false, error: auth.error }, auth.status));
+    return noStore(withCors(jsonResponse({ ok: false, error: auth.error }, auth.status)));
   }
 
   // Local dev preview identity (ALLOW_DEV_PATTERN_USER). Never returned in production.
   if (auth.mode === "dev") {
-    return withCors(
-      jsonResponse(authorizedEmbedBody(resolved, contentId, memberTranscriptFor(contentId))),
+    return noStore(
+      withCors(
+        jsonResponse(authorizedEmbedBody(resolved, contentId, memberTranscriptFor(contentId, catalog), catalog)),
+      ),
     );
   }
 
   const client = getMemberstackAdminClient();
   if (!client?.getMember) {
-    return withCors(
-      jsonResponse({ ok: false, error: "Membership access is unavailable right now." }, 503),
+    return noStore(
+      withCors(jsonResponse({ ok: false, error: "Membership access is unavailable right now." }, 503)),
     );
   }
 
@@ -99,8 +107,8 @@ export default async (req: Request): Promise<Response> => {
     record = await client.getMember(auth.member.id);
   } catch (err) {
     console.error("catalog-video-embed: getMember failed:", err);
-    return withCors(
-      jsonResponse({ ok: false, error: "Membership access is unavailable right now." }, 503),
+    return noStore(
+      withCors(jsonResponse({ ok: false, error: "Membership access is unavailable right now." }, 503)),
     );
   }
 
@@ -114,10 +122,12 @@ export default async (req: Request): Promise<Response> => {
   }
 
   if (!hasAccess) {
-    return withCors(jsonResponse({ ok: false, error: "Membership required." }, 403));
+    return noStore(withCors(jsonResponse({ ok: false, error: "Membership required." }, 403)));
   }
 
-  return withCors(
-    jsonResponse(authorizedEmbedBody(resolved, contentId, memberTranscriptFor(contentId))),
+  return noStore(
+    withCors(
+      jsonResponse(authorizedEmbedBody(resolved, contentId, memberTranscriptFor(contentId, catalog), catalog)),
+    ),
   );
 };

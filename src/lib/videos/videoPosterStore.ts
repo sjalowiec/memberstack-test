@@ -16,6 +16,19 @@ export const VIDEO_POSTER_INSERT_SQL = `
   VALUES ($1, $2, NOW())
 `;
 
+export const VIDEO_POSTER_UPSERT_SQL = `
+  INSERT INTO video_poster_overrides (content_id, poster_url, updated_at)
+  VALUES ($1, $2, NOW())
+  ON CONFLICT (content_id) DO UPDATE SET
+    poster_url = EXCLUDED.poster_url,
+    updated_at = NOW()
+`;
+
+export const VIDEO_POSTER_DELETE_ONE_SQL = `
+  DELETE FROM video_poster_overrides
+  WHERE content_id = $1
+`;
+
 type PosterRow = {
   content_id?: unknown;
   poster_url?: unknown;
@@ -44,6 +57,18 @@ export function posterMapFromRows(rows: PosterRow[]): Map<string, string> {
     overrides.set(contentId, typeof row.poster_url === "string" ? row.poster_url : "");
   }
   return overrides;
+}
+
+export async function upsertVideoPosterOverride(
+  contentId: string,
+  posterUrl: string,
+  query: PosterQuery = queryWatson as PosterQuery,
+): Promise<void> {
+  if (!posterUrl) {
+    await query(VIDEO_POSTER_DELETE_ONE_SQL, [contentId]);
+    return;
+  }
+  await query(VIDEO_POSTER_UPSERT_SQL, [contentId, posterUrl]);
 }
 
 export async function listVideoPosterOverrides(

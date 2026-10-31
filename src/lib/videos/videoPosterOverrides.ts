@@ -7,7 +7,7 @@ export type VideoPosterOverride = {
 
 export type VideoPosterSavePlan =
   | { ok: true; overrides: VideoPosterOverride[]; message: string }
-  | { ok: false; error: string };
+  | { ok: false; error: string; reason: "invalid" | "catalog-change" };
 
 const STORED_THUMBNAIL_MESSAGE =
   "Saved. The thumbnail is stored and will show on the video page, Video Library, and Tip of the Week.";
@@ -62,6 +62,17 @@ function comparableRecord(video: Record<string, unknown>): Record<string, unknow
   return next;
 }
 
+export function changedCatalogFields(
+  sourceRaw: unknown,
+  submittedRaw: unknown,
+): { ok: true; fields: string[] } | { ok: false; error: string } {
+  const source = normalizeVideoForSave(sourceRaw, 0);
+  if (!source.ok) return source;
+  const submitted = normalizeVideoForSave(submittedRaw, 0);
+  if (!submitted.ok) return submitted;
+  return { ok: true, fields: changedFields(source.video, submitted.video) };
+}
+
 function changedFields(source: Record<string, unknown>, submitted: Record<string, unknown>): string[] {
   const left = comparableRecord(source);
   const right = comparableRecord(submitted);
@@ -73,12 +84,12 @@ function changedFields(source: Record<string, unknown>, submitted: Record<string
   return changed.sort();
 }
 
-function normalizeCatalog(raw: unknown[], label: string): { ok: true; videos: Record<string, unknown>[] } | { ok: false; error: string } {
+function normalizeCatalog(raw: unknown[], label: string): { ok: true; videos: Record<string, unknown>[] } | { ok: false; error: string; reason: "invalid" } {
   const videos: Record<string, unknown>[] = [];
   for (let index = 0; index < raw.length; index += 1) {
     const normalized = normalizeVideoForSave(raw[index], index);
     if (!normalized.ok) {
-      return { ok: false, error: `${label} ${normalized.error} Nothing was saved.` };
+      return { ok: false, reason: "invalid", error: `${label} ${normalized.error} Nothing was saved.` };
     }
     videos.push(normalized.video);
   }
@@ -87,16 +98,17 @@ function normalizeCatalog(raw: unknown[], label: string): { ok: true; videos: Re
 
 function indexByContentId(
   videos: Record<string, unknown>[],
-): { ok: true; byId: Map<string, Record<string, unknown>> } | { ok: false; error: string } {
+): { ok: true; byId: Map<string, Record<string, unknown>> } | { ok: false; error: string; reason: "invalid" } {
   const byId = new Map<string, Record<string, unknown>>();
   for (const video of videos) {
     const contentId = videoContentIdKey(video.content_id);
     if (!contentId) {
-      return { ok: false, error: "A catalog video is missing a content ID, so nothing was saved." };
+      return { ok: false, reason: "invalid", error: "A catalog video is missing a content ID, so nothing was saved." };
     }
     if (byId.has(contentId)) {
       return {
         ok: false,
+        reason: "invalid",
         error: `Content ID ${contentId} appears more than once, so nothing was saved.`,
       };
     }
@@ -113,6 +125,7 @@ export function planVideoPosterSave(sourceRaw: unknown[], submittedRaw: unknown[
   if (sourceRaw.length !== submittedRaw.length) {
     return {
       ok: false,
+      reason: "catalog-change",
       error: "This save would add or remove catalog videos, so nothing was saved. Only thumbnails are stored.",
     };
   }
@@ -132,6 +145,7 @@ export function planVideoPosterSave(sourceRaw: unknown[], submittedRaw: unknown[
     if (!source) {
       return {
         ok: false,
+        reason: "catalog-change",
         error: `Content ID ${contentId} is not in the catalog, so nothing was saved. Only thumbnails are stored.`,
       };
     }
@@ -140,6 +154,7 @@ export function planVideoPosterSave(sourceRaw: unknown[], submittedRaw: unknown[
       const sample = fields.slice(0, 5).join(", ");
       return {
         ok: false,
+        reason: "catalog-change",
         error: `This save changes ${sample} for content ID ${contentId}, not only the thumbnail, so nothing was saved.`,
       };
     }
@@ -149,6 +164,7 @@ export function planVideoPosterSave(sourceRaw: unknown[], submittedRaw: unknown[
     if (!submittedIndexed.byId.has(contentId)) {
       return {
         ok: false,
+        reason: "catalog-change",
         error: `Content ID ${contentId} was missing from this save, so nothing was saved. Only thumbnails are stored.`,
       };
     }

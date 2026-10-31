@@ -1,5 +1,5 @@
 ---
-import videosRaw from "../../data/videos-public.json";
+import { loadMergedVideoCatalog } from "../../lib/videos/videoCatalogStore";
 import Layout from "../../layouts/Layout.astro";
 import PageHead from "../../components/PageHead.astro";
 import FavoriteStar from "../../components/favorites/FavoriteStar.astro";
@@ -17,8 +17,9 @@ import { loadPublicVideoPosterOverrides } from "../../lib/videos/videoPosterStor
 export const prerender = false;
 
 const id = String(Astro.params.id);
+const videosRaw = await loadMergedVideoCatalog();
 const posterOverrides = await loadPublicVideoPosterOverrides();
-const catalog = applyVideoPosterOverrides(Array.isArray(videosRaw) ? videosRaw : [], posterOverrides);
+const catalog = applyVideoPosterOverrides(videosRaw, posterOverrides);
 const video = findPublicCatalogVideoByContentId(catalog, id);
 Astro.response.headers.set("Cache-Control", "private, no-store");
 

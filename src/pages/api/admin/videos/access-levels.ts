@@ -1,33 +1,31 @@
 import type { APIRoute } from "astro";
-import { readFileSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
+import { adminAuthErrorBody, requireAdminForRequest } from "../../../../lib/admin/requireAdminRequest";
+import { normalizeVideoForSave } from "../../../../lib/videosPublicRecord";
 import {
+  accessLevelsMatchCatalog,
   applyVideoAccessLevelPatches,
   type VideoAccessLevelUpdate,
 } from "../../../../lib/videoAccessLevelPatch";
+import {
+  loadMergedVideoCatalog,
+  saveVideoCatalogEdits,
+  videoCatalogErrorMessage,
+} from "../../../../lib/videos/videoCatalogStore";
 
 export const prerender = false;
-
-const VIDEOS_JSON_PATH = join(process.cwd(), "src", "data", "videos-public.json");
 
 function jsonResponse(data: unknown, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", "Cache-Control": "no-store" },
   });
 }
 
-function readVideosArray(): unknown[] {
-  const raw = readFileSync(VIDEOS_JSON_PATH, "utf-8");
-  const data = JSON.parse(raw) as unknown;
-  if (!Array.isArray(data)) {
-    throw new Error("videos-public.json must contain a JSON array.");
-  }
-  return data;
-}
+/** Patch only `access_level` by unique `content_id`. */
+export const POST: APIRoute = async ({ request, cookies }) => {
+  const auth = await requireAdminForRequest(request, cookies);
+  if (!auth.ok) return jsonResponse(adminAuthErrorBody(auth), auth.status);
 
-/** Patch only `access_level` by unique `content_id` - does not re-validate full catalog keys. */
-export const POST: APIRoute = async ({ request }) => {
   if (!request.headers.get("content-type")?.includes("application/json")) {
     return jsonResponse({ ok: false, error: "Content-Type must be application/json" }, 400);
   }
@@ -59,24 +57,45 @@ export const POST: APIRoute = async ({ request }) => {
     };
   });
 
-  let videos: unknown[];
+  let source: unknown[];
   try {
-    videos = readVideosArray();
+    source = await loadMergedVideoCatalog();
   } catch (e) {
-    const message = e instanceof Error ? e.message : "Could not read videos-public.json";
+    const message = e instanceof Error ? e.message : "Could not read the video catalog";
     return jsonResponse({ ok: false, error: message }, 500);
   }
 
-  const result = applyVideoAccessLevelPatches(videos, updates);
+  const result = applyVideoAccessLevelPatches(source, updates);
   if (!result.ok) {
     return jsonResponse({ ok: false, error: result.error }, 400);
   }
 
+  const videos: Record<string, unknown>[] = [];
+  for (let i = 0; i < source.length; i += 1) {
+    const normalized = normalizeVideoForSave(source[i], i);
+    if (!normalized.ok) return jsonResponse({ ok: false, error: normalized.error }, 400);
+    videos.push(normalized.video);
+  }
+
+  let saved: unknown[];
   try {
-    writeFileSync(VIDEOS_JSON_PATH, JSON.stringify(videos, null, 2) + "\n", "utf-8");
-  } catch (e) {
-    const message = e instanceof Error ? e.message : "Could not write videos-public.json";
-    return jsonResponse({ ok: false, error: message }, 500);
+    saved = await saveVideoCatalogEdits(videos);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "";
+    if (/nothing was saved/i.test(message)) {
+      return jsonResponse({ ok: false, error: message }, 400);
+    }
+    return jsonResponse(
+      { ok: false, error: videoCatalogErrorMessage(error, "The access change was not saved.") },
+      500,
+    );
+  }
+
+  if (!accessLevelsMatchCatalog(saved, result.updated)) {
+    return jsonResponse(
+      { ok: false, error: "The access change could not be confirmed, so it was not kept." },
+      500,
+    );
   }
 
   return jsonResponse({

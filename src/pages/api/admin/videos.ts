@@ -1,39 +1,44 @@
 import type { APIRoute } from "astro";
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
+import { adminAuthErrorBody, requireAdminForRequest } from "../../../lib/admin/requireAdminRequest";
 import { normalizeVideoForSave } from "../../../lib/videosPublicRecord";
 import { stableVideoKey } from "../../../lib/lessonVideo";
-import { applyVideoPosterOverrides, planVideoPosterSave } from "../../../lib/videos/videoPosterOverrides";
+import { assignNewVideoContentIds, catalogSlugSaveError } from "../../../lib/videos/videoIdentity";
+import { applyVideoPosterOverrides, planVideoPosterSave, videoContentIdKey } from "../../../lib/videos/videoPosterOverrides";
+import {
+  loadMergedVideoCatalog,
+  saveVideoCatalogEdits,
+  VIDEO_CATALOG_SAVED_MESSAGE,
+  videoCatalogErrorMessage,
+} from "../../../lib/videos/videoCatalogStore";
 import {
   isMissingVideoPosterTable,
   listVideoPosterOverrides,
   replaceVideoPosterOverrides,
+  upsertVideoPosterOverride,
   videoPosterErrorMessage,
 } from "../../../lib/videos/videoPosterStore";
 
 export const prerender = false;
 
-const VIDEOS_JSON_PATH = join(process.cwd(), "src", "data", "videos-public.json");
-
 function jsonResponse(data: unknown, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", "Cache-Control": "no-store" },
   });
 }
 
-function readVideosArray(): unknown[] {
-  const raw = readFileSync(VIDEOS_JSON_PATH, "utf-8");
-  const data = JSON.parse(raw) as unknown;
-  if (!Array.isArray(data)) {
-    throw new Error("videos-public.json must contain a JSON array.");
-  }
-  return data;
+function posterOf(video: unknown): string {
+  if (!video || typeof video !== "object") return "";
+  const poster = (video as { posterUrl?: unknown }).posterUrl;
+  return typeof poster === "string" ? poster.trim() : "";
 }
 
-export const GET: APIRoute = async () => {
+export const GET: APIRoute = async ({ request, cookies }) => {
+  const auth = await requireAdminForRequest(request, cookies);
+  if (!auth.ok) return jsonResponse(adminAuthErrorBody(auth), auth.status);
+
   try {
-    const data = readVideosArray();
+    const data = await loadMergedVideoCatalog();
     let videos = data;
     try {
       const overrides = await listVideoPosterOverrides();
@@ -48,12 +53,15 @@ export const GET: APIRoute = async () => {
     }
     return jsonResponse({ ok: true, videos });
   } catch (e) {
-    const message = e instanceof Error ? e.message : "Could not read videos-public.json";
+    const message = e instanceof Error ? e.message : "Could not read the video catalog";
     return jsonResponse({ ok: false, error: message }, 500);
   }
 };
 
-export const POST: APIRoute = async ({ request }) => {
+export const POST: APIRoute = async ({ request, cookies }) => {
+  const auth = await requireAdminForRequest(request, cookies);
+  if (!auth.ok) return jsonResponse(adminAuthErrorBody(auth), auth.status);
+
   if (!request.headers.get("content-type")?.includes("application/json")) {
     return jsonResponse({ ok: false, error: "Content-Type must be application/json" }, 400);
   }
@@ -69,11 +77,22 @@ export const POST: APIRoute = async ({ request }) => {
     return jsonResponse({ ok: false, error: "Request body must be a JSON array of videos." }, 400);
   }
 
+  let source: unknown[];
+  try {
+    source = await loadMergedVideoCatalog();
+  } catch (e) {
+    const message = e instanceof Error ? e.message : "Could not read the video catalog";
+    return jsonResponse({ ok: false, error: message }, 500);
+  }
+
+  const prepared = assignNewVideoContentIds(source as Array<{ content_id?: unknown }>, body);
+  if (!prepared.ok) return jsonResponse({ ok: false, error: prepared.error }, 400);
+
   const seen = new Set<string>();
   const videos: Record<string, unknown>[] = [];
 
-  for (let i = 0; i < body.length; i++) {
-    const n = normalizeVideoForSave(body[i], i);
+  for (let i = 0; i < prepared.videos.length; i++) {
+    const n = normalizeVideoForSave(prepared.videos[i], i);
     if (!n.ok) return jsonResponse({ ok: false, error: n.error }, 400);
     const key = stableVideoKey(n.video as Parameters<typeof stableVideoKey>[0]);
     if (!key) {
@@ -92,33 +111,89 @@ export const POST: APIRoute = async ({ request }) => {
     videos.push(n.video);
   }
 
-  let source: unknown[];
-  try {
-    source = readVideosArray();
-  } catch (e) {
-    const message = e instanceof Error ? e.message : "Could not read videos-public.json";
-    return jsonResponse({ ok: false, error: message }, 500);
-  }
+  const slugError = catalogSlugSaveError(
+    source as Array<{ content_id?: unknown; slug?: unknown }>,
+    videos,
+  );
+  if (slugError) return jsonResponse({ ok: false, error: slugError }, 400);
 
   const plan = planVideoPosterSave(source, videos);
-  if (!plan.ok) return jsonResponse({ ok: false, error: plan.error }, 400);
+  if (plan.ok) {
+    try {
+      await replaceVideoPosterOverrides(plan.overrides);
+    } catch (error) {
+      return jsonResponse(
+        {
+          ok: false,
+          error: videoPosterErrorMessage(error, "The thumbnail could not be stored. Nothing was saved."),
+        },
+        500,
+      );
+    }
 
+    const overrides = new Map(plan.overrides.map((override) => [override.contentId, override.posterUrl]));
+    return jsonResponse({
+      ok: true,
+      videos: applyVideoPosterOverrides(source, overrides),
+      message: plan.message,
+    });
+  }
+
+  if (plan.reason !== "catalog-change") return jsonResponse({ ok: false, error: plan.error }, 400);
+
+  let savedVideos: unknown[];
   try {
-    await replaceVideoPosterOverrides(plan.overrides);
+    savedVideos = await saveVideoCatalogEdits(videos);
   } catch (error) {
+    const message = error instanceof Error ? error.message : "";
+    if (/nothing was saved/i.test(message)) {
+      return jsonResponse({ ok: false, error: message }, 400);
+    }
     return jsonResponse(
-      {
-        ok: false,
-        error: videoPosterErrorMessage(error, "The thumbnail could not be stored. Nothing was saved."),
-      },
+      { ok: false, error: videoCatalogErrorMessage(error, "The video could not be saved. Nothing was saved.") },
       500,
     );
   }
 
-  const overrides = new Map(plan.overrides.map((override) => [override.contentId, override.posterUrl]));
-  return jsonResponse({
-    ok: true,
-    videos: applyVideoPosterOverrides(source, overrides),
-    message: plan.message,
-  });
+  const sourceById = new Map<string, unknown>();
+  for (const row of source) {
+    const contentId = videoContentIdKey((row as { content_id?: unknown }).content_id);
+    if (contentId) sourceById.set(contentId, row);
+  }
+  for (const video of videos) {
+    const contentId = videoContentIdKey(video.content_id);
+    if (!contentId) continue;
+    const nextPoster = posterOf(video);
+    if (nextPoster === posterOf(sourceById.get(contentId))) continue;
+    try {
+      await upsertVideoPosterOverride(contentId, nextPoster);
+    } catch (error) {
+      if (!isMissingVideoPosterTable(error)) {
+        return jsonResponse(
+          {
+            ok: true,
+            videos: savedVideos,
+            message: `${VIDEO_CATALOG_SAVED_MESSAGE} The thumbnail store could not be updated.`,
+          },
+        );
+      }
+    }
+  }
+
+  try {
+    const overrides = await listVideoPosterOverrides();
+    savedVideos = applyVideoPosterOverrides(savedVideos, overrides);
+  } catch (error) {
+    if (!isMissingVideoPosterTable(error)) {
+      return jsonResponse(
+        {
+          ok: true,
+          videos: savedVideos,
+          message: `${VIDEO_CATALOG_SAVED_MESSAGE} The thumbnail store could not be read.`,
+        },
+      );
+    }
+  }
+
+  return jsonResponse({ ok: true, videos: savedVideos, message: VIDEO_CATALOG_SAVED_MESSAGE });
 };
