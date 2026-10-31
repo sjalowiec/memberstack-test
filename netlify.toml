@@ -69,11 +69,13 @@
   schedule = "0 9 * * *"
 
 # Current membership access reconciliation (daily at 09:45 UTC, after legacy
-# expiry, complimentary expiry, and the complimentary date sync). Writes the
-# ActiveCampaign text field "Current membership access" only. Scheduled writes
-# require CURRENT_MEMBERSHIP_ACCESS_SYNC_LIVE_ENABLED === "true" on the
-# production site. Does not send email or change other contact fields.
-[functions."current-membership-access-sync"]
+# expiry, complimentary expiry, and the complimentary date sync). The scheduled
+# function only starts the background worker. The worker writes the ActiveCampaign
+# text field "Current membership access" when CURRENT_MEMBERSHIP_ACCESS_SYNC_LIVE_ENABLED
+# is exactly "true" on the production site. It does not send email or change
+# other contact fields. The sync function itself is not scheduled, so a manual
+# request can return the dry-run totals.
+[functions."current-membership-access-schedule"]
   schedule = "45 9 * * *"
 
 # Former beta domain → canonical production host (path-preserving).
