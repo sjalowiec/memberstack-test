@@ -5,6 +5,7 @@ import {
   membershipAccessBatchSize,
   membershipAccessLockIsActive,
   membershipAccessShouldChain,
+  membershipAccessShouldRetryError,
   MEMBERSHIP_ACCESS_LOCK_MS,
   MEMBERSHIP_ACCESS_WRITE_BATCH,
   planCurrentMembershipAccessUpdates,
@@ -266,5 +267,8 @@ describe("membership access continuation", () => {
       membershipAccessLockIsActive(new Date(now - MEMBERSHIP_ACCESS_LOCK_MS).toISOString(), now),
     ).toBe(false);
     expect(membershipAccessLockIsActive(null, now)).toBe(false);
+    expect(membershipAccessShouldRetryError({ liveWrite: true, retry: 0 })).toBe(true);
+    expect(membershipAccessShouldRetryError({ liveWrite: true, retry: 3 })).toBe(false);
+    expect(membershipAccessShouldRetryError({ liveWrite: false, retry: 0 })).toBe(false);
   });
 });
