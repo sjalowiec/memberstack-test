@@ -52,6 +52,14 @@ export function membershipAccessLockIsActive(
  * A batch that writes nothing is retried twice, then stopped so a permanent
  * failure cannot chain forever. Successful writes reset that retry count.
  */
+/** A live run that throws before it can write is retried a few times, then stopped. */
+export function membershipAccessShouldRetryError(input: {
+  liveWrite: boolean;
+  retry: number;
+}): boolean {
+  return input.liveWrite && input.retry < 3;
+}
+
 export function membershipAccessShouldChain(input: {
   liveWrite: boolean;
   fieldValuesKnown: boolean;
