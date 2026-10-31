@@ -9,7 +9,7 @@ import {
   serializeCatalogTranscriptJson,
 } from "../transcripts/generateCatalogTranscripts";
 import { VideoCatalogConflictError, type VideoRepoChange } from "./videoCatalogGithub";
-import { filesystemVideoCatalogRepo, type VideoCatalogRepo, type VideoCatalogSnapshot } from "./videoCatalogRepo";
+import { deployedVideoCatalogRepo, filesystemVideoCatalogRepo, type VideoCatalogRepo, type VideoCatalogSnapshot } from "./videoCatalogRepo";
 import {
   nextVideoContentId,
   planVideoSave,
@@ -285,6 +285,17 @@ describe("saving a video", () => {
     expect(repo.commits).toHaveLength(1);
     expect(JSON.stringify(generatedOf(repo, "public"))).toContain("Shape the first side");
     expect(JSON.stringify(generatedOf(repo, "member"))).not.toContain("Shape the first side");
+  });
+});
+
+describe("database catalog without GitHub", () => {
+  it("reads the deployed catalog when GitHub is not configured", async () => {
+    const snapshot = await deployedVideoCatalogRepo().readSnapshot();
+    expect(snapshot.catalogRaw).toContain("5003");
+    expect(JSON.parse(snapshot.generated.member)).toBeTruthy();
+    await expect(deployedVideoCatalogRepo().commit(snapshot, [], "unused")).resolves.toEqual({
+      persistedVia: "database",
+    });
   });
 });
 
