@@ -8,7 +8,7 @@
  * Individual course lesson videos are not served here; those stay on gated
  * course pages (`canAccessCourse`, including individual course purchase).
  */
-import videosPublic from "../../src/data/videos-public.json";
+import { loadMergedVideoCatalog } from "../../src/lib/videos/videoCatalogStore";
 import { requireMember } from "./lib/member-auth.js";
 import { jsonResponse, withCors } from "./lib/custom-pattern-projects-store.js";
 import { getMemberstackAdminClient } from "./lib/memberstack-admin.js";
@@ -20,8 +20,6 @@ import { vimeoNumericIdFromPublicVideo, type PublicVideoRow } from "../../src/li
 import memberCatalogTranscripts from "../../src/data/transcripts/generated/member.json";
 import { paragraphsForVimeoId } from "../../src/lib/transcripts/catalogTranscriptData";
 
-const catalog = videosPublic as PublicVideoRow[];
-
 function authorizedEmbedBody(
   resolved: {
     iframeSrc: string;
@@ -29,6 +27,7 @@ function authorizedEmbedBody(
   },
   contentId: string,
   transcript: string[],
+  catalog: PublicVideoRow[],
 ) {
   const row = findPublicCatalogVideoByContentId(catalog, contentId);
   const jumplinks = resolveVideoDetailJumpLinks(row, contentId).links;
@@ -41,7 +40,7 @@ function authorizedEmbedBody(
   };
 }
 
-function memberTranscriptFor(contentId: string): string[] {
+function memberTranscriptFor(contentId: string, catalog: PublicVideoRow[]): string[] {
   const row = findPublicCatalogVideoByContentId(catalog, contentId);
   const vimeoId =
     (row ? vimeoNumericIdFromPublicVideo(row) : null) ??
@@ -66,13 +65,14 @@ export default async (req: Request): Promise<Response> => {
   }
   const enableVimeoPlayerApi = url.searchParams.get("playerApi") === "1";
 
+  const catalog = (await loadMergedVideoCatalog()) as PublicVideoRow[];
   const resolved = resolveCatalogVideoEmbed(catalog, contentId, { enableVimeoPlayerApi });
   if (!resolved.ok) {
     return withCors(jsonResponse({ ok: false, error: "Video is not available." }, 404));
   }
 
   if (resolved.access === "open") {
-    return withCors(jsonResponse(authorizedEmbedBody(resolved, contentId, [])));
+    return withCors(jsonResponse(authorizedEmbedBody(resolved, contentId, [], catalog)));
   }
 
   const auth = await requireMember(req);
@@ -111,6 +111,6 @@ export default async (req: Request): Promise<Response> => {
   }
 
   return withCors(
-    jsonResponse(authorizedEmbedBody(resolved, contentId, memberTranscriptFor(contentId))),
+    jsonResponse(authorizedEmbedBody(resolved, contentId, memberTranscriptFor(contentId, catalog), catalog)),
   );
 };

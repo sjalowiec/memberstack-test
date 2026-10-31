@@ -1,39 +1,24 @@
 import type { APIRoute } from "astro";
-import { readFileSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
 import { adminAuthErrorBody, requireAdminForRequest } from "../../../../lib/admin/requireAdminRequest";
-import {
-  accessLevelsMatchCatalog,
-  applyVideoAccessLevelPatches,
-  type VideoAccessLevelUpdate,
-} from "../../../../lib/videoAccessLevelPatch";
-import {
-  HOSTED_ACCESS_LEVEL_SAVE_ERROR,
-  patchCatalogAccessLevelText,
-  videoCatalogFileSaveBlocker,
-} from "../../../../lib/videos/videoCatalogFile";
+import { validatePendingAccessLevel } from "../../../../lib/videoAccessLevel";
+import { videoCatalogRepoForHost } from "../../../../lib/videos/videoCatalogRepo";
+import { VideoSaveError } from "../../../../lib/videos/videoCatalogSave";
+import { saveCatalogAccessLevels, type AccessLevelUpdate } from "../../../../lib/videos/videoCatalogService";
 
 export const prerender = false;
-
-const VIDEOS_JSON_PATH = join(process.cwd(), "src", "data", "videos-public.json");
 
 function jsonResponse(data: unknown, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", "Cache-Control": "no-store" },
   });
 }
 
-function readVideosFile(): { raw: string; videos: unknown[] } {
-  const raw = readFileSync(VIDEOS_JSON_PATH, "utf-8");
-  const data = JSON.parse(raw) as unknown;
-  if (!Array.isArray(data)) {
-    throw new Error("videos-public.json must contain a JSON array.");
-  }
-  return { raw, videos: data };
-}
-
-/** Patch only `access_level` by unique `content_id` - does not re-validate full catalog keys. */
+/**
+ * Patch only `access_level` by unique `content_id`, in one commit (GitHub on
+ * hosted sites). Each changed video's transcript moves to the matching public
+ * or member file in the same commit.
+ */
 export const POST: APIRoute = async ({ request, cookies }) => {
   const auth = await requireAdminForRequest(request, cookies);
   if (!auth.ok) return jsonResponse(adminAuthErrorBody(auth), auth.status);
@@ -54,96 +39,43 @@ export const POST: APIRoute = async ({ request, cookies }) => {
   }
 
   const updatesRaw = (body as Record<string, unknown>).updates;
-  if (!Array.isArray(updatesRaw)) {
+  if (!Array.isArray(updatesRaw) || updatesRaw.length === 0) {
     return jsonResponse({ ok: false, error: 'Request body must include an "updates" array.' }, 400);
   }
 
-  const updates: VideoAccessLevelUpdate[] = updatesRaw.map((item) => {
+  const updates: AccessLevelUpdate[] = [];
+  for (let i = 0; i < updatesRaw.length; i++) {
+    const item = updatesRaw[i];
     if (!item || typeof item !== "object" || Array.isArray(item)) {
-      return { content_id: "", access_level: "" };
+      return jsonResponse({ ok: false, error: `Update ${i + 1} must be an object.` }, 400);
     }
     const row = item as Record<string, unknown>;
-    return {
-      content_id: row.content_id as string | number,
-      access_level: String(row.access_level ?? ""),
-    };
-  });
+    const id = String(row.content_id ?? "").trim();
+    if (!id) return jsonResponse({ ok: false, error: `Update ${i + 1}: content_id is required.` }, 400);
+    const validated = validatePendingAccessLevel(row.access_level);
+    if (!validated.ok) return jsonResponse({ ok: false, error: `Video ${id}: ${validated.error}` }, 400);
+    updates.push({ content_id: row.content_id as string | number, access_level: validated.access_level });
+  }
 
-  let source: { raw: string; videos: unknown[] };
+  let repo;
   try {
-    source = readVideosFile();
-  } catch (e) {
-    const message = e instanceof Error ? e.message : "Could not read videos-public.json";
-    return jsonResponse({ ok: false, error: message }, 500);
+    repo = videoCatalogRepoForHost(new URL(request.url).hostname);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Video saves are not set up on this site.";
+    return jsonResponse({ ok: false, error: message }, 503);
   }
-
-  const result = applyVideoAccessLevelPatches(source.videos, updates);
-  if (!result.ok) {
-    return jsonResponse({ ok: false, error: result.error }, 400);
-  }
-
-  if (videoCatalogFileSaveBlocker()) {
-    return jsonResponse({ ok: false, error: HOSTED_ACCESS_LEVEL_SAVE_ERROR }, 409);
-  }
-
-  const patched = patchCatalogAccessLevelText(source.raw, result.updated);
-  if (!patched.ok) return jsonResponse({ ok: false, error: patched.error }, 400);
 
   try {
-    writeFileSync(VIDEOS_JSON_PATH, patched.text, "utf-8");
-  } catch (e) {
-    const message = e instanceof Error ? e.message : "Could not write videos-public.json";
-    return jsonResponse({ ok: false, error: `The access change was not saved. ${message}` }, 500);
+    const result = await saveCatalogAccessLevels(repo, updates, auth.member.email);
+    return jsonResponse({
+      ok: true,
+      updated: result.updated,
+      notFound: result.notFound,
+      commitSha: result.commit?.commitSha ?? null,
+      branch: result.commit?.branch ?? null,
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Access levels could not be saved.";
+    return jsonResponse({ ok: false, error: message }, error instanceof VideoSaveError ? 400 : 502);
   }
-
-  let confirmedRaw: string;
-  try {
-    confirmedRaw = readFileSync(VIDEOS_JSON_PATH, "utf-8");
-  } catch (e) {
-    const message = e instanceof Error ? e.message : "Could not read videos-public.json";
-    return jsonResponse(
-      { ok: false, error: `The access change could not be confirmed. ${message}` },
-      500,
-    );
-  }
-
-  let confirmedVideos: unknown;
-  try {
-    confirmedVideos = JSON.parse(confirmedRaw) as unknown;
-  } catch {
-    confirmedVideos = null;
-  }
-  const confirmed =
-    confirmedRaw === patched.text &&
-    Array.isArray(confirmedVideos) &&
-    accessLevelsMatchCatalog(confirmedVideos, result.updated);
-
-  if (!confirmed) {
-    try {
-      writeFileSync(VIDEOS_JSON_PATH, source.raw, "utf-8");
-    } catch {
-      return jsonResponse(
-        {
-          ok: false,
-          error:
-            "The access change could not be confirmed in src/data/videos-public.json, and the previous catalog could not be restored.",
-        },
-        500,
-      );
-    }
-    return jsonResponse(
-      {
-        ok: false,
-        error:
-          "The access change could not be confirmed in src/data/videos-public.json, so the previous catalog was restored. Nothing was saved.",
-      },
-      500,
-    );
-  }
-
-  return jsonResponse({
-    ok: true,
-    updated: result.updated,
-    notFound: result.notFound,
-  });
 };

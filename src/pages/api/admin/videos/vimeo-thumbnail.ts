@@ -1,4 +1,5 @@
 import type { APIRoute } from "astro";
+import { adminAuthErrorBody, requireAdminForRequest } from "../../../../lib/admin/requireAdminRequest";
 import { fetchVimeoCatalogPoster } from "../../../../lib/vimeoCatalogPoster";
 
 export const prerender = false;
@@ -10,7 +11,10 @@ function jsonResponse(data: unknown, status = 200) {
   });
 }
 
-export const GET: APIRoute = async ({ url }) => {
+export const GET: APIRoute = async ({ url, request, cookies }) => {
+  const auth = await requireAdminForRequest(request, cookies);
+  if (!auth.ok) return jsonResponse(adminAuthErrorBody(auth), auth.status);
+
   const rawId = url.searchParams.get("vimeo_id")?.trim() ?? "";
   if (!/^\d+$/.test(rawId)) {
     return jsonResponse({ ok: false, error: "vimeo_id must be a number." }, 400);
