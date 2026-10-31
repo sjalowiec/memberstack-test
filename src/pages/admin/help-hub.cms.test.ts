@@ -53,6 +53,8 @@ describe("Help Hub admin CMS", () => {
     expect(editSource).toContain("Find an existing lesson");
     expect(editSource).toContain("member-resources-search");
     expect(editSource).toContain("libraryVideosForPicker");
+    expect(editSource).toContain("loadMergedVideoCatalog");
+    expect(editSource).not.toContain("videos-public.json");
     expect(editSource).not.toContain("Enter lesson IDs separated by commas");
     expect(editSource).not.toContain("Media Type");
     expect(editSource).not.toContain("JSON Preview");

@@ -1,4 +1,5 @@
 import { catalogVideoIsPublic } from "../videoPublic";
+import { videoContentIdKey } from "../videos/videoPosterOverrides";
 import {
   describeRelatedLessonRefs,
   lessonNumericId,
@@ -14,21 +15,24 @@ export const MEMBER_LESSON_SOURCE = "lesson" as const;
 
 export type MemberResourceSource = typeof LEARNING_LIBRARY_SOURCE | typeof MEMBER_LESSON_SOURCE;
 
+/** Whole-number catalog ids stay numbers. Older clip ids such as "249-1" stay text. */
+export type HelpHubLibraryContentId = number | string;
+
 export type HelpHubLibraryVideoRef = {
   type: "library";
-  contentId: number;
+  contentId: HelpHubLibraryContentId;
 };
 
 export type MemberResourcePickerItem = {
   source: MemberResourceSource;
-  id: number;
+  id: number | string;
   title: string;
   slug: string;
 };
 
 export type SelectedMemberResource = {
   source: MemberResourceSource;
-  id: number | null;
+  id: number | string | null;
   title: string;
   slug: string;
   state: "published" | "unpublished" | "missing";
@@ -47,12 +51,12 @@ export type HelpHubMemberResourceCard = {
   title: string;
   summary: string;
   href: string;
-  resourceId?: number;
+  resourceId?: number | string;
 };
 
 export type MemberResourceOrderRef = {
   source: MemberResourceSource;
-  id: number;
+  id: number | string;
 };
 
 export function memberResourceSourceLabel(source: MemberResourceSource): string {
@@ -68,21 +72,36 @@ function asPositiveInt(value: unknown): number | null {
   return null;
 }
 
+/** Digit ids become numbers so "249" and 249 stay the same saved connection. */
+export function libraryContentId(value: unknown): HelpHubLibraryContentId | null {
+  const key = videoContentIdKey(value);
+  if (!key || key.startsWith("-")) return null;
+  if (/^\d+$/.test(key)) return asPositiveInt(key);
+  return key;
+}
+
+function sameLibraryContentId(left: unknown, right: unknown): boolean {
+  const a = libraryContentId(left);
+  const b = libraryContentId(right);
+  return a != null && a === b;
+}
+
 /** Store only catalog type + content id. Never copy Vimeo ids. */
 export function normalizeRelatedLibraryVideos(value: unknown): HelpHubLibraryVideoRef[] {
   if (!Array.isArray(value)) return [];
   const out: HelpHubLibraryVideoRef[] = [];
-  const seen = new Set<number>();
+  const seen = new Set<string>();
   for (const item of value) {
-    let contentId: number | null = null;
+    let contentId: HelpHubLibraryContentId | null = null;
     if (typeof item === "number" || typeof item === "string") {
-      contentId = asPositiveInt(item);
+      contentId = libraryContentId(item);
     } else if (item && typeof item === "object" && !Array.isArray(item)) {
       const rec = item as Record<string, unknown>;
-      contentId = asPositiveInt(rec.contentId ?? rec.content_id ?? rec.id);
+      contentId = libraryContentId(rec.contentId ?? rec.content_id ?? rec.id);
     }
-    if (contentId == null || seen.has(contentId)) continue;
-    seen.add(contentId);
+    const key = contentId == null ? "" : videoContentIdKey(contentId);
+    if (contentId == null || !key || seen.has(key)) continue;
+    seen.add(key);
     out.push({ type: LEARNING_LIBRARY_SOURCE, contentId });
   }
   return out;
@@ -99,7 +118,7 @@ export function libraryVideosForPicker(videos: unknown): MemberResourcePickerIte
     if (!video || typeof video !== "object" || Array.isArray(video)) continue;
     const row = video as CatalogVideoForPicker;
     if (!catalogVideoIsPublic(row)) continue;
-    const id = asPositiveInt(row.content_id);
+    const id = libraryContentId(row.content_id);
     if (id == null) continue;
     const title =
       typeof row.title === "string" && row.title.trim()
@@ -113,7 +132,13 @@ export function libraryVideosForPicker(videos: unknown): MemberResourcePickerIte
       slug,
     });
   }
-  return items.sort((a, b) => a.title.localeCompare(b.title) || a.id - b.id);
+  return items.sort(comparePickerItems);
+}
+
+function comparePickerItems(a: MemberResourcePickerItem, b: MemberResourcePickerItem): number {
+  const title = a.title.localeCompare(b.title);
+  if (title !== 0) return title;
+  return String(a.id).localeCompare(String(b.id), undefined, { numeric: true });
 }
 
 export function memberLessonsForResourcePicker(
@@ -132,7 +157,7 @@ export function combinedMemberResourcePickerItems(
   videos: unknown,
 ): MemberResourcePickerItem[] {
   return [...libraryVideosForPicker(videos), ...memberLessonsForResourcePicker(lessons)].sort(
-    (a, b) => a.title.localeCompare(b.title) || a.id - b.id,
+    comparePickerItems,
   );
 }
 
@@ -188,7 +213,7 @@ export function memberResourceOptionLabel(item: MemberResourcePickerItem): strin
 export type MemberResourceSelection = {
   lessonIds: number[];
   unresolvedLessons: (string | number)[];
-  libraryContentIds: number[];
+  libraryContentIds: HelpHubLibraryContentId[];
   /** Display order for resolved lessons. Omitted selections fall back to library, then lessons. */
   order?: MemberResourceOrderRef[];
 };
@@ -204,7 +229,8 @@ export function normalizeMemberResourceOrder(value: unknown): MemberResourceOrde
       rec.source === LEARNING_LIBRARY_SOURCE || rec.source === MEMBER_LESSON_SOURCE
         ? rec.source
         : null;
-    const id = asPositiveInt(rec.id);
+    const id =
+      source === LEARNING_LIBRARY_SOURCE ? libraryContentId(rec.id) : asPositiveInt(rec.id);
     if (!source || id == null) continue;
     const key = `${source}:${id}`;
     if (seen.has(key)) continue;
@@ -221,7 +247,10 @@ function selectionWithOrder(
   return {
     order,
     unresolvedLessons,
-    lessonIds: order.filter((ref) => ref.source === MEMBER_LESSON_SOURCE).map((ref) => ref.id),
+    lessonIds: order
+      .filter((ref) => ref.source === MEMBER_LESSON_SOURCE)
+      .map((ref) => ref.id)
+      .filter((id): id is number => typeof id === "number"),
     libraryContentIds: order
       .filter((ref) => ref.source === LEARNING_LIBRARY_SOURCE)
       .map((ref) => ref.id),
@@ -246,7 +275,7 @@ export function selectionFromStoredResources(
   memberResourceOrder?: unknown,
 ): MemberResourceSelection {
   const lessonState = pickerStateFromRefs(relatedLessons, lessons);
-  const libraryContentIds: number[] = [];
+  const libraryContentIds: HelpHubLibraryContentId[] = [];
   const publishedLibraryIds = new Set(
     libraryItems.filter((item) => item.source === LEARNING_LIBRARY_SOURCE).map((item) => item.id),
   );
@@ -260,9 +289,12 @@ export function selectionFromStoredResources(
   const order: MemberResourceOrderRef[] = [];
   const seen = new Set<string>();
   for (const ref of normalizeMemberResourceOrder(memberResourceOrder)) {
-    const available = ref.source === LEARNING_LIBRARY_SOURCE ? librarySet : lessonSet;
     const key = `${ref.source}:${ref.id}`;
-    if (!available.has(ref.id) || seen.has(key)) continue;
+    const available =
+      ref.source === LEARNING_LIBRARY_SOURCE
+        ? librarySet.has(ref.id)
+        : typeof ref.id === "number" && lessonSet.has(ref.id);
+    if (!available || seen.has(key)) continue;
     seen.add(key);
     order.push(ref);
   }
@@ -289,7 +321,10 @@ export function serializeMemberResources(selection: MemberResourceSelection): {
   const order = selectionDisplayOrder(selection);
   return {
     relatedLessons: relatedLessonIdsForStorage(
-      order.filter((ref) => ref.source === MEMBER_LESSON_SOURCE).map((ref) => ref.id),
+      order
+        .filter((ref) => ref.source === MEMBER_LESSON_SOURCE)
+        .map((ref) => ref.id)
+        .filter((id): id is number => typeof id === "number"),
       selection.unresolvedLessons,
     ),
     relatedLibraryVideos: normalizeRelatedLibraryVideos(
@@ -424,7 +459,7 @@ export function resolveRelatedLibraryVideoCards(
   for (const ref of normalizeRelatedLibraryVideos(relatedLibraryVideos)) {
     const row = list.find((video) => {
       if (!video || typeof video !== "object" || Array.isArray(video)) return false;
-      return asPositiveInt((video as CatalogVideoForCard).content_id) === ref.contentId;
+      return sameLibraryContentId((video as CatalogVideoForCard).content_id, ref.contentId);
     }) as CatalogVideoForCard | undefined;
     if (!row || !catalogVideoIsPublic(row)) continue;
     const title =

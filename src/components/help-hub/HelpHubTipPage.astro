@@ -4,7 +4,7 @@ import PageBackLink from "../common/PageBackLink.astro";
 import PageHead from "../PageHead.astro";
 import FavoritesRuntime from "../favorites/FavoritesRuntime.astro";
 import HelpHubTipContent from "./HelpHubTipContent.astro";
-import videosPublic from "../../data/videos-public.json";
+import { loadMergedVideoCatalog } from "../../lib/videos/videoCatalogStore";
 import {
   prepareHelpHubTipPage,
   type HelpHubPageTip,
@@ -26,10 +26,12 @@ const audience =
     ? previewAudience
     : undefined;
 
+const catalogVideos = await loadMergedVideoCatalog();
+
 const view = prepareHelpHubTipPage(
   tip,
   Array.isArray(lessons) ? lessons : [],
-  Array.isArray(videosPublic) ? videosPublic : [],
+  catalogVideos,
 );
 
 const { layoutTitle, pageDescription, faqJsonLd } = view;
@@ -60,7 +62,7 @@ const articleSlug = !preview && typeof tip.slug === "string" ? tip.slug.trim() :
       </p>
     )}
     <PageBackLink href="/help-hub" text="Back to Help Hub" />
-    <HelpHubTipContent tip={tip} lessons={lessons} markSections={preview} />
+    <HelpHubTipContent tip={tip} lessons={lessons} videos={catalogVideos} markSections={preview} />
     <FavoritesRuntime contentType="reference" />
   </section>
   <script>

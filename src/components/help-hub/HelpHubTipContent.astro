@@ -1,6 +1,6 @@
 ---
 import "../talk-bubbles.css";
-import videosPublic from "../../data/videos-public.json";
+import { loadMergedVideoCatalog } from "../../lib/videos/videoCatalogStore";
 import {
   prepareHelpHubTipPage,
   type HelpHubPageTip,
@@ -25,9 +25,11 @@ interface Props {
   idPrefix?: string;
   /** Admin preview only. Marks public sections so the editor can focus the matching field. */
   markSections?: boolean;
+  /** Live catalog. When omitted, this answer loads the merged video catalog itself. */
+  videos?: unknown[];
 }
 
-const { tip, lessons, embedded = false, deferMedia = false, idPrefix = "", markSections = false } =
+const { tip, lessons, embedded = false, deferMedia = false, idPrefix = "", markSections = false, videos } =
   Astro.props;
 const articleQuestion = (tip.question || tip.title || "Help Hub").trim() || "Help Hub";
 const articleFavoriteId =
@@ -37,10 +39,12 @@ function sectionAttr(id: string): string | undefined {
   return markSections ? id : undefined;
 }
 
+const catalogVideos = Array.isArray(videos) ? videos : await loadMergedVideoCatalog();
+
 const view = prepareHelpHubTipPage(
   tip,
   Array.isArray(lessons) ? lessons : [],
-  Array.isArray(videosPublic) ? videosPublic : [],
+  catalogVideos,
 );
 
 const {

@@ -23,13 +23,15 @@ import {
   helpHubPublishedPermalinks,
 } from "../../lib/helpHub/publicIndex";
 import { helpHubTipIsPublic, helpHubTipSearchText, type HelpHubTipRecord } from "../../lib/helpHubPublic";
+import { loadMergedVideoCatalog } from "../../lib/videos/videoCatalogStore";
 
 export const prerender = false;
 
-const [helpHubData, helpHubCategories, lessons] = await Promise.all([
+const [helpHubData, helpHubCategories, lessons, catalogVideos] = await Promise.all([
   loadPublicHelpHubTips(),
   loadPublicHelpHubCategories(),
   loadPublicLessons(),
+  loadMergedVideoCatalog(),
 ]);
 
 const tipBySlug = new Map<string, HelpHubTipRecord>();
@@ -241,6 +243,7 @@ if (debugHelpHubTip) {
                         <HelpHubTipContent
                           tip={tip}
                           lessons={lessons}
+                          videos={catalogVideos}
                           embedded
                           deferMedia
                           idPrefix={instanceId}
@@ -319,6 +322,7 @@ if (debugHelpHubTip) {
                         <HelpHubTipContent
                           tip={tip}
                           lessons={lessons}
+                          videos={catalogVideos}
                           embedded
                           deferMedia
                           idPrefix={instanceId}
