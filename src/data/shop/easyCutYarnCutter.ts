@@ -1,9 +1,9 @@
 /**
  * Easy-Cut Yarn Cutter.
  *
- * `published` is false while the page is in review. The sales page and shop
- * cards stay available on localhost and preview hosts, and return 404 on the
- * live site until this flag is turned on.
+ * `published` controls the live shop. While false, the sales page and shop
+ * cards stay available on localhost and preview hosts and return 404 on
+ * production.
  */
 
 export const EASY_CUT_YARN_CUTTER_STRIPE_URL =
@@ -40,5 +40,5 @@ export const EASY_CUT_YARN_CUTTER: EasyCutYarnCutterContent = {
     "The cutter that won't get lost! Self-adhesive backing keeps it right where you need it.",
   offerLabel: "$9.99. Free U.S. shipping.",
   stripePaymentLink: EASY_CUT_YARN_CUTTER_STRIPE_URL,
-  published: false,
+  published: true,
 };
