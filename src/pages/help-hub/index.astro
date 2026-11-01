@@ -164,7 +164,7 @@ if (debugHelpHubTip) {
                   </a>
                   <button
                     type="button"
-                    class="help-hub-discovery__surprise"
+                    class="kbm-btn kbm-btn-outline help-hub-discovery__surprise"
                     data-help-hub-discovery-surprise
                     data-tooltip="Show another random question"
                     disabled={discoveryEntries.length < 2}
@@ -702,14 +702,14 @@ if (debugHelpHubTip) {
       display: flex;
       flex-wrap: wrap;
       align-items: center;
-      gap: 0.15rem 0.85rem;
+      justify-content: space-between;
+      gap: 0.75rem 1rem;
       width: 100%;
-      margin-top: 0.35rem;
+      margin-top: 0.65rem;
       min-width: 0;
     }
 
-    .help-hub-discovery__explore,
-    .help-hub-discovery__surprise {
+    .help-hub-discovery__explore {
       display: inline-flex;
       align-items: center;
       min-height: 44px;
@@ -718,21 +718,16 @@ if (debugHelpHubTip) {
       background: transparent;
       color: var(--kbm-green, #52682d);
       font: inherit;
+      font-weight: 700;
       line-height: 1.3;
       text-decoration: none;
     }
 
-    .help-hub-discovery__explore {
-      font-weight: 700;
-    }
-
-    .help-hub-discovery__explore:hover,
-    .help-hub-discovery__surprise:hover {
+    .help-hub-discovery__explore:hover {
       text-decoration: underline;
     }
 
-    .help-hub-discovery__explore:focus-visible,
-    .help-hub-discovery__surprise:focus-visible {
+    .help-hub-discovery__explore:focus-visible {
       outline: 2px solid var(--kbm-green, #52682d);
       outline-offset: 2px;
       border-radius: 4px;
@@ -740,11 +735,34 @@ if (debugHelpHubTip) {
 
     .help-hub-discovery__surprise {
       position: relative;
-      gap: 0.4rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.45rem;
       margin-left: auto;
-      font-size: 0.95rem;
+      min-height: 44px;
+      padding: 10px 18px;
+      border: 2px solid var(--kbm-green, #52682d);
+      border-radius: 8px;
+      background: #ffffff;
+      color: var(--kbm-green, #52682d);
+      font-size: 16px;
       font-weight: 600;
+      line-height: 1.25;
+      text-decoration: none;
       cursor: pointer;
+      box-sizing: border-box;
+    }
+
+    .help-hub-discovery__surprise:hover {
+      background: var(--kbm-green, #52682d);
+      color: #ffffff;
+      text-decoration: none;
+    }
+
+    .help-hub-discovery__surprise:focus-visible {
+      outline: 2px solid var(--kbm-green, #52682d);
+      outline-offset: 2px;
     }
 
     .help-hub-discovery__surprise-icon {
@@ -864,6 +882,17 @@ if (debugHelpHubTip) {
 
       .help-hub-discovery__answer-block {
         max-width: 100%;
+      }
+
+      .help-hub-discovery__actions {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.75rem;
+      }
+
+      .help-hub-discovery__surprise {
+        margin-left: 0;
+        width: 100%;
       }
     }
 
