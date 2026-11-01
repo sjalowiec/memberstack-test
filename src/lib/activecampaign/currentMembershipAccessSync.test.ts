@@ -6,6 +6,8 @@ import {
   membershipAccessLockIsActive,
   membershipAccessShouldChain,
   membershipAccessShouldRetryError,
+  membershipAccessShouldRetryReadFailure,
+  postMembershipAccessContinuation,
   MEMBERSHIP_ACCESS_LOCK_MS,
   MEMBERSHIP_ACCESS_WRITE_BATCH,
   planCurrentMembershipAccessUpdates,
@@ -270,5 +272,84 @@ describe("membership access continuation", () => {
     expect(membershipAccessShouldRetryError({ liveWrite: true, retry: 0 })).toBe(true);
     expect(membershipAccessShouldRetryError({ liveWrite: true, retry: 3 })).toBe(false);
     expect(membershipAccessShouldRetryError({ liveWrite: false, retry: 0 })).toBe(false);
+  });
+
+  it("resumes a returned source-read failure and stops after three tries", () => {
+    const readFailure = {
+      liveWrite: true,
+      fieldValuesKnown: false,
+      written: 0,
+      remainingWrites: 0,
+      failures: 0,
+      retry: 0,
+      censusLoaded: true,
+      truncated: false,
+      legacyLoaded: true,
+      errorMessage: "fetch failed",
+    };
+    expect(membershipAccessShouldRetryReadFailure(readFailure)).toBe(true);
+    expect(membershipAccessShouldRetryReadFailure({ ...readFailure, retry: 3 })).toBe(false);
+    expect(membershipAccessShouldRetryReadFailure({ ...readFailure, liveWrite: false })).toBe(false);
+    expect(
+      membershipAccessShouldRetryReadFailure({
+        ...readFailure,
+        fieldValuesKnown: true,
+        errorMessage: null,
+      }),
+    ).toBe(false);
+    expect(membershipAccessShouldRetryReadFailure({ ...readFailure, truncated: true })).toBe(false);
+    expect(membershipAccessShouldRetryReadFailure({ ...readFailure, legacyLoaded: false })).toBe(
+      false,
+    );
+    expect(
+      membershipAccessShouldRetryReadFailure({
+        ...readFailure,
+        censusLoaded: false,
+        legacyLoaded: false,
+        truncated: false,
+      }),
+    ).toBe(true);
+    expect(
+      membershipAccessShouldRetryReadFailure({
+        ...readFailure,
+        fieldValuesKnown: true,
+        written: 40,
+        errorMessage: "fetch failed",
+      }),
+    ).toBe(true);
+    expect(
+      membershipAccessShouldRetryReadFailure({
+        ...readFailure,
+        fieldValuesKnown: true,
+        remainingWrites: 10,
+        errorMessage: "fetch failed",
+      }),
+    ).toBe(false);
+  });
+
+  it("retries a rejected continuation and does not post again after one is accepted", async () => {
+    const rejectedThenAccepted = vi.fn(async (attempt: number) => (attempt === 0 ? 508 : 202));
+    const recovered = await postMembershipAccessContinuation({ post: rejectedThenAccepted });
+    expect(recovered).toEqual({ status: 202, attempts: 2, accepted: true });
+    expect(rejectedThenAccepted).toHaveBeenCalledTimes(2);
+
+    const alwaysRejected = vi.fn(async () => 508);
+    const stopped = await postMembershipAccessContinuation({ post: alwaysRejected });
+    expect(stopped).toEqual({ status: 508, attempts: 3, accepted: false });
+    expect(alwaysRejected).toHaveBeenCalledTimes(3);
+
+    const accepted = vi.fn(async () => 202);
+    const once = await postMembershipAccessContinuation({ post: accepted });
+    expect(once).toEqual({ status: 202, attempts: 1, accepted: true });
+    expect(accepted).toHaveBeenCalledTimes(1);
+
+    let posts = 0;
+    const threwThenAccepted = vi.fn(async () => {
+      posts += 1;
+      if (posts === 1) throw new Error("socket hang up");
+      return 202;
+    });
+    const afterThrow = await postMembershipAccessContinuation({ post: threwThenAccepted });
+    expect(afterThrow).toEqual({ status: 202, attempts: 2, accepted: true });
   });
 });

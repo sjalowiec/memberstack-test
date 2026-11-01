@@ -72,7 +72,10 @@
 # expiry, complimentary expiry, and the complimentary date sync). The scheduled
 # function only starts the background worker. Each live run writes at most 1,000
 # contacts, then starts the next run while any value is still missing or a write
-# failed. A second worker exits while that chain holds a lock under 16 minutes.
+# failed. A rejected handoff, including HTTP 508, is tried up to three times.
+# A live run that returns before source values are known starts another run up
+# to three times. Completed field values stay in place. A second worker exits
+# while that chain holds a lock under 16 minutes.
 # Writes require CURRENT_MEMBERSHIP_ACCESS_SYNC_LIVE_ENABLED exactly "true" on
 # the production site. The worker does not send email or change other contact
 # fields. The sync function itself is not scheduled, so a manual request without

@@ -52,12 +52,69 @@ export function membershipAccessLockIsActive(
  * A batch that writes nothing is retried twice, then stopped so a permanent
  * failure cannot chain forever. Successful writes reset that retry count.
  */
+/** Bound for resuming a live run that did not finish its handoff. */
+export const MEMBERSHIP_ACCESS_RETRY_LIMIT = 3;
+
 /** A live run that throws before it can write is retried a few times, then stopped. */
 export function membershipAccessShouldRetryError(input: {
   liveWrite: boolean;
   retry: number;
 }): boolean {
-  return input.liveWrite && input.retry < 3;
+  return input.liveWrite && input.retry < MEMBERSHIP_ACCESS_RETRY_LIMIT;
+}
+
+/**
+ * A live run that returns before the source values are known should start again.
+ * Completed writes stay in ActiveCampaign. A census that refused to write does not.
+ */
+export function membershipAccessShouldRetryReadFailure(input: {
+  liveWrite: boolean;
+  fieldValuesKnown: boolean;
+  written: number;
+  remainingWrites: number;
+  failures: number;
+  retry: number;
+  censusLoaded: boolean;
+  truncated: boolean;
+  legacyLoaded: boolean;
+  errorMessage: string | null;
+}): boolean {
+  if (!membershipAccessShouldRetryError({ liveWrite: input.liveWrite, retry: input.retry })) {
+    return false;
+  }
+  if (!input.errorMessage) return false;
+  if (input.censusLoaded && (input.truncated || !input.legacyLoaded)) return false;
+  if (input.fieldValuesKnown && (input.remainingWrites > 0 || input.failures > 0)) return false;
+  if (!input.fieldValuesKnown) return true;
+  return input.written > 0 && input.remainingWrites === 0 && input.failures === 0;
+}
+
+/** Background accept, or the synchronous function's own success status. */
+export function membershipAccessContinuationAccepted(status: number): boolean {
+  return status === 200 || status === 202;
+}
+
+/**
+ * Ask for the next run up to three times. Requests are sequential, so a rejected
+ * handoff does not start a second worker beside one that was already accepted.
+ */
+export async function postMembershipAccessContinuation(input: {
+  post: (attempt: number) => Promise<number>;
+}): Promise<{ status: number; attempts: number; accepted: boolean }> {
+  let status = 0;
+  let attempts = 0;
+  for (let attempt = 0; attempt < MEMBERSHIP_ACCESS_RETRY_LIMIT; attempt += 1) {
+    attempts = attempt + 1;
+    try {
+      status = await input.post(attempt);
+    } catch {
+      status = 0;
+    }
+    if (membershipAccessContinuationAccepted(status)) {
+      return { status, attempts, accepted: true };
+    }
+  }
+  return { status, attempts, accepted: false };
 }
 
 export function membershipAccessShouldChain(input: {
