@@ -26,7 +26,14 @@ export const BROTHER_KH260_COURSE_SLUG = "brother-kh-kr-260-quick-start" as cons
 export const LEGACY_BROTHER_260_COURSE_PLAN_ID = "pln_course-brother-260-legacy-m2vb0y2r" as const;
 
 export const LK150_PATTERNING_COURSE_SLUG = "master-lk-patterning" as const;
-/** Existing Memberstack plan "Course: LK150 Patterning". No checkout price is configured here. */
+/**
+ * Original Memberstack plan "Legacy - KIN_LK150 Patterning".
+ * Legacy import assigned this free plan. It unlocks the existing Course 34
+ * player and is not a checkout price.
+ */
+export const LEGACY_KIN_LK150_PATTERNING_PLAN_ID =
+  "pln_legacy-kin-lk150-patterning-uk9508lp" as const;
+/** Later free plan "Course: LK150 Patterning". No checkout price is configured here. */
 export const LK150_PATTERNING_COURSE_PLAN_ID = "pln_course-lk150-patterning-nw00gk6" as const;
 
 export const LK150_FUN_COURSE_SLUG = "lk-150-fun" as const;
@@ -57,6 +64,11 @@ export type IndividualCourseSale = {
   slug: string;
   aliases: readonly string[];
   legacyPlanId: string;
+  /**
+   * Other free plans that unlock this same course. The legacy import plan for
+   * LK150 Patterning is one of these. Checkout must not use these ids.
+   */
+  additionalLegacyPlanIds?: readonly string[];
   /** Omit when the course is not sold. Checkout must not invent a price. */
   paidPlanId?: string;
   priceId?: string;
@@ -98,6 +110,7 @@ export const COURSE_INDIVIDUAL_SALES = {
     slug: LK150_PATTERNING_COURSE_SLUG,
     aliases: ["34"],
     legacyPlanId: LK150_PATTERNING_COURSE_PLAN_ID,
+    additionalLegacyPlanIds: [LEGACY_KIN_LK150_PATTERNING_PLAN_ID],
   },
   lk150QuickStart: {
     key: "lk150QuickStart",
@@ -122,18 +135,26 @@ export const COURSE_INDIVIDUAL_SALES = {
   },
 } as const satisfies Record<IndividualCourseSaleKey, IndividualCourseSale>;
 
+/** Free and paid plan ids that unlock one individual course. */
+export function individualCourseEntitlementPlanIds(sale: {
+  legacyPlanId: string;
+  paidPlanId?: string;
+  additionalLegacyPlanIds?: readonly string[];
+}): readonly string[] {
+  return [
+    ...(sale.additionalLegacyPlanIds ?? []),
+    sale.legacyPlanId,
+    ...(sale.paidPlanId ? [sale.paidPlanId] : []),
+  ];
+}
+
 /** Plan ID → course slugs that plan unlocks (Legacy and Paid). */
-export const LEGACY_COURSE_PLAN_SLUGS: Readonly<Record<string, readonly string[]>> = {
-  [LEGACY_TH160_COURSE_PLAN_ID]: [KIN_TAITEXMA_160_COURSE_SLUG],
-  [PAID_TH160_COURSE_PLAN_ID]: [KIN_TAITEXMA_160_COURSE_SLUG],
-  [LEGACY_SK840_COURSE_PLAN_ID]: [LEGACY_SK840_COURSE_SLUG],
-  [PAID_SK840_COURSE_PLAN_ID]: [LEGACY_SK840_COURSE_SLUG],
-  [LEGACY_BROTHER_260_COURSE_PLAN_ID]: [BROTHER_KH260_COURSE_SLUG],
-  [LK150_PATTERNING_COURSE_PLAN_ID]: [LK150_PATTERNING_COURSE_SLUG],
-  [LK150_QUICK_START_COURSE_PLAN_ID]: [LK150_QUICK_START_COURSE_SLUG],
-  [LK150_FUN_COURSE_PLAN_ID]: [LK150_FUN_COURSE_SLUG],
-  [LEGACY_BEGINNER_WORKSHOP_COURSE_PLAN_ID]: [BEGINNER_WORKSHOP_COURSE_SLUG],
-};
+export const LEGACY_COURSE_PLAN_SLUGS: Readonly<Record<string, readonly string[]>> =
+  Object.fromEntries(
+    Object.values(COURSE_INDIVIDUAL_SALES).flatMap((sale) =>
+      individualCourseEntitlementPlanIds(sale).map((planId) => [planId, [sale.slug]] as const),
+    ),
+  );
 
 /** Map numeric player ids (`86`, `111`) to catalog slugs used by entitlement checks. */
 export function canonicalCourseCatalogSlug(courseSlug: string | null | undefined): string {

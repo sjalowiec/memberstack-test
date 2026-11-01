@@ -7,7 +7,10 @@
  *
  * Membership plans unlock course playback, but they are not ownership.
  */
-import { COURSE_INDIVIDUAL_SALES } from "../../config/legacyCourseEntitlements";
+import {
+  COURSE_INDIVIDUAL_SALES,
+  individualCourseEntitlementPlanIds,
+} from "../../config/legacyCourseEntitlements";
 import { hasIndividualCoursePurchase } from "../courseAccess";
 
 export type AccountOwnedCourseCard = {
@@ -28,8 +31,9 @@ export type AccountOwnableCourse = {
 function ownablePlanIds(sale: {
   legacyPlanId: string;
   paidPlanId?: string;
+  additionalLegacyPlanIds?: readonly string[];
 }): readonly string[] {
-  return sale.paidPlanId ? [sale.legacyPlanId, sale.paidPlanId] : [sale.legacyPlanId];
+  return individualCourseEntitlementPlanIds(sale);
 }
 
 export const ACCOUNT_OWNABLE_COURSES: readonly AccountOwnableCourse[] = [
