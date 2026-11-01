@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { isValidVimeoUrl, normalizeVimeoUrl } from "./vimeoUrl";
+import { isValidVimeoUrl, membershipThankYouPlayerUrl, normalizeVimeoUrl } from "./vimeoUrl";
 
 describe("normalizeVimeoUrl", () => {
   it("normalizes a standard Vimeo video URL", () => {
@@ -58,6 +58,20 @@ describe("normalizeVimeoUrl", () => {
     expect(normalizeVimeoUrl("<iframe src='https://vimeo.com/1'></iframe>")).toBeNull();
     expect(normalizeVimeoUrl("")).toBeNull();
     expect(isValidVimeoUrl("not a url")).toBe(false);
+  });
+
+  it("keeps the unlisted hash and does not autoplay a membership thank-you", () => {
+    const normalized = normalizeVimeoUrl("https://vimeo.com/123456789/abc123def");
+    const player = membershipThankYouPlayerUrl(normalized?.safeVimeoEmbedUrl ?? "");
+    expect(player).toContain("h=abc123def");
+    expect(player).toContain("autoplay=0");
+    expect(player).toContain("title=0");
+    expect(player).toContain("byline=0");
+    expect(player).toContain("portrait=0");
+    expect(player).toContain("badge=0");
+    expect(player).toContain("share=0");
+    expect(player).not.toContain("autoplay=1");
+    expect(player).not.toContain("controls=0");
   });
 
   it("never returns HTML", () => {

@@ -11,7 +11,9 @@ import { randomUUID } from "node:crypto";
 import { isValidEmailAddress, normalizeEmailAddress } from "../email/validateEmailAddress";
 import {
   buildDefaultVideoReplyEmailMessage,
+  buildMembershipThankYouEmailMessage,
   extractFirstName,
+  membershipThankYouFirstName,
 } from "./videoReplyMessage";
 import { generateVideoReplyPublicToken, isPlausibleVideoReplyPublicToken } from "./videoReplyToken";
 import { normalizeVimeoUrl } from "./vimeoUrl";
@@ -22,6 +24,9 @@ export const VIDEO_REPLIES_TOKEN_PREFIX = "by-token/";
 
 export const VIDEO_REPLY_STATUSES = ["active", "disabled"] as const;
 export type VideoReplyStatus = (typeof VIDEO_REPLY_STATUSES)[number];
+
+export const VIDEO_REPLY_PRESENTATIONS = ["support", "membership_thank_you"] as const;
+export type VideoReplyPresentation = (typeof VIDEO_REPLY_PRESENTATIONS)[number];
 
 export type VideoReplySentEvent = {
   sentAt: string;
@@ -47,6 +52,7 @@ export type VideoReply = {
   openCount: number;
   status: VideoReplyStatus;
   disabledAt: string | null;
+  presentation: VideoReplyPresentation;
 };
 
 export type CreateVideoReplyInput = {
@@ -55,6 +61,7 @@ export type CreateVideoReplyInput = {
   topic: string;
   vimeoUrl: string;
   privateNotes?: string;
+  presentation?: VideoReplyPresentation;
   now?: string;
   id?: string;
   publicToken?: string;
@@ -66,6 +73,7 @@ export type UpdateVideoReplyFieldsInput = {
   topic?: string;
   vimeoUrl?: string;
   privateNotes?: string | null;
+  presentation?: VideoReplyPresentation;
   now?: string;
 };
 
@@ -78,6 +86,7 @@ export type VideoReplyPublicView = {
   topic: string;
   memberFirstName: string;
   safeVimeoEmbedUrl: string;
+  presentation: VideoReplyPresentation;
 };
 
 type BlobStoreLike = Pick<Store, "get" | "setJSON" | "list">;
@@ -153,6 +162,8 @@ export function buildVideoReply(input: CreateVideoReplyInput): VideoReply {
   const privateNotes =
     typeof input.privateNotes === "string" ? input.privateNotes.trim().slice(0, 5000) : "";
 
+  const presentation: VideoReplyPresentation =
+    input.presentation === "membership_thank_you" ? "membership_thank_you" : "support";
   const now = input.now ?? new Date().toISOString();
   const id = input.id ?? randomUUID();
   const publicToken = input.publicToken ?? generateVideoReplyPublicToken();
@@ -165,7 +176,10 @@ export function buildVideoReply(input: CreateVideoReplyInput): VideoReply {
     id,
     publicToken,
     memberName,
-    memberFirstName: extractFirstName(memberName),
+    memberFirstName:
+      presentation === "membership_thank_you"
+        ? membershipThankYouFirstName(memberName)
+        : extractFirstName(memberName),
     memberEmail,
     topic,
     originalVimeoUrl: vimeo.originalVimeoUrl,
@@ -181,6 +195,7 @@ export function buildVideoReply(input: CreateVideoReplyInput): VideoReply {
     openCount: 0,
     status: "active",
     disabledAt: null,
+    presentation,
   };
 }
 
@@ -253,6 +268,7 @@ export function normalizeVideoReply(raw: unknown): VideoReply | null {
     openCount: Number.isFinite(Number(row.openCount)) ? Math.max(0, Number(row.openCount)) : 0,
     status,
     disabledAt: typeof row.disabledAt === "string" ? row.disabledAt : null,
+    presentation: row.presentation === "membership_thank_you" ? "membership_thank_you" : "support",
   };
 }
 
@@ -261,6 +277,7 @@ export function toPublicVideoReplyView(record: VideoReply): VideoReplyPublicView
     topic: record.topic,
     memberFirstName: record.memberFirstName,
     safeVimeoEmbedUrl: record.safeVimeoEmbedUrl,
+    presentation: record.presentation,
   };
 }
 
@@ -269,13 +286,20 @@ export function withAdminPresentation(
   origin: string,
 ): VideoReplyAdminView {
   const publicViewingUrl = `${origin.replace(/\/$/, "")}/video-reply/${encodeURIComponent(record.publicToken)}`;
+  const defaultEmailMessage =
+    record.presentation === "membership_thank_you"
+      ? buildMembershipThankYouEmailMessage({
+          memberName: record.memberName,
+          publicViewingUrl,
+        })
+      : buildDefaultVideoReplyEmailMessage({
+          memberName: record.memberName,
+          publicViewingUrl,
+        });
   return {
     ...record,
     publicViewingUrl,
-    defaultEmailMessage: buildDefaultVideoReplyEmailMessage({
-      memberName: record.memberName,
-      publicViewingUrl,
-    }),
+    defaultEmailMessage,
   };
 }
 
@@ -368,7 +392,18 @@ export async function updateVideoReplyFields(
 
   if (patch.memberName !== undefined) {
     next.memberName = requireNonEmpty(patch.memberName, "Name", 200);
-    next.memberFirstName = extractFirstName(next.memberName);
+  }
+
+  if (patch.presentation !== undefined) {
+    next.presentation =
+      patch.presentation === "membership_thank_you" ? "membership_thank_you" : "support";
+  }
+
+  if (patch.memberName !== undefined || patch.presentation !== undefined) {
+    next.memberFirstName =
+      next.presentation === "membership_thank_you"
+        ? membershipThankYouFirstName(next.memberName)
+        : extractFirstName(next.memberName);
   }
 
   if (patch.memberEmail !== undefined) {

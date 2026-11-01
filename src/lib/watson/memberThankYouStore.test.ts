@@ -5,6 +5,8 @@ import { describe, expect, it } from "vitest";
 import {
   mapThankYouStatusRow,
   setThankYouStatus,
+  thankYouCompletionSql,
+  thankYouVideoLinkSql,
   thankYouStatusUpdateSql,
 } from "./memberThankYouStore";
 import type { WatsonQueryFn } from "./memberSearch";
@@ -84,5 +86,35 @@ describe("member thank-you status storage", () => {
     expect(first?.stripeChargeId).not.toBe(renewal?.stripeChargeId);
     expect(renewal?.videoSentAt).toBeNull();
     expect(renewal?.cardSentAt).toBeNull();
+    expect(renewal?.videoReplyId).toBeNull();
+    expect(renewal?.completedAt).toBeNull();
+  });
+
+  it("adds video and completion columns without changing existing sent rows", () => {
+    const sql = readFileSync(
+      "supabase/migrations/20261101143000_watson_member_thank_you_videos.sql",
+      "utf8",
+    );
+    expect(sql).toContain("ADD COLUMN IF NOT EXISTS video_reply_id");
+    expect(sql).toContain("ADD COLUMN IF NOT EXISTS completed_at");
+    expect(sql).not.toMatch(/\bUPDATE\b/i);
+    expect(sql).not.toContain("video_sent_at =");
+    expect(sql).not.toContain("card_sent_at =");
+  });
+
+  it("stores a video link without changing sent or completion columns", () => {
+    const setClause = (thankYouVideoLinkSql().split(/do update/i)[1] ?? "").split(/returning/i)[0] ?? "";
+    expect(setClause).toContain("video_reply_id = COALESCE");
+    expect(setClause).not.toContain("video_sent_at");
+    expect(setClause).not.toContain("card_sent_at");
+    expect(setClause).not.toContain("completed_at");
+  });
+
+  it("stores completion without changing sent dates or the video link", () => {
+    const setClause = (thankYouCompletionSql().split(/do update/i)[1] ?? "").split(/returning/i)[0] ?? "";
+    expect(setClause).toContain("completed_at = EXCLUDED.completed_at");
+    expect(setClause).not.toContain("video_sent_at");
+    expect(setClause).not.toContain("card_sent_at");
+    expect(setClause).not.toContain("video_reply_id");
   });
 });

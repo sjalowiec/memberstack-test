@@ -116,3 +116,26 @@ export function normalizeVimeoUrl(raw: unknown): NormalizedVimeoUrl | null {
 export function isValidVimeoUrl(raw: unknown): boolean {
   return normalizeVimeoUrl(raw) != null;
 }
+
+/**
+ * Player URL for a membership thank-you.
+ * Keeps the unlisted privacy hash, leaves playback controls on, and does not autoplay.
+ */
+export function membershipThankYouPlayerUrl(embedUrl: string): string | null {
+  let url: URL;
+  try {
+    url = new URL(embedUrl);
+  } catch {
+    return null;
+  }
+  if (url.protocol !== "https:" || url.hostname !== "player.vimeo.com") return null;
+  if (!/^\/video\/\d+$/.test(url.pathname)) return null;
+
+  url.searchParams.set("autoplay", "0");
+  url.searchParams.set("title", "0");
+  url.searchParams.set("byline", "0");
+  url.searchParams.set("portrait", "0");
+  url.searchParams.set("badge", "0");
+  url.searchParams.set("share", "0");
+  return url.toString();
+}

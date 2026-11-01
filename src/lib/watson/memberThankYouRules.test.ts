@@ -5,6 +5,7 @@ import {
   classifyMemberThankYou,
   explainAnnualThankYouEligibility,
   matchesThankYouFilter,
+  parseThankYouFilter,
   MEMBER_THANK_YOU_START_YMD,
   resolveThankYouRange,
   thankYouPaymentYmd,
@@ -313,10 +314,21 @@ describe("thank-you filters", () => {
     expect(matchesThankYouFilter({ ...missing, cardSent: true }, "address")).toBe(false);
   });
 
-  it("completes only when both boxes are checked", () => {
-    expect(
-      matchesThankYouFilter({ videoSent: true, cardSent: true, addressState: "missing" }, "completed"),
-    ).toBe(true);
-    expect(matchesThankYouFilter({ ...usable, videoSent: true }, "completed")).toBe(false);
+  it("keeps completion separate from the sent boxes", () => {
+    const bothSent = { videoSent: true, cardSent: true, addressState: "missing" as const, completed: false };
+    expect(matchesThankYouFilter(bothSent, "completed")).toBe(false);
+    expect(matchesThankYouFilter(bothSent, "todo")).toBe(true);
+    expect(matchesThankYouFilter({ ...usable, completed: true }, "completed")).toBe(true);
+    expect(matchesThankYouFilter({ ...usable, completed: true }, "todo")).toBe(false);
+    expect(matchesThankYouFilter({ ...usable, completed: true }, "video")).toBe(false);
+    expect(matchesThankYouFilter({ ...usable, videoSent: true, completed: false }, "all")).toBe(true);
+  });
+
+  it("defaults the list to To Do", () => {
+    expect(parseThankYouFilter(null)).toBe("todo");
+    expect(parseThankYouFilter("")).toBe("todo");
+    expect(parseThankYouFilter("nope")).toBe("todo");
+    expect(parseThankYouFilter("all")).toBe("all");
+    expect(parseThankYouFilter("completed")).toBe("completed");
   });
 });

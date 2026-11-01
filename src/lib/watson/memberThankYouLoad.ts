@@ -48,6 +48,16 @@ import {
   type ThankYouKind,
 } from "./memberThankYouRules";
 import {
+  buildMembershipThankYouEmailMessage,
+  buildVideoReplyPublicUrl,
+  MEMBERSHIP_THANK_YOU_EMAIL_SUBJECT,
+} from "../videoReplies/videoReplyMessage";
+import {
+  getVideoRepliesStore,
+  getVideoReplyById,
+  type VideoReply,
+} from "../videoReplies/videoRepliesStore";
+import {
   isMissingThankYouTable,
   listThankYouStatuses,
   type ThankYouStatusRecord,
@@ -127,6 +137,15 @@ export type MemberThankYouRow = {
   cardSentAt: string | null;
   videoSentLabel: string | null;
   cardSentLabel: string | null;
+  completed: boolean;
+  completedAt: string | null;
+  completedLabel: string | null;
+  videoReplyId: string | null;
+  videoOriginalUrl: string | null;
+  videoPublicUrl: string | null;
+  videoLinkDisabled: boolean;
+  emailSubject: string | null;
+  emailMessage: string | null;
 };
 
 export type MemberThankYouPage = {
@@ -137,6 +156,7 @@ export type MemberThankYouPage = {
   toCivil: string;
   todayCivil: string;
   statusesAvailable: boolean;
+  videoColumnsAvailable: boolean;
   warnings: string[];
   error: string | null;
   priceConfigReady: boolean;
@@ -155,7 +175,15 @@ export type MemberThankYouDeps = {
   subscriptionsForMember?: (memberId: string) => Promise<LegacySubscriptionRow[]>;
   memberstackByEmail?: (email: string) => Promise<MemberstackThankYouLookup>;
   earlyRenewalForInvoice?: (invoiceId: string) => Promise<EarlyRenewalThankYouSignal>;
-  statusesForCharges?: (ids: string[]) => Promise<ThankYouStatusRecord[] | "unavailable">;
+  statusesForCharges?: (
+    ids: string[],
+  ) => Promise<
+    | ThankYouStatusRecord[]
+    | { rows: ThankYouStatusRecord[]; videoColumnsAvailable: boolean }
+    | "unavailable"
+  >;
+  videoRepliesById?: (ids: string[]) => Promise<Map<string, VideoReply> | "unavailable">;
+  origin?: string;
 };
 
 type Identity =
@@ -169,6 +197,24 @@ function sentLabel(iso: string | null): string | null {
   const label = formatLaTimestamp(iso);
   return label === "-" ? null : `Sent ${label}`;
 }
+
+function completedLabel(iso: string | null): string | null {
+  if (!iso) return null;
+  const label = formatLaTimestamp(iso);
+  return label === "-" ? null : `Completed ${label}`;
+}
+
+const EMPTY_VIDEO = {
+  videoReplyId: null,
+  videoOriginalUrl: null,
+  videoPublicUrl: null,
+  videoLinkDisabled: false,
+  emailSubject: null,
+  emailMessage: null,
+  completed: false,
+  completedAt: null,
+  completedLabel: null,
+} as const;
 
 function linkToIdentity(link: LegacyEmailLinkResult | "unavailable"): Identity {
   if (link === "unavailable") return { status: "unavailable" };
@@ -557,29 +603,42 @@ export async function loadMemberThankYouPage(
       cardSentAt: null,
       videoSentLabel: null,
       cardSentLabel: null,
+      ...EMPTY_VIDEO,
     });
   }
 
   let statusesAvailable = true;
+  let videoColumnsAvailable = true;
   let statusRows: ThankYouStatusRecord[] = [];
   try {
     const loaded = await statusesForCharges(built.map((row) => row.stripeChargeId));
     if (loaded === "unavailable") {
       statusesAvailable = false;
+      videoColumnsAvailable = false;
       warnings.push(
         "Thank-you status is not in the database yet. Payments are listed, and the sent boxes cannot be saved until the migration is applied.",
       );
-    } else {
+    } else if (Array.isArray(loaded)) {
       statusRows = loaded;
+    } else {
+      statusRows = loaded.rows;
+      videoColumnsAvailable = loaded.videoColumnsAvailable;
+      if (!videoColumnsAvailable) {
+        warnings.push(
+          "Video links and Mark Complete need the thank-you video migration. Sent boxes still save, and existing rows were not marked complete.",
+        );
+      }
     }
   } catch (error) {
     if (isMissingThankYouTable(error)) {
       statusesAvailable = false;
+      videoColumnsAvailable = false;
       warnings.push(
         "Thank-you status is not in the database yet. Payments are listed, and the sent boxes cannot be saved until the migration is applied.",
       );
     } else {
       statusesAvailable = false;
+      videoColumnsAvailable = false;
       warnings.push("Saved thank-you status could not be loaded. Sent boxes are not shown as saved.");
     }
   }
@@ -596,28 +655,73 @@ export async function loadMemberThankYouPage(
       cardSentAt: status.cardSentAt,
       videoSentLabel: sentLabel(status.videoSentAt),
       cardSentLabel: sentLabel(status.cardSentAt),
+      videoReplyId: status.videoReplyId ?? null,
+      completed: Boolean(status.completedAt),
+      completedAt: status.completedAt ?? null,
+      completedLabel: completedLabel(status.completedAt ?? null),
     };
   });
 
-  withStatus.sort((a, b) => {
+  const origin = (deps.origin ?? "").replace(/\/$/, "");
+  const replyIds = [
+    ...new Set(withStatus.map((row) => row.videoReplyId).filter((id): id is string => Boolean(id))),
+  ];
+  let replies = new Map<string, VideoReply>();
+  if (replyIds.length > 0) {
+    try {
+      const loadedReplies = await (deps.videoRepliesById ?? defaultVideoRepliesById)(replyIds);
+      if (loadedReplies === "unavailable") {
+        warnings.push("Saved thank-you videos could not be loaded. Sent boxes were not changed.");
+      } else {
+        replies = loadedReplies;
+      }
+    } catch {
+      warnings.push("Saved thank-you videos could not be loaded. Sent boxes were not changed.");
+    }
+  }
+
+  const withVideo = withStatus.map((row) => {
+    const reply = row.videoReplyId ? replies.get(row.videoReplyId) : undefined;
+    if (!reply) return row;
+    const videoPublicUrl = buildVideoReplyPublicUrl(origin, reply.publicToken);
+    return {
+      ...row,
+      videoOriginalUrl: reply.originalVimeoUrl,
+      videoPublicUrl,
+      videoLinkDisabled: reply.status === "disabled",
+      emailSubject: MEMBERSHIP_THANK_YOU_EMAIL_SUBJECT,
+      emailMessage: buildMembershipThankYouEmailMessage({
+        memberName: reply.memberName,
+        publicViewingUrl: videoPublicUrl,
+      }),
+    };
+  });
+
+  withVideo.sort((a, b) => {
     const byDate = b.paymentYmd.localeCompare(a.paymentYmd);
     if (byDate !== 0) return byDate;
     return a.stripeChargeId.localeCompare(b.stripeChargeId);
   });
 
   return {
-    rows: withStatus.filter((row) =>
+    rows: withVideo.filter((row) =>
       matchesThankYouFilter(
-        { videoSent: row.videoSent, cardSent: row.cardSent, addressState: row.addressState },
+        {
+          videoSent: row.videoSent,
+          cardSent: row.cardSent,
+          addressState: row.addressState,
+          completed: row.completed,
+        },
         filter,
       ),
     ),
-    totalInRange: withStatus.length,
+    totalInRange: withVideo.length,
     filter,
     fromCivil: range.fromCivil,
     toCivil: range.toCivil,
     todayCivil: range.todayCivil,
     statusesAvailable,
+    videoColumnsAvailable,
     warnings,
     error: null,
     priceConfigReady: true,
@@ -641,6 +745,7 @@ function emptyPage(
     toCivil,
     todayCivil,
     statusesAvailable: false,
+    videoColumnsAvailable: false,
     warnings,
     error,
     priceConfigReady,
@@ -706,9 +811,25 @@ async function defaultEarlyRenewalForInvoice(
   }
 }
 
+async function defaultVideoRepliesById(
+  ids: string[],
+): Promise<Map<string, VideoReply> | "unavailable"> {
+  try {
+    const store = getVideoRepliesStore();
+    const replies = new Map<string, VideoReply>();
+    for (const id of ids) {
+      const reply = await getVideoReplyById(store, id);
+      if (reply) replies.set(id, reply);
+    }
+    return replies;
+  } catch {
+    return "unavailable";
+  }
+}
+
 async function defaultStatusesForCharges(
   ids: string[],
-): Promise<ThankYouStatusRecord[] | "unavailable"> {
+): Promise<{ rows: ThankYouStatusRecord[]; videoColumnsAvailable: boolean } | "unavailable"> {
   try {
     return await listThankYouStatuses(ids);
   } catch (error) {

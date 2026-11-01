@@ -7,7 +7,10 @@ import {
   openedStatusLabel,
   sentStatusLabel,
 } from "../../lib/videoReplies/videoReplyDisplay";
-import { buildDefaultVideoReplyEmailMessage } from "../../lib/videoReplies/videoReplyMessage";
+import {
+  buildDefaultVideoReplyEmailMessage,
+  buildMembershipThankYouEmailMessage,
+} from "../../lib/videoReplies/videoReplyMessage";
 import {
   getVideoRepliesStore,
   listVideoReplies,
@@ -36,9 +39,16 @@ function publicUrl(reply: VideoReply): string {
 }
 
 function emailMessage(reply: VideoReply): string {
+  const viewingUrl = publicUrl(reply);
+  if (reply.presentation === "membership_thank_you") {
+    return buildMembershipThankYouEmailMessage({
+      memberName: reply.memberName,
+      publicViewingUrl: viewingUrl,
+    });
+  }
   return buildDefaultVideoReplyEmailMessage({
     memberName: reply.memberName,
-    publicViewingUrl: publicUrl(reply),
+    publicViewingUrl: viewingUrl,
   });
 }
 ---
