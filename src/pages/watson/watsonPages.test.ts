@@ -210,6 +210,7 @@ describe("Watson member search pages", () => {
     expect(component).toContain("Legacy Expiration Date");
     expect(component).toContain("Days After Paid-Through");
 
+    expect(shell).toContain('<a href="/watson/reports/current-members">Current Members</a>');
     expect(shell).toContain('<a href="/watson/legacy-renewals">Legacy Renewals</a>');
   });
 
