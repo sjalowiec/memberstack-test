@@ -85,7 +85,9 @@ describe("Help Hub public SSR", () => {
     expect(indexSource).toContain("Read full answer →");
     expect(indexSource).toContain("help-hub-discovery__question-line");
     expect(indexSource).not.toContain("kbm-btn-primary help-hub-discovery__explore");
-    expect(indexSource).not.toContain("kbm-btn-outline help-hub-discovery__surprise");
+    expect(indexSource).toContain("kbm-btn kbm-btn-outline help-hub-discovery__surprise");
+    expect(indexSource).toContain("font-size: 16px");
+    expect(indexSource).toContain("min-height: 44px");
     expect(indexSource).not.toContain("Read more");
     expect(indexSource).not.toContain("Explore this topic");
     expect(indexSource).toContain("border-right: 16px solid #52682d");
