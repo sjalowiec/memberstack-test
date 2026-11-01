@@ -15,6 +15,8 @@ import {
   membershipAccessLockIsActive,
   membershipAccessShouldChain,
   membershipAccessShouldRetryError,
+  membershipAccessShouldRetryReadFailure,
+  postMembershipAccessContinuation,
   MEMBERSHIP_ACCESS_WRITE_BATCH,
   currentMembershipAccessSyncWillWrite,
   runCurrentMembershipAccessSync,
@@ -59,6 +61,28 @@ function json(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
     status,
     headers: { "Content-Type": "application/json", "Cache-Control": "no-store" },
+  });
+}
+
+/** Clear the lock before this so the next run is not skipped as overlap. */
+function startNextMembershipAccessRun(
+  req: Request,
+  retryCount: number,
+): Promise<{ status: number; attempts: number; accepted: boolean }> {
+  return postMembershipAccessContinuation({
+    post: async () => {
+      const nextUrl = new URL(req.url);
+      nextUrl.searchParams.set("maxWrites", String(MEMBERSHIP_ACCESS_WRITE_BATCH));
+      nextUrl.searchParams.set("retry", String(retryCount));
+      const continued = await fetch(nextUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          next_run: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+        }),
+      });
+      return continued.status;
+    },
   });
 }
 
@@ -158,6 +182,7 @@ export default async (req: Request): Promise<Response> => {
         "amcint49@gmail.com",
       ],
     });
+    const retryCount = Number.isFinite(retry) ? retry : 0;
     const chain = membershipAccessShouldChain({
       liveWrite: result.liveWrite,
       fieldValuesKnown: result.fieldValuesKnown,
@@ -166,26 +191,35 @@ export default async (req: Request): Promise<Response> => {
       written: result.written,
       remainingWrites: result.remainingWrites,
       failures: result.failures.length,
-      retry: Number.isFinite(retry) ? retry : 0,
+      retry: retryCount,
+    });
+    const retryRead = membershipAccessShouldRetryReadFailure({
+      liveWrite: result.liveWrite,
+      fieldValuesKnown: result.fieldValuesKnown,
+      written: result.written,
+      remainingWrites: result.remainingWrites,
+      failures: result.failures.length,
+      retry: retryCount,
+      censusLoaded: result.census != null,
+      truncated: result.census?.memberstackTruncated === true,
+      legacyLoaded: result.census?.legacyLoaded === true,
+      errorMessage: result.errorMessage,
     });
     if (liveWrite) await clearLock();
-    if (chain) {
-      const nextRetry = result.written > 0 ? 0 : (Number.isFinite(retry) ? retry : 0) + 1;
-      const nextUrl = new URL(req.url);
-      nextUrl.searchParams.set("maxWrites", String(MEMBERSHIP_ACCESS_WRITE_BATCH));
-      nextUrl.searchParams.set("retry", String(nextRetry));
-      const continued = await fetch(nextUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          next_run: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-        }),
-      });
-      console.log("[current-membership-access-sync] continue", continued.status, {
-        remainingWrites: result.remainingWrites,
-        failures: result.failures.length,
-        retry: nextRetry,
-      });
+    if (chain || retryRead) {
+      const nextRetry = chain && result.written > 0 ? 0 : retryCount + 1;
+      const continued = await startNextMembershipAccessRun(req, nextRetry);
+      console.log(
+        `[current-membership-access-sync] ${retryRead && !chain ? "retry" : "continue"}`,
+        continued.status,
+        {
+          remainingWrites: result.remainingWrites,
+          failures: result.failures.length,
+          retry: nextRetry,
+          attempts: continued.attempts,
+          accepted: continued.accepted,
+        },
+      );
     }
     console.log("[current-membership-access-sync]", summarizeCurrentMembershipAccessSync(result));
     console.log("[current-membership-access-sync] samples", JSON.stringify(result.samples));
@@ -228,18 +262,11 @@ export default async (req: Request): Promise<Response> => {
     if (liveWrite) await clearLock();
     const retryCount = Number.isFinite(retry) ? retry : 0;
     if (membershipAccessShouldRetryError({ liveWrite, retry: retryCount })) {
-      const nextUrl = new URL(req.url);
-      nextUrl.searchParams.set("maxWrites", String(MEMBERSHIP_ACCESS_WRITE_BATCH));
-      nextUrl.searchParams.set("retry", String(retryCount + 1));
-      const continued = await fetch(nextUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          next_run: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-        }),
-      });
+      const continued = await startNextMembershipAccessRun(req, retryCount + 1);
       console.log("[current-membership-access-sync] retry", continued.status, {
         retry: retryCount + 1,
+        attempts: continued.attempts,
+        accepted: continued.accepted,
       });
     }
     console.error("current-membership-access-sync failed:", error);
