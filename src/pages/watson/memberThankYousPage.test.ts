@@ -24,6 +24,7 @@ describe("Member Thank-Yous page", () => {
   });
 
   it("saves through the Watson session API", () => {
+    const page = fs.readFileSync(path.resolve("src/pages/watson/member-thank-yous.astro"), "utf8");
     const api = fs.readFileSync(
       path.resolve("src/pages/api/watson/member-thank-yous.ts"),
       "utf8",
@@ -36,5 +37,23 @@ describe("Member Thank-Yous page", () => {
     expect(script).toContain('method: "PATCH"');
     expect(script).toContain("Saving");
     expect(script).toContain("Saved");
+    expect(page).toContain("To Do");
+    expect(page).toContain("Completed");
+    expect(page).toContain("All");
+    expect(page).toContain("Add thank-you video");
+    expect(page).toContain('data-thanks-completed');
+    expect(page).not.toContain("Mark Complete");
+    expect(page).not.toContain("Reopen");
+    expect(page).toContain("Copy subject");
+    expect(page).toContain("Copy message");
+    expect(page).toContain('data-thanks-video-preview');
+    expect(page).toContain('target="_blank"');
+    const copyFn = script.slice(
+      script.indexOf("async function copyThankYouText"),
+      script.indexOf("async function saveThankYouAction"),
+    );
+    expect(copyFn).not.toContain("mark_video_email_sent");
+    expect(copyFn).not.toContain("save_video");
+    expect(copyFn).not.toContain("complete");
   });
 });

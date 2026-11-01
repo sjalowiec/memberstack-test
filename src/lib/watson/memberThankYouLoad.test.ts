@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import type { LegacyMemberDetailRow } from "./memberDetail";
 import type { LegacySubscriptionRow } from "./memberMembership";
+import type { VideoReply } from "../videoReplies/videoRepliesStore";
 import {
   loadMemberThankYouPage,
   THANK_YOU_CHARGE_EXPAND,
@@ -140,6 +141,8 @@ describe("loadMemberThankYouPage", () => {
           stripeChargeId: "ch_annual1",
           videoSentAt: "2026-10-30T19:00:00.000Z",
           cardSentAt: null,
+          videoReplyId: null,
+          completedAt: null,
           updatedAt: "2026-10-30T19:00:00.000Z",
         },
       ],
@@ -158,6 +161,10 @@ describe("loadMemberThankYouPage", () => {
     expect(first?.addressLines).toContain("1 Main St");
     expect(first?.addressLabel).toBe("Address on file, may need confirmation.");
     expect(first?.displayName).toBe("Ada Lovelace");
+    expect(page.filter).toBe("todo");
+    expect(first?.completed).toBe(false);
+    expect(renewal?.completed).toBe(false);
+    expect(renewal?.videoReplyId).toBeNull();
   });
 
   it("does not guess when an email matches more than one person", async () => {
@@ -218,5 +225,86 @@ describe("loadMemberThankYouPage", () => {
     expect(page.priceConfigReady).toBe(false);
     expect(page.rows).toHaveLength(0);
     expect(page.warnings.join(" ")).toMatch(/not configured/i);
+  });
+
+  it("keeps a completed thank-you out of To Do and retains its video link", async () => {
+    const reply: VideoReply = {
+      id: "reply-done",
+      publicToken: "abcdefghijklmnopqrstuvwxyz0123456789DONE",
+      memberName: "Ada Lovelace",
+      memberFirstName: "Ada",
+      memberEmail: "ada@example.com",
+      topic: "A personal thank-you from Sue",
+      originalVimeoUrl: "https://vimeo.com/123456789/abc123def",
+      safeVimeoEmbedUrl: "https://player.vimeo.com/video/123456789?h=abc123def",
+      privateNotes: "do not publish",
+      createdAt: "2026-10-30T19:00:00.000Z",
+      updatedAt: "2026-10-30T19:00:00.000Z",
+      sentAt: "2026-10-30T19:10:00.000Z",
+      sentCount: 1,
+      sentEvents: [{ sentAt: "2026-10-30T19:10:00.000Z" }],
+      firstOpenedAt: null,
+      lastOpenedAt: null,
+      openCount: 0,
+      status: "active",
+      disabledAt: null,
+      presentation: "membership_thank_you",
+    };
+    const shared = {
+      now: NOW,
+      annualPriceIds: new Set(["price_annual"]),
+      monthlyPriceIds: new Set<string>(),
+      fetchCharges: async () => [
+        annualCharge({ id: "ch_open", invoiceId: "in_open" }),
+        annualCharge({ id: "ch_done", invoiceId: "in_done" }),
+      ],
+      legacyByEmail: async () => ({ status: "unique" as const, member: member("m1") }),
+      legacyByStripeCustomerId: async () => ({ status: "unique" as const, member: member("m1") }),
+      subscriptionsForMember: async () => [],
+      memberstackByEmail: async () => ({ status: "not_found" as const }),
+      earlyRenewalForInvoice: async () => ({ status: "none" as const }),
+      origin: "https://kin-dev.example",
+      statusesForCharges: async () => [
+        {
+          stripeChargeId: "ch_open",
+          videoSentAt: "2026-10-30T19:00:00.000Z",
+          cardSentAt: "2026-10-30T19:30:00.000Z",
+          videoReplyId: null,
+          completedAt: null,
+          updatedAt: "2026-10-30T19:30:00.000Z",
+        },
+        {
+          stripeChargeId: "ch_done",
+          videoSentAt: "2026-10-30T19:10:00.000Z",
+          cardSentAt: null,
+          videoReplyId: "reply-done",
+          completedAt: "2026-10-30T20:00:00.000Z",
+          updatedAt: "2026-10-30T20:00:00.000Z",
+        },
+      ],
+      videoRepliesById: async () => new Map([[reply.id, reply]]),
+    };
+
+    const todo = await loadMemberThankYouPage(shared);
+    expect(todo.filter).toBe("todo");
+    expect(todo.rows.map((row) => row.stripeChargeId)).toEqual(["ch_open"]);
+
+    const completed = await loadMemberThankYouPage({ ...shared, filter: "completed" });
+    expect(completed.rows).toHaveLength(1);
+    const done = completed.rows[0];
+    expect(done?.stripeChargeId).toBe("ch_done");
+    expect(done?.videoSent).toBe(true);
+    expect(done?.cardSent).toBe(false);
+    expect(done?.videoPublicUrl).toBe(
+      "https://kin-dev.example/video-reply/abcdefghijklmnopqrstuvwxyz0123456789DONE",
+    );
+    expect(done?.emailMessage).toContain("Hi Ada,");
+    expect(done?.emailMessage).toContain(done?.videoPublicUrl ?? "");
+    expect(done?.emailMessage).not.toContain("ada@example.com");
+    expect(done?.emailMessage).not.toContain("do not publish");
+    expect(done?.completed).toBe(true);
+
+    const all = await loadMemberThankYouPage({ ...shared, filter: "all" });
+    expect(all.rows.map((row) => row.stripeChargeId).sort()).toEqual(["ch_done", "ch_open"]);
   });
 });

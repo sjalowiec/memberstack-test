@@ -1,0 +1,130 @@
+---
+import WatsonCustomerAccordionSection from "./WatsonCustomerAccordionSection.astro";
+import { loadCustomerThankYouHistory } from "../../lib/watson/customerThankYouHistory";
+
+interface Props {
+  emails: Array<string | null | undefined>;
+  profilePaths: Array<string | null | undefined>;
+}
+
+const { emails, profilePaths } = Astro.props;
+const history = await loadCustomerThankYouHistory({
+  emails,
+  profilePaths,
+  origin: Astro.url.origin,
+});
+---
+
+<WatsonCustomerAccordionSection
+  id="customer-thank-you-history"
+  title="Thank-you History"
+  count={history.error && history.items.length === 0 ? null : history.items.length}
+  class="watson-customer__thank-you-history"
+>
+  <p class="watson__section-note">
+    Membership thank-yous already recorded for this customer. A completion mark is not a sent date.
+  </p>
+  {
+    history.error ? (
+      <p class="watson__status watson__status--error" role="alert">{history.error}</p>
+    ) : null
+  }
+  {
+    history.warning ? (
+      <p class="watson__section-note" role="status">{history.warning}</p>
+    ) : null
+  }
+  {
+    history.items.length === 0 ? (
+      <p class="watson__placeholder">No membership thank-yous for this customer.</p>
+    ) : (
+      <div class="watson-customer-thanks">
+        {history.items.map((item) => (
+          <article class="watson-customer-thanks__item" data-thank-you-history={item.stripeChargeId}>
+            <h3 class="watson-customer__subsection-title">{item.reason}</h3>
+            <dl class="watson-customer-thanks__facts">
+              <div>
+                <dt>Payment</dt>
+                <dd>{item.paymentDateLabel}</dd>
+              </div>
+              <div>
+                <dt>Video thank-you sent</dt>
+                <dd data-thank-you-video-sent={item.videoSentState}>{item.videoSentText}</dd>
+              </div>
+              <div>
+                <dt>Card sent</dt>
+                <dd data-thank-you-card-sent={item.cardSentState}>{item.cardSentText}</dd>
+              </div>
+              <div>
+                <dt>Video link</dt>
+                <dd>
+                  {
+                    item.videoPublicUrl ? (
+                      <a href={item.videoPublicUrl} target="_blank" rel="noopener noreferrer">
+                        {item.videoPublicUrl}
+                      </a>
+                    ) : (
+                      item.videoLinkText
+                    )
+                  }
+                  {item.videoLinkDisabled ? <span> Disabled</span> : null}
+                </dd>
+              </div>
+              <div>
+                <dt>Completion</dt>
+                <dd data-thank-you-completion={item.completed ? "complete" : "open"}>{item.completionText}</dd>
+              </div>
+            </dl>
+          </article>
+        ))}
+      </div>
+    )
+  }
+</WatsonCustomerAccordionSection>
+
+<style>
+  .watson-customer-thanks {
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  .watson-customer-thanks__item {
+    display: grid;
+    gap: 0.45rem;
+    padding: 0.75rem 0.85rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    background: #fff;
+  }
+
+  .watson-customer-thanks__facts {
+    display: grid;
+    gap: 0.45rem;
+    margin: 0;
+  }
+
+  .watson-customer-thanks__facts div {
+    display: grid;
+    gap: 0.1rem;
+  }
+
+  .watson-customer-thanks__facts dt {
+    margin: 0;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: #64748b;
+  }
+
+  .watson-customer-thanks__facts dd {
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .watson-customer-thanks__facts dd[data-thank-you-video-sent="none"],
+  .watson-customer-thanks__facts dd[data-thank-you-card-sent="none"] {
+    color: #9a3412;
+    font-weight: 700;
+  }
+</style>

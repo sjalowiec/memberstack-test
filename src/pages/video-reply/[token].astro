@@ -1,16 +1,22 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import {
+  buildMembershipThankYouGreeting,
+  MEMBERSHIP_THANK_YOU_HEADING,
+} from "../../lib/videoReplies/videoReplyMessage";
+import {
   getVideoRepliesStore,
   isVideoReplyPubliclyAvailable,
   recordVideoReplyOpen,
   toPublicVideoReplyView,
 } from "../../lib/videoReplies/videoRepliesStore";
 import { isPlausibleVideoReplyPublicToken } from "../../lib/videoReplies/videoReplyToken";
+import { membershipThankYouPlayerUrl } from "../../lib/videoReplies/vimeoUrl";
 
 export const prerender = false;
 
 Astro.response.headers.set("Cache-Control", "private, no-store");
+Astro.response.headers.set("X-Robots-Tag", "noindex, nofollow");
 
 const tokenParam = Astro.params.token ?? "";
 const token = decodeURIComponent(tokenParam).trim();
@@ -19,6 +25,7 @@ let available = false;
 let topic = "";
 let memberFirstName = "";
 let embedUrl = "";
+let isThankYou = false;
 
 if (isPlausibleVideoReplyPublicToken(token)) {
   try {
@@ -30,18 +37,37 @@ if (isPlausibleVideoReplyPublicToken(token)) {
       topic = view.topic;
       memberFirstName = view.memberFirstName;
       embedUrl = view.safeVimeoEmbedUrl;
+      isThankYou = view.presentation === "membership_thank_you";
     }
   } catch {
     available = false;
   }
 }
 
-const pageTitle = available ? `${topic} | Knit It Now` : "Video unavailable | Knit It Now";
+if (isThankYou) {
+  const playerUrl = membershipThankYouPlayerUrl(embedUrl);
+  if (!playerUrl) {
+    available = false;
+    isThankYou = false;
+  } else {
+    embedUrl = playerUrl;
+  }
+}
+
+const greeting = buildMembershipThankYouGreeting(memberFirstName);
+const pageTitle = !available
+  ? "Video unavailable | Knit It Now"
+  : isThankYou
+    ? `${MEMBERSHIP_THANK_YOU_HEADING} | Knit It Now`
+    : `${topic} | Knit It Now`;
+const pageDescription = isThankYou
+  ? "A personal thank-you video from Sue at Knit It Now."
+  : "A personalized Knit It Now support video.";
 ---
 
 <BaseLayout
   title={pageTitle}
-  description="A personalized Knit It Now support video."
+  description={pageDescription}
   bodyClass="video-reply-body"
 >
   <Fragment slot="head">
@@ -50,7 +76,25 @@ const pageTitle = available ? `${topic} | Knit It Now` : "Video unavailable | Kn
 
   <main class="video-reply">
     {
-      available ? (
+      available && isThankYou ? (
+        <section class="video-reply__card" aria-labelledby="video-reply-title">
+          <img class="video-reply__logo" src="/KINlogo.svg" alt="Knit It Now" width="72" height="72" />
+          <h1 id="video-reply-title" class="video-reply__title">
+            {MEMBERSHIP_THANK_YOU_HEADING}
+          </h1>
+          <p class="video-reply__for">{greeting}</p>
+          <div class="video-reply__embed">
+            <iframe
+              src={embedUrl}
+              title={MEMBERSHIP_THANK_YOU_HEADING}
+              allow="fullscreen; picture-in-picture"
+              allowfullscreen
+              loading="lazy"
+              data-click-to-play="true"
+            />
+          </div>
+        </section>
+      ) : available ? (
         <section class="video-reply__card" aria-labelledby="video-reply-title">
           <p class="video-reply__brand">Knit It Now</p>
           <h1 id="video-reply-title" class="video-reply__title">
@@ -112,6 +156,13 @@ const pageTitle = available ? `${topic} | Knit It Now` : "Video unavailable | Kn
     font-family: "Handlee", cursive;
     font-size: 1.55rem;
     color: #3f6212;
+  }
+
+  .video-reply__logo {
+    display: block;
+    width: 4.5rem;
+    height: auto;
+    margin: 0 0 0.75rem;
   }
 
   .video-reply__title {
