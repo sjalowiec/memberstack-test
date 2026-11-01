@@ -9,6 +9,7 @@ import {
   isVideoReplyPubliclyAvailable,
   listVideoReplies,
   markVideoReplySent,
+  normalizeVideoReply,
   recordVideoReplyOpen,
   saveVideoReply,
   toPublicVideoReplyView,
@@ -62,7 +63,17 @@ describe("videoRepliesStore", () => {
     expect(record.openCount).toBe(0);
     expect(record.firstOpenedAt).toBeNull();
     expect(record.status).toBe("active");
+    expect(record.presentation).toBe("support");
     expect(videoReplyBlobKey(record.id)).toBe("replies/reply-1.json");
+  });
+
+  it("keeps an older reply as an ordinary support video when presentation is absent", () => {
+    const saved = buildVideoReply(baseInput);
+    const raw = { ...saved } as Partial<typeof saved>;
+    delete raw.presentation;
+    const normalized = normalizeVideoReply(raw);
+    expect(normalized?.presentation).toBe("support");
+    expect(normalized?.publicToken).toBe(saved.publicToken);
   });
 
   it("rejects invalid create input", () => {
@@ -182,6 +193,7 @@ describe("videoRepliesStore", () => {
       topic: "Cast-on help",
       memberFirstName: "Alex",
       safeVimeoEmbedUrl: "https://player.vimeo.com/video/123456789",
+      presentation: "support",
     });
     expect(JSON.stringify(publicView)).not.toContain("alex@example.com");
     expect(JSON.stringify(publicView)).not.toContain("Called twice");

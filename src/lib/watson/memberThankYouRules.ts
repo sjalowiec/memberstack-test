@@ -25,7 +25,7 @@ export const MEMBER_THANK_YOU_ADDRESS_LABEL = "Address on file, may need confirm
 export const MEMBER_THANK_YOU_NO_ADDRESS = "No mailing address on file.";
 export const MEMBER_THANK_YOU_TIME_ZONE = SALES_REPORT_TZ;
 
-export const THANK_YOU_FILTERS = ["all", "video", "card", "address", "completed"] as const;
+export const THANK_YOU_FILTERS = ["todo", "completed", "all", "video", "card", "address"] as const;
 export type ThankYouFilter = (typeof THANK_YOU_FILTERS)[number];
 
 export const THANK_YOU_KINDS = ["new", "renewing", "returning", "unknown"] as const;
@@ -285,7 +285,7 @@ export function parseThankYouFilter(value: string | null | undefined): ThankYouF
   if ((THANK_YOU_FILTERS as readonly string[]).includes(normalized)) {
     return normalized as ThankYouFilter;
   }
-  return "all";
+  return "todo";
 }
 
 export function matchesThankYouFilter(
@@ -293,14 +293,19 @@ export function matchesThankYouFilter(
     videoSent: boolean;
     cardSent: boolean;
     addressState: ThankYouAddressState;
+    completed?: boolean;
   },
   filter: ThankYouFilter,
 ): boolean {
+  const completed = row.completed === true;
   if (filter === "all") return true;
+  if (filter === "completed") return completed;
+  if (filter === "todo") return !completed;
+  if (completed) return false;
   if (filter === "video") return !row.videoSent;
   if (filter === "card") return !row.cardSent && row.addressState === "usable";
   if (filter === "address") return row.addressState !== "usable" && !row.cardSent;
-  return row.videoSent && row.cardSent;
+  return false;
 }
 
 export type MailingAddressInput = {

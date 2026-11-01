@@ -23,10 +23,20 @@ describe("public video reply page", () => {
     expect(page).toContain("toPublicVideoReplyView");
     expect(page).toContain("This video was created for");
     expect(page).toContain("This video is unavailable");
+    expect(page).toContain('src="/KINlogo.svg"');
+    expect(page).toContain("MEMBERSHIP_THANK_YOU_HEADING");
+    expect(page).toContain("buildMembershipThankYouGreeting");
+    expect(page).toContain('data-click-to-play="true"');
+    expect(page).toContain('allow="fullscreen; picture-in-picture"');
+    expect(page).toContain("X-Robots-Tag");
+    expect(page).toContain("noindex, nofollow");
     expect(page).not.toContain("WatsonPageShell");
     expect(page).not.toContain("memberEmail");
     expect(page).not.toContain("privateNotes");
     expect(page).not.toContain("requireMemberstack");
+
+    const robots = fs.readFileSync(path.resolve("public/robots.txt"), "utf8");
+    expect(robots).toContain("Disallow: /video-reply/");
   });
 
   it("keeps private fields out of the public view payload", () => {
@@ -50,6 +60,7 @@ describe("public video reply page", () => {
       openCount: 0,
       status: "active",
       disabledAt: null,
+      presentation: "support",
     };
 
     const view = toPublicVideoReplyView(record);
