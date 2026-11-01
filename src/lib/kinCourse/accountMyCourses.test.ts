@@ -8,6 +8,7 @@ import {
   LEGACY_BROTHER_260_COURSE_PLAN_ID,
   LK150_FUN_COURSE_PLAN_ID,
   LK150_FUN_COURSE_SLUG,
+  LEGACY_KIN_LK150_PATTERNING_PLAN_ID,
   LK150_PATTERNING_COURSE_PLAN_ID,
   LK150_PATTERNING_COURSE_SLUG,
   LK150_QUICK_START_COURSE_PLAN_ID,
@@ -91,7 +92,10 @@ describe("account ownable catalog cards", () => {
         slug: LK150_PATTERNING_COURSE_SLUG,
         title: "Master LK-150 Patterning",
         href: "/courses/34",
-        planIds: [COURSE_INDIVIDUAL_SALES.lk150Patterning.legacyPlanId],
+        planIds: [
+          LEGACY_KIN_LK150_PATTERNING_PLAN_ID,
+          COURSE_INDIVIDUAL_SALES.lk150Patterning.legacyPlanId,
+        ],
       },
       {
         courseId: 50,
@@ -183,6 +187,26 @@ describe("ownedCoursesForAccount", () => {
     expect(courses).toEqual([course87]);
     expect(COURSE_INDIVIDUAL_SALES.brother260.paidPlanId).toBeUndefined();
     expect(COURSE_INDIVIDUAL_SALES.brother260.priceId).toBeUndefined();
+  });
+
+  it("Legacy KIN_LK150 Patterning tag displays Course 34 with the other LK150 courses", () => {
+    const courses = ownedCoursesForAccount(
+      payloadWithPlans([
+        { planId: LEGACY_KIN_LK150_PATTERNING_PLAN_ID },
+        { planId: LK150_FUN_COURSE_PLAN_ID },
+        { planId: LK150_QUICK_START_COURSE_PLAN_ID },
+      ]),
+      catalogCards,
+    );
+    expect(courses).toEqual([
+      course34,
+      catalogCards.find((card) => card.slug === LK150_QUICK_START_COURSE_SLUG),
+      catalogCards.find((card) => card.slug === LK150_FUN_COURSE_SLUG),
+    ]);
+    expect(course34?.href).toBe("/courses/34");
+    expect(ownedCourseSlugsFromMember(payloadWithPlan(LEGACY_KIN_LK150_PATTERNING_PLAN_ID))).toEqual([
+      LK150_PATTERNING_COURSE_SLUG,
+    ]);
   });
 
   it("LK150 Patterning plan displays Course 34 only", () => {
