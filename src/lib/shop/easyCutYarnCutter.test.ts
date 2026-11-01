@@ -19,8 +19,8 @@ const pagePath = resolve("src/pages/shop/accessories/easy-cut-yarn-cutter.astro"
 const listingPath = resolve("src/components/shop/EasyCutYarnCutterListing.astro");
 
 describe("Easy-Cut Yarn Cutter", () => {
-  it("stays unpublished and uses its own Stripe Payment Link", () => {
-    expect(EASY_CUT_YARN_CUTTER.published).toBe(false);
+  it("is published and uses its own Stripe Payment Link", () => {
+    expect(EASY_CUT_YARN_CUTTER.published).toBe(true);
     expect(EASY_CUT_YARN_CUTTER.stripePaymentLink).toBe(
       "https://buy.stripe.com/4gMbJ0fWu0U3fhQe4G0oM0X",
     );
@@ -43,16 +43,18 @@ describe("Easy-Cut Yarn Cutter", () => {
     expect(existsSync(resolve("public/images/shop/easycut.jpg"))).toBe(true);
   });
 
-  it("404s on production while unpublished and stays open for DEV review", () => {
+  it("stays on the live shop while published and can still be held back", () => {
     expect(isEasyCutYarnCutterRoute(EASY_CUT_YARN_CUTTER_PATH)).toBe(true);
     expect(isEasyCutYarnCutterRoute("/shop/accessories/easy-cut-yarn-cutter/")).toBe(true);
-    expect(isEasyCutYarnCutterProductionBlocked("www.knititnow.com")).toBe(true);
-    expect(isEasyCutYarnCutterProductionBlocked("knititnow.com")).toBe(true);
+    expect(isEasyCutYarnCutterProductionBlocked("www.knititnow.com")).toBe(false);
+    expect(isEasyCutYarnCutterProductionBlocked("knititnow.com")).toBe(false);
     expect(isEasyCutYarnCutterProductionBlocked("localhost")).toBe(false);
     expect(isEasyCutYarnCutterProductionBlocked("kin-dev.netlify.app")).toBe(false);
-    expect(isEasyCutYarnCutterProductionBlocked("deploy-preview.netlify.app")).toBe(false);
     expect(
-      isEasyCutYarnCutterProductionBlocked("www.knititnow.com", {}, { published: true }),
+      isEasyCutYarnCutterProductionBlocked("www.knititnow.com", {}, { published: false }),
+    ).toBe(true);
+    expect(
+      isEasyCutYarnCutterProductionBlocked("kin-dev.netlify.app", {}, { published: false }),
     ).toBe(false);
   });
 
