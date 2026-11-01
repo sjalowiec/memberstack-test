@@ -16,6 +16,10 @@ describe("Member Thank-Yous page", () => {
     expect(page).toContain("WatsonPageShell");
     expect(page).toContain('heading="Member Thank-Yous"');
     expect(page).toContain("data-member-thank-yous");
+    expect(page).toContain("Manage your membership thank-you cards and videos.");
+    expect(page).toContain("View details");
+    expect(page).toContain("data-thanks-dialog");
+    expect(page).toContain("data-thanks-close");
     expect(page).toContain("initWatsonMemberThankYous");
     expect(page).not.toContain("<table");
     expect(shell).toContain('href="/watson/member-thank-yous">Thank-Yous</a>');

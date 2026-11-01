@@ -30,7 +30,7 @@ const videoActionsReady = page.statusesAvailable && page.videoColumnsAvailable;
   title="Member Thank-Yous | Watson"
   description="Track video and handwritten-card thank-yous for annual membership payments."
   heading="Member Thank-Yous"
-  intro="One card for each successful annual membership payment since October 30, 2026. To Do stays selected until you check Completed on that payment."
+  intro="Manage your membership thank-you cards and videos."
 >
   <div
     class="watson-thanks"
@@ -58,7 +58,7 @@ const videoActionsReady = page.statusesAvailable && page.videoColumnsAvailable;
         <span>To</span>
         <input type="date" name="to" min={MEMBER_THANK_YOU_START_YMD} value={page.toCivil} />
       </label>
-      <button class="watson__button" type="submit">Apply</button>
+      <button class="watson__button watson-thanks__apply" type="submit">Apply</button>
     </form>
 
     {page.error ? (
@@ -68,28 +68,34 @@ const videoActionsReady = page.statusesAvailable && page.videoColumnsAvailable;
       <p class="watson-thanks__warning" role="status">{warning}</p>
     ))}
 
-    <p class="watson-thanks__count">
+    <p class="watson-thanks__count" data-thanks-count data-total={page.totalInRange}>
       Showing {page.rows.length} of {page.totalInRange} payment{page.totalInRange === 1 ? "" : "s"} in this date range.
     </p>
 
-    {page.rows.length === 0 && !page.error ? (
-      <p class="watson-thanks__empty">No annual membership payments match this view.</p>
-    ) : null}
+    <p class="watson-thanks__empty" data-thanks-empty hidden={page.rows.length > 0 || Boolean(page.error)}>
+      No annual membership payments match this view.
+    </p>
 
-    <div class="watson-thanks__list">
+    <ul class="watson-thanks__list">
       {page.rows.map((row) => (
-        <article
-          class="watson-thanks__card"
+        <li
+          class="watson-thanks__row"
           data-thanks-card
           data-charge-id={row.stripeChargeId}
           data-member-name={row.displayName}
           data-member-email={row.email ?? ""}
           data-completed={row.completed ? "true" : "false"}
         >
-          <header class="watson-thanks__card-head">
-            <h2 class="watson-thanks__name">{row.displayName}</h2>
+          <button type="button" class="watson-thanks__name" data-thanks-open data-thanks-name>
+            {row.displayName}
+          </button>
+          <span class="watson-thanks__date">{row.paymentDateLabel}</span>
+          <span class="watson-thanks__status" data-thanks-status>{row.completed ? "Completed" : "To Do"}</span>
+          <button type="button" class="watson__button watson__button--secondary watson-thanks__open" data-thanks-open>
+            View details
+          </button>
+          <div class="watson-thanks__details" data-thanks-details data-charge-id={row.stripeChargeId} hidden>
             <p class="watson-thanks__kind">{row.kindLabel}</p>
-          </header>
 
           <label class="watson-thanks__check watson-thanks__check--complete">
             <input
@@ -252,9 +258,20 @@ const videoActionsReady = page.statusesAvailable && page.videoColumnsAvailable;
             </label>
           </div>
           <p class="watson-thanks__save" data-thanks-save hidden></p>
-        </article>
+          </div>
+        </li>
       ))}
-    </div>
+    </ul>
+
+    <dialog class="watson-thanks__dialog" data-thanks-dialog aria-labelledby="thanks-dialog-title">
+      <div class="watson-thanks__dialog-head">
+        <h2 id="thanks-dialog-title" class="watson-thanks__dialog-title" data-thanks-dialog-title>Member</h2>
+        <button type="button" class="watson__button watson__button--secondary" data-thanks-close>
+          Close
+        </button>
+      </div>
+      <div class="watson-thanks__dialog-body" data-thanks-dialog-body></div>
+    </dialog>
   </div>
 </WatsonPageShell>
 
@@ -265,7 +282,7 @@ const videoActionsReady = page.statusesAvailable && page.videoColumnsAvailable;
 
 <style is:global>
   .watson:has(.watson-thanks) {
-    max-width: 44rem;
+    max-width: 56rem;
   }
 
   .watson-thanks {
@@ -276,7 +293,12 @@ const videoActionsReady = page.statusesAvailable && page.videoColumnsAvailable;
 
   .watson-thanks__filters {
     display: grid;
-    gap: 0.75rem;
+    gap: 0.85rem;
+  }
+
+  .watson-thanks__apply {
+    min-height: 2.75rem;
+    width: 100%;
   }
 
   .watson-thanks__filter {
@@ -321,33 +343,121 @@ const videoActionsReady = page.statusesAvailable && page.videoColumnsAvailable;
   }
 
   .watson-thanks__list {
-    display: grid;
-    gap: 0.9rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border-top: 1px solid #cbd5e1;
   }
 
-  .watson-thanks__card {
+  .watson-thanks__row {
     display: grid;
-    gap: 0.75rem;
+    grid-template-columns: minmax(0, 1.5fr) auto auto auto;
+    gap: 0.35rem 1rem;
+    align-items: center;
     min-width: 0;
-    padding: 1rem;
-    border: 1px solid #e2e8f0;
-    border-radius: 14px;
+    padding: 0.7rem 0.15rem;
+    border-bottom: 1px solid #cbd5e1;
     background: #fff;
-  }
-
-  .watson-thanks__card-head {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    gap: 0.4rem 0.8rem;
-    align-items: baseline;
   }
 
   .watson-thanks__name {
     margin: 0;
-    font-size: 1.25rem;
+    padding: 0.35rem 0;
+    min-height: 2.75rem;
+    border: 0;
+    background: transparent;
+    color: #243015;
+    font: inherit;
+    font-size: 1.05rem;
+    font-weight: 700;
+    line-height: 1.35;
+    text-align: left;
+    text-decoration: underline;
+    text-underline-offset: 0.15em;
+    cursor: pointer;
+    overflow-wrap: anywhere;
+  }
+
+  .watson-thanks__name:hover,
+  .watson-thanks__name:focus-visible {
+    color: #3f6212;
+  }
+
+  .watson-thanks__date {
+    color: #243015;
+    font-size: 1rem;
+    line-height: 1.35;
+    white-space: nowrap;
+  }
+
+  .watson-thanks__status {
+    color: #9a3412;
+    font-size: 0.95rem;
+    font-weight: 700;
+    line-height: 1.3;
+    white-space: nowrap;
+  }
+
+  .watson-thanks__row[data-completed="true"] .watson-thanks__status {
+    color: #3f6212;
+  }
+
+  .watson-thanks__open {
+    min-height: 2.75rem;
+    white-space: nowrap;
+  }
+
+  .watson-thanks__details {
+    display: grid;
+    gap: 0.85rem;
+  }
+
+  .watson-thanks__details[hidden] {
+    display: none !important;
+  }
+
+  .watson-thanks__dialog {
+    width: min(40rem, calc(100vw - 1rem));
+    max-height: calc(100dvh - 1rem);
+    margin: auto;
+    padding: 0;
+    overflow: auto;
+    color: #243015;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+  }
+
+  .watson-thanks__dialog::backdrop {
+    background: rgba(15, 23, 42, 0.45);
+  }
+
+  .watson-thanks__dialog-head {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 1rem 1.1rem;
+    background: #fff;
+    border-bottom: 1px solid #e2e8f0;
+  }
+
+  .watson-thanks__dialog-title {
+    margin: 0;
+    font-size: 1.35rem;
     line-height: 1.3;
     overflow-wrap: anywhere;
+  }
+
+  .watson-thanks__dialog-head .watson__button {
+    min-height: 2.75rem;
+    flex: 0 0 auto;
+  }
+
+  .watson-thanks__dialog-body {
+    padding: 1rem 1.1rem 1.25rem;
   }
 
   .watson-thanks__kind {
@@ -525,5 +635,47 @@ const videoActionsReady = page.statusesAvailable && page.videoColumnsAvailable;
     border: 1px solid #cbd5e1;
     border-radius: 8px;
     resize: vertical;
+  }
+
+  .watson-thanks__name:focus-visible,
+  .watson-thanks__open:focus-visible,
+  .watson-thanks__dialog-head .watson__button:focus-visible,
+  .watson-thanks__copy:focus-visible,
+  .watson-thanks__check input:focus-visible {
+    outline: 2px solid #3f6212;
+    outline-offset: 2px;
+  }
+
+  @media (min-width: 720px) {
+    .watson-thanks__filters {
+      grid-template-columns: minmax(9rem, 0.8fr) minmax(10.5rem, 1fr) minmax(10.5rem, 1fr) auto;
+      align-items: end;
+      gap: 0.75rem;
+    }
+
+    .watson-thanks__apply {
+      width: auto;
+    }
+  }
+
+  @media (max-width: 719px) {
+    .watson-thanks__row {
+      grid-template-columns: 1fr auto;
+      gap: 0.45rem 0.75rem;
+      padding: 0.9rem 0.1rem;
+    }
+
+    .watson-thanks__name,
+    .watson-thanks__open {
+      grid-column: 1 / -1;
+    }
+
+    .watson-thanks__open {
+      width: 100%;
+    }
+
+    .watson-thanks__status {
+      justify-self: end;
+    }
   }
 </style>
