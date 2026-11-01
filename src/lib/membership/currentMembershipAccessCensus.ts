@@ -77,6 +77,8 @@ export interface MembershipAccessPerson {
   reason: string | null;
   memberstackId: string | null;
   memberstackIds: string[];
+  /** Exact Memberstack auth emails in this mailbox, before Gmail/Googlemail folding. */
+  storedEmails: string[];
   legacyMemberIds: string[];
 }
 
@@ -96,6 +98,18 @@ export interface CurrentMembershipAccessCensus {
 }
 
 const currentPaidPlanIds = new Set<string>(CURRENT_MEMBER_PLAN_IDS);
+
+function storedMemberEmails(members: MemberstackMember[]): string[] {
+  const seen = new Set<string>();
+  const emails: string[] = [];
+  for (const member of members) {
+    const email = member.auth?.email;
+    if (typeof email !== "string" || email.trim() === "" || seen.has(email)) continue;
+    seen.add(email);
+    emails.push(email);
+  }
+  return emails;
+}
 
 function yesBasis(
   member: MemberstackMember | null,
@@ -197,6 +211,7 @@ export function buildCurrentMembershipAccessCensus(input: {
       reason: decision.outcome === "unresolved" ? decision.reason : null,
       memberstackId: memberIds.length === 1 ? memberIds[0] : null,
       memberstackIds: memberIds,
+      storedEmails: storedMemberEmails(bucket.members),
       legacyMemberIds: [...new Set(bucket.legacy.map((row) => row.memberid))],
     });
   }

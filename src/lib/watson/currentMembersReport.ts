@@ -17,9 +17,46 @@ export const CURRENT_MEMBERS_REPORT_TITLE = "Current Members";
 export const CURRENT_MEMBER_BASIS_LABELS: Record<MembershipAccessYesBasis, string> = {
   current_paid: "Current paid membership",
   legacy_paid_shell: "Legacy paid plan",
-  complimentary: "Complimentary",
+  complimentary: "Complimentary access",
   legacy_date: "Watson paid-through date",
 };
+
+const GMAIL_GOOGLEMAIL_EXPLANATION =
+  "Two accounts use Gmail and Googlemail versions of the same address.";
+
+export function plainUnresolvedExplanation(
+  reason: string,
+  storedEmails: readonly string[],
+): string {
+  const domains = new Set(
+    storedEmails
+      .map((email) => email.trim().toLowerCase().split("@").at(-1) ?? "")
+      .filter(Boolean),
+  );
+  if (
+    reason === "ambiguous_memberstack_email" &&
+    domains.has("gmail.com") &&
+    domains.has("googlemail.com")
+  ) {
+    return GMAIL_GOOGLEMAIL_EXPLANATION;
+  }
+  if (reason === "ambiguous_memberstack_email") {
+    return "More than one account uses this mailbox.";
+  }
+  if (reason === "conflicting_legacy_dates") {
+    return "Watson has conflicting paid-through dates for this mailbox.";
+  }
+  if (reason === "legacy_date_not_loaded") {
+    return "Watson paid-through dates could not be loaded.";
+  }
+  if (reason === "complimentary_date_not_loaded") {
+    return "Complimentary access could not be checked.";
+  }
+  if (reason === "memberstack_unavailable") {
+    return "The membership account could not be read.";
+  }
+  return "This person could not be counted.";
+}
 
 export const CURRENT_MEMBERS_REPORT_NOTE =
   "Current Members uses the site membership-access rule and counts one person per mailbox. ActiveCampaign’s Current membership access field uses this same census. It is not the Current Legacy Members report, which still counts imported legacy rows with a paid-through date of today or later.";
@@ -34,9 +71,8 @@ export interface CurrentMemberRow {
 
 export interface UnresolvedMemberRow {
   email: string;
-  reason: string;
-  memberstackIds: string[];
-  legacyMemberIds: string[];
+  explanation: string;
+  storedEmails: string[];
 }
 
 export interface CurrentMembersReport {
@@ -78,12 +114,14 @@ export function buildCurrentMembersReport(
 
   const unresolved = census.people
     .filter((person) => person.outcome === "unresolved")
-    .map((person) => ({
-      email: person.email,
-      reason: person.reason ?? "unresolved",
-      memberstackIds: person.memberstackIds,
-      legacyMemberIds: person.legacyMemberIds,
-    }));
+    .map((person) => {
+      const storedEmails = person.storedEmails.length > 0 ? person.storedEmails : [person.email];
+      return {
+        email: person.email,
+        explanation: plainUnresolvedExplanation(person.reason ?? "", storedEmails),
+        storedEmails,
+      };
+    });
 
   return {
     title: CURRENT_MEMBERS_REPORT_TITLE,

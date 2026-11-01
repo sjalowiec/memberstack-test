@@ -52,9 +52,8 @@ describe("buildCurrentMembersReport", () => {
     expect(report.unresolved).toEqual([
       {
         email: "shared@example.com",
-        reason: "ambiguous_memberstack_email",
-        memberstackIds: ["mem_a", "mem_b"],
-        legacyMemberIds: [],
+        explanation: "More than one account uses this mailbox.",
+        storedEmails: ["shared@example.com"],
       },
     ]);
     expect(report.currentMembers.map((row) => row.email)).not.toContain("shared@example.com");
@@ -73,5 +72,28 @@ describe("buildCurrentMembersReport", () => {
     expect(report.yesCount).toBe(0);
     expect(report.currentMembers).toEqual([]);
     expect(report.blockedReason).toContain("incomplete");
+  });
+
+  it("explains a Gmail and Googlemail pair with the stored addresses", () => {
+    const census = buildCurrentMembershipAccessCensus({
+      todayYmd: TODAY,
+      members: [
+        member("mem_googlemail", "s.machado84@googlemail.com", PAID),
+        member("mem_gmail", "s.machado84@gmail.com", PAID),
+      ],
+      memberstackTruncated: false,
+      legacyRows: [],
+      complimentaryRows: [],
+    });
+    const report = buildCurrentMembersReport(census);
+
+    expect(report.yesCount).toBe(0);
+    expect(report.unresolved).toEqual([
+      {
+        email: "s.machado84@gmail.com",
+        explanation: "Two accounts use Gmail and Googlemail versions of the same address.",
+        storedEmails: ["s.machado84@googlemail.com", "s.machado84@gmail.com"],
+      },
+    ]);
   });
 });
