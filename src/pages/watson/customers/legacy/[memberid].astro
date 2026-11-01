@@ -10,9 +10,13 @@ import WatsonCustomerPurchases from "../../../../components/watson/WatsonCustome
 import WatsonCustomerEbooks from "../../../../components/watson/WatsonCustomerEbooks.astro";
 import WatsonCustomerSnapshot from "../../../../components/watson/WatsonCustomerSnapshot.astro";
 import WatsonCustomerSupportResponses from "../../../../components/watson/WatsonCustomerSupportResponses.astro";
+import WatsonCustomerThankYouHistory from "../../../../components/watson/WatsonCustomerThankYouHistory.astro";
 import WatsonCustomerTimeline from "../../../../components/watson/WatsonCustomerTimeline.astro";
 import WatsonPageShell from "../../../../components/watson/WatsonPageShell.astro";
-import { buildCustomerSearchReturnUrl } from "../../../../lib/watson/customerIdentifier";
+import {
+  buildCustomerSearchReturnUrl,
+  buildMemberstackCustomerProfileUrl,
+} from "../../../../lib/watson/customerIdentifier";
 import {
   loadLegacyCustomerProfile,
   watsonCustomerNotFoundHtml,
@@ -86,6 +90,19 @@ if (!result.ok && result.reason === "not_found") {
           legacyMemberships={result.profile.memberships}
           hasLegacyHistory={result.profile.hasLegacyHistory}
           memberstackLinkStatus={result.profile.memberstackLinkStatus}
+        />
+        <WatsonCustomerThankYouHistory
+          emails={[
+            result.profile.member?.email,
+            result.profile.memberstack.email,
+            result.profile.headerView.email,
+          ]}
+          profilePaths={[
+            Astro.url.pathname,
+            result.profile.memberstackId
+              ? buildMemberstackCustomerProfileUrl(result.profile.memberstackId)
+              : null,
+          ]}
         />
         <WatsonCustomerLegacyHistory history={result.profile.cleanedLegacyHistory} />
         <WatsonCustomerPurchases

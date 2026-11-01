@@ -49,7 +49,11 @@ describe("Watson customer profile pages", () => {
     expect(legacyProfilePage).toContain("WatsonCustomerProfileHeader");
     expect(legacyProfilePage).toContain("WatsonCustomerLegacyHistory");
     expect(legacyProfilePage).toContain("cleanedLegacyHistory");
+    expect(legacyProfilePage).toContain("WatsonCustomerThankYouHistory");
     expect(legacyProfilePage.indexOf("<WatsonCustomerMembership")).toBeLessThan(
+      legacyProfilePage.indexOf("<WatsonCustomerThankYouHistory"),
+    );
+    expect(legacyProfilePage.indexOf("<WatsonCustomerThankYouHistory")).toBeLessThan(
       legacyProfilePage.indexOf("<WatsonCustomerLegacyHistory"),
     );
     expect(legacyProfilePage.indexOf("<WatsonCustomerLegacyHistory")).toBeLessThan(
@@ -65,6 +69,10 @@ describe("Watson customer profile pages", () => {
     expect(memberstackProfilePage).toContain("WatsonCustomerLegacyAmbiguity");
     expect(memberstackProfilePage).toContain("legacyLinkAmbiguous");
     expect(memberstackProfilePage).toContain("WatsonCustomerMembership");
+    expect(memberstackProfilePage).toContain("WatsonCustomerThankYouHistory");
+    expect(memberstackProfilePage.indexOf("<WatsonCustomerMembership")).toBeLessThan(
+      memberstackProfilePage.indexOf("<WatsonCustomerThankYouHistory"),
+    );
     expect(memberstackProfilePage).toContain("WatsonCustomerSnapshot");
     expect(memberstackProfilePage).toContain("WatsonCustomerSupportResponses");
     expect(memberstackProfilePage).toContain("WatsonCustomerContactMessages");
