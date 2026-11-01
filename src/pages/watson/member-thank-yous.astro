@@ -30,7 +30,7 @@ const videoActionsReady = page.statusesAvailable && page.videoColumnsAvailable;
   title="Member Thank-Yous | Watson"
   description="Track video and handwritten-card thank-yous for annual membership payments."
   heading="Member Thank-Yous"
-  intro="One card for each successful annual membership payment since October 30, 2026. To Do is selected until you mark that payment complete."
+  intro="One card for each successful annual membership payment since October 30, 2026. To Do stays selected until you check Completed on that payment."
 >
   <div
     class="watson-thanks"
@@ -90,6 +90,22 @@ const videoActionsReady = page.statusesAvailable && page.videoColumnsAvailable;
             <h2 class="watson-thanks__name">{row.displayName}</h2>
             <p class="watson-thanks__kind">{row.kindLabel}</p>
           </header>
+
+          <label class="watson-thanks__check watson-thanks__check--complete">
+            <input
+              type="checkbox"
+              data-thanks-completed
+              checked={row.completed}
+              disabled={!videoActionsReady}
+              aria-label={`Completed for ${row.displayName}`}
+            />
+            <span>
+              <span class="watson-thanks__check-label">Completed</span>
+              <span class="watson-thanks__sent-date" data-thanks-completed-label hidden={!row.completedLabel}>
+                {row.completedLabel}
+              </span>
+            </span>
+          </label>
 
           {row.email ? (
             <p class="watson-thanks__email-row">
@@ -234,29 +250,6 @@ const videoActionsReady = page.statusesAvailable && page.videoColumnsAvailable;
                 </span>
               </span>
             </label>
-          </div>
-          <div class="watson-thanks__video-actions">
-            <button
-              type="button"
-              class="watson__button"
-              data-thanks-complete
-              hidden={row.completed}
-              disabled={!videoActionsReady}
-            >
-              Mark Complete
-            </button>
-            <button
-              type="button"
-              class="watson-thanks__copy"
-              data-thanks-reopen
-              hidden={!row.completed}
-              disabled={!videoActionsReady}
-            >
-              Reopen
-            </button>
-            <span class="watson-thanks__sent-date" data-thanks-completed-label hidden={!row.completedLabel}>
-              {row.completedLabel}
-            </span>
           </div>
           <p class="watson-thanks__save" data-thanks-save hidden></p>
         </article>
@@ -453,6 +446,11 @@ const videoActionsReady = page.statusesAvailable && page.videoColumnsAvailable;
     border: 1px solid #cbd5e1;
     border-radius: 12px;
     background: #f8fafc;
+  }
+
+  .watson-thanks__check--complete {
+    border: 2px solid #3f6212;
+    background: #f7fee7;
   }
 
   .watson-thanks__check input {

@@ -144,11 +144,9 @@ function applyVideo(card: HTMLElement, video: SavedVideo) {
 function showCompletion(card: HTMLElement, status: SavedStatus) {
   const completed = Boolean(status.completedAt);
   card.dataset.completed = completed ? "true" : "false";
-  const complete = card.querySelector<HTMLButtonElement>("[data-thanks-complete]");
-  const reopen = card.querySelector<HTMLButtonElement>("[data-thanks-reopen]");
+  const box = card.querySelector<HTMLInputElement>("[data-thanks-completed]");
   const label = card.querySelector<HTMLElement>("[data-thanks-completed-label]");
-  if (complete) complete.hidden = completed;
-  if (reopen) reopen.hidden = !completed;
+  if (box) box.checked = completed;
   if (label) {
     label.textContent = status.completedLabel ?? "";
     label.hidden = !status.completedLabel;
@@ -267,22 +265,39 @@ export function initWatsonMemberThankYous(): void {
       setVideoStatus(card, "Video email marked sent.", "saved");
     });
 
-    for (const action of ["complete", "reopen"] as const) {
-      card.querySelector<HTMLButtonElement>(`[data-thanks-${action}]`)?.addEventListener("click", async () => {
-        const button = card.querySelector<HTMLButtonElement>(`[data-thanks-${action}]`);
-        if (button) button.disabled = true;
-        setSaveStatus(card, "Saving…", "saving");
-        const result = await saveThankYouAction({ action, stripeChargeId: chargeId });
-        if (button) button.disabled = false;
-        if (!result.ok) {
-          setSaveStatus(card, result.error, "error");
-          return;
-        }
-        showCompletion(card, result.status);
-        setSaveStatus(card, action === "complete" ? "Marked complete" : "Reopened", "saved");
-        removeFromCurrentView(root, card, action === "complete");
+    card.querySelector<HTMLInputElement>("[data-thanks-completed]")?.addEventListener("change", async () => {
+      const box = card.querySelector<HTMLInputElement>("[data-thanks-completed]");
+      if (!box) return;
+      const completed = box.checked;
+      const videoBefore = fieldBox(card, "video")?.checked ?? false;
+      const cardBefore = fieldBox(card, "card")?.checked ?? false;
+      box.disabled = true;
+      setSaveStatus(card, "Saving…", "saving");
+      const result = await saveThankYouAction({
+        action: completed ? "complete" : "reopen",
+        stripeChargeId: chargeId,
       });
-    }
+      box.disabled = false;
+      if (!result.ok) {
+        box.checked = !completed;
+        setSaveStatus(card, result.error, "error");
+        return;
+      }
+      const videoAfter = Boolean(result.status.videoSentAt);
+      const cardAfter = Boolean(result.status.cardSentAt);
+      if (Boolean(result.status.completedAt) !== completed || videoAfter !== videoBefore || cardAfter !== cardBefore) {
+        box.checked = !completed;
+        setSaveStatus(
+          card,
+          "The save did not match what you checked. Refresh the page before continuing.",
+          "error",
+        );
+        return;
+      }
+      showCompletion(card, result.status);
+      setSaveStatus(card, completed ? "Marked complete" : "Reopened", "saved");
+      removeFromCurrentView(root, card, completed);
+    });
 
     card.querySelectorAll<HTMLButtonElement>("[data-thanks-copy-target]").forEach((button) => {
       button.addEventListener("click", async () => {

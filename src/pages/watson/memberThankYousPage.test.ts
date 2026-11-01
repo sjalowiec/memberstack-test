@@ -38,9 +38,12 @@ describe("Member Thank-Yous page", () => {
     expect(script).toContain("Saving");
     expect(script).toContain("Saved");
     expect(page).toContain("To Do");
+    expect(page).toContain("Completed");
+    expect(page).toContain("All");
     expect(page).toContain("Add thank-you video");
-    expect(page).toContain("Mark Complete");
-    expect(page).toContain("Reopen");
+    expect(page).toContain('data-thanks-completed');
+    expect(page).not.toContain("Mark Complete");
+    expect(page).not.toContain("Reopen");
     expect(page).toContain("Copy subject");
     expect(page).toContain("Copy message");
     expect(page).toContain('data-thanks-video-preview');
