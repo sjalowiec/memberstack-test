@@ -20,6 +20,10 @@ import {
   isSidewaysCardiganRoute,
 } from "./lib/patterns/sidewaysCardiganProductionAccess";
 import {
+  isEasyCutYarnCutterProductionBlocked,
+  isEasyCutYarnCutterRoute,
+} from "./lib/shop/easyCutYarnCutter";
+import {
   isLk150TensionMastKitRoute,
   isLk150TensionMastProductionBlocked,
 } from "./lib/shop/lk150TensionMastKit";
@@ -110,6 +114,13 @@ export const onRequest = defineMiddleware(async (context, next) => {
   if (
     isLk150TensionMastKitRoute(u.pathname) &&
     isLk150TensionMastProductionBlocked(u.hostname, devOnlyRouteEnv)
+  ) {
+    return new Response("Not found", { status: 404 });
+  }
+
+  if (
+    isEasyCutYarnCutterRoute(u.pathname) &&
+    isEasyCutYarnCutterProductionBlocked(u.hostname, devOnlyRouteEnv)
   ) {
     return new Response("Not found", { status: 404 });
   }

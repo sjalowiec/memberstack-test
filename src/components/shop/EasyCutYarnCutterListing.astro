@@ -1,0 +1,113 @@
+---
+/**
+ * Shop card for the Easy-Cut Yarn Cutter.
+ * Hidden on the live site while the product is unpublished.
+ */
+import { EASY_CUT_YARN_CUTTER } from "../../data/shop/easyCutYarnCutter";
+import { isEasyCutYarnCutterProductionBlocked } from "../../lib/shop/easyCutYarnCutter";
+
+const product = EASY_CUT_YARN_CUTTER;
+const showListing = !isEasyCutYarnCutterProductionBlocked(Astro.url.hostname, {
+  isViteDev: import.meta.env.DEV,
+  publicSiteEnv: import.meta.env.PUBLIC_SITE_ENV,
+});
+---
+
+{
+  showListing && (
+    <article class="cutter-shop-card">
+      <a href={product.path} class="cutter-shop-photo-link">
+        <img
+          src={product.imageSrc}
+          alt={product.imageAlt}
+          class="cutter-shop-photo"
+          width={product.imageWidth}
+          height={product.imageHeight}
+        />
+      </a>
+      <div class="cutter-shop-body">
+        <h2 class="cutter-shop-name">
+          <a href={product.path}>{product.name}</a>
+        </h2>
+        <p class="cutter-shop-note">{product.shortDescription}</p>
+        <p class="cutter-shop-price">{product.offerLabel}</p>
+        <a href={product.path} class="cutter-shop-details">View Details</a>
+      </div>
+    </article>
+  )
+}
+
+<style>
+  .cutter-shop-card {
+    background: #fafbf9;
+    border: 1px solid #e8ebe4;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .cutter-shop-photo-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f7faf0;
+    padding: 0.75rem;
+  }
+
+  .cutter-shop-photo {
+    display: block;
+    width: auto;
+    max-width: 100%;
+    height: auto;
+    max-height: 220px;
+  }
+
+  .cutter-shop-body {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    padding: 1.25rem;
+  }
+
+  .cutter-shop-name {
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin: 0;
+  }
+
+  .cutter-shop-name a {
+    color: var(--kbm-green);
+    text-decoration: none;
+  }
+
+  .cutter-shop-name a:hover {
+    text-decoration: underline;
+  }
+
+  .cutter-shop-note {
+    font-size: 0.95rem;
+    color: #5a6b47;
+    line-height: 1.5;
+    margin: 0.75rem 0 0;
+  }
+
+  .cutter-shop-price {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--kbm-green);
+    margin: 0.75rem 0 0;
+  }
+
+  .cutter-shop-details {
+    display: inline-block;
+    margin-top: 1rem;
+    font-weight: 600;
+    color: var(--kbm-green);
+    text-decoration: underline;
+  }
+
+  .cutter-shop-details:hover {
+    color: var(--kbm-green-hover, #445626);
+  }
+</style>
