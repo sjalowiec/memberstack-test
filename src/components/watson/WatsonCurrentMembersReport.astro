@@ -31,18 +31,6 @@ const { report } = Astro.props;
           </p>
         </article>
         <article class="watson-report__card">
-          <h3 class="watson-report__card-label">No current access</h3>
-          <p class="watson-report__card-value" data-summary="no">
-            {report.noCount.toLocaleString("en-US")}
-          </p>
-        </article>
-        <article class="watson-report__card">
-          <h3 class="watson-report__card-label">Unresolved</h3>
-          <p class="watson-report__card-value" data-summary="unresolved">
-            {report.unresolvedCount.toLocaleString("en-US")}
-          </p>
-        </article>
-        <article class="watson-report__card">
           <h3 class="watson-report__card-label">{CURRENT_MEMBER_BASIS_LABELS.current_paid}</h3>
           <p class="watson-report__card-value">{report.yesByBasis.current_paid.toLocaleString("en-US")}</p>
         </article>
@@ -60,6 +48,12 @@ const { report } = Astro.props;
           <h3 class="watson-report__card-label">{CURRENT_MEMBER_BASIS_LABELS.legacy_date}</h3>
           <p class="watson-report__card-value">{report.yesByBasis.legacy_date.toLocaleString("en-US")}</p>
         </article>
+        <article class="watson-report__card">
+          <h3 class="watson-report__card-label">Unresolved</h3>
+          <p class="watson-report__card-value" data-summary="unresolved">
+            {report.unresolvedCount.toLocaleString("en-US")}
+          </p>
+        </article>
       </div>
     )
   }
@@ -67,55 +61,32 @@ const { report } = Astro.props;
   {
     report.unresolved.length > 0 ? (
       <>
-        <h3 class="watson__panel-title">Unresolved identities</h3>
-        <p class="watson-report__meta">
-          These people are not counted as current members. ActiveCampaign is left blank for them.
-        </p>
-        <div class="watson__table-wrap">
-          <table class="watson-table">
-            <thead>
-              <tr>
-                <th>Email</th>
-                <th>Reason</th>
-                <th>Memberstack ids</th>
-              </tr>
-            </thead>
-            <tbody>
-              {report.unresolved.map((row) => (
-                <tr>
-                  <td>{row.email}</td>
-                  <td>{row.reason}</td>
-                  <td>{row.memberstackIds.join(", ")}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <ul class="watson-report__unresolved">
+          {report.unresolved.map((row) => (
+            <li>
+              <p>{row.explanation}</p>
+              <p>{row.storedEmails.join(", ")}</p>
+            </li>
+          ))}
+        </ul>
       </>
     ) : null
   }
-
-  <h3 class="watson__panel-title">People with current access</h3>
-  <div class="watson__table-wrap">
-    <table class="watson-table">
-      <thead>
-        <tr>
-          <th>Email</th>
-          <th>Access rule</th>
-          <th>Memberstack id</th>
-        </tr>
-      </thead>
-      <tbody>
-        {
-          report.currentMembers.map((row) => (
-            <tr>
-              <td>{row.email}</td>
-              <td>{row.basisLabel}</td>
-              <td>{row.memberstackId ?? ""}</td>
-            </tr>
-          ))
-        }
-      </tbody>
-    </table>
-  </div>
 </section>
+
+<style>
+  .watson-report__unresolved {
+    margin: 0.5rem 0 0;
+    padding-left: 1.2rem;
+    color: #334155;
+    line-height: 1.5;
+  }
+
+  .watson-report__unresolved p {
+    margin: 0;
+  }
+
+  .watson-report__unresolved li + li {
+    margin-top: 0.75rem;
+  }
+</style>
