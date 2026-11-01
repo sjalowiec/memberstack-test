@@ -1,6 +1,7 @@
 ---
 import Layout from "../../../layouts/Layout.astro";
 import PageHead from "../../../components/PageHead.astro";
+import HobbyKnitNeedlesListing from "../../../components/shop/HobbyKnitNeedlesListing.astro";
 import Lk150TensionMastKitListing from "../../../components/shop/Lk150TensionMastKitListing.astro";
 import MachinesShopSubnav from "../../../components/shop/MachinesShopSubnav.astro";
 import {
@@ -11,6 +12,7 @@ import {
 } from "../../../lib/machines/referenceCatalog";
 import { availabilityLabel } from "../../../lib/machines/machineAdminFields";
 import { LK150_SECOND_TENSION_MAST_KIT } from "../../../data/shop/lk150SecondTensionMastKit";
+import { isHobbyKnitNeedlesProductionBlocked } from "../../../lib/shop/hobbyKnitNeedles";
 
 const title = "Knitting Machine Accessories for Sale | Knit it Now";
 const description =
@@ -18,6 +20,10 @@ const description =
 
 const accessories = getAccessoriesForSale();
 const showTensionMastKit = LK150_SECOND_TENSION_MAST_KIT.published;
+const showHobbyKnitNeedles = !isHobbyKnitNeedlesProductionBlocked(Astro.url.hostname, {
+  isViteDev: import.meta.env.DEV,
+  publicSiteEnv: import.meta.env.PUBLIC_SITE_ENV,
+});
 
 function formatPrice(value: number | null): string | null {
   if (value == null) return null;
@@ -42,13 +48,14 @@ function formatPrice(value: number | null): string | null {
 
     <MachinesShopSubnav current="accessories" />
 
-    {accessories.length === 0 && !showTensionMastKit ? (
+    {accessories.length === 0 && !showTensionMastKit && !showHobbyKnitNeedles ? (
       <p class="machines-empty">
         No accessories are listed for sale right now. Please check back soon.
       </p>
     ) : (
       <div class="machines-grid">
         {showTensionMastKit && <Lk150TensionMastKitListing />}
+        {showHobbyKnitNeedles && <HobbyKnitNeedlesListing />}
         {accessories.map((machine) => {
           const sale = machine.sale!;
           const imageSrc = primaryImageUrl(machine);

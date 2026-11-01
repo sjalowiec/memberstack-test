@@ -2,6 +2,7 @@
 import Layout from "../../layouts/Layout.astro";
 
 import PageHead from "../../components/PageHead.astro";
+import HobbyKnitNeedlesListing from "../../components/shop/HobbyKnitNeedlesListing.astro";
 import Lk150TensionMastKitListing from "../../components/shop/Lk150TensionMastKitListing.astro";
 import { EBOOK_SALES_PAUSED } from "../../lib/legacy/legacyEbookSalesHold";
 
@@ -62,6 +63,7 @@ const categories = [
 
     <div class="shop-kit-listing">
       <Lk150TensionMastKitListing />
+      <HobbyKnitNeedlesListing />
     </div>
 
     <div class="categories-grid">
@@ -103,7 +105,10 @@ const categories = [
   }
 
   .shop-kit-listing {
-    max-width: 22rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(16rem, 22rem));
+    justify-content: center;
+    gap: 1.5rem;
     margin: 0 auto 2rem;
   }
 
