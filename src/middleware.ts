@@ -25,6 +25,10 @@ import {
   isChristmasStockingRoute,
 } from "./lib/patterns/christmasStockingProductionAccess";
 import {
+  isEasyCutYarnCutterProductionBlocked,
+  isEasyCutYarnCutterRoute,
+} from "./lib/shop/easyCutYarnCutter";
+import {
   isHobbyKnitNeedlesProductionBlocked,
   isHobbyKnitNeedlesRoute,
 } from "./lib/shop/hobbyKnitNeedles";
@@ -146,6 +150,13 @@ export const onRequest = defineMiddleware(async (context, next) => {
   if (
     isHobbyKnitNeedlesRoute(u.pathname) &&
     isHobbyKnitNeedlesProductionBlocked(u.hostname, devOnlyRouteEnv)
+  ) {
+    return new Response("Not found", { status: 404 });
+  }
+
+  if (
+    isEasyCutYarnCutterRoute(u.pathname) &&
+    isEasyCutYarnCutterProductionBlocked(u.hostname, devOnlyRouteEnv)
   ) {
     return new Response("Not found", { status: 404 });
   }

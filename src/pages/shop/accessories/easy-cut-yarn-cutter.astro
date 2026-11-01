@@ -1,0 +1,344 @@
+---
+/**
+ * Sales page for the Easy-Cut Yarn Cutter.
+ * Production returns 404 until `published` is true.
+ */
+export const prerender = false;
+
+import Layout from "../../../layouts/Layout.astro";
+import { EASY_CUT_YARN_CUTTER } from "../../../data/shop/easyCutYarnCutter";
+import {
+  easyCutYarnCutterCheckoutHref,
+  isEasyCutYarnCutterProductionBlocked,
+} from "../../../lib/shop/easyCutYarnCutter";
+
+const product = EASY_CUT_YARN_CUTTER;
+
+if (
+  isEasyCutYarnCutterProductionBlocked(Astro.url.hostname, {
+    isViteDev: import.meta.env.DEV,
+    publicSiteEnv: import.meta.env.PUBLIC_SITE_ENV,
+  })
+) {
+  return new Response("Not found", { status: 404 });
+}
+
+if (!product.published) {
+  Astro.response.headers.set("X-Robots-Tag", "noindex, nofollow");
+}
+
+const checkoutHref = easyCutYarnCutterCheckoutHref(product);
+const title = product.pageTitle;
+const description = product.metaDescription;
+const uses = [
+  "Knitting machines",
+  "Sewing machines",
+  "Sergers",
+  "Quilt frames",
+];
+---
+
+<Layout {title} {description} skipAnalytics={!product.published}>
+  {
+    !product.published && (
+      <Fragment slot="head">
+        <meta name="robots" content="noindex, nofollow" />
+      </Fragment>
+    )
+  }
+
+  <div
+    class="cutter-page"
+    {...(product.published ? {} : { "data-pagefind-ignore": true })}
+  >
+    {
+      !product.published && (
+        <p class="cutter-draft" role="status">
+          Draft preview. This page is not on the live shop.
+        </p>
+      )
+    }
+
+    <nav class="cutter-breadcrumb" aria-label="Breadcrumb">
+      <a href="/shop" class="back-link">← Back to Shop</a>
+    </nav>
+
+    <div class="cutter-product">
+      <h1 class="cutter-name">{product.name}</h1>
+
+      <a
+        href={product.imageSrc}
+        class="cutter-photo-link"
+        data-easy-cut-enlarge
+      >
+        <img
+          src={product.imageSrc}
+          alt={product.imageAlt}
+          class="cutter-photo"
+          width={product.imageWidth}
+          height={product.imageHeight}
+        />
+        <span class="cutter-enlarge-label">Enlarge</span>
+      </a>
+
+      <div class="cutter-details">
+        <p>{product.shortDescription}</p>
+        <p>
+          Keep a yarn cutter close at hand. The Easy-Cut has a self-adhesive
+          backing so it stays in place for convenient use.
+        </p>
+        <p class="cutter-uses-label">Use it on:</p>
+        <ul class="cutter-uses">
+          {uses.map((item) => <li>{item}</li>)}
+        </ul>
+
+        <section class="cutter-purchase" aria-label="Purchase">
+          <p class="cutter-price">{product.offerLabel}</p>
+          <a
+            href={checkoutHref}
+            class="cutter-buy"
+            rel="noopener noreferrer"
+          >
+            Buy Easy-Cut
+          </a>
+          <p class="cutter-orders">U.S. orders only.</p>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <dialog class="cutter-dialog" data-easy-cut-dialog>
+    <button type="button" class="cutter-dialog-close" data-easy-cut-dialog-close>
+      Close
+    </button>
+    <img
+      src={product.imageSrc}
+      alt={product.imageAlt}
+      class="cutter-dialog-photo"
+      width={product.imageWidth}
+      height={product.imageHeight}
+    />
+  </dialog>
+
+  <script>
+    const opener = document.querySelector("[data-easy-cut-enlarge]");
+    const dialog = document.querySelector("[data-easy-cut-dialog]");
+    if (opener instanceof HTMLAnchorElement && dialog instanceof HTMLDialogElement) {
+      opener.addEventListener("click", (event) => {
+        event.preventDefault();
+        dialog.showModal();
+      });
+      dialog.addEventListener("click", (event) => {
+        if (event.target === dialog) dialog.close();
+      });
+      dialog.querySelector("[data-easy-cut-dialog-close]")?.addEventListener("click", () => {
+        dialog.close();
+      });
+    }
+  </script>
+</Layout>
+
+<style>
+  .cutter-page {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0.5rem 1rem 4rem;
+  }
+
+  .cutter-draft {
+    margin: 0 0 1rem;
+    padding: 0.55rem 0.75rem;
+    border-radius: 8px;
+    background: #fff7ed;
+    border: 1px solid #fdba74;
+    color: #9a3412;
+    font-size: 0.92rem;
+    font-weight: 600;
+  }
+
+  .cutter-breadcrumb {
+    font-size: 0.95rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .back-link {
+    font-weight: 600;
+    color: var(--kbm-green);
+    text-decoration: underline;
+  }
+
+  .back-link:hover {
+    color: var(--kbm-green-hover, #445626);
+  }
+
+  .cutter-product {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.75rem 1.5rem;
+    align-items: start;
+  }
+
+  .cutter-name {
+    font-size: var(--text-xxl);
+    line-height: 1.2;
+    font-weight: 600;
+    color: var(--kbm-green);
+    margin: 0;
+  }
+
+  .cutter-photo-link {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.4rem;
+    width: min(100%, 28rem);
+    text-decoration: none;
+  }
+
+  .cutter-photo {
+    display: block;
+    width: 100%;
+    height: auto;
+    border: 1px solid #dbe6c5;
+    background: #f7faf0;
+  }
+
+  .cutter-enlarge-label {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--kbm-green);
+    text-decoration: underline;
+  }
+
+  .cutter-details p,
+  .cutter-uses {
+    font-size: 1.05rem;
+    color: #5a6b47;
+    line-height: 1.6;
+    margin: 0 0 1rem;
+  }
+
+  .cutter-uses-label {
+    margin-bottom: 0.35rem;
+  }
+
+  .cutter-uses {
+    margin-top: 0;
+    padding-left: 1.25rem;
+  }
+
+  .cutter-purchase {
+    width: 100%;
+    max-width: 40rem;
+    padding: 0.85rem 1.15rem;
+    margin: 0.25rem 0 0;
+    background: #f7faf0;
+    border: 1px solid #dbe6c5;
+    border-radius: 12px;
+  }
+
+  .cutter-price {
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: var(--kbm-green);
+    margin: 0 0 0.85rem;
+  }
+
+  .cutter-orders {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #3d4e21;
+    line-height: 1.5;
+    margin: 0.85rem 0 0;
+  }
+
+  /*
+   * Global `a`, `a:hover`, and `a:visited` are dark green and can outrank a
+   * single class. These states keep the label white on the green button.
+   */
+  a.cutter-buy:link,
+  a.cutter-buy:visited,
+  a.cutter-buy:hover,
+  a.cutter-buy:focus,
+  a.cutter-buy:focus-visible,
+  a.cutter-buy:active {
+    display: inline-block;
+    padding: 0.7rem 1.75rem;
+    background: var(--kbm-green);
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 1rem;
+    border-radius: 8px;
+    text-decoration: none;
+  }
+
+  a.cutter-buy:hover,
+  a.cutter-buy:focus,
+  a.cutter-buy:focus-visible,
+  a.cutter-buy:active {
+    background: var(--kbm-green-hover, #445626);
+    color: #ffffff;
+    text-decoration: none;
+  }
+
+  a.cutter-buy:focus-visible {
+    outline: 2px solid #ffffff;
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px var(--kbm-green);
+  }
+
+  .cutter-dialog {
+    width: min(92vw, 48rem);
+    max-height: 92vh;
+    border: 0;
+    padding: 0.75rem;
+    background: #ffffff;
+  }
+
+  .cutter-dialog::backdrop {
+    background: rgba(20, 28, 12, 0.72);
+  }
+
+  .cutter-dialog-close {
+    display: inline-block;
+    margin: 0 0 0.5rem;
+    padding: 0.35rem 0.75rem;
+    border: 1px solid #dbe6c5;
+    border-radius: 8px;
+    background: #f7faf0;
+    color: var(--kbm-green);
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .cutter-dialog-photo {
+    display: block;
+    width: auto;
+    max-width: 100%;
+    height: auto;
+    max-height: 80vh;
+    object-fit: contain;
+    margin: 0 auto;
+  }
+
+  @media (min-width: 720px) {
+    .cutter-product {
+      grid-template-columns: minmax(200px, 28rem) minmax(0, 1fr);
+      grid-template-areas:
+        "photo name"
+        "photo details";
+    }
+
+    .cutter-photo-link {
+      grid-area: photo;
+    }
+
+    .cutter-name {
+      grid-area: name;
+    }
+
+    .cutter-details {
+      grid-area: details;
+    }
+  }
+</style>
