@@ -877,15 +877,15 @@ export function buildSleevelessFrontRoundShapingNotationDiagramSvg(
   const neckShapingLines = labels.neckShaping.split("\n").filter(Boolean);
   const neckLabelX = frame.cx;
   const neckGuideY = frame.neckStartY;
-  const neckBoY = neckGuideY + NECK_BO_BELOW_GUIDE;
-  const neckInsideTop = frame.neckCornerY + Math.max(4, Math.round(FS_NOTATION * 0.25));
   const neckCount = neckShapingLines.length;
-  const preferredFirstY = neckGuideY - neckCount * NECK_NOTATION_GAP;
-  const neckShapingStep =
-    neckCount > 0 && preferredFirstY < neckInsideTop
-      ? (neckGuideY - neckInsideTop) / neckCount
-      : NECK_NOTATION_GAP;
-  const neckShapingFirstY = neckGuideY - neckCount * neckShapingStep;
+  // Keep a full line gap even when the scoop is shallower than the stack.
+  // Crushing the lines into the scoop makes them overlap in print.
+  const neckShapingStep = NECK_NOTATION_GAP;
+  const neckShapingFirstY = Math.max(16, neckGuideY - neckCount * neckShapingStep);
+  const neckBoY = Math.max(
+    neckGuideY + NECK_BO_BELOW_GUIDE,
+    neckShapingFirstY + neckCount * neckShapingStep,
+  );
   parts.push(
     `<g data-role="neck-label-zone" data-x="${fmtNum(neckLabelX)}" data-y="${fmtNum(neckShapingFirstY)}" data-bo-y="${fmtNum(neckBoY)}"></g>`,
   );

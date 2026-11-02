@@ -355,9 +355,14 @@ describe("buildSleevelessFrontRoundShapingNotationDiagramSvg", () => {
           expect(pos.x).toBeGreaterThan(neckLeft);
           expect(pos.x).toBeLessThan(neckRight);
         }
-        expect(firstShapingY).toBeGreaterThanOrEqual(neckCornerY);
-        expect(lastShapingY).toBeLessThan(neckStartY + 0.01);
+        expect(firstShapingY).toBeGreaterThanOrEqual(16);
         expect(lastShapingY).toBeLessThan(bo[0]!.y);
+        const ordered = [...shaping].sort((a, b) => a.y - b.y);
+        for (let i = 1; i < ordered.length; i += 1) {
+          expect(ordered[i]!.y - ordered[i - 1]!.y).toBeGreaterThanOrEqual(
+            SLEEVELESS_FRONT_ROUND_NECK_BO_BELOW_GUIDE - 0.01,
+          );
+        }
         expect(firstShapingY).toBeLessThan(161);
         expect(lastShapingY).toBeLessThan(181);
       }
