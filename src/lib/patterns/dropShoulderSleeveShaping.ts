@@ -13,12 +13,12 @@ import {
 import type { ShapingStep } from "../shaping/generateRowByRow";
 import { formatShapingSegment } from "./sleevelessBackJapaneseNotation";
 import {
-  formatParentheticalShapingRowNumbers,
   sleeveEvenShapingSchedule,
   sleeveShapingPerSide,
   sleeveWidensFromCuffToTop,
   type EvenShapingSchedule,
 } from "./evenShapingSchedule";
+import { formatParentheticalRcList } from "./parentheticalRcList";
 import type { DropShoulderSleeveDirection } from "./dropShoulderSleeveConstruction";
 
 export type DropShoulderSleeveShapingPlanInput = {
@@ -133,8 +133,8 @@ export function formatDropShoulderSleeveShapingNotation(steps: readonly ShapingS
 }
 
 function appendShapingRcListToWrittenLine(line: string, shapingRcSequence: readonly number[]): string {
-  const parens = formatParentheticalShapingRowNumbers(shapingRcSequence);
-  return parens ? `${line} ${parens}` : line;
+  if (shapingRcSequence.length === 0) return line;
+  return `${line} ${formatParentheticalRcList(shapingRcSequence)}`;
 }
 
 /**

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { formatShapingSegment } from "./sleevelessBackJapaneseNotation";
-import { formatParentheticalShapingRowNumbers } from "./evenShapingSchedule";
+import { formatParentheticalRcList } from "./parentheticalRcList";
 import { buildDropShoulderSleeveJapaneseNotationReplacements } from "./sleevelessGarmentDiagramReplacements";
 import {
   buildDropShoulderSleeveShapingChartRows,
@@ -67,7 +67,7 @@ function sleeveInstructionTrustedText(rows: readonly SleevelessPatternDisplayRow
 }
 
 function shapingRcListFromWrittenLine(line: string): number[] {
-  const match = line.match(/<em>\(RC: ([^)]+)\)<\/em>/);
+  const match = line.match(/\(RC: ([^)]+)\)/);
   if (!match) return [];
   return match[1]!.split(", ").map((n) => parseInt(n.trim(), 10));
 }
@@ -338,7 +338,7 @@ describe("buildDropShoulderSleeveDisplayRows", () => {
     expect(blockParagraphText(bodyBlocks[1]!)).toContain(DROP_SHOULDER_SLEEVE_BEGIN_SHAPING_LINE);
     expect(parseRcNumber(bodyBlocks[1]!.rc)).toBe(preShaping.firstShapingRc);
     expect(shapingLine).toContain("Increase 1 stitch at each side every 4 rows 20 times.");
-    expect(shapingLine).toContain(formatParentheticalShapingRowNumbers(chartRcs));
+    expect(shapingLine).toContain(formatParentheticalRcList(chartRcs));
     expect(shapingRcListFromWrittenLine(shapingLine ?? "")).toEqual(chartRcs);
     expect(shapingRcListFromWrittenLine(shapingLine ?? "")[0]).toBe(preShaping.firstShapingRc);
     expect(text).not.toContain("according to the sleeve shaping sequence");
@@ -364,7 +364,7 @@ describe("buildDropShoulderSleeveDisplayRows", () => {
     expect(blockParagraphText(bodyBlocks[1]!)).toContain(DROP_SHOULDER_SLEEVE_BEGIN_SHAPING_LINE);
     expect(parseRcNumber(bodyBlocks[1]!.rc)).toBe(preShaping.firstShapingRc);
     expect(shapingLine).toContain("Decrease 1 stitch at each side every 4 rows 20 times.");
-    expect(shapingLine).toContain(formatParentheticalShapingRowNumbers(chartRcs));
+    expect(shapingLine).toContain(formatParentheticalRcList(chartRcs));
     expect(shapingRcListFromWrittenLine(shapingLine ?? "")).toEqual(chartRcs);
     expect(text).not.toContain("according to the sleeve shaping sequence");
     expect(text).toContain("cuff/wrist edge");
@@ -425,7 +425,8 @@ describe("buildDropShoulderSleeveDisplayRows", () => {
     expect(printHtml).toContain(`RC: ${String(preShaping.firstShapingRc).padStart(3, "0")}`);
     expect(printHtml).toContain(`Knit ${preShaping.straightRows} rows even.`);
     expect(printHtml).toContain(DROP_SHOULDER_SLEEVE_BEGIN_SHAPING_LINE);
-    expect(printHtml).toContain(formatParentheticalShapingRowNumbers(chartRcs));
+    expect(printHtml).toContain(formatParentheticalRcList(chartRcs));
+    expect(printHtml).not.toMatch(/\(RC: \d+, RC:/);
     expect(printHtml).not.toContain("Knit 0 rows even.");
   });
 
@@ -566,7 +567,7 @@ describe("generateDropShoulderPattern sleeve shaping chart", () => {
     expect(result.sleeveDisplayRows.some((r) => r.kind === "section" && r.title === "SLEEVE SHAPING CHART")).toBe(
       true,
     );
-    expect(shapingLine).toContain(formatParentheticalShapingRowNumbers(chartShapingRcs));
+    expect(shapingLine).toContain(formatParentheticalRcList(chartShapingRcs));
     expect(shapingRcListFromWrittenLine(shapingLine ?? "")).toEqual(chartShapingRcs);
   });
 
@@ -627,7 +628,7 @@ describe("generateDropShoulderPattern sleeve shaping chart", () => {
     expect(text).toContain(
       `Decrease 1 stitch at each side every ${sched.interval} rows ${sched.count} times.`,
     );
-    expect(shapingLine).toContain(formatParentheticalShapingRowNumbers(chartRcs));
+    expect(shapingLine).toContain(formatParentheticalRcList(chartRcs));
     expect(shapingRcListFromWrittenLine(shapingLine ?? "")).toEqual(chartRcs);
     expect(text).not.toContain("according to the sleeve shaping sequence");
     expect(sleeveShapingChartRowsFromDisplay(result.sleeveDisplayRows).some((r) => /decrease/i.test(r.action))).toBe(
@@ -670,7 +671,7 @@ describe("generateDropShoulderPattern sleeve shaping chart", () => {
     expect(text).toContain(
       `Increase 1 stitch at each side every ${sched.interval} rows ${sched.count} times.`,
     );
-    expect(shapingLine).toContain(formatParentheticalShapingRowNumbers(chartRcs));
+    expect(shapingLine).toContain(formatParentheticalRcList(chartRcs));
     expect(shapingRcListFromWrittenLine(shapingLine ?? "")).toEqual(chartRcs);
     expect(text).not.toContain("Decrease 1 stitch at each side");
     expect(text).not.toContain("according to the sleeve shaping sequence");

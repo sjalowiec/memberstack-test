@@ -62,8 +62,8 @@ function shapingRcList(rows: readonly SleevelessPatternDisplayRow[]): number[] {
   const line = rows
     .filter((row) => row.kind === "block")
     .flatMap((row) => (row.kind === "block" ? [...(row.trustedParagraphs ?? []), ...(row.paragraphs ?? [])] : []))
-    .find((paragraph) => /<em>\(RC:/.test(paragraph));
-  const match = line?.match(/<em>\(RC: ([^)]+)\)<\/em>/);
+    .find((paragraph) => /\(RC:/.test(paragraph));
+  const match = line?.match(/\(RC: ([^)]+)\)/);
   if (!match) return [];
   return match[1]!.split(", ").map((n) => parseInt(n.trim(), 10));
 }
