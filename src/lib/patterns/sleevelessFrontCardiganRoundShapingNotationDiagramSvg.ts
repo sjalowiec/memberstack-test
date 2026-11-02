@@ -54,8 +54,8 @@ const GUIDE = "#bdbec0";
 const FONT = "Poppins, system-ui, Arial, sans-serif";
 const FS_NOTATION = 17;
 const FS_RC = 14;
-const NOTATION_GAP = 18;
-const NECK_NOTATION_GAP = 18;
+const NOTATION_GAP = 24;
+const NECK_NOTATION_GAP = 24;
 const RC_RESET_GAP = Math.round(FS_RC * 1.75);
 const SHOULDER_SLOPE_T = 0.3;
 const SHOULDER_OUT_RIGHT = 14;
@@ -67,7 +67,7 @@ const ARMHOLE_LABEL_SAFE_MAX_X = VB_W - 16;
 const SCOOP_EDGE_GAP = 10;
 /** Minimum space between RC-gutter anchor (right edge of RC text) and neck-block left edge. */
 const RC_GUTTER_MIN_CLEARANCE = 24;
-const BODY_NOTATION_GAP = 18;
+const BODY_NOTATION_GAP = 24;
 const BODY_LABEL_OUTLINE_CLEARANCE = 18;
 
 type Pt = SleevelessFrontGarmentPt;

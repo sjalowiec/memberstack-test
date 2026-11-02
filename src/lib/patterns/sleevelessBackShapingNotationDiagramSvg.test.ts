@@ -1214,7 +1214,7 @@ describe("buildSleevelessBackShapingNotationDiagramSvg", () => {
     expect(svg).toMatch(/<text[^>]*data-role="shoulder-shaping"[^>]*font-size="17"|<text[^>]*font-size="17"[^>]*data-role="shoulder-shaping"/);
     expect(roles(svg, "armhole-start-rc")[0]).toContain('font-size="14"');
     expect(roles(svg, "neck-start-rc")[0]).toContain('font-size="14"');
-    expect(SLEEVELESS_BACK_ARMHOLE_NOTATION_GAP).toBe(18);
+    expect(SLEEVELESS_BACK_ARMHOLE_NOTATION_GAP).toBe(24);
     expect(SLEEVELESS_BACK_RC_RESET_GAP).toBe(Math.round(14 * 1.75));
 
     const roundSource = readFileSync(

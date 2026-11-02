@@ -5,7 +5,7 @@
  * Render that order upward so earlier actions sit lower on the garment.
  */
 
-export const CARDIGAN_ARMHOLE_NOTATION_GAP = 18;
+export const CARDIGAN_ARMHOLE_NOTATION_GAP = 24;
 
 /**
  * Ys for an armhole notation stack.

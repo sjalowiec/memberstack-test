@@ -46,9 +46,9 @@ const FILL = "#f4f6f1";
 const MUTED = "#4b5563";
 const ARROW = "#52682d";
 const FONT = "Poppins, system-ui, Arial, sans-serif";
-const FS_STITCH = 17;
-const FS_SECONDARY = 14;
-const LINE_GAP = 26;
+const FS_STITCH = 22;
+const FS_SECONDARY = 18;
+const LINE_GAP = 32;
 
 type YBand = SleevelessFrontGarmentYBand;
 type Pt = SleevelessFrontGarmentPt;
@@ -331,8 +331,8 @@ function drawMeasurements(model: SleevelessFrontStsRowsDiagramModel, frame: Fram
   // gutter so the larger type remains readable and does not sit on the line.
   const totalArrowX = Math.max(40, frame.left - 24);
   const hemArrowX = Math.max(totalArrowX + 12, frame.left - 10);
-  const leftGutterLabelX = 34;
-  const hemLineGap = 26;
+  const leftGutterLabelX = 58;
+  const hemLineGap = 32;
   const rightArrowX = Math.min(VB_W - 28, frame.right + 22);
   const rightLabelX = Math.min(VB_W - 12, rightArrowX + 22);
   const cardigan = isCardiganFrontModel(model);

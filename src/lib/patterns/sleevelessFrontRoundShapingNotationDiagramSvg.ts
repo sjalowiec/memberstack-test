@@ -68,15 +68,15 @@ const FONT = "Poppins, system-ui, Arial, sans-serif";
 /** Match generated Front Stitches & Rows measurement type (`FS_STITCH` / `FS_SECONDARY`). */
 const FS_NOTATION = 17;
 const FS_RC = 14;
-const NOTATION_GAP = 18;
-const NECK_NOTATION_GAP = 18;
+const NOTATION_GAP = 24;
+const NECK_NOTATION_GAP = 24;
 const NECK_BO_BELOW_GUIDE = NECK_NOTATION_GAP;
-const ARMHOLE_NOTATION_GAP = 18;
+const ARMHOLE_NOTATION_GAP = 24;
 const RC_RESET_GAP = Math.round(FS_RC * 1.75);
 const ARMHOLE_LABEL_CLEARANCE = 10;
 const SHOULDER_LABEL_GAP = 14;
 const SHOULDER_OUTLINE_CLEARANCE = 10;
-const BODY_NOTATION_GAP = 18;
+const BODY_NOTATION_GAP = 24;
 const BODY_LABEL_OUTLINE_CLEARANCE = 18;
 
 const LABEL_GUTTER = 88;

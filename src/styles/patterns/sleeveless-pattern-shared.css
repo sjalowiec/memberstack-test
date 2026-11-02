@@ -2666,10 +2666,14 @@
     }
 
     #pattern-content .pattern-section__heading,
-    #pattern-content .pattern-subsection__heading,
-    #pattern-content .sleeveless-piece-split__diagram {
+    #pattern-content .pattern-subsection__heading {
       break-inside: avoid !important;
       page-break-inside: avoid !important;
+    }
+
+    #pattern-content .sleeveless-piece-split__diagram {
+      break-inside: auto !important;
+      page-break-inside: auto !important;
     }
 
     #pattern-content .sleeveless-piece-split__diagram-inner {
@@ -2686,6 +2690,24 @@
 
     #pattern-content .sleeveless-pattern-diagram-print-heading {
       display: block !important;
+      margin: 0 0 0.04in !important;
+      font-size: 9pt !important;
+      line-height: 1.15 !important;
+    }
+
+    /*
+     * Stitches & Rows and Shaping Notation share one row. Each drawing is about
+     * half the letter content width, so the pair is a few inches tall instead of
+     * a full page. Height stays auto and the garment shape keeps its proportions.
+     */
+    #pattern-content .sleeveless-pattern-diagram-tabs {
+      display: grid !important;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
+      column-gap: 0.14in !important;
+      align-items: start !important;
+      width: 100% !important;
+      break-inside: auto !important;
+      page-break-inside: auto !important;
     }
 
     #pattern-content .sleeveless-pattern-diagram-tabs__panel,
@@ -2694,13 +2716,15 @@
     #pattern-content .sleeveless-pattern-reading-layout .pattern-diagram-tabs__panel[hidden] {
       display: block !important;
       visibility: visible !important;
-      margin-top: 0.85rem;
+      margin: 0 !important;
+      min-width: 0 !important;
+      break-inside: avoid !important;
+      page-break-inside: avoid !important;
     }
 
     /*
-     * Print each piece as one column. Diagrams use the full letter content width
-     * (about 7.1in) so labels stay at a readable point size. Height stays auto,
-     * so the garment shape keeps its proportions.
+     * Instructions keep the full content width. Diagrams follow the piece
+     * instead of sitting in a squeezed side column.
      */
     #pattern-content .pattern-layout.pattern-layout--garment-columns,
     #pattern-content .sleeveless-piece-split {
@@ -2780,8 +2804,8 @@
       align-self: stretch !important;
       justify-self: stretch !important;
       width: 100% !important;
-      max-width: none !important;
-      margin-top: 0.2in !important;
+      max-width: 100% !important;
+      margin-top: 0.08in !important;
       overflow: visible !important;
     }
 
@@ -2791,7 +2815,7 @@
       position: static !important;
       cursor: default !important;
       width: 100% !important;
-      max-width: none !important;
+      max-width: 100% !important;
       height: auto !important;
       overflow: visible !important;
     }
@@ -2804,7 +2828,7 @@
       display: block !important;
       visibility: visible !important;
       width: 100% !important;
-      max-width: none !important;
+      max-width: 100% !important;
       height: auto !important;
       opacity: 1 !important;
       overflow: visible !important;
