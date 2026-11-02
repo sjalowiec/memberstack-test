@@ -5,9 +5,13 @@
  * pages keep their own neckline card and finishing links.
  */
 
+import videosPublic from "../../data/videos-public.json";
 import { buildGlossaryTooltipPlaceholderHtml } from "../glossary/glossaryTooltipPrint";
+import { vimeoNumericIdFromPublicVideo, type PublicVideoRow } from "../lessonVideo";
+import { catalogVideoIsPublic } from "../videoPublic";
 import { buildPatternHelpCardInnerHtml } from "./patternHelpCard";
 import { buildPatternQuickTipInnerHtml } from "./patternQuickTip";
+import { findPublicVideoByContentId } from "./sleevelessCatalogHelpVideo";
 import {
   ARMHOLE_BIND_OFF_TRICK_CONTENT_ID,
   ARMHOLE_BIND_OFF_TRICK_VIDEO_KEY,
@@ -22,12 +26,11 @@ export const SET_IN_NECKLINE_SHORT_ROW_GLOSSARY_ID = 811;
 /** Glossary entry "Stair steps". */
 export const SET_IN_NECKLINE_STAIR_STEPS_GLOSSARY_ID = 902;
 
+/** Catalog content_id for the shoulder-joining lesson. The button label is that row's title. */
+export const SET_IN_JOIN_SHOULDERS_VIDEO_CONTENT_ID = 202;
+
 /** Catalog content_id for "Set In Sleeve Perfection". */
 export const SET_IN_SLEEVE_PERFECTION_CONTENT_ID = 580;
-
-export const SET_IN_SLEEVE_PERFECTION_VIDEO_HREF = `/videos/${SET_IN_SLEEVE_PERFECTION_CONTENT_ID}`;
-
-export const SET_IN_SLEEVE_PERFECTION_VIDEO_LABEL = "Set In Sleeve Perfection";
 
 /** Dismissible tip on the first back armhole bind-off only. */
 export const SET_IN_BACK_ARMHOLE_BIND_OFF_TIP_ID = "set-in-back-armhole-bind-off-trick";
@@ -95,16 +98,39 @@ export function setInFrontNecklineMachineHelpCardHtml(isVNeck: boolean): string 
   return setInNecklineChartMachineHelpCardHtml({ includeShallowBackNeckVideo: true });
 }
 
-/** Screen-only catalog link for setting a separate sleeve into the armhole. */
-export function setInSleevePerfectionVideoHelpHtml(): string {
+/**
+ * Compact pattern-video control. The label is the current catalog title.
+ * Clicking opens the existing pattern video modal (`a.pattern-video-modal-link`),
+ * which loads one deferred player. The button itself has no iframe.
+ * Returns "" when the catalog row cannot be played.
+ */
+export function setInCatalogVideoModalLinkHtml(
+  contentId: number,
+  catalog: PublicVideoRow[] = videosPublic as PublicVideoRow[],
+): string {
+  const row = findPublicVideoByContentId(catalog, contentId);
+  if (!row || !catalogVideoIsPublic(row) || !vimeoNumericIdFromPublicVideo(row)) return "";
+  const title = typeof row.title === "string" ? row.title.trim() : "";
+  if (!title) return "";
+  const id = String(contentId);
   return (
-    `<p class="pattern-finishing-video-help pattern-help-link no-print">` +
-    `<span class="pattern-finishing-video-help__lead"><i class="fa-solid fa-play"></i> Helpful video for setting in sleeves:</span> ` +
-    `<span class="pattern-finishing-video-help__links">` +
-    `<a class="pattern-help-link__anchor" href="${SET_IN_SLEEVE_PERFECTION_VIDEO_HREF}" target="_blank" rel="noopener noreferrer" data-content-id="${SET_IN_SLEEVE_PERFECTION_CONTENT_ID}">` +
-    `<i class="fa-solid fa-play"></i> ${escapeAttr(SET_IN_SLEEVE_PERFECTION_VIDEO_LABEL)}</a>` +
-    `</span></p>`
+    `<a href="/pages/videos/modal/${id}" class="pattern-video-modal-link no-print" data-video-id="${id}" data-content-id="${id}">` +
+    `<i class="fa-solid fa-play" aria-hidden="true"></i> ${escapeAttr(title)}</a>`
   );
+}
+
+/** Shoulder-joining lesson, KIN catalog 202. */
+export function setInJoinShouldersVideoHelpHtml(
+  catalog: PublicVideoRow[] = videosPublic as PublicVideoRow[],
+): string {
+  return setInCatalogVideoModalLinkHtml(SET_IN_JOIN_SHOULDERS_VIDEO_CONTENT_ID, catalog);
+}
+
+/** Sleeve-cap seaming lesson, KIN catalog 580. */
+export function setInSleevePerfectionVideoHelpHtml(
+  catalog: PublicVideoRow[] = videosPublic as PublicVideoRow[],
+): string {
+  return setInCatalogVideoModalLinkHtml(SET_IN_SLEEVE_PERFECTION_CONTENT_ID, catalog);
 }
 
 type TipBlock = Extract<SleevelessPatternDisplayRow, { kind: "block" }>;

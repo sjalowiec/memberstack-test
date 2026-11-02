@@ -7,7 +7,10 @@ import {
 import type { DropShoulderSleeveDirection } from "./dropShoulderSleeveConstruction";
 import { DROP_SHOULDER_SLEEVE_DIRECTION_DEFAULT } from "./dropShoulderSleeveConstruction";
 import type { NeckbandPickupInstructionViewModel } from "./legoBlocks/neckbandPickup";
-import { setInSleevePerfectionVideoHelpHtml } from "./setInSleeveLearningResources";
+import {
+  setInJoinShouldersVideoHelpHtml,
+  setInSleevePerfectionVideoHelpHtml,
+} from "./setInSleeveLearningResources";
 
 export type SleevelessFinishingHtmlDeps = {
   escapeHtml: (s: string) => string;
@@ -43,8 +46,9 @@ function blockPiecesBody(deps: SleevelessFinishingHtmlDeps): string {
     <p>Blocking before seaming helps neckline and armhole edges relax and makes finishing easier.</p>`;
 }
 
-function joinShouldersBody(deps: SleevelessFinishingHtmlDeps): string {
-  return `<p class="pattern-finishing-lead">Join one shoulder using your preferred method.</p>
+function joinShouldersBody(deps: SleevelessFinishingHtmlDeps, isSetInSleeve = false): string {
+  const video = isSetInSleeve ? setInJoinShouldersVideoHelpHtml() : "";
+  return `<p class="pattern-finishing-lead">Join one shoulder using your preferred method.${video ? ` ${video}` : ""}</p>
     <ul>
       <li>${deps.glossaryTooltip(745, "Linker")}</li>
       <li>crochet slip stitch</li>
@@ -171,15 +175,15 @@ function dropShoulderSleeveArmholeAttachStepsHtml(): string {
 }
 
 function setInSleeveAttachBody(): string {
+  const video = setInSleevePerfectionVideoHelpHtml();
   return `<ul>
       <li>Lay the front and back flat with the shoulder seams joined and the side seams open.</li>
       <li>Match the center of the sleeve cap to the shoulder seam.</li>
       <li>Match the sleeve-cap underarm edges to the corresponding armhole underarm edges.</li>
       <li>Pin or clip the sleeve cap evenly around the armhole, matching shaping points.</li>
-      <li>Seam the sleeve cap into the armhole.</li>
+      <li>Seam the sleeve cap into the armhole.${video ? ` ${video}` : ""}</li>
       <li>Repeat for the second sleeve.</li>
-    </ul>
-    ${setInSleevePerfectionVideoHelpHtml()}`;
+    </ul>`;
 }
 
 function attachSleevesBody(sleeveDirection: DropShoulderSleeveDirection, isSetInSleeve: boolean): string {
@@ -266,7 +270,7 @@ function stepBodyHtml(
     case "blockPieces":
       return blockPiecesBody(deps);
     case "joinShoulders":
-      return joinShouldersBody(deps);
+      return joinShouldersBody(deps, isSetInSleeve);
     case "finishArmholes":
       return finishArmholesBody(deps);
     case "finishFrontEdges":

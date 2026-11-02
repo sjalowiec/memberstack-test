@@ -330,9 +330,16 @@ describe("buildSleevelessFinishingStepsHtml", () => {
           expect(html, `${family.name} ${neck.neckline}`).not.toContain("Need help finishing the neckline?");
           expect(html, `${family.name} ${neck.neckline}`).not.toContain(`href="${neck.href}"`);
           expect(html, `${family.name} ${neck.neckline}`).not.toContain(`href="${neck.otherHref}"`);
-          expect(html, `${family.name} ${neck.neckline}`).toContain('href="/videos/580"');
+          expect(html, `${family.name} ${neck.neckline}`).toContain('href="/pages/videos/modal/202"');
+          expect(html, `${family.name} ${neck.neckline}`).toContain("3- Needle Bind off (Shoulder Seams)");
+          expect(html, `${family.name} ${neck.neckline}`).toContain('href="/pages/videos/modal/580"');
           expect(html, `${family.name} ${neck.neckline}`).toContain("Set In Sleeve Perfection");
-          expect(html.match(/\/videos\/580/g), `${family.name} ${neck.neckline}`).toHaveLength(1);
+          expect(html.match(/data-video-id="202"/g), `${family.name} ${neck.neckline}`).toHaveLength(1);
+          expect(html.match(/data-video-id="580"/g), `${family.name} ${neck.neckline}`).toHaveLength(1);
+          expect(html, `${family.name} ${neck.neckline}`).not.toContain("<iframe");
+          const sleeveLine = html.slice(html.indexOf("Seam the sleeve cap into the armhole."));
+          expect(sleeveLine.indexOf('data-video-id="580"')).toBeGreaterThan(-1);
+          expect(sleeveLine.indexOf('data-video-id="580"')).toBeLessThan(sleeveLine.indexOf("</li>"));
         } else {
           expect(html, `${family.name} ${neck.neckline}`).toContain("Need help finishing the neckline?");
           expect(html, `${family.name} ${neck.neckline}`).toContain(`href="${neck.href}"`);
@@ -342,12 +349,18 @@ describe("buildSleevelessFinishingStepsHtml", () => {
           expect(html, `${family.name} ${neck.neckline}`).not.toContain("app.knititnow.com");
           expect(html, `${family.name} ${neck.neckline}`).toContain('target="_blank"');
           expect(html, `${family.name} ${neck.neckline}`).not.toContain("/videos/580");
+          expect(html, `${family.name} ${neck.neckline}`).not.toContain('data-video-id="202"');
+          expect(html, `${family.name} ${neck.neckline}`).not.toContain('data-video-id="580"');
         }
         const printHtml = buildSleevelessFinishingPrintListHtml({
           isCardigan: false,
           ...family.options,
         });
         expect(printHtml, `${family.name} ${neck.neckline} print`).not.toContain("/videos/580");
+        expect(printHtml, `${family.name} ${neck.neckline} print`).not.toContain("pattern-video-modal-link");
+        expect(printHtml, `${family.name} ${neck.neckline} print`).not.toContain("3- Needle Bind off");
+        expect(printHtml, `${family.name} ${neck.neckline} print`).not.toContain("Set In Sleeve Perfection");
+        expect(printHtml, `${family.name} ${neck.neckline} print`).toContain("Join shoulders with your preferred method.");
         expect(printHtml, `${family.name} ${neck.neckline} print`).not.toContain("Need help finishing the neckline?");
 
         expect(html, `${family.name} ${neck.neckline}`).toContain(neck.buttonLabel);

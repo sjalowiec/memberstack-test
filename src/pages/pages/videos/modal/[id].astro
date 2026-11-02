@@ -1,0 +1,13 @@
+---
+/**
+ * Address used by pattern video buttons (`/pages/videos/modal/[id]`).
+ * The player itself is the catalog modal page.
+ */
+export const prerender = false;
+
+const id = Astro.params.id != null ? String(Astro.params.id).trim() : "";
+if (!id) {
+  return Astro.redirect("/videos", 302);
+}
+return Astro.redirect(`/videos/modal/${encodeURIComponent(id)}`, 307);
+---
