@@ -46,6 +46,8 @@ import {
   orientCenterSeamDiagramSvg,
   tryBuildLiveSleevelessFrontStsRowsDiagramSvg,
 } from "./sleevelessFrontStsRowsDiagramSvg";
+import { tryBuildLiveSleevelessFrontRoundNotationSvg } from "./sleevelessFrontRoundShapingNotationDiagramSvg";
+import { tryBuildLiveSleevelessBackNotationSvg } from "./sleevelessBackShapingNotationDiagramSvg";
 import { tryBuildLiveSleevelessFrontCardiganRoundNotationSvg } from "./sleevelessFrontCardiganRoundShapingNotationDiagramSvg";
 import {
   armholeLocalRcActiveShoulderChecklistStart,
@@ -185,7 +187,46 @@ function savedProject(
   };
 }
 
+function notationTextLines(svg: string, role: string): string[] {
+  const found: string[] = [];
+  const re = new RegExp(`data-role="${role}"[^>]*>([^<]*)<`, "g");
+  let match: RegExpExecArray | null;
+  while ((match = re.exec(svg))) found.push(match[1] ?? "");
+  return found;
+}
+
 describe("set-in sleeve pattern choices", () => {
+  it("labels each front armhole bind-off per edge, matching the back", () => {
+    const data = pattern({});
+    const result = generateSetInSleevePattern(data);
+    const plan = result.setInArmholePlan;
+    expect(plan?.ok).toBe(true);
+    if (!plan?.ok) return;
+    expect(plan.stairStepBindOffsEachSide.length).toBeGreaterThan(0);
+    const frontNotation = tryBuildLiveSleevelessFrontRoundNotationSvg(result, data);
+    const backNotation = tryBuildLiveSleevelessBackNotationSvg(result, data);
+    expect(frontNotation).toBeTruthy();
+    expect(backNotation).toBeTruthy();
+    const perEdge = [plan.initialBindOffStitchesEachSide, ...plan.stairStepBindOffsEachSide].map(
+      (stitches) => `bo${stitches}`,
+    );
+    const frontArmhole = [
+      ...notationTextLines(frontNotation!, "armhole-bo"),
+      ...notationTextLines(frontNotation!, "armhole-shaping"),
+    ];
+    const backArmhole = [
+      ...notationTextLines(backNotation!, "armhole-bo"),
+      ...notationTextLines(backNotation!, "armhole-shaping"),
+    ];
+    expect(frontArmhole.filter((line) => line.startsWith("bo"))).toEqual(perEdge);
+    expect(frontArmhole.filter((line) => line.startsWith("bo"))).toEqual(
+      backArmhole.filter((line) => line.startsWith("bo")),
+    );
+    expect(frontArmhole).not.toContain(`bo${plan.matchedBindOffStitchesEachSide}`);
+    expect(frontNotation).toContain(`data-bind-off-sts="${plan.matchedBindOffStitchesEachSide}"`);
+    expect(result.debug.frontFinalRow! - result.debug.armholeStartRow!).toBe(result.debug.armholeRows);
+  });
+
   it("builds a round-neck pullover with a cuff-up sleeve and matching cap", () => {
     const result = generateSetInSleevePattern(pattern({}));
     const overview = textOf(result.overviewRows);
