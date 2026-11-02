@@ -26,7 +26,8 @@ import {
   type SidewaysCardiganBodyInstructions,
   type SidewaysCardiganBodyInstructionStep,
 } from "./sidewaysCardiganBodyInstructions";
-import { sidewaysFoldedHemCastOnSentence, sidewaysFoldedHemTurningNeedle } from "./sidewaysCardiganFinishing";
+import { sidewaysFoldedHemTurningNeedle } from "./sidewaysCardiganFinishing";
+import { sidewaysBodyHemChoiceLines } from "./sweaterBodyHemInstructions";
 import {
   sidewaysOptionalShapingParagraphs,
   sidewaysPulloverVNeckShapingLines,
@@ -175,6 +176,14 @@ function castOnHelpTip(tipId: string, bodyHtml: string) {
   };
 }
 
+function sidewaysHemEdgeLines(stitchesPerInch: number | undefined, chartAudience?: unknown): string[] {
+  if (!stitchesPerInch || stitchesPerInch <= 0) return [];
+  return sidewaysBodyHemChoiceLines(
+    sidewaysFoldedHemTurningNeedle(stitchesPerInch, chartAudience),
+    chartAudience,
+  );
+}
+
 function block(args: {
   rc?: number;
   paragraphs?: string[];
@@ -279,14 +288,7 @@ export function buildSidewaysCardiganBodyDisplayRows(
         `Knit one row of ${ravelPh}.`,
         `Work a ${closedPh} with garment yarn across all ${fullWidth} needles.`,
         `Set ${formatRcColon(0)}.`,
-        ...(stitchesPerInch && stitchesPerInch > 0
-          ? [
-              sidewaysFoldedHemCastOnSentence(
-                sidewaysFoldedHemTurningNeedle(stitchesPerInch, chartAudience),
-                chartAudience,
-              ),
-            ]
-          : []),
+        ...sidewaysHemEdgeLines(stitchesPerInch, chartAudience),
         `Place the ${vSts} neckline stitches into hold.`,
         `Leave ${startingFrontStitches} body stitches working.`,
         `Continue with ${heldStartCensus}.`,
@@ -502,14 +504,7 @@ export function buildSidewaysPulloverBodyDisplayRows(
         `Scrap on the ${openSideSeamStitches} side-seam stitches. Leave these stitches open for grafting during finishing.`,
         `Work a ${closedPh} with garment yarn over the ${armhole} armhole stitches.`,
         `Set ${formatRcColon(landmarks.firstSideSeam)}.`,
-        ...(stitchesPerInch && stitchesPerInch > 0
-          ? [
-              sidewaysFoldedHemCastOnSentence(
-                sidewaysFoldedHemTurningNeedle(stitchesPerInch, chartAudience),
-                chartAudience,
-              ),
-            ]
-          : []),
+        ...sidewaysHemEdgeLines(stitchesPerInch, chartAudience),
         ...(markerFromNeck && sideSeamStitches
           ? [pulloverMarkerSentence(markerFromNeck, sideSeamStitches)]
           : []),

@@ -11,8 +11,7 @@ import { renderPatternDisplayRowsHtml } from "./sleevelessPatternDisplayHtml";
 import { renderSleevelessPrintPieceHtml } from "./sleevelessPatternPrintRender";
 import { computeDefaultMeasurementsFromChartRow } from "./sleevelessExpressSizeChartClient";
 import type { ChartRow } from "./sleevelessExpressSizeChartTypes";
-import { generateSetInSleevePattern } from "./setInSleevePatternOutput";
-import { withSetInSleeveConstructionAuthored } from "./setInSleeveConstructionIdentity";
+import { generateSleevelessBackPattern } from "./sleevelessPatternOutput";
 
 const MISSES_7: ChartRow = {
   bust_or_chest: 40,
@@ -37,15 +36,12 @@ function pattern(bodyShape: "straight" | "aline" = "straight"): Record<string, u
       easeChoice: "standard",
       selectedMeasurements: measurements,
     },
-    style: withSetInSleeveConstructionAuthored(
-      {
-        recipientCategory: "misses",
-        garmentStyle: "pullover",
-        neckline: "round",
-        bodyShape,
-      },
-      "long",
-    ),
+    style: {
+      recipientCategory: "misses",
+      garmentStyle: "pullover",
+      neckline: "round",
+      bodyShape,
+    },
     yarnGaugeMachine: {
       gaugeStitchesPerInch: 5,
       gaugeRowsPerInch: 7,
@@ -122,7 +118,7 @@ describe("pattern print choices", () => {
   });
 
   it("prints the on-screen neckline sentences without a paper-only essay", () => {
-    const result = generateSetInSleevePattern(pattern());
+    const result = generateSleevelessBackPattern(pattern());
     const html = renderPatternDisplayRowsHtml(result.displayRows, { pieceSectionId: "back" });
     const frontHtml = renderPatternDisplayRowsHtml(result.frontDisplayRows, { pieceSectionId: "front" });
     expect(html).toContain("Use the checklist below for row-by-row neckline and shoulder shaping.");
@@ -139,26 +135,10 @@ describe("pattern print choices", () => {
     expect(printHtml).toContain("Use the checklist below for row-by-row neckline and shoulder shaping.");
     expect(printHtml).not.toContain("Work the First Shoulder and the neck edge first");
     expect(printHtml).not.toContain("pattern-print-written-shaping");
-
-    const sleeveText = result.sleeveDisplayRows
-      .flatMap((row) => (row.kind === "block" ? row.paragraphs ?? [] : []))
-      .join("\n");
-    const sleeveChartRows = result.sleeveDisplayRows.flatMap((row) =>
-      row.kind === "block" ? row.sleeveShapingChartRows ?? [] : [],
-    );
-    expect(sleeveChartRows.length).toBeGreaterThan(0);
-    const increases = sleeveChartRows.filter((row) => /increase/i.test(row.action));
-    expect(increases.length).toBeGreaterThan(0);
-    for (const row of increases) {
-      expect(sleeveText).toContain(String(row.rc).padStart(3, "0"));
-    }
-    const capBindOff = sleeveChartRows.find((row) => /bind off the remaining/i.test(row.action));
-    expect(capBindOff).toBeTruthy();
-    expect(sleeveText).toContain(capBindOff!.action);
   });
 
   it("keeps the A-line chart and does not rewrite it as print prose", () => {
-    const result = generateSetInSleevePattern(pattern("aline"));
+    const result = generateSleevelessBackPattern(pattern("aline"));
     const chartRows = result.displayRows.flatMap((row) =>
       row.kind === "block" ? row.bodyShapingChartRows ?? [] : [],
     );

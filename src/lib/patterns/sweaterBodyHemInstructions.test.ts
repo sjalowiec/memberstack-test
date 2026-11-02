@@ -12,12 +12,6 @@ import {
   buildSidewaysPulloverBodyDisplayRows,
 } from "./sidewaysCardiganPatternOutput";
 import { SIDEWAYS_HUNG_HEM_GLOSSARY_ID } from "./sidewaysCardiganSleeveCuffCopy";
-import { calculateSetInSleeveSweater } from "./setInSleeve/setInSleeveSweaterMath";
-import {
-  generateSetInSleeveInstructions,
-  setInSleeveInstructionSection,
-} from "./setInSleeve/setInSleeveInstructions";
-import type { ChartRow } from "./sleevelessExpressSizeChartTypes";
 import type { SleevelessPatternDisplayRow } from "./sleevelessPatternOutput";
 import {
   finishedHemRowCounterLabel,
@@ -27,20 +21,6 @@ import {
   sweaterBodyHemTechniqueTipBodyHtml,
   SWEATER_BODY_HEM_TECHNIQUE_TIP_ID,
 } from "./sweaterBodyHemInstructions";
-
-const MISSES: ChartRow = {
-  bust_or_chest: 36,
-  hip: 38,
-  garment_back_length: 23,
-  armhole_depth: 8,
-  shoulder_width: 14,
-  neck_opening: 7,
-  front_neck_depth: 4.5,
-  back_neck_depth: 1,
-  upper_arm: 12,
-  wrist: 6,
-  sleeve_length: 17,
-};
 
 function hemSectionText(rows: readonly SleevelessPatternDisplayRow[]): string {
   const start = rows.findIndex((row) => row.kind === "section" && row.title === "HEM");
@@ -118,34 +98,6 @@ describe("sideways body hem choices", () => {
 });
 
 describe("sweater pattern hem instructions", () => {
-  it("keeps set-in body shaping on the finished hem reading", () => {
-    const calculated = calculateSetInSleeveSweater({
-      chartAudience: "misses",
-      chartRow: MISSES,
-      stitchesPerInch: 7,
-      rowsPerInch: 10,
-      availableNeedles: 400,
-    });
-    expect(calculated.ok).toBe(true);
-    if (!calculated.ok) return;
-    const doc = generateSetInSleeveInstructions(calculated);
-    const back = setInSleeveInstructionSection(doc, "back");
-    const hemRows = calculated.body.hemRows;
-    const armholeRc = hemRows + calculated.body.rowsToArmhole;
-    expect(back).toContain(`Cast on ${calculated.body.bodyBlock.hemStitches} stitches for the back.`);
-    expect(back).toContain(`RC: 000 The finished hem is ${calculated.body.bodyBlock.hemStitches} stitches and ${hemRows} rows deep`);
-    expect(back).toContain(`hung hem for ${hemRows * 2} rows. Reset the row counter to ${formatRcColon(hemRows)}.`);
-    expect(back).toContain(`Knit in pattern to ${formatRcColon(armholeRc)}.`);
-    const front = setInSleeveInstructionSection(doc, "front");
-    expect(front).toContain("RC: 000 Finish your hem to match the back.");
-    expect(front).toContain(`When the hem is complete, the row counter shows ${formatRcColon(hemRows)}.`);
-    expect(front).not.toContain("hung hem");
-    expect(front).not.toContain("Choose one way to work it:");
-    expect(back.indexOf("Choose one way to work it:")).toBeLessThan(
-      back.indexOf(`Knit in pattern to ${formatRcColon(armholeRc)}.`),
-    );
-  });
-
   it("keeps drop-shoulder and sleeveless body counters on the finished hem", () => {
     const pattern = {
       fit: {
