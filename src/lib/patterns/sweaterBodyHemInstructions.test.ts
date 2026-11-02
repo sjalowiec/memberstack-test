@@ -24,6 +24,8 @@ import {
   SIDEWAYS_BODY_HEM_ROW_COUNTER_NOTE,
   sidewaysBodyHemChoiceLines,
   sweaterBodyHemChoiceLines,
+  sweaterBodyHemTechniqueTipBodyHtml,
+  SWEATER_BODY_HEM_TECHNIQUE_TIP_ID,
 } from "./sweaterBodyHemInstructions";
 
 const MISSES: ChartRow = {
@@ -65,15 +67,15 @@ describe("bottom-up body hem choices", () => {
     const text = lines.join("\n");
     expect(text).toContain("The finished hem is 122 stitches and 12 rows deep.");
     expect(text).toContain(
-      "1. Work 12 rows of ribbing in the needle arrangement of your choice. When the hem is complete, the row counter shows RC: 012.",
+      "1. Work 12 rows of ribbing. When the hem is complete, the row counter shows RC: 012.",
     );
-    expect(text).toContain("2. Knit a hung hem for 24 rows so the hem can be folded. Reset the row counter to RC: 012.");
+    expect(text).toContain("2. Knit a hung hem for 24 rows. Reset the row counter to RC: 012.");
+    expect(text).toContain("3. Knit mock ribbing for 24 rows. Reset the row counter to RC: 012.");
     expect(text).toContain(
-      "3. Knit mock ribbing for 24 rows so the hem can be folded. Reset the row counter to RC: 012.",
+      "4. Hand knit ribbing to the finished hem depth and hang its stitches on the machine. Set the row counter to RC: 012.",
     );
-    expect(text).toContain(
-      "4. Hand knit ribbing to the desired finished hem depth, then hang its stitches on the machine to continue the body. Set the row counter to RC: 012.",
-    );
+    expect(text).not.toContain("needle arrangement of your choice");
+    expect(text).not.toContain("so the hem can be folded");
     expect(text).not.toContain("Reset row counter to RC: 000");
     expect(text).not.toContain("Reset row counter to RC 000");
     expect(finishedHemRowCounterLabel(12)).toBe(formatRcColon(12));
@@ -83,7 +85,7 @@ describe("bottom-up body hem choices", () => {
     const text = sweaterBodyHemChoiceLines(40, 1, { plainText: true }).join("\n");
     expect(text).toContain("1 row deep");
     expect(text).toContain("Work 1 row of ribbing");
-    expect(text).toContain("for 2 rows so the hem can be folded");
+    expect(text).toContain("for 2 rows. Reset the row counter to RC: 001.");
     expect(text).toContain("RC: 001");
     expect(text).not.toContain("Reset the row counter to RC: 000");
   });
@@ -132,7 +134,7 @@ describe("sweater pattern hem instructions", () => {
     const armholeRc = hemRows + calculated.body.rowsToArmhole;
     expect(back).toContain(`Cast on ${calculated.body.bodyBlock.hemStitches} stitches for the back.`);
     expect(back).toContain(`RC: 000 The finished hem is ${calculated.body.bodyBlock.hemStitches} stitches and ${hemRows} rows deep`);
-    expect(back).toContain(`hung hem for ${hemRows * 2} rows so the hem can be folded. Reset the row counter to ${formatRcColon(hemRows)}.`);
+    expect(back).toContain(`hung hem for ${hemRows * 2} rows. Reset the row counter to ${formatRcColon(hemRows)}.`);
     expect(back).toContain(`Knit in pattern to ${formatRcColon(armholeRc)}.`);
     expect(back.indexOf("Choose one way to work it:")).toBeLessThan(
       back.indexOf(`Knit in pattern to ${formatRcColon(armholeRc)}.`),
@@ -169,7 +171,7 @@ describe("sweater pattern hem instructions", () => {
       const hem = hemSectionText(result.displayRows);
       const folded = result.debug.hemRows * 2;
       expect(hem).toContain(`Work ${result.debug.hemRows} rows of ribbing`);
-      expect(hem).toContain(`hung hem for ${folded} rows so the hem can be folded`);
+      expect(hem).toContain(`hung hem for ${folded} rows. Reset the row counter to ${formatRcColon(result.debug.hemRows)}.`);
       expect(hem).toContain(`Reset the row counter to ${formatRcColon(result.debug.hemRows)}.`);
       expect(hem).toContain(`Set the row counter to ${formatRcColon(result.debug.hemRows)}.`);
       expect(hem).toContain("hung hem");
@@ -181,6 +183,21 @@ describe("sweater pattern hem instructions", () => {
       expect(hemBlock && hemBlock.kind === "block" ? hemBlock.trustedParagraphs?.join("\n") : "").toContain(
         `data-glossary-id="${SIDEWAYS_HUNG_HEM_GLOSSARY_ID}"`,
       );
+      const technique = sweaterBodyHemTechniqueTipBodyHtml();
+      expect(technique).toContain("needle arrangement of your choice");
+      expect(technique).toContain("so the hem can be folded");
+      expect(technique).toContain("hang its stitches on the machine");
+      const backTip = result.displayRows.find(
+        (row) => row.kind === "block" && row.tipId === SWEATER_BODY_HEM_TECHNIQUE_TIP_ID,
+      );
+      const frontTip = result.frontDisplayRows.find(
+        (row) => row.kind === "block" && row.tipId === SWEATER_BODY_HEM_TECHNIQUE_TIP_ID,
+      );
+      expect(backTip && backTip.kind === "block" ? backTip.tipHtml : "").toContain("Hem methods");
+      expect(frontTip).toBeUndefined();
+      const frontHem = hemSectionText(result.frontDisplayRows);
+      expect(frontHem).toContain(`Work ${result.debug.hemRows} rows of ribbing`);
+      expect(frontHem).not.toContain("needle arrangement of your choice");
       expect(bodyStartRc(result.displayRows)).toBe(formatRcColon(result.debug.hemRows));
       expect(result.debug.rowsFromCastOnToArmholeStart).toBe(result.debug.hemRows + result.debug.bodyRows);
     }
@@ -215,7 +232,6 @@ describe("sweater pattern hem instructions", () => {
     for (const text of [visible(cardiganRows), visible(pulloverRows)]) {
       expect(text).toContain(sidewaysFoldedHemCastOnSentence(needle));
       expect(text).toContain(SIDEWAYS_BODY_HEM_ROW_COUNTER_NOTE);
-      expect(text).not.toContain("Reset the row counter");
     }
     const firstV = cardiganRows.find(
       (row) => row.kind === "block" && row.bodyShapingChartId === "sideways-cardigan-first-v-neck",
@@ -223,6 +239,8 @@ describe("sweater pattern hem instructions", () => {
     expect(firstV && firstV.kind === "block" ? firstV.bodyShapingChartRows?.map((row) => row.rc) : []).toEqual(
       cardigan.instructions.firstV.actionRowCounters,
     );
-    expect(pullover.instructions.landmarks.finalBindOff).toBe(pullover.instructions.calc.bust.actualTotalBustRows);
+    expect(pullover.instructions.landmarks.finalBindOff).toBe(
+      pullover.instructions.calc.bust.actualTotalBustRows,
+    );
   });
 });

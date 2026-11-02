@@ -88,7 +88,18 @@ describe("pattern print choices", () => {
     );
     const personalization = readFileSync("src/scripts/patternPrintPersonalization.ts", "utf8");
     expect(personalization).toContain("openPatternPrintChoiceDialog");
+    expect(personalization).toContain("includeTips");
     expect(personalization).toContain("applyPatternPrintLayout");
+    const dialog = readFileSync("src/scripts/patternPrintChoiceDialog.ts", "utf8");
+    const choiceSource = readFileSync("src/lib/patterns/patternPrintChoice.ts", "utf8");
+    expect(choiceSource).toContain('Include Pattern Tips');
+    expect(choiceSource).toContain(
+      "Use less paper by leaving tips out. Your complete knitting instructions will still print.",
+    );
+    expect(dialog).toContain("PATTERN_PRINT_INCLUDE_TIPS_LABEL");
+    expect(dialog).toContain("PATTERN_PRINT_INCLUDE_TIPS_HELP");
+    expect(dialog).toContain('name="pattern-print-include-tips"');
+    expect(dialog).not.toContain('name="pattern-print-include-tips" checked');
     const css = readFileSync("src/styles/patterns/pattern-print-choice.css", "utf8");
     expect(css).toContain('html[data-pattern-print-choice="instructions"]');
     expect(css).toContain('html[data-pattern-print-choice="charts"]');
@@ -97,6 +108,10 @@ describe("pattern print choices", () => {
     expect(css).toContain("break-inside: avoid");
     expect(css).toContain("pattern-video-modal-link");
     expect(readFileSync("src/styles/print.css", "utf8")).toContain("pattern-print-choice.css");
+    const tipsCss = readFileSync("src/styles/pattern-tips.css", "utf8");
+    expect(tipsCss).toContain('html[data-pattern-print-include-tips="false"]');
+    expect(tipsCss).toContain('html[data-pattern-print-include-tips="true"]');
+    expect(tipsCss).toContain('html[data-pattern-print-choice="charts"]');
   });
 
   it("keeps the on-screen checklist and adds matching written shaping for print", () => {

@@ -14,6 +14,7 @@
  */
 
 import { buildGlossaryTooltipPlaceholderHtml } from "../glossary/glossaryTooltipPrint";
+import { buildPatternQuickTipInnerHtml } from "./patternQuickTip";
 import {
   SIDEWAYS_HUNG_HEM_GLOSSARY_ID,
   SIDEWAYS_MOCK_RIB_GLOSSARY_ID,
@@ -35,6 +36,9 @@ export type BodyHemChoiceOptions = {
   /** Finished hem depth already calculated for this pattern, such as `2.00 in`. */
   finishedDepthLabel?: string;
 };
+
+/** One shared hem-method tip. Front and back keep their own calculated rows. */
+export const SWEATER_BODY_HEM_TECHNIQUE_TIP_ID = "sweater-body-hem-methods";
 
 /** Matches `formatRcColon` so later body headings stay on the same reading. */
 export function finishedHemRowCounterLabel(hemRows: number): string {
@@ -76,8 +80,66 @@ function presentLines(lines: string[], options?: BodyHemChoiceOptions): string[]
 }
 
 /**
+ * How each hem method is worked. Shown once as a Pattern Tip.
+ * Calculated rows and the row-counter actions stay in the instructions.
+ */
+export function sweaterBodyHemTechniqueTipBodyHtml(): string {
+  const hungHem = glossary(SIDEWAYS_HUNG_HEM_GLOSSARY_ID, "hung hem", "Learn about hung hems");
+  const mockRib = glossary(
+    SIDEWAYS_MOCK_RIB_GLOSSARY_ID,
+    "mock ribbing",
+    "Learn about mock ribbing",
+  );
+  return (
+    "<p>The stitch count, row counts, and row-counter reading in the hem instructions are the ones to knit. The same methods work for the front and the back.</p>" +
+    "<ol>" +
+    "<li>Ribbing: work the listed rows in the needle arrangement of your choice. The row counter reaches the finished hem reading on its own.</li>" +
+    `<li>${hungHem}: the listed row count is twice the finished depth so the hem can be folded. After folding, reset the row counter to the finished hem reading.</li>` +
+    `<li>${mockRib}: the listed row count is twice the finished depth so the hem can be folded. After folding, reset the row counter to the finished hem reading.</li>` +
+    "<li>Hand-knit ribbing: knit to the finished hem depth by hand, then hang its stitches on the machine to continue the body. Set the row counter to the finished hem reading, because those rows were not knitted on the machine.</li>" +
+    "</ol>"
+  );
+}
+
+export function sweaterBodyHemTechniqueTipFields(): {
+  tipHtml: string;
+  tipHtmlIsFull: true;
+  tipPresentation: "quick-tip";
+  tipId: string;
+} {
+  return {
+    tipHtml: buildPatternQuickTipInnerHtml({
+      summaryLabel: "Hem methods",
+      bodyHtml: sweaterBodyHemTechniqueTipBodyHtml(),
+    }),
+    tipHtmlIsFull: true,
+    tipPresentation: "quick-tip",
+    tipId: SWEATER_BODY_HEM_TECHNIQUE_TIP_ID,
+  };
+}
+
+/** Drop the shared hem tip from a copied piece so the explanation appears once. */
+export function omitSweaterBodyHemTechniqueTip<T extends { kind?: string; tipId?: string }>(
+  rows: readonly T[],
+): T[] {
+  return rows.map((row) => {
+    if (row.tipId !== SWEATER_BODY_HEM_TECHNIQUE_TIP_ID) return row;
+    const { tipHtml: _tipHtml, tipHtmlIsFull: _full, tipPresentation: _presentation, tipId: _id, tipWrapperClass: _wrapper, ...rest } =
+      row as T & {
+        tipHtml?: string;
+        tipHtmlIsFull?: boolean;
+        tipPresentation?: string;
+        tipId?: string;
+        tipWrapperClass?: string;
+      };
+    return rest as T;
+  });
+}
+
+/**
  * Bottom-up hem choices. Calculations keep using `hemRows` as the finished allowance.
  * Folded methods knit twice that many rows, then the counter returns to the finished reading.
+ * Method details live in {@link sweaterBodyHemTechniqueTipBodyHtml}.
  */
 export function sweaterBodyHemChoiceLines(
   hemStitches: number,
@@ -97,10 +159,10 @@ export function sweaterBodyHemChoiceLines(
   const width = hemStitches > 0 ? `${hemStitches} stitches and ` : "";
   const lines = [
     `The finished hem is ${width}${rows} deep${depth}. Choose one way to work it:`,
-    `1. Work ${rows} of ribbing in the needle arrangement of your choice. When the hem is complete, the row counter shows ${finishedRc}.`,
-    `2. Knit a ${hungHem} for ${folded} so the hem can be folded. Reset the row counter to ${finishedRc}.`,
-    `3. Knit ${mockRib} for ${folded} so the hem can be folded. Reset the row counter to ${finishedRc}.`,
-    `4. Hand knit ribbing to the desired finished hem depth, then hang its stitches on the machine to continue the body. Set the row counter to ${finishedRc}.`,
+    `1. Work ${rows} of ribbing. When the hem is complete, the row counter shows ${finishedRc}.`,
+    `2. Knit a ${hungHem} for ${folded}. Reset the row counter to ${finishedRc}.`,
+    `3. Knit ${mockRib} for ${folded}. Reset the row counter to ${finishedRc}.`,
+    `4. Hand knit ribbing to the finished hem depth and hang its stitches on the machine. Set the row counter to ${finishedRc}.`,
   ];
   return presentLines(lines, options);
 }
