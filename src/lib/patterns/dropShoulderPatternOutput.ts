@@ -85,6 +85,11 @@ import {
 } from "./sleevelessPatternOutput";
 import { hemSectionRow } from "./legoBlocks/hem";
 import {
+  sweaterBodyHemChoiceDisplay,
+  sweaterBodyHemFrontDisplay,
+  sweaterBodyHemTechniqueTipFields,
+} from "./sweaterBodyHemInstructions";
+import {
   insertBustDartIntoFrontBodyDisplayRows,
   resolveBustDartForSweaterFront,
 } from "./legoBlocks/bustDart";
@@ -370,7 +375,17 @@ function castOnBlock(sts: number, label?: string, alineHipNote = false): Block {
   };
 }
 
-function hemBlocks(hemRows: number, hemRowsValid: boolean, sts: number): SleevelessPatternDisplayRow[] {
+function hemBlocks(
+  hemRows: number,
+  hemRowsValid: boolean,
+  sts: number,
+  piece: "back" | "front" = "front",
+): SleevelessPatternDisplayRow[] {
+  const choices = hemRowsValid
+    ? piece === "back"
+      ? sweaterBodyHemChoiceDisplay(sts, hemRows)
+      : sweaterBodyHemFrontDisplay(sts, hemRows)
+    : null;
   return [
     hemSectionRow(),
     {
@@ -381,6 +396,8 @@ function hemBlocks(hemRows: number, hemRowsValid: boolean, sts: number): Sleevel
         : [
             "Hem rows could not be calculated — check row gauge and sizing chart. Knit your hem to the depth you prefer, then continue.",
           ],
+      ...(choices ? { trustedParagraphs: choices.trustedParagraphs } : {}),
+      ...(choices && piece === "back" ? sweaterBodyHemTechniqueTipFields(sts, hemRows) : {}),
       stitchCount: sts > 0 ? sts : undefined,
     },
   ];
@@ -733,7 +750,7 @@ function buildBackRows(args: {
   rows.push({ kind: "piece", title: "BACK" });
   rows.push(pieceMarkersSeamingTipDisplayRow("back"));
   rows.push(castOnBlock(castOnSts, "the back", useAlineBody));
-  rows.push(...hemBlocks(args.hemRows, args.hemRowsValid, castOnSts));
+  rows.push(...hemBlocks(args.hemRows, args.hemRowsValid, castOnSts, "back"));
 
   rows.push({ kind: "section", title: "BODY" });
   if (useAlineBody && aline) {

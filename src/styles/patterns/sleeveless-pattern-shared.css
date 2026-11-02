@@ -2666,10 +2666,14 @@
     }
 
     #pattern-content .pattern-section__heading,
-    #pattern-content .pattern-subsection__heading,
-    #pattern-content .sleeveless-piece-split__diagram {
+    #pattern-content .pattern-subsection__heading {
       break-inside: avoid !important;
       page-break-inside: avoid !important;
+    }
+
+    #pattern-content .sleeveless-piece-split__diagram {
+      break-inside: auto !important;
+      page-break-inside: auto !important;
     }
 
     #pattern-content .sleeveless-piece-split__diagram-inner {
@@ -2686,6 +2690,24 @@
 
     #pattern-content .sleeveless-pattern-diagram-print-heading {
       display: block !important;
+      margin: 0 0 0.04in !important;
+      font-size: 9pt !important;
+      line-height: 1.15 !important;
+    }
+
+    /*
+     * Stitches & Rows and Shaping Notation share one row. Each drawing is about
+     * half the letter content width, so the pair is a few inches tall instead of
+     * a full page. Height stays auto and the garment shape keeps its proportions.
+     */
+    #pattern-content .sleeveless-pattern-diagram-tabs {
+      display: grid !important;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
+      column-gap: 0.14in !important;
+      align-items: start !important;
+      width: 100% !important;
+      break-inside: auto !important;
+      page-break-inside: auto !important;
     }
 
     #pattern-content .sleeveless-pattern-diagram-tabs__panel,
@@ -2694,25 +2716,24 @@
     #pattern-content .sleeveless-pattern-reading-layout .pattern-diagram-tabs__panel[hidden] {
       display: block !important;
       visibility: visible !important;
-      margin-top: 0.85rem;
-    }
-
-    #pattern-content .pattern-layout.pattern-layout--garment-columns,
-    #pattern-content .sleeveless-piece-split {
-      --garment-print-diagram-track: 2.6in;
-      --garment-print-column-gap: 0.35in;
-      display: grid !important;
-      grid-template-columns: minmax(0, 1fr) minmax(180px, var(--garment-print-diagram-track)) !important;
-      column-gap: var(--garment-print-column-gap) !important;
-      row-gap: 0 !important;
-      align-items: start !important;
+      margin: 0 !important;
+      min-width: 0 !important;
+      break-inside: avoid !important;
+      page-break-inside: avoid !important;
     }
 
     /*
-     * Shaping charts/checklists inside the garment text column must use the full printable width.
-     * The interactive layout keeps a diagram sidebar; in print that reserved track leaves a blank
-     * strip and squeezes the table unless the chart breaks out across both grid columns.
+     * Instructions keep the full content width. Diagrams follow the piece
+     * instead of sitting in a squeezed side column.
      */
+    #pattern-content .pattern-layout.pattern-layout--garment-columns,
+    #pattern-content .sleeveless-piece-split {
+      --garment-print-diagram-track: 0in;
+      --garment-print-column-gap: 0in;
+      display: block !important;
+      width: 100% !important;
+    }
+
     #pattern-content .sleeveless-piece-split__text .sleeveless-piece-chart-fullwidth,
     #pattern-content .pattern-layout__content .sleeveless-piece-chart-fullwidth,
     #pattern-content .sleeveless-piece-split__text .pattern-subsection.sleeveless-piece-chart-fullwidth,
@@ -2725,13 +2746,9 @@
     #pattern-content .pattern-layout__content .sg-neck-chart-print-block,
     #pattern-content .sleeveless-piece-split__text .ns-shaping-chart,
     #pattern-content .pattern-layout__content .ns-shaping-chart {
-      width: calc(
-        100% + var(--garment-print-diagram-track, 2.6in) + var(--garment-print-column-gap, 0.35in)
-      ) !important;
+      width: 100% !important;
       max-width: none !important;
-      margin-right: calc(
-        -1 * (var(--garment-print-diagram-track, 2.6in) + var(--garment-print-column-gap, 0.35in))
-      ) !important;
+      margin-right: 0 !important;
       box-sizing: border-box !important;
       overflow: visible !important;
     }
@@ -2784,10 +2801,11 @@
       top: auto !important;
       inset: auto !important;
       order: 0 !important;
-      align-self: start !important;
-      justify-self: end !important;
-      width: auto !important;
-      max-width: 2.6in !important;
+      align-self: stretch !important;
+      justify-self: stretch !important;
+      width: 100% !important;
+      max-width: 100% !important;
+      margin-top: 0.08in !important;
       overflow: visible !important;
     }
 
@@ -2797,7 +2815,7 @@
       position: static !important;
       cursor: default !important;
       width: 100% !important;
-      max-width: 2.6in !important;
+      max-width: 100% !important;
       height: auto !important;
       overflow: visible !important;
     }
@@ -2810,7 +2828,7 @@
       display: block !important;
       visibility: visible !important;
       width: 100% !important;
-      max-width: 2.6in !important;
+      max-width: 100% !important;
       height: auto !important;
       opacity: 1 !important;
       overflow: visible !important;

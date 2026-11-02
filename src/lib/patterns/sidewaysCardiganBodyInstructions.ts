@@ -42,10 +42,8 @@ import {
   type SidewaysCardiganGarmentStyle,
 } from "./sidewaysCardiganConstructionIdentity";
 import { formatRowsCount, formatStitchesCount } from "./sidewaysCardiganDisplayFormat";
-import {
-  sidewaysFoldedHemCastOnSentence,
-  sidewaysFoldedHemTurningNeedle,
-} from "./sidewaysCardiganFinishing";
+import { sidewaysFoldedHemTurningNeedle } from "./sidewaysCardiganFinishing";
+import { sidewaysBodyHemChoiceLines } from "./sweaterBodyHemInstructions";
 
 export const SIDEWAYS_CARDIGAN_NON_POSITIVE_STARTING_STITCHES =
   "non-positive-starting-stitches";
@@ -1164,7 +1162,13 @@ export function renderSidewaysCardiganBodySequenceHtml(
   const totalBust = formatRowsCount(instructions.calc.bust.actualTotalBustRows);
   const hem =
     stitchesPerInch && stitchesPerInch > 0
-      ? `<p class="sg-fit-size-copy">${escapeHtml(sidewaysFoldedHemCastOnSentence(sidewaysFoldedHemTurningNeedle(stitchesPerInch, chartAudience), chartAudience))}</p>`
+      ? sidewaysBodyHemChoiceLines(
+          sidewaysFoldedHemTurningNeedle(stitchesPerInch, chartAudience),
+          chartAudience,
+          { plainText: true },
+        )
+          .map((line) => `<p class="sg-fit-size-copy">${escapeHtml(line)}</p>`)
+          .join("")
       : "";
   return `<p class="sg-fit-size-copy sideways-body-style-note">${escapeHtml(intro)}</p>${hem}<ol class="sideways-body-sequence">${items}</ol><p class="sg-fit-size-copy">Total bust/chest rows: ${escapeHtml(totalBust)}.</p><dl class="print-summary-dl print-summary-dl--inline sideways-body-landmarks">${landmarkItems}</dl><dl class="print-summary-dl print-summary-dl--inline sideways-body-sections">${sectionItems}</dl>`;
 }

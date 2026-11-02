@@ -11,6 +11,7 @@ import {
 import { cardiganFrontNeckOpeningStitches } from "./roundNeckNotation";
 import { sleevelessCardiganFrontEdgeFinishingMode } from "./sleevelessPatternFinishing";
 import { resolveSleevelessFrontDiagramSrc } from "./sleevelessFrontJapaneseNotation";
+import { formatPatternDiagramMeasurement } from "./patternStitchesRowsDiagramLabel";
 import { buildSleevelessFrontStsRowsDiagramModel } from "./sleevelessFrontStsRowsDiagramModel";
 import {
   buildSleevelessFrontStsRowsDiagramSvg,
@@ -497,6 +498,10 @@ describe("buildSleevelessFrontStsRowsDiagramSvg", () => {
     expect(svg).toContain("C ");
     expect(svg).not.toContain('data-role="v-point"');
     expectUpperSilhouetteMatchesStitchBudget(svg, model);
+    const castOnYs = [...svg.matchAll(/data-role="width-measurement" data-measure="cast-on"[^>]* y="([^"]+)"/g)].map(
+      (match) => Number(match[1]),
+    );
+    expect(Math.max(...castOnYs) + 9).toBeLessThan(SLEEVELESS_FRONT_STS_ROWS_VIEWBOX.height - 8);
   });
 
   it("returns null for unsupported styles", () => {
@@ -724,9 +729,9 @@ describe("buildSleevelessFrontStsRowsDiagramSvg", () => {
     expect(measureLineY(straightV.svg, "neck")).toBeCloseTo(86, 1);
     expect(
       Number(/<text data-role="width-measurement" data-measure="neck"[^>]* y="([^"]+)"/.exec(straightV.svg)?.[1]),
-    ).toBeCloseTo(57, 1);
+    ).toBeCloseTo(46, 1);
     expect(measureLineX(straightV.svg, "neck-depth")).toBeCloseTo(140.68, 1);
-    expect(measureTextXs(straightV.svg, "neck-depth")[0]).toBeCloseTo(34, 1);
+    expect(measureTextXs(straightV.svg, "neck-depth")[0]).toBeCloseTo(58, 1);
   });
 
   it("generates an outward Cardigan A-line Front when hem stitches are narrower than bust", () => {
@@ -786,7 +791,7 @@ describe("buildSleevelessFrontStsRowsDiagramSvg", () => {
     expect(neckTextXs[0]).toBeCloseTo(neckMidX, 1);
     expect(Math.max(...neckTextYs)).toBeLessThan(neckArrowY);
     expect(neckArrowY - Math.max(...neckTextYs)).toBeLessThanOrEqual(16);
-    expect(Math.min(...neckTextYs)).toBeGreaterThan(50);
+    expect(Math.min(...neckTextYs)).toBeGreaterThan(42);
 
     const depthArrowX = measureLineX(svg, "neck-depth");
     const depthArrowY1 = measureLineY(svg, "neck-depth");
@@ -799,8 +804,8 @@ describe("buildSleevelessFrontStsRowsDiagramSvg", () => {
     const depthTextYs = measureTextYs(svg, "neck-depth");
     expect(Math.max(...depthTextXs)).toBeLessThan(depthArrowX - 8);
     expect(Math.max(...depthTextXs)).toBeLessThan(svgNum(svg, "data-cf-x"));
-    expect(depthTextXs[0]).toBeCloseTo(34, 1);
-    expect(depthTextYs[0]).toBeCloseTo(120.48, 1);
+    expect(depthTextXs[0]).toBeCloseTo(58, 1);
+    expect(depthTextYs[0]).toBeCloseTo(113.48, 1);
     expect(Math.min(...depthTextYs)).toBeGreaterThan(Math.max(...neckTextYs) + 16);
 
     const shoulderLabelY = Number(
@@ -820,7 +825,7 @@ describe("buildSleevelessFrontStsRowsDiagramSvg", () => {
       1,
     );
     expect(measureLineX(round.svg, "neck-depth")).toBeLessThan(svgNum(round.svg, "data-cf-x"));
-    expect(measureTextXs(round.svg, "neck-depth")[0]).toBeCloseTo(34, 1);
+    expect(measureTextXs(round.svg, "neck-depth")[0]).toBeCloseTo(58, 1);
 
     const pullover = svgFor(amandaVNeckPattern());
     expect(svgAttr(pullover.svg, "data-garment-style")).toBe("pullover");
@@ -830,7 +835,7 @@ describe("buildSleevelessFrontStsRowsDiagramSvg", () => {
     const pulloverShoulderLabelY = Number(
       /<text data-role="width-measurement" data-measure="shoulder"[^>]* y="([^"]+)"/.exec(pullover.svg)?.[1],
     );
-    expect(pulloverNeckLabelY).toBeCloseTo(99.96, 1);
+    expect(pulloverNeckLabelY).toBeCloseTo(88.96, 1);
     expect(pulloverShoulderLabelY).toBeGreaterThan(svgNum(pullover.svg, "data-shoulder-y"));
     expect(measureLineY(pullover.svg, "neck")).toBeGreaterThan(svgNum(pullover.svg, "data-neck-corner-y"));
     expect(measureLineY(pullover.svg, "neck")).toBeLessThan(svgNum(pullover.svg, "data-neck-start-y"));
@@ -882,11 +887,11 @@ describe("buildSleevelessFrontStsRowsDiagramSvg", () => {
     ].map((m) => Number(m[1]));
     const neckMidX = (svgNum(svg, "data-neck-left") + svgNum(svg, "data-neck-right")) / 2;
     expect(neckTextXs[0]).toBeCloseTo(neckMidX, 1);
-    expect(neckTextYs[0]).toBeCloseTo(59, 1);
-    expect(neckTextYs[1]).toBeCloseTo(77, 1);
+    expect(neckTextYs[0]).toBeCloseTo(48, 1);
+    expect(neckTextYs[1]).toBeCloseTo(80, 1);
     expect(Math.max(...neckTextYs)).toBeLessThan(neckArrowY);
     expect(neckArrowY - Math.max(...neckTextYs)).toBeGreaterThanOrEqual(8);
-    expect(Math.min(...neckTextYs)).toBeGreaterThan(57);
+    expect(Math.min(...neckTextYs)).toBeGreaterThan(44);
     expect(Math.max(...neckTextYs)).toBeLessThan(garmentTopY);
 
     const depthArrowX = measureLineX(svg, "neck-depth");
@@ -899,11 +904,11 @@ describe("buildSleevelessFrontStsRowsDiagramSvg", () => {
 
     const depthTextXs = measureTextXs(svg, "neck-depth");
     const depthTextYs = measureTextYs(svg, "neck-depth");
-    expect(depthTextXs[0]).toBeCloseTo(34, 1);
+    expect(depthTextXs[0]).toBeCloseTo(58, 1);
     expect(Math.max(...depthTextXs)).toBeLessThan(depthArrowX - 8);
     expect(Math.max(...depthTextXs)).toBeLessThan(svgNum(svg, "data-cf-x"));
-    expect(depthTextYs[0]).toBeCloseTo(120.48, 1);
-    expect(depthTextYs[1]).toBeCloseTo(138.48, 1);
+    expect(depthTextYs[0]).toBeCloseTo(113.48, 1);
+    expect(depthTextYs[1]).toBeCloseTo(145.48, 1);
     expect(Math.min(...depthTextYs)).toBeGreaterThan(Math.max(...neckTextYs) + 16);
 
     const shoulderLabelY = Number(
@@ -912,7 +917,7 @@ describe("buildSleevelessFrontStsRowsDiagramSvg", () => {
     expect(measureLineY(svg, "shoulder")).toBeCloseTo(134, 1);
     expect(measureLineX(svg, "shoulder")).toBeCloseTo(svgNum(svg, "data-neck-right"), 1);
     expect(measureLineX2(svg, "shoulder")).toBeCloseTo(svgNum(svg, "data-after-right"), 1);
-    expect(shoulderLabelY).toBeCloseTo(151, 1);
+    expect(shoulderLabelY).toBeCloseTo(160, 1);
     expect(shoulderLabelY).toBeGreaterThan(svgNum(svg, "data-shoulder-y"));
     expect(Math.max(...neckTextYs)).toBeLessThan(svgNum(svg, "data-neck-corner-y"));
 
@@ -937,23 +942,23 @@ describe("buildSleevelessFrontStsRowsDiagramSvg", () => {
     expect(measureLineX(original.svg, "neck-depth")).toBeLessThan(svgNum(original.svg, "data-cf-x"));
     expect(measureLineY(original.svg, "neck-depth")).toBeCloseTo(svgNum(original.svg, "data-neck-corner-y"), 1);
     expect(measureLineY2(original.svg, "neck-depth")).toBeCloseTo(svgNum(original.svg, "data-neck-start-y"), 1);
-    expect(measureTextXs(original.svg, "neck-depth")[0]).toBeCloseTo(34, 1);
+    expect(measureTextXs(original.svg, "neck-depth")[0]).toBeCloseTo(58, 1);
 
     const v = svgFor(cardiganVReadablePattern());
     expect(measureLineY(v.svg, "neck")).toBeCloseTo(86, 1);
     expect(
       Number(/<text data-role="width-measurement" data-measure="neck"[^>]* y="([^"]+)"/.exec(v.svg)?.[1]),
-    ).toBeCloseTo(57, 1);
+    ).toBeCloseTo(46, 1);
     expect(measureLineX(v.svg, "neck-depth")).toBeCloseTo(140.68, 1);
-    expect(measureTextXs(v.svg, "neck-depth")[0]).toBeCloseTo(34, 1);
-    expect(measureTextYs(v.svg, "neck-depth")[0]).toBeCloseTo(120.48, 1);
+    expect(measureTextXs(v.svg, "neck-depth")[0]).toBeCloseTo(58, 1);
+    expect(measureTextYs(v.svg, "neck-depth")[0]).toBeCloseTo(113.48, 1);
 
     const pulloverRound = svgFor(roundPulloverPattern());
     expect(svgAttr(pulloverRound.svg, "data-garment-style")).toBe("pullover");
     expect(measureLineY(pulloverRound.svg, "neck")).toBeCloseTo(112, 1);
     expect(
       Number(/<text data-role="width-measurement" data-measure="neck"[^>]* y="([^"]+)"/.exec(pulloverRound.svg)?.[1]),
-    ).toBeCloseTo(67, 1);
+    ).toBeCloseTo(56, 1);
     expect(measureLineX(pulloverRound.svg, "neck-depth")).toBeCloseTo(160.3, 1);
     expect(measureTextXs(pulloverRound.svg, "neck-depth")[0]).toBeCloseTo(140.3, 1);
 
@@ -962,7 +967,7 @@ describe("buildSleevelessFrontStsRowsDiagramSvg", () => {
     const pulloverVNeckLabelY = Number(
       /<text data-role="width-measurement" data-measure="neck"[^>]* y="([^"]+)"/.exec(pulloverV.svg)?.[1],
     );
-    expect(pulloverVNeckLabelY).toBeCloseTo(99.96, 1);
+    expect(pulloverVNeckLabelY).toBeCloseTo(88.96, 1);
     expect(measureLineY(pulloverV.svg, "neck")).toBeGreaterThan(svgNum(pulloverV.svg, "data-neck-corner-y"));
     expect(measureLineY(pulloverV.svg, "neck")).toBeLessThan(svgNum(pulloverV.svg, "data-neck-start-y"));
   });
@@ -1038,7 +1043,7 @@ describe("buildSleevelessFrontStsRowsDiagramSvg", () => {
     expect(rolePaths(pulloverV.svg, "neckline-outline")[0] ?? "").not.toContain(" C ");
     expect(
       Number(/<text data-role="width-measurement" data-measure="neck"[^>]* y="([^"]+)"/.exec(pulloverV.svg)?.[1]),
-    ).toBeCloseTo(99.96, 1);
+    ).toBeCloseTo(88.96, 1);
   });
 
   it("generates a responsive SVG for pullover A-line V-neck and round Front", () => {
@@ -1124,9 +1129,9 @@ describe("buildSleevelessFrontStsRowsDiagramSvg", () => {
     expect(lengthLabelRows(svg, "body-length")).toBe(model.rows.rowsFromCastOnToArmholeStart);
     expect(lengthLabelRows(svg, "hem")).toBe(model.rows.hemRows);
     expect(lengthLabelRows(svg, "armhole")).toBe(model.rows.armholeRows);
-    expect(svg).toContain(expectedInches(model.widths.hemStitches, model.widths.stitchesPerInch));
-    expect(svg).toContain(expectedInches(model.widths.bustStitches, model.widths.stitchesPerInch));
-    expect(svg).toContain(expectedInches(model.rows.expectedGarmentRows, model.rows.rowsPerInch));
+    expect(svg).toContain(formatPatternDiagramMeasurement(model.finished.hemWidthInches, "in"));
+    expect(svg).toContain(formatPatternDiagramMeasurement(model.finished.bustWidthInches, "in"));
+    expect(svg).toContain(formatPatternDiagramMeasurement(model.finished.garmentLengthInches, "in"));
   });
 
   it("generates an outward A-line Front when hem stitches are narrower than bust", () => {
@@ -1195,8 +1200,8 @@ describe("buildSleevelessFrontStsRowsDiagramSvg", () => {
     expect(lengthLabelRows(svg, "body-length")).toBe(model.rows.rowsFromCastOnToArmholeStart);
     expect(lengthLabelRows(svg, "hem")).toBe(model.rows.hemRows);
     expect(lengthLabelRows(svg, "armhole")).toBe(model.rows.armholeRows);
-    expect(svg).toContain(expectedInches(model.widths.hemStitches, model.widths.stitchesPerInch));
-    expect(svg).toContain(expectedInches(model.widths.bustStitches, model.widths.stitchesPerInch));
+    expect(svg).toContain(formatPatternDiagramMeasurement(model.finished.hemWidthInches, "in"));
+    expect(svg).toContain(formatPatternDiagramMeasurement(model.finished.bustWidthInches, "in"));
   });
 
   it("maps garment widths from model stitch counts", () => {
@@ -1593,15 +1598,12 @@ describe("buildSleevelessFrontStsRowsDiagramSvg", () => {
       expect(lengthLabelRows(svg, "armhole")).toBe(model.rows.armholeRows);
       expect(lengthLabelRows(svg, "neck-depth")).toBe(model.neckline.depthRows);
 
-      const spi = model.widths.stitchesPerInch;
-      const rpi = model.rows.rowsPerInch;
-      expect(svg).toContain(expectedInches(model.widths.bustStitches, spi));
-      expect(svg).toContain(expectedInches(model.widths.hemStitches, spi));
-      expect(svg).toContain(expectedInches(model.widths.necklineStitches, spi));
-      expect(svg).toContain(expectedInches(model.widths.shoulderStitchesPerSide, spi));
-      expect(svg).toContain(expectedInches(model.rows.expectedGarmentRows, rpi));
-      expect(svg).toContain(expectedInches(model.rows.armholeRows, rpi));
-      expect(svg).toContain(expectedInches(model.neckline.depthRows, rpi));
+      expect(svg).toContain(formatPatternDiagramMeasurement(model.finished.bustWidthInches, "in"));
+      expect(svg).toContain(formatPatternDiagramMeasurement(model.finished.hemWidthInches, "in"));
+      expect(svg).toContain(formatPatternDiagramMeasurement(model.finished.neckWidthInches, "in"));
+      expect(svg).toContain(formatPatternDiagramMeasurement(model.finished.garmentLengthInches, "in"));
+      expect(svg).toContain(formatPatternDiagramMeasurement(model.finished.armholeDepthInches, "in"));
+      expect(svg).toContain(formatPatternDiagramMeasurement(model.finished.neckDepthInches, "in"));
     }
   });
 
@@ -1621,8 +1623,8 @@ describe("buildSleevelessFrontStsRowsDiagramSvg", () => {
 
   it("uses larger measurement type and keeps neck / shoulder labels apart", () => {
     const { svg } = svgFor(amandaVNeckPattern());
-    expect(svg).toContain('font-size="17"');
-    expect(svg).toContain('font-size="14"');
+    expect(svg).toContain('font-size="22"');
+    expect(svg).toContain('font-size="18"');
     expect(svg).not.toContain('font-size="13"');
     expect(svg).not.toContain('font-size="11"');
     expect(svg).not.toMatch(/1s-\d+r-\d+x/);

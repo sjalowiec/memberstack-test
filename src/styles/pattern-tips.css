@@ -232,6 +232,36 @@
     display: none !important;
   }
 
+  /*
+   * The print dialog sets this independently of the on-screen Show Tips switch.
+   * These rules follow the print choice and outrank the screen switch above.
+   */
+  html[data-pattern-print-include-tips="false"] .pattern-tips-scope .pattern-tip,
+  html[data-pattern-print-include-tips="false"] #pattern-content .pattern-tip,
+  html[data-pattern-print-choice="charts"] .pattern-tips-scope .pattern-tip,
+  html[data-pattern-print-choice="charts"] #pattern-content .pattern-tip {
+    display: none !important;
+  }
+
+  html[data-pattern-print-include-tips="false"] .sleeveless-pattern-row:not(:has(.sleeveless-pattern-line, .sleeveless-pattern-rc, .row-counter-reset, .sleeveless-pattern-sts, .pattern-print-written-shaping, .ns-shaping-chart, .shaping-map)):has(.pattern-tip),
+  html[data-pattern-print-include-tips="false"] .print-inst-row:not(:has(.print-line, .print-rc, .row-counter-reset, .print-inst-sts, .pattern-print-written-shaping)):has(.pattern-tip) {
+    display: none !important;
+  }
+
+  html[data-pattern-print-include-tips="true"]:not([data-pattern-print-choice="charts"]) .pattern-tips-scope .pattern-tip:not(.no-print):not(.pattern-tips-control-box):not(.pattern-print-personalization-never-print):not([data-pattern-print-personalization-tip]),
+  html[data-pattern-print-include-tips="true"]:not([data-pattern-print-choice="charts"]) #pattern-content .pattern-tip:not(.no-print):not(.pattern-tips-control-box):not(.pattern-print-personalization-never-print):not([data-pattern-print-personalization-tip]) {
+    display: block !important;
+    border-left: 1px solid #333 !important;
+  }
+
+  html[data-pattern-print-include-tips="true"]:not([data-pattern-print-choice="charts"]) .pattern-tip details > summary + *,
+  html[data-pattern-print-include-tips="true"]:not([data-pattern-print-choice="charts"]) .pattern-tip details::details-content {
+    display: block !important;
+    content-visibility: visible !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+
   .pattern-tips-scope[data-show-tips="true"] .pattern-tip[data-tip-dismissed="true"],
   #pattern-content[data-show-tips="true"] .pattern-tip[data-tip-dismissed="true"] {
     display: none !important;

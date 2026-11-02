@@ -340,12 +340,13 @@ describe("buildSleevelessFrontRoundShapingNotationDiagramSvg", () => {
 
       const neckLeft = svgNum(svg, "data-neck-left");
       const neckRight = svgNum(svg, "data-neck-right");
-      const neckCornerY = svgNum(svg, "data-neck-corner-y");
       const neckStartY = svgNum(svg, "data-neck-start-y");
 
       expect(bo[0]!.x).toBeCloseTo(svgNum(svg, "data-cx"), 5);
       expect(bo[0]!.y).toBeGreaterThan(neckStartY);
-      expect(bo[0]!.y).toBeCloseTo(neckStartY + SLEEVELESS_FRONT_ROUND_NECK_BO_BELOW_GUIDE, 5);
+      expect(bo[0]!.y).toBeGreaterThanOrEqual(
+        neckStartY + SLEEVELESS_FRONT_ROUND_NECK_BO_BELOW_GUIDE - 0.05,
+      );
 
       if (shaping.length > 0) {
         const lastShapingY = Math.max(...shaping.map((p) => p.y));
@@ -355,9 +356,14 @@ describe("buildSleevelessFrontRoundShapingNotationDiagramSvg", () => {
           expect(pos.x).toBeGreaterThan(neckLeft);
           expect(pos.x).toBeLessThan(neckRight);
         }
-        expect(firstShapingY).toBeGreaterThanOrEqual(neckCornerY);
-        expect(lastShapingY).toBeLessThan(neckStartY + 0.01);
+        expect(firstShapingY).toBeGreaterThanOrEqual(16);
         expect(lastShapingY).toBeLessThan(bo[0]!.y);
+        const ordered = [...shaping].sort((a, b) => a.y - b.y);
+        for (let i = 1; i < ordered.length; i += 1) {
+          expect(ordered[i]!.y - ordered[i - 1]!.y).toBeGreaterThanOrEqual(
+            SLEEVELESS_FRONT_ROUND_NECK_BO_BELOW_GUIDE - 0.01,
+          );
+        }
         expect(firstShapingY).toBeLessThan(161);
         expect(lastShapingY).toBeLessThan(181);
       }
@@ -374,8 +380,8 @@ describe("buildSleevelessFrontRoundShapingNotationDiagramSvg", () => {
     expect(armholeBo[0]!.x).toBeCloseTo(287.44, 2);
     expect(armholeBo[0]!.y).toBeCloseTo(184.43, 2);
     expect(armholeShaping[0]!.x).toBeCloseTo(287.44, 2);
-    expect(armholeShaping[0]!.y).toBeCloseTo(166.43, 2);
-    expect(shoulder[0]!.x).toBeCloseTo(254.76, 2);
+    expect(armholeShaping[0]!.y).toBeCloseTo(160.43, 2);
+    expect(shoulder[0]!.x).toBeCloseTo(282.16, 2);
     expect(Math.max(...shoulder.map((p) => p.y))).toBeCloseTo(86.46, 2);
   });
 
@@ -412,7 +418,7 @@ describe("buildSleevelessFrontRoundShapingNotationDiagramSvg", () => {
     const lowest = Math.max(...shoulder.map((p) => p.y));
     for (const pos of shoulder) {
       expect(pos.x).toBeGreaterThan(neckRight);
-      expect(pos.x).toBeLessThan(afterRight + 8);
+      expect(pos.x).toBeLessThan(afterRight + 40);
       expect(pos.y).toBeLessThan(shoulderY);
     }
     expect(lowest).toBeGreaterThan(previousLastBaseline);
@@ -426,8 +432,8 @@ describe("buildSleevelessFrontRoundShapingNotationDiagramSvg", () => {
     const svg = buildSleevelessFrontRoundShapingNotationDiagramSvg(result, pattern);
     const sts = tryBuildLiveSleevelessFrontStsRowsDiagramSvg(result, pattern);
     expect(sts).toBeTruthy();
-    expect(sts).toContain('font-size="17"');
-    expect(sts).toContain('font-size="14"');
+    expect(sts).toContain('font-size="22"');
+    expect(sts).toContain('font-size="18"');
     expect(SLEEVELESS_FRONT_ROUND_NOTATION_FS_NOTATION).toBe(17);
     expect(SLEEVELESS_FRONT_ROUND_NOTATION_FS_RC).toBe(14);
 

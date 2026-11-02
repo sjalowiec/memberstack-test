@@ -675,7 +675,7 @@ describe("buildSleevelessFrontVNeckShapingNotationDiagramSvg", () => {
 
   it("separates Armhole BO and decrease lines by one notation line height", () => {
     const vbW = SLEEVELESS_FRONT_VNECK_NOTATION_VIEWBOX.width;
-    expect(SLEEVELESS_FRONT_VNECK_ARMHOLE_NOTATION_GAP).toBe(18);
+    expect(SLEEVELESS_FRONT_VNECK_ARMHOLE_NOTATION_GAP).toBe(24);
     expect(SLEEVELESS_FRONT_VNECK_ARMHOLE_LABEL_START_X).toBe(320);
     for (const pattern of [
       shallowVNeckPattern(),
@@ -977,7 +977,7 @@ describe("buildSleevelessFrontVNeckShapingNotationDiagramSvg", () => {
     const svg = buildSleevelessFrontVNeckShapingNotationDiagramSvg(result, pattern);
     expect(SLEEVELESS_FRONT_VNECK_NOTATION_FS_NOTATION).toBe(17);
     expect(SLEEVELESS_FRONT_VNECK_NOTATION_FS_RC).toBe(14);
-    expect(SLEEVELESS_FRONT_VNECK_ARMHOLE_NOTATION_GAP).toBe(18);
+    expect(SLEEVELESS_FRONT_VNECK_ARMHOLE_NOTATION_GAP).toBe(24);
     for (const role of [
       "neck-shaping",
       "armhole-bo",

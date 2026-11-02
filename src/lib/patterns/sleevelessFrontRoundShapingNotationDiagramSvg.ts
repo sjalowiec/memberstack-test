@@ -68,15 +68,15 @@ const FONT = "Poppins, system-ui, Arial, sans-serif";
 /** Match generated Front Stitches & Rows measurement type (`FS_STITCH` / `FS_SECONDARY`). */
 const FS_NOTATION = 17;
 const FS_RC = 14;
-const NOTATION_GAP = 18;
-const NECK_NOTATION_GAP = 18;
+const NOTATION_GAP = 24;
+const NECK_NOTATION_GAP = 24;
 const NECK_BO_BELOW_GUIDE = NECK_NOTATION_GAP;
-const ARMHOLE_NOTATION_GAP = 18;
+const ARMHOLE_NOTATION_GAP = 24;
 const RC_RESET_GAP = Math.round(FS_RC * 1.75);
 const ARMHOLE_LABEL_CLEARANCE = 10;
 const SHOULDER_LABEL_GAP = 14;
 const SHOULDER_OUTLINE_CLEARANCE = 10;
-const BODY_NOTATION_GAP = 18;
+const BODY_NOTATION_GAP = 24;
 const BODY_LABEL_OUTLINE_CLEARANCE = 18;
 
 const LABEL_GUTTER = 88;
@@ -873,15 +873,17 @@ export function buildSleevelessFrontRoundShapingNotationDiagramSvg(
   const neckShapingLines = labels.neckShaping.split("\n").filter(Boolean);
   const neckLabelX = frame.cx;
   const neckGuideY = frame.neckStartY;
-  const neckBoY = neckGuideY + NECK_BO_BELOW_GUIDE;
   const neckInsideTop = frame.neckCornerY + Math.max(4, Math.round(FS_NOTATION * 0.25));
   const neckCount = neckShapingLines.length;
-  const preferredFirstY = neckGuideY - neckCount * NECK_NOTATION_GAP;
-  const neckShapingStep =
-    neckCount > 0 && preferredFirstY < neckInsideTop
-      ? (neckGuideY - neckInsideTop) / neckCount
-      : NECK_NOTATION_GAP;
-  const neckShapingFirstY = neckGuideY - neckCount * neckShapingStep;
+  const neckShapingStep = NECK_NOTATION_GAP;
+  const upwardFirstY = neckGuideY - neckCount * neckShapingStep;
+  // A shallow scoop cannot hold the stack. Continue it downward through the
+  // upper body instead of crushing the lines together or into the shoulder labels.
+  const neckShapingFirstY = upwardFirstY < neckInsideTop ? neckInsideTop : upwardFirstY;
+  const neckBoY = Math.max(
+    neckGuideY + NECK_BO_BELOW_GUIDE,
+    neckShapingFirstY + neckCount * neckShapingStep,
+  );
   parts.push(
     `<g data-role="neck-label-zone" data-x="${fmtNum(neckLabelX)}" data-y="${fmtNum(neckShapingFirstY)}" data-bo-y="${fmtNum(neckBoY)}"></g>`,
   );
@@ -906,8 +908,26 @@ export function buildSleevelessFrontRoundShapingNotationDiagramSvg(
   const shAnchorX = shoulderMidX + (-slopeDy / slopeLen) * SHOULDER_LABEL_GAP;
   const shAnchorY = shoulderMidY + (slopeDx / slopeLen) * SHOULDER_LABEL_GAP;
   const shLastBaseline = shAnchorY;
+  const notationCharWidth = FS_NOTATION * 0.56;
+  const neckStackText = [...neckShapingLines, labels.neckBo].filter((line) => line.length > 0);
+  const neckHalfWidth =
+    Math.max(0, ...neckStackText.map((line) => line.length * notationCharWidth)) / 2;
+  const shoulderHalfWidth =
+    Math.max(0, ...shLines.map((line) => line.length * notationCharWidth)) / 2;
+  const shoulderYs = shLines.map((_, index) => shLastBaseline - index * NOTATION_GAP);
+  const neckYs = [
+    ...neckShapingLines.map((_, index) => neckShapingFirstY + index * neckShapingStep),
+    ...(labels.neckBo ? [neckBoY] : []),
+  ];
+  const sharesRow = shoulderYs.some((shoulderY) =>
+    neckYs.some((neckY) => Math.abs(shoulderY - neckY) < FS_NOTATION + 4),
+  );
   const shLabelX = clamp(
-    Math.max(shAnchorX, rightShoulderOutlineXAtY(frame, shLastBaseline) + SHOULDER_OUTLINE_CLEARANCE),
+    Math.max(
+      shAnchorX,
+      rightShoulderOutlineXAtY(frame, shLastBaseline) + SHOULDER_OUTLINE_CLEARANCE,
+      sharesRow ? neckLabelX + neckHalfWidth + shoulderHalfWidth + 8 : 0,
+    ),
     frame.neckRight + 4,
     ARMHOLE_LABEL_SAFE_MAX_X,
   );

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatParentheticalShapingRowNumbers } from "./evenShapingSchedule";
+import { formatParentheticalRcList } from "./parentheticalRcList";
 import {
   dropShoulderSleevePreShapingSpan,
   dropShoulderSleeveShapingRcSequence,
@@ -45,7 +45,7 @@ describe("dropShoulderSleeveShaping", () => {
     expect(
       formatDropShoulderSleeveShapingWrittenLines(plan.shapingDirection, plan.steps, rcList),
     ).toEqual([
-      `Increase 1 stitch at each side every 4 rows 20 times. ${formatParentheticalShapingRowNumbers(rcList)}`,
+      `Increase 1 stitch at each side every 4 rows 20 times. ${formatParentheticalRcList(rcList)}`,
     ]);
   });
 
@@ -58,7 +58,7 @@ describe("dropShoulderSleeveShaping", () => {
     expect(
       formatDropShoulderSleeveShapingWrittenLines(plan.shapingDirection, plan.steps, rcList),
     ).toEqual([
-      `Decrease 1 stitch at each side every 4 rows 20 times. ${formatParentheticalShapingRowNumbers(rcList)}`,
+      `Decrease 1 stitch at each side every 4 rows 20 times. ${formatParentheticalRcList(rcList)}`,
     ]);
   });
 
@@ -73,8 +73,23 @@ describe("dropShoulderSleeveShaping", () => {
       rcList,
     );
     expect(lines).toEqual([
-      `Increase 1 stitch at each side every 6 rows 4 times, then every 8 rows 3 times. ${formatParentheticalShapingRowNumbers(rcList)}`,
+      `Increase 1 stitch at each side every 6 rows 4 times, then every 8 rows 3 times. ${formatParentheticalRcList(rcList)}`,
     ]);
+    expect(lines[0]).not.toMatch(/RC: \d+, RC:/);
+  });
+
+  it("lists sleeve shaping rows once, with three-digit readings", () => {
+    const rows = [6, 12, 18, 24, 30, 36, 42];
+    const [line] = formatDropShoulderSleeveShapingWrittenLines(
+      "increase",
+      [{ sts: 1, rows: 6, times: 7 }],
+      rows,
+    );
+    expect(line).toBe(
+      `Increase 1 stitch at each side every 6 rows 7 times. ${formatParentheticalRcList(rows)}`,
+    );
+    expect(formatParentheticalRcList(rows)).toBe("(RC: 006, 012, 018, 024, 030, 036, 042)");
+    expect(line).not.toMatch(/RC: \d+, RC:/);
   });
 
   it("formats Japanese notation from the same steps", () => {

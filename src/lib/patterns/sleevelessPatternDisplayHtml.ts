@@ -9,11 +9,7 @@ import { rowCounterResetBlockHtml } from "./rowCounterReset";
 import { renderDropShoulderSleeveShapingChartHtml } from "./dropShoulderSleeveShapingChart";
 import { renderSleevelessBodyShapingChartHtml } from "./sleevelessBodyShapingChartHtml";
 import { patternTipWrapperHtml, type SleevelessPatternDisplayRow } from "./sleevelessPatternOutput";
-import {
-  alinePrintWrittenParagraphs,
-  instructionParagraphClass,
-  printWrittenShapingBlockHtml,
-} from "./patternPrintWrittenShaping";
+import { instructionParagraphClass } from "./patternPrintWrittenShaping";
 
 export function escapePatternDisplayHtml(s: string): string {
   return String(s)
@@ -92,13 +88,6 @@ export function renderPatternDisplayBlockHtml(
         );
       }
     }
-  }
-  const printParagraphs = [
-    ...(row.printInstructionParagraphs ?? []),
-    ...alinePrintWrittenParagraphs(row.bodyShapingChartRows),
-  ];
-  if (printParagraphs.length > 0) {
-    leftBits.push(printWrittenShapingBlockHtml(printParagraphs, escapePatternDisplayHtml));
   }
   if (row.bodyShapingChartRows && row.bodyShapingChartRows.length > 0) {
     leftBits.push(

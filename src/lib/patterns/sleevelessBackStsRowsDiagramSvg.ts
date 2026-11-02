@@ -25,6 +25,11 @@ import {
   buildSleevelessBackStsRowsDiagramModel,
   type SleevelessBackStsRowsDiagramModel,
 } from "./sleevelessBackStsRowsDiagramModel";
+import type { MeasurementDisplayUnit } from "./patternMeasurementDisplayUnit";
+import {
+  formatPatternDiagramMeasurement,
+  stitchesRowsDiagramLabel,
+} from "./patternStitchesRowsDiagramLabel";
 import type { SleevelessBackPatternResult } from "./sleevelessPatternOutput";
 
 const VB_W = SLEEVELESS_BACK_GARMENT_VB_W;
@@ -35,20 +40,22 @@ const FILL = "#f4f6f1";
 const MUTED = "#4b5563";
 const ARROW = "#52682d";
 const FONT = "Poppins, system-ui, Arial, sans-serif";
-const FS_STITCH = 17;
-const FS_SECONDARY = 14;
-const LINE_GAP = 18;
+const FS_STITCH = 22;
+const FS_SECONDARY = 18;
+const LINE_GAP = 32;
+/** The hem width measure sits below the cast-on arrow. This keeps that line inside the frame. */
+const BOTTOM_LABEL_CLEARANCE = 22;
 /**
  * Start-anchored row labels ("218 rows") begin just right of the body.
  * The garment canvas stays 400 wide; this extra viewBox width is only so
  * those labels are inside the SVG instead of being clipped to "218 ro".
  */
-const RIGHT_ROW_LABEL_CLEARANCE = 96;
+const RIGHT_ROW_LABEL_CLEARANCE = 130;
 
 export { SLEEVELESS_BACK_STS_ROWS_VISUAL };
 export const SLEEVELESS_BACK_STS_ROWS_VIEWBOX = {
   width: VB_W + RIGHT_ROW_LABEL_CLEARANCE,
-  height: VB_H,
+  height: VB_H + BOTTOM_LABEL_CLEARANCE,
 } as const;
 
 type Frame = SleevelessBackGarmentFrame;
@@ -80,21 +87,18 @@ function buildFrame(model: SleevelessBackStsRowsDiagramModel) {
   return buildSleevelessBackGarmentFrame(model);
 }
 
-function formatDisplayNumber(n: number): string {
-  if (!Number.isFinite(n)) return "";
-  const rounded = Math.round(n);
-  if (Math.abs(n - rounded) < 0.05) return String(rounded);
-  return String(Math.round(n * 10) / 10).replace(/\.0$/, "");
-}
-
-function inchesFromRows(rows: number, rowsPerInch: number): string {
-  if (!(rowsPerInch > 0) || !(rows > 0)) return "";
-  return `${formatDisplayNumber(rows / rowsPerInch)} in`;
-}
-
-function inchesFromStitches(stitches: number, stitchesPerInch: number): string {
-  if (!(stitchesPerInch > 0) || !(stitches > 0)) return "";
-  return `${formatDisplayNumber(stitches / stitchesPerInch)} in`;
+function countLines(
+  count: number,
+  kind: "sts" | "rows",
+  inches: number | undefined,
+  unit: MeasurementDisplayUnit,
+  extra: string,
+): { text: string; extra?: string }[] {
+  const label = stitchesRowsDiagramLabel(count, kind, formatPatternDiagramMeasurement(inches, unit));
+  return [
+    { text: label.count, extra },
+    ...(label.measure ? [{ text: label.measure }] : []),
+  ];
 }
 
 function arrowHead(x: number, y: number, dir: "up" | "down" | "left" | "right"): string {
@@ -201,25 +205,23 @@ function drawSilhouette(frame: Frame, tapered: boolean): string {
 }
 
 function drawMeasurements(model: SleevelessBackStsRowsDiagramModel, frame: Frame): string {
-  const rpi = model.rows.rowsPerInch;
-  const spi = model.widths.stitchesPerInch;
+  const unit = model.finished.unit;
+  const finished = model.finished;
   const totalArrowX = Math.max(40, frame.left - 24);
   const hemArrowX = Math.max(totalArrowX + 12, frame.left - 10);
-  const leftGutterLabelX = 34;
-  const hemLineGap = 22;
+  const leftGutterLabelX = 58;
+  const hemLineGap = 32;
   const rightArrowX = Math.min(VB_W - 28, frame.right + 22);
   const rightLabelX = Math.min(VB_W - 12, rightArrowX + 22);
   const neckDepthX = Math.min(frame.cx - 22, frame.neckLeft - 12);
   const parts: string[] = [];
 
   const totalLengthLines = [
-    { text: `${model.rows.expectedGarmentRows} rows`, extra: ` data-rows="${fmtNum(model.rows.expectedGarmentRows)}"` },
-    { text: inchesFromRows(model.rows.expectedGarmentRows, rpi) },
-  ].filter((line) => line.text);
+    ...countLines(model.rows.expectedGarmentRows, "rows", finished.garmentLengthInches, unit, ` data-rows="${fmtNum(model.rows.expectedGarmentRows)}"`),
+  ];
   const hemLines = [
-    { text: `${model.rows.hemRows} rows`, extra: ` data-rows="${fmtNum(model.rows.hemRows)}"` },
-    { text: inchesFromRows(model.rows.hemRows, rpi) },
-  ].filter((line) => line.text);
+    ...countLines(model.rows.hemRows, "rows", finished.hemDepthInches, unit, ` data-rows="${fmtNum(model.rows.hemRows)}"`),
+  ];
   const totalLabelY = (frame.shoulderTopY + frame.bottomY) / 2;
   const hemBandMidY = (frame.hemY + frame.bottomY) / 2;
   const minLabelSep = 10;
@@ -254,12 +256,14 @@ function drawMeasurements(model: SleevelessBackStsRowsDiagramModel, frame: Frame
       "length-measurement",
       "body-length",
       [
-        {
-          text: `${model.rows.rowsFromCastOnToArmholeStart} rows`,
-          extra: ` data-rows="${fmtNum(model.rows.rowsFromCastOnToArmholeStart)}"`,
-        },
-        { text: inchesFromRows(model.rows.rowsFromCastOnToArmholeStart, rpi) },
-      ].filter((line) => line.text),
+        ...countLines(
+          model.rows.rowsFromCastOnToArmholeStart,
+          "rows",
+          finished.bodyToArmholeInches,
+          unit,
+          ` data-rows="${fmtNum(model.rows.rowsFromCastOnToArmholeStart)}"`,
+        ),
+      ],
       "start",
     ),
   );
@@ -289,26 +293,31 @@ function drawMeasurements(model: SleevelessBackStsRowsDiagramModel, frame: Frame
       "length-measurement",
       "armhole",
       [
-        { text: `${model.rows.armholeRows} rows`, extra: ` data-rows="${fmtNum(model.rows.armholeRows)}"` },
-        { text: inchesFromRows(model.rows.armholeRows, rpi) },
-      ].filter((line) => line.text),
+        ...countLines(model.rows.armholeRows, "rows", finished.armholeDepthInches, unit, ` data-rows="${fmtNum(model.rows.armholeRows)}"`),
+      ],
       "start",
     ),
   );
 
   if (model.neckline.depthRows > 0) {
+    const neckLines = countLines(
+      model.neckline.depthRows,
+      "rows",
+      finished.neckDepthInches,
+      unit,
+      ` data-rows="${fmtNum(model.neckline.depthRows)}"`,
+    );
+    const neckLabelWidth = Math.max(...neckLines.map((line) => line.text.length * FS_STITCH * 0.56));
+    const neckLabelX = Math.max(8, neckDepthX - 12 - neckLabelWidth / 2);
     parts.push(
       verticalArrow(
         neckDepthX,
         frame.neckCornerY,
         frame.neckStartY,
-        neckDepthX - 20,
+        neckLabelX,
         "length-measurement",
         "neck-depth",
-        [
-          { text: `${model.neckline.depthRows} rows`, extra: ` data-rows="${fmtNum(model.neckline.depthRows)}"` },
-          { text: inchesFromRows(model.neckline.depthRows, rpi) },
-        ].filter((line) => line.text),
+        neckLines,
       ),
     );
   }
@@ -323,9 +332,8 @@ function drawMeasurements(model: SleevelessBackStsRowsDiagramModel, frame: Frame
       "width-measurement",
       "bust",
       [
-        { text: `${model.widths.bustStitches} sts`, extra: ` data-sts="${fmtNum(model.widths.bustStitches)}"` },
-        { text: inchesFromStitches(model.widths.bustStitches, spi) },
-      ].filter((line) => line.text),
+        ...countLines(model.widths.bustStitches, "sts", finished.bustWidthInches, unit, ` data-sts="${fmtNum(model.widths.bustStitches)}"`),
+      ],
     ),
   );
 
@@ -338,14 +346,13 @@ function drawMeasurements(model: SleevelessBackStsRowsDiagramModel, frame: Frame
       "width-measurement",
       "cast-on",
       [
-        { text: `${model.widths.hemStitches} sts`, extra: ` data-sts="${fmtNum(model.widths.hemStitches)}"` },
-        { text: inchesFromStitches(model.widths.hemStitches, spi) },
-      ].filter((line) => line.text),
+        ...countLines(model.widths.hemStitches, "sts", finished.hemWidthInches, unit, ` data-sts="${fmtNum(model.widths.hemStitches)}"`),
+      ],
     ),
   );
 
   const neckArrowY = Math.min(frame.neckCornerY + 14, frame.neckStartY - 24);
-  const neckLabelY = Math.min(frame.shoulderTopY - 22, neckArrowY - 26);
+  const neckLabelY = Math.min(frame.shoulderTopY - 26, neckArrowY - 30);
   parts.push(
     horizontalArrow(
       neckArrowY,
@@ -355,9 +362,8 @@ function drawMeasurements(model: SleevelessBackStsRowsDiagramModel, frame: Frame
       "width-measurement",
       "neck",
       [
-        { text: `${model.widths.necklineStitches} sts`, extra: ` data-sts="${fmtNum(model.widths.necklineStitches)}"` },
-        { text: inchesFromStitches(model.widths.necklineStitches, spi) },
-      ].filter((line) => line.text),
+        ...countLines(model.widths.necklineStitches, "sts", finished.neckWidthInches, unit, ` data-sts="${fmtNum(model.widths.necklineStitches)}"`),
+      ],
     ),
   );
 
@@ -374,11 +380,10 @@ function drawMeasurements(model: SleevelessBackStsRowsDiagramModel, frame: Frame
       "shoulder",
       [
         {
-          text: `${model.widths.shoulderStitchesPerSide} sts`,
+          text: stitchesRowsDiagramLabel(model.widths.shoulderStitchesPerSide, "sts").count,
           extra: ` data-sts="${fmtNum(model.widths.shoulderStitchesPerSide)}"`,
         },
-        { text: inchesFromStitches(model.widths.shoulderStitchesPerSide, spi) },
-      ].filter((line) => line.text),
+      ],
     ),
   );
   parts.push(
@@ -431,8 +436,11 @@ export function tryBuildSleevelessBackStsRowsDiagramSvg(
 export function tryBuildLiveSleevelessBackStsRowsDiagramSvg(
   result: SleevelessBackPatternResult,
   patternData?: unknown,
+  unit?: MeasurementDisplayUnit,
 ): string | null {
   return tryBuildSleevelessBackStsRowsDiagramSvg(
-    buildSleevelessBackStsRowsDiagramModel(result, patternData),
+    buildSleevelessBackStsRowsDiagramModel(result, patternData, {
+      unit: unit === "cm" ? "cm" : "in",
+    }),
   );
 }

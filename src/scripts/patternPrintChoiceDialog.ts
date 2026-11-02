@@ -7,19 +7,27 @@ import {
   PATTERN_PRINT_CHOICE_PDF_NOTE,
   PATTERN_PRINT_CHOICE_REMINDER,
   PATTERN_PRINT_CHOICES,
+  PATTERN_PRINT_HIDE_TIPS_HELP,
+  PATTERN_PRINT_HIDE_TIPS_LABEL,
   type PatternPrintChoice,
+  type PatternPrintSelection,
 } from "../lib/patterns/patternPrintChoice";
 
 const DIALOG_ID = "pattern-print-choice-dialog";
+const DEFAULT_PATTERN_PRINT_CHOICE: PatternPrintChoice = "instructions";
+
+function escapeDialogText(value: string): string {
+  return value.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
+}
 
 function dialogHtml(): string {
   const options = PATTERN_PRINT_CHOICES.map((choice) => {
-    const checked = choice.id === "both" ? " checked" : "";
+    const checked = choice.id === DEFAULT_PATTERN_PRINT_CHOICE ? " checked" : "";
     return `<label class="pattern-print-choice-dialog__option">
       <input type="radio" name="pattern-print-choice" value="${choice.id}"${checked} />
       <span>
-        <span class="pattern-print-choice-dialog__option-title">${choice.title}</span>
-        <span class="pattern-print-choice-dialog__option-text">${choice.explanation}</span>
+        <span class="pattern-print-choice-dialog__option-title">${escapeDialogText(choice.title)}</span>
+        <span class="pattern-print-choice-dialog__option-text">${escapeDialogText(choice.explanation)}</span>
       </span>
     </label>`;
   }).join("");
@@ -27,6 +35,13 @@ function dialogHtml(): string {
     <h2 id="pattern-print-choice-title" class="pattern-print-choice-dialog__heading">Print pattern</h2>
     <p class="pattern-print-choice-dialog__lead">${PATTERN_PRINT_CHOICE_PDF_NOTE}</p>
     <div class="pattern-print-choice-dialog__options" role="radiogroup" aria-label="What to print">${options}</div>
+    <label class="pattern-print-choice-dialog__tips">
+      <input type="checkbox" name="pattern-print-hide-tips" data-pattern-print-hide-tips value="yes" checked />
+      <span>
+        <span class="pattern-print-choice-dialog__option-title">${PATTERN_PRINT_HIDE_TIPS_LABEL}</span>
+        <span class="pattern-print-choice-dialog__option-text">${PATTERN_PRINT_HIDE_TIPS_HELP}</span>
+      </span>
+    </label>
     <p class="pattern-print-choice-dialog__reminder">${PATTERN_PRINT_CHOICE_REMINDER}</p>
     <div class="pattern-print-choice-dialog__actions">
       <button type="button" class="pattern-print-choice-dialog__btn" data-pattern-print-choice-cancel>Cancel</button>
@@ -37,7 +52,10 @@ function dialogHtml(): string {
 
 function ensureDialog(): HTMLDialogElement | null {
   const existing = document.getElementById(DIALOG_ID);
-  if (existing instanceof HTMLDialogElement) return existing;
+  if (existing instanceof HTMLDialogElement) {
+    if (existing.querySelector("[data-pattern-print-hide-tips]")) return existing;
+    existing.remove();
+  }
   const dialog = document.createElement("dialog");
   dialog.id = DIALOG_ID;
   dialog.className = "pattern-print-choice-dialog no-print";
@@ -47,6 +65,15 @@ function ensureDialog(): HTMLDialogElement | null {
   return dialog;
 }
 
+/** Every open starts on Instructions only, with Pattern Tips hidden. */
+function resetDialogDefaults(dialog: HTMLDialogElement): void {
+  for (const input of dialog.querySelectorAll<HTMLInputElement>('input[name="pattern-print-choice"]')) {
+    input.checked = input.value === DEFAULT_PATTERN_PRINT_CHOICE;
+  }
+  const hideTips = dialog.querySelector<HTMLInputElement>("[data-pattern-print-hide-tips]");
+  if (hideTips) hideTips.checked = true;
+}
+
 function selectedChoice(dialog: HTMLDialogElement): PatternPrintChoice {
   const selected = dialog.querySelector<HTMLInputElement>('input[name="pattern-print-choice"]:checked');
   const value = selected?.value;
@@ -54,19 +81,28 @@ function selectedChoice(dialog: HTMLDialogElement): PatternPrintChoice {
   return "both";
 }
 
+function selectedIncludeTips(dialog: HTMLDialogElement): boolean {
+  const box = dialog.querySelector<HTMLInputElement>("[data-pattern-print-hide-tips]");
+  // Checked means hide tips. Unchecked prints the tip content. Charts stay charts-only.
+  return box?.checked !== true;
+}
+
 /**
  * Resolves with the knitter's choice, or null when they cancel.
  * Falls through to the full instructions-plus-charts print when the dialog cannot open.
  */
-export function openPatternPrintChoiceDialog(triggerEl: HTMLElement | null): Promise<PatternPrintChoice | null> {
+export function openPatternPrintChoiceDialog(
+  triggerEl: HTMLElement | null,
+): Promise<PatternPrintSelection | null> {
   const dialog = ensureDialog();
   if (!dialog || typeof dialog.showModal !== "function") {
-    return Promise.resolve("both");
+    return Promise.resolve({ choice: "both", includeTips: false });
   }
 
   return new Promise((resolve) => {
+    resetDialogDefaults(dialog);
     let settled = false;
-    const finish = (choice: PatternPrintChoice | null) => {
+    const finish = (selection: PatternPrintSelection | null) => {
       if (settled) return;
       settled = true;
       dialog.removeEventListener("close", onClose);
@@ -75,11 +111,11 @@ export function openPatternPrintChoiceDialog(triggerEl: HTMLElement | null): Pro
       cancelBtn?.removeEventListener("click", onCancelClick);
       if (dialog.open) dialog.close();
       triggerEl?.focus?.();
-      resolve(choice);
+      resolve(selection);
     };
     const onConfirm = (event: Event) => {
       event.preventDefault();
-      finish(selectedChoice(dialog));
+      finish({ choice: selectedChoice(dialog), includeTips: selectedIncludeTips(dialog) });
     };
     const onCancelClick = (event: Event) => {
       event.preventDefault();
@@ -96,7 +132,7 @@ export function openPatternPrintChoiceDialog(triggerEl: HTMLElement | null): Pro
     try {
       dialog.showModal();
     } catch {
-      finish("both");
+      finish({ choice: "both", includeTips: false });
       return;
     }
     window.requestAnimationFrame(() => {

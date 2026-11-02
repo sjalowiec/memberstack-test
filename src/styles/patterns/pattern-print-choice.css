@@ -76,6 +76,19 @@
   color: #374151;
 }
 
+.pattern-print-choice-dialog__tips {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  column-gap: 0.65rem;
+  align-items: start;
+  margin: 0.9rem 0 0;
+  cursor: pointer;
+}
+
+.pattern-print-choice-dialog__tips input {
+  margin-top: 0.2rem;
+}
+
 .pattern-print-choice-dialog__actions {
   display: flex;
   justify-content: flex-end;
@@ -142,21 +155,6 @@
 
   html[data-pattern-print-choice] .ns-shaping-chart {
     font-size: 10pt;
-  }
-
-  html[data-pattern-print-choice="instructions"] .pattern-print-written-shaping[hidden],
-  html[data-pattern-print-choice="both"] .pattern-print-written-shaping[hidden] {
-    display: block !important;
-  }
-
-  html[data-pattern-print-choice="instructions"] .pattern-print-checklist-pointer,
-  html[data-pattern-print-choice="both"] .pattern-print-checklist-pointer {
-    display: none !important;
-  }
-
-  html[data-pattern-print-choice="instructions"] .pattern-print-unresolved-pointer,
-  html[data-pattern-print-choice="both"] .pattern-print-unresolved-pointer {
-    display: block !important;
   }
 
   html[data-pattern-print-choice="instructions"] .ns-shaping-chart,

@@ -10,7 +10,7 @@ import { computeDefaultMeasurementsFromChartRow } from "./sleevelessExpressSizeC
 import type { ChartRow } from "./sleevelessExpressSizeChartTypes";
 import type { SleevelessPatternDisplayRow } from "./sleevelessPatternOutput";
 import { renderSleevelessPrintPieceHtml } from "./sleevelessPatternPrintRender";
-import { formatParentheticalShapingRowNumbers } from "./evenShapingSchedule";
+import { formatParentheticalRcList } from "./parentheticalRcList";
 import { dropShoulderSleeveShapingRcSequence } from "./dropShoulderSleeveShapingChart";
 
 /** Kids chart size 2 yr — matches `public/data/sizing_sweaters_kids.json`. */
@@ -307,7 +307,8 @@ describe("generateDropShoulderPattern round-neck front instructions", () => {
     };
     const sleeveShapingRcs = dropShoulderSleeveShapingRcSequence(sleeveChartInput);
     expect(sleeveText).toMatch(/Increase 1 stitch at each side every 14 rows 5 times\./);
-    expect(sleeveText).toContain(formatParentheticalShapingRowNumbers(sleeveShapingRcs));
+    expect(sleeveText).toContain(formatParentheticalRcList(sleeveShapingRcs));
+    expect(sleeveText).not.toContain("<em>(RC:");
     expect(sleeveText).toMatch(
       /After the final increase, knit 2 rows even in pattern, then bind off at RC: 072\./,
     );

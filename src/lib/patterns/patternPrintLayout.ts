@@ -148,47 +148,8 @@ function sectionHasWrittenShaping(chart: HTMLElement): boolean {
   return Boolean(chart.closest(".pattern-section")?.querySelector(".pattern-print-written-shaping"));
 }
 
-function writtenShapingFollowsInPiece(pointer: HTMLElement): boolean {
-  const section = pointer.closest(".pattern-section");
-  if (section?.querySelector(".pattern-print-written-shaping")) return true;
-  const pieceSelector = ".sleeveless-pattern-piece, .print-piece-title, h2.pattern-piece";
-  const pieces = [...(pointer.ownerDocument?.querySelectorAll<HTMLElement>(pieceSelector) ?? [])];
-  const piece = [...pieces]
-    .reverse()
-    .find((item) => (item.compareDocumentPosition(pointer) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0);
-  const followingPiece = pieces.find(
-    (item) =>
-      item !== piece && (pointer.compareDocumentPosition(item) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0,
-  );
-  const written = [
-    ...(pointer.ownerDocument?.querySelectorAll<HTMLElement>(".pattern-print-written-shaping") ?? []),
-  ];
-  return written.some((block) => {
-    const afterPiece =
-      !piece ||
-      piece.contains(block) ||
-      (piece.compareDocumentPosition(block) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0;
-    const beforeNextPiece =
-      !followingPiece ||
-      (block.compareDocumentPosition(followingPiece) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0;
-    return afterPiece && beforeNextPiece;
-  });
-}
-
-function markUnresolvedPointers(doc: Document, cleanups: Array<() => void>): HTMLElement[] {
-  const kept: HTMLElement[] = [];
-  doc.querySelectorAll<HTMLElement>(".pattern-print-checklist-pointer").forEach((pointer) => {
-    if (writtenShapingFollowsInPiece(pointer)) return;
-    const section = pointer.closest<HTMLElement>(".pattern-section");
-    pointer.classList.add("pattern-print-unresolved-pointer");
-    cleanups.push(() => pointer.classList.remove("pattern-print-unresolved-pointer"));
-    if (section && !section.classList.contains("pattern-print-keep-charts")) {
-      section.classList.add("pattern-print-keep-charts");
-      cleanups.push(() => section.classList.remove("pattern-print-keep-charts"));
-      kept.push(section);
-    }
-  });
-  return kept;
+function markUnresolvedPointers(_doc: Document, _cleanups: Array<() => void>): HTMLElement[] {
+  return [];
 }
 
 function hostForAppendix(doc: Document): HTMLElement {
@@ -203,11 +164,28 @@ function hostForAppendix(doc: Document): HTMLElement {
  * Apply a print choice to the live document. Call the returned function after printing
  * so the on-screen pattern is unchanged.
  */
-export function applyPatternPrintLayout(doc: Document, choice: PatternPrintChoice): () => void {
+export function applyPatternPrintLayout(
+  doc: Document,
+  choice: PatternPrintChoice,
+  options?: { includeTips?: boolean },
+): () => void {
   const root = doc.documentElement;
   const previous = root.dataset.patternPrintChoice;
+  const previousTips = root.dataset.patternPrintIncludeTips;
   root.dataset.patternPrintChoice = choice;
+  const includeTips = options?.includeTips === true && choice !== "charts";
+  root.dataset.patternPrintIncludeTips = includeTips ? "true" : "false";
   const cleanups: Array<() => void> = [];
+  if (includeTips) {
+    doc.querySelectorAll<HTMLDetailsElement>(".pattern-tip details").forEach((details) => {
+      if (details.closest(".pattern-tip.no-print, .pattern-tips-control-box")) return;
+      const wasOpen = details.open;
+      details.open = true;
+      cleanups.push(() => {
+        details.open = wasOpen;
+      });
+    });
+  }
   const project = projectTitle(doc);
   const roots = chartRoots(doc);
   markPieceHeadings(doc, roots, cleanups);
@@ -287,5 +265,7 @@ export function applyPatternPrintLayout(doc: Document, choice: PatternPrintChoic
     for (const cleanup of cleanups.reverse()) cleanup();
     if (previous) root.dataset.patternPrintChoice = previous;
     else delete root.dataset.patternPrintChoice;
+    if (previousTips) root.dataset.patternPrintIncludeTips = previousTips;
+    else delete root.dataset.patternPrintIncludeTips;
   };
 }
