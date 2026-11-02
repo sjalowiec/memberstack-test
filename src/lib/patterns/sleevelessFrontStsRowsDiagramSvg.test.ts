@@ -497,6 +497,10 @@ describe("buildSleevelessFrontStsRowsDiagramSvg", () => {
     expect(svg).toContain("C ");
     expect(svg).not.toContain('data-role="v-point"');
     expectUpperSilhouetteMatchesStitchBudget(svg, model);
+    const castOnYs = [...svg.matchAll(/data-role="width-measurement" data-measure="cast-on"[^>]* y="([^"]+)"/g)].map(
+      (match) => Number(match[1]),
+    );
+    expect(Math.max(...castOnYs) + 9).toBeLessThan(SLEEVELESS_FRONT_STS_ROWS_VIEWBOX.height - 8);
   });
 
   it("returns null for unsupported styles", () => {

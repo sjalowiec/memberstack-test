@@ -11,6 +11,7 @@ import {
   tryBuildLiveSleevelessBackStsRowsDiagramSvg,
   tryBuildSleevelessBackStsRowsDiagramSvg,
 } from "./sleevelessBackStsRowsDiagramSvg";
+import { formatPatternDiagramMeasurement } from "./patternStitchesRowsDiagramLabel";
 import { generateSleevelessBackPattern } from "./sleevelessPatternOutput";
 
 const srcRoot = join(dirname(fileURLToPath(import.meta.url)), "../..");
@@ -213,8 +214,12 @@ describe("buildSleevelessBackStsRowsDiagramSvg", () => {
     expect(lengthLabelRows(svg, "hem")).toBe(model.rows.hemRows);
     expect(lengthLabelRows(svg, "armhole")).toBe(model.rows.armholeRows);
     expect(lengthLabelRows(svg, "neck-depth")).toBe(model.neckline.depthRows);
-    expect(svg).toContain(expectedInches(model.widths.bustStitches, model.widths.stitchesPerInch));
-    expect(svg).toContain(expectedInches(model.rows.expectedGarmentRows, model.rows.rowsPerInch));
+    expect(svg).toContain(formatPatternDiagramMeasurement(model.finished.bustWidthInches, "in"));
+    expect(svg).toContain(formatPatternDiagramMeasurement(model.finished.garmentLengthInches, "in"));
+    const castOnYs = [...svg.matchAll(/data-role="width-measurement" data-measure="cast-on"[^>]* y="([^"]+)"/g)].map(
+      (match) => Number(match[1]),
+    );
+    expect(Math.max(...castOnYs) + 9).toBeLessThan(SLEEVELESS_BACK_STS_ROWS_VIEWBOX.height - 8);
   });
 
   it("derives post-armhole width from the Back stitch budget", () => {
