@@ -912,15 +912,25 @@ export function buildSleevelessFrontRoundShapingNotationDiagramSvg(
   const shAnchorX = shoulderMidX + (-slopeDy / slopeLen) * SHOULDER_LABEL_GAP;
   const shAnchorY = shoulderMidY + (slopeDx / slopeLen) * SHOULDER_LABEL_GAP;
   const shLastBaseline = shAnchorY;
+  const notationCharWidth = FS_NOTATION * 0.56;
   const neckStackText = [...neckShapingLines, labels.neckBo].filter((line) => line.length > 0);
-  const neckStackRight =
-    neckLabelX +
-    Math.max(0, ...neckStackText.map((line) => line.length * FS_NOTATION * 0.7)) / 2;
+  const neckHalfWidth =
+    Math.max(0, ...neckStackText.map((line) => line.length * notationCharWidth)) / 2;
+  const shoulderHalfWidth =
+    Math.max(0, ...shLines.map((line) => line.length * notationCharWidth)) / 2;
+  const shoulderYs = shLines.map((_, index) => shLastBaseline - index * NOTATION_GAP);
+  const neckYs = [
+    ...neckShapingLines.map((_, index) => neckShapingFirstY + index * neckShapingStep),
+    ...(labels.neckBo ? [neckBoY] : []),
+  ];
+  const sharesRow = shoulderYs.some((shoulderY) =>
+    neckYs.some((neckY) => Math.abs(shoulderY - neckY) < FS_NOTATION + 4),
+  );
   const shLabelX = clamp(
     Math.max(
       shAnchorX,
       rightShoulderOutlineXAtY(frame, shLastBaseline) + SHOULDER_OUTLINE_CLEARANCE,
-      neckStackRight + 10,
+      sharesRow ? neckLabelX + neckHalfWidth + shoulderHalfWidth + 8 : 0,
     ),
     frame.neckRight + 4,
     ARMHOLE_LABEL_SAFE_MAX_X,

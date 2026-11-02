@@ -382,7 +382,7 @@ describe("buildSleevelessFrontRoundShapingNotationDiagramSvg", () => {
     expect(armholeBo[0]!.y).toBeCloseTo(184.43, 2);
     expect(armholeShaping[0]!.x).toBeCloseTo(287.44, 2);
     expect(armholeShaping[0]!.y).toBeCloseTo(160.43, 2);
-    expect(shoulder[0]!.x).toBeCloseTo(255.6, 2);
+    expect(shoulder[0]!.x).toBeCloseTo(282.16, 2);
     expect(Math.max(...shoulder.map((p) => p.y))).toBeCloseTo(86.46, 2);
   });
 
@@ -419,7 +419,7 @@ describe("buildSleevelessFrontRoundShapingNotationDiagramSvg", () => {
     const lowest = Math.max(...shoulder.map((p) => p.y));
     for (const pos of shoulder) {
       expect(pos.x).toBeGreaterThan(neckRight);
-      expect(pos.x).toBeLessThan(afterRight + 8);
+      expect(pos.x).toBeLessThan(afterRight + 40);
       expect(pos.y).toBeLessThan(shoulderY);
     }
     expect(lowest).toBeGreaterThan(previousLastBaseline);
