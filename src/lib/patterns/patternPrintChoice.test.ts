@@ -1,6 +1,12 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
-import { PATTERN_PRINT_CHOICE_REMINDER, PATTERN_PRINT_CHOICES } from "./patternPrintChoice";
+import {
+  PATTERN_PRINT_CHOICE_PDF_NOTE,
+  PATTERN_PRINT_CHOICE_REMINDER,
+  PATTERN_PRINT_CHOICES,
+  PATTERN_PRINT_HIDE_TIPS_HELP,
+  PATTERN_PRINT_HIDE_TIPS_LABEL,
+} from "./patternPrintChoice";
 import { renderPatternDisplayRowsHtml } from "./sleevelessPatternDisplayHtml";
 import { renderSleevelessPrintPieceHtml } from "./sleevelessPatternPrintRender";
 import { computeDefaultMeasurementsFromChartRow } from "./sleevelessExpressSizeChartClient";
@@ -56,11 +62,31 @@ function printParagraphs(rows: readonly { kind: string; printInstructionParagrap
 
 describe("pattern print choices", () => {
   it("names the three print options and the on-screen reminder", () => {
-    expect(PATTERN_PRINT_CHOICES.map((choice) => choice.id)).toEqual(["instructions", "charts", "both"]);
-    expect(PATTERN_PRINT_CHOICES.every((choice) => choice.explanation.length > 40)).toBe(true);
+    expect(PATTERN_PRINT_CHOICES).toEqual([
+      {
+        id: "instructions",
+        title: "Instructions only",
+        explanation: "Instructions, notes, and schematics. No charts or checklists.",
+      },
+      {
+        id: "charts",
+        title: "Charts & checklists only",
+        explanation: "Charts and checklists. No pattern instructions.",
+      },
+      {
+        id: "both",
+        title: "Complete pattern",
+        explanation: "Instructions, notes, schematics, charts, and checklists.",
+      },
+    ]);
+    expect(PATTERN_PRINT_CHOICE_PDF_NOTE).toBe(
+      "The next step is your computer's print dialog. You can print the pattern or save it as a PDF.",
+    );
     expect(PATTERN_PRINT_CHOICE_REMINDER).toBe(
       "You can also follow your pattern on a computer, tablet, or phone beside your knitting machine, with access to videos and interactive help.",
     );
+    expect(PATTERN_PRINT_HIDE_TIPS_LABEL).toBe("Hide Pattern Tips");
+    expect(PATTERN_PRINT_HIDE_TIPS_HELP).toBe("Uncheck to include tips.");
     const personalization = readFileSync("src/scripts/patternPrintPersonalization.ts", "utf8");
     expect(personalization).toContain("openPatternPrintChoiceDialog");
     expect(personalization).toContain("includeTips");
@@ -68,14 +94,19 @@ describe("pattern print choices", () => {
     const dialog = readFileSync("src/scripts/patternPrintChoiceDialog.ts", "utf8");
     const choiceSource = readFileSync("src/lib/patterns/patternPrintChoice.ts", "utf8");
     expect(choiceSource).toContain("Hide Pattern Tips");
-    expect(choiceSource).toContain(
-      "Use less paper by leaving tips out. Your complete knitting instructions will still print. Uncheck to include tips.",
-    );
+    expect(choiceSource).not.toContain("Use less paper");
+    expect(choiceSource).not.toContain("written shaping");
+    expect(choiceSource).not.toContain("Instructions + charts and checklists");
     expect(dialog).toContain("PATTERN_PRINT_HIDE_TIPS_LABEL");
     expect(dialog).toContain("PATTERN_PRINT_HIDE_TIPS_HELP");
     expect(dialog).toContain('name="pattern-print-hide-tips"');
     expect(dialog).toContain('data-pattern-print-hide-tips value="yes" checked');
     expect(dialog).toContain("box?.checked !== true");
+    expect(dialog).toContain('const DEFAULT_PATTERN_PRINT_CHOICE: PatternPrintChoice = "instructions"');
+    expect(dialog).toContain("resetDialogDefaults(dialog)");
+    expect(dialog).toContain('input.checked = input.value === DEFAULT_PATTERN_PRINT_CHOICE');
+    expect(dialog).toContain("hideTips.checked = true");
+    expect(dialog).toContain('replaceAll("&", "&amp;")');
     const css = readFileSync("src/styles/patterns/pattern-print-choice.css", "utf8");
     expect(css).toContain('html[data-pattern-print-choice="instructions"]');
     expect(css).toContain('html[data-pattern-print-choice="charts"]');

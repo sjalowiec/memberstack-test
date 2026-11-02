@@ -14,15 +14,20 @@ import {
 } from "../lib/patterns/patternPrintChoice";
 
 const DIALOG_ID = "pattern-print-choice-dialog";
+const DEFAULT_PATTERN_PRINT_CHOICE: PatternPrintChoice = "instructions";
+
+function escapeDialogText(value: string): string {
+  return value.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
+}
 
 function dialogHtml(): string {
   const options = PATTERN_PRINT_CHOICES.map((choice) => {
-    const checked = choice.id === "both" ? " checked" : "";
+    const checked = choice.id === DEFAULT_PATTERN_PRINT_CHOICE ? " checked" : "";
     return `<label class="pattern-print-choice-dialog__option">
       <input type="radio" name="pattern-print-choice" value="${choice.id}"${checked} />
       <span>
-        <span class="pattern-print-choice-dialog__option-title">${choice.title}</span>
-        <span class="pattern-print-choice-dialog__option-text">${choice.explanation}</span>
+        <span class="pattern-print-choice-dialog__option-title">${escapeDialogText(choice.title)}</span>
+        <span class="pattern-print-choice-dialog__option-text">${escapeDialogText(choice.explanation)}</span>
       </span>
     </label>`;
   }).join("");
@@ -60,6 +65,15 @@ function ensureDialog(): HTMLDialogElement | null {
   return dialog;
 }
 
+/** Every open starts on Instructions only, with Pattern Tips hidden. */
+function resetDialogDefaults(dialog: HTMLDialogElement): void {
+  for (const input of dialog.querySelectorAll<HTMLInputElement>('input[name="pattern-print-choice"]')) {
+    input.checked = input.value === DEFAULT_PATTERN_PRINT_CHOICE;
+  }
+  const hideTips = dialog.querySelector<HTMLInputElement>("[data-pattern-print-hide-tips]");
+  if (hideTips) hideTips.checked = true;
+}
+
 function selectedChoice(dialog: HTMLDialogElement): PatternPrintChoice {
   const selected = dialog.querySelector<HTMLInputElement>('input[name="pattern-print-choice"]:checked');
   const value = selected?.value;
@@ -86,6 +100,7 @@ export function openPatternPrintChoiceDialog(
   }
 
   return new Promise((resolve) => {
+    resetDialogDefaults(dialog);
     let settled = false;
     const finish = (selection: PatternPrintSelection | null) => {
       if (settled) return;

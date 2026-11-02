@@ -6,20 +6,17 @@ export const PATTERN_PRINT_CHOICES = [
   {
     id: "instructions",
     title: "Instructions only",
-    explanation:
-      "Project title, pattern details, saved notes, measurement schematics, and the complete knitting and finishing instructions. Shaping maps, row-by-row charts, and checklists are left out. Where the pattern would say to use a checklist, the print includes written shaping from the same calculated rows.",
+    explanation: "Instructions, notes, and schematics. No charts or checklists.",
   },
   {
     id: "charts",
-    title: "Charts and checklists only",
-    explanation:
-      "The charts and checklists for this saved pattern. Each one starts on a new page and names the project, the garment piece, and the setup needed to use it. Knitting instructions are not included.",
+    title: "Charts & checklists only",
+    explanation: "Charts and checklists. No pattern instructions.",
   },
   {
     id: "both",
-    title: "Instructions + charts and checklists",
-    explanation:
-      "The complete instructions first, then a charts and checklists section. Each chart is printed once, after the instructions.",
+    title: "Complete pattern",
+    explanation: "Instructions, notes, schematics, charts, and checklists.",
   },
 ] as const;
 
@@ -27,8 +24,7 @@ export type PatternPrintChoice = (typeof PATTERN_PRINT_CHOICES)[number]["id"];
 
 export const PATTERN_PRINT_HIDE_TIPS_LABEL = "Hide Pattern Tips";
 
-export const PATTERN_PRINT_HIDE_TIPS_HELP =
-  "Use less paper by leaving tips out. Your complete knitting instructions will still print. Uncheck to include tips.";
+export const PATTERN_PRINT_HIDE_TIPS_HELP = "Uncheck to include tips.";
 
 export type PatternPrintSelection = {
   choice: PatternPrintChoice;
