@@ -161,6 +161,11 @@ describe("Tip of the Week page route", () => {
     expect(pageSource).toContain('bodyClass="page--tight-header"');
   });
 
+  it("resolves the featured video from the same catalog as the Video Library", () => {
+    expect(pageSource).toContain("loadResolvedTipCatalogVideo");
+    expect(pageSource).not.toContain("loadPublicVideoPosterOverrides");
+  });
+
   it("resolves Learning Library video 339 from the catalog", () => {
     const video = resolveTipCatalogVideo({ videoContentId: 339 });
     expect(video?.vimeoId).toBe("151857510");

@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { applyVideoPosterOverrides } from "./videos/videoPosterOverrides";
 import {
   formatTipAvailabilityDate,
   resolveTipCatalogVideo,
@@ -27,5 +28,24 @@ describe("tipOfTheWeek config helpers", () => {
 
   it("returns null when the catalog video cannot be identified", () => {
     expect(resolveTipCatalogVideo({ videoContentId: 999999 }, [])).toBeNull();
+  });
+
+  it("keeps the Vimeo id and the stored thumbnail from the same catalog row", () => {
+    const catalog = [
+      {
+        content_id: 587,
+        slug: "gathered-top-for-mittens-and-hats",
+        title: "Gathered Top for Mittens and Hats",
+        vimeo_id: 151859005,
+        posterUrl: "https://i.vimeocdn.com/video/old-d_1280x720?r=pad",
+      },
+    ];
+    const withPoster = applyVideoPosterOverrides(
+      catalog,
+      new Map([["587", "https://i.vimeocdn.com/video/stored-d_1280x720?r=pad"]]),
+    );
+    const video = resolveTipCatalogVideo({ videoContentId: "587" }, withPoster);
+    expect(video?.vimeoId).toBe("151859005");
+    expect(video?.posterUrl).toBe("https://i.vimeocdn.com/video/stored-d_1280x720?r=pad");
   });
 });

@@ -1,6 +1,6 @@
 ---
 import WatsonPageShell from "../../components/watson/WatsonPageShell.astro";
-import { resolveVideoForTip } from "../../lib/tipOfTheWeek/map";
+import { loadTipCatalogWithPosters, resolveTipCatalogVideo } from "../../lib/tipOfTheWeek";
 import { formatTipAvailabilityDate } from "../../lib/tipOfTheWeek/map";
 import {
   statusLabel,
@@ -21,6 +21,7 @@ Astro.response.headers.set("Cache-Control", "no-store");
 let loadError: string | null = null;
 let tips: TipOfTheWeekRecord[] = [];
 const todayLa = tipLosAngelesCalendarDate();
+const tipCatalog = await loadTipCatalogWithPosters();
 
 try {
   tips = await listAllTipOfTheWeek();
@@ -67,7 +68,7 @@ function tipDataAttr(tip: TipOfTheWeekRecord): string {
 }
 
 function renderTipCard(tip: TipOfTheWeekRecord) {
-  const video = resolveVideoForTip(tip);
+  const video = resolveTipCatalogVideo({ videoContentId: tip.videoContentId }, tipCatalog);
   const bucket = tipScheduleBucket(tip, todayLa);
   const reactions = reactionSummaries.get(tip.tipId) || { rows: [], topicCount: 0 };
   return {

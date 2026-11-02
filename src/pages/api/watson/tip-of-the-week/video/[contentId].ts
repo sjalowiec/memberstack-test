@@ -1,6 +1,6 @@
 import type { APIRoute } from "astro";
 
-import { resolveVideoForTip } from "../../../../../lib/tipOfTheWeek/map";
+import { loadResolvedTipCatalogVideo } from "../../../../../lib/tipOfTheWeek";
 import { requireWatsonSessionJson, watsonJsonResponse } from "../../../../../lib/watson/watsonApiAuth";
 
 export const prerender = false;
@@ -21,7 +21,7 @@ export const GET: APIRoute = async (context) => {
     );
   }
 
-  const video = resolveVideoForTip({ videoContentId: contentId });
+  const video = await loadResolvedTipCatalogVideo(contentId);
   if (!video) {
     return watsonJsonResponse(
       {
