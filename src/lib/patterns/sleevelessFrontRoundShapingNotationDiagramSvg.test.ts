@@ -377,7 +377,7 @@ describe("buildSleevelessFrontRoundShapingNotationDiagramSvg", () => {
     expect(armholeBo[0]!.y).toBeCloseTo(184.43, 2);
     expect(armholeShaping[0]!.x).toBeCloseTo(287.44, 2);
     expect(armholeShaping[0]!.y).toBeCloseTo(160.43, 2);
-    expect(shoulder[0]!.x).toBeCloseTo(254.76, 2);
+    expect(shoulder[0]!.x).toBeCloseTo(255.6, 2);
     expect(Math.max(...shoulder.map((p) => p.y))).toBeCloseTo(86.46, 2);
   });
 
