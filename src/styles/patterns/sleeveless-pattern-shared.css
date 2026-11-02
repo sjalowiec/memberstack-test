@@ -2713,22 +2713,19 @@
       margin-top: 0.85rem;
     }
 
+    /*
+     * Print each piece as one column. Diagrams use the full letter content width
+     * (about 7.1in) so labels stay at a readable point size. Height stays auto,
+     * so the garment shape keeps its proportions.
+     */
     #pattern-content .pattern-layout.pattern-layout--garment-columns,
     #pattern-content .sleeveless-piece-split {
-      --garment-print-diagram-track: 2.6in;
-      --garment-print-column-gap: 0.35in;
-      display: grid !important;
-      grid-template-columns: minmax(0, 1fr) minmax(180px, var(--garment-print-diagram-track)) !important;
-      column-gap: var(--garment-print-column-gap) !important;
-      row-gap: 0 !important;
-      align-items: start !important;
+      --garment-print-diagram-track: 0in;
+      --garment-print-column-gap: 0in;
+      display: block !important;
+      width: 100% !important;
     }
 
-    /*
-     * Shaping charts/checklists inside the garment text column must use the full printable width.
-     * The interactive layout keeps a diagram sidebar; in print that reserved track leaves a blank
-     * strip and squeezes the table unless the chart breaks out across both grid columns.
-     */
     #pattern-content .sleeveless-piece-split__text .sleeveless-piece-chart-fullwidth,
     #pattern-content .pattern-layout__content .sleeveless-piece-chart-fullwidth,
     #pattern-content .sleeveless-piece-split__text .pattern-subsection.sleeveless-piece-chart-fullwidth,
@@ -2741,13 +2738,9 @@
     #pattern-content .pattern-layout__content .sg-neck-chart-print-block,
     #pattern-content .sleeveless-piece-split__text .ns-shaping-chart,
     #pattern-content .pattern-layout__content .ns-shaping-chart {
-      width: calc(
-        100% + var(--garment-print-diagram-track, 2.6in) + var(--garment-print-column-gap, 0.35in)
-      ) !important;
+      width: 100% !important;
       max-width: none !important;
-      margin-right: calc(
-        -1 * (var(--garment-print-diagram-track, 2.6in) + var(--garment-print-column-gap, 0.35in))
-      ) !important;
+      margin-right: 0 !important;
       box-sizing: border-box !important;
       overflow: visible !important;
     }
@@ -2800,10 +2793,11 @@
       top: auto !important;
       inset: auto !important;
       order: 0 !important;
-      align-self: start !important;
-      justify-self: end !important;
-      width: auto !important;
-      max-width: 2.6in !important;
+      align-self: stretch !important;
+      justify-self: stretch !important;
+      width: 100% !important;
+      max-width: none !important;
+      margin-top: 0.2in !important;
       overflow: visible !important;
     }
 
@@ -2813,7 +2807,7 @@
       position: static !important;
       cursor: default !important;
       width: 100% !important;
-      max-width: 2.6in !important;
+      max-width: none !important;
       height: auto !important;
       overflow: visible !important;
     }
@@ -2826,7 +2820,7 @@
       display: block !important;
       visibility: visible !important;
       width: 100% !important;
-      max-width: 2.6in !important;
+      max-width: none !important;
       height: auto !important;
       opacity: 1 !important;
       overflow: visible !important;

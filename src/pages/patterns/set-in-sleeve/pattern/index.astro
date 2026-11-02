@@ -381,13 +381,10 @@ import "../../../../styles/patterns/pattern-errata-notice.css";
 
     :global(#pattern-content .pattern-layout.pattern-layout--garment-columns),
     :global(#pattern-content .sleeveless-piece-split) {
-      --garment-print-diagram-track: 2.6in;
-      --garment-print-column-gap: 0.35in;
-      display: grid !important;
-      grid-template-columns: minmax(0, 1fr) minmax(180px, var(--garment-print-diagram-track)) !important;
-      column-gap: var(--garment-print-column-gap) !important;
-      row-gap: 0 !important;
-      align-items: start !important;
+      --garment-print-diagram-track: 0in;
+      --garment-print-column-gap: 0in;
+      display: block !important;
+      width: 100% !important;
     }
 
     :global(#pattern-content .pattern-layout__content),
@@ -404,10 +401,11 @@ import "../../../../styles/patterns/pattern-errata-notice.css";
       top: auto !important;
       inset: auto !important;
       order: 0 !important;
-      align-self: start !important;
-      justify-self: end !important;
-      width: auto !important;
-      max-width: 2.6in !important;
+      align-self: stretch !important;
+      justify-self: stretch !important;
+      width: 100% !important;
+      max-width: none !important;
+      margin-top: 0.2in !important;
       overflow: visible !important;
     }
 
@@ -418,7 +416,7 @@ import "../../../../styles/patterns/pattern-errata-notice.css";
       position: static !important;
       cursor: default !important;
       width: 100% !important;
-      max-width: 2.6in !important;
+      max-width: none !important;
       height: auto !important;
       overflow: visible !important;
     }
@@ -431,7 +429,7 @@ import "../../../../styles/patterns/pattern-errata-notice.css";
       display: block !important;
       visibility: visible !important;
       width: 100% !important;
-      max-width: 2.6in !important;
+      max-width: none !important;
       height: auto !important;
       opacity: 1 !important;
       overflow: visible !important;

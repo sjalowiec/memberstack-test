@@ -7,8 +7,8 @@ import {
   PATTERN_PRINT_CHOICE_PDF_NOTE,
   PATTERN_PRINT_CHOICE_REMINDER,
   PATTERN_PRINT_CHOICES,
-  PATTERN_PRINT_INCLUDE_TIPS_HELP,
-  PATTERN_PRINT_INCLUDE_TIPS_LABEL,
+  PATTERN_PRINT_HIDE_TIPS_HELP,
+  PATTERN_PRINT_HIDE_TIPS_LABEL,
   type PatternPrintChoice,
   type PatternPrintSelection,
 } from "../lib/patterns/patternPrintChoice";
@@ -31,10 +31,10 @@ function dialogHtml(): string {
     <p class="pattern-print-choice-dialog__lead">${PATTERN_PRINT_CHOICE_PDF_NOTE}</p>
     <div class="pattern-print-choice-dialog__options" role="radiogroup" aria-label="What to print">${options}</div>
     <label class="pattern-print-choice-dialog__tips">
-      <input type="checkbox" name="pattern-print-include-tips" data-pattern-print-include-tips value="yes" />
+      <input type="checkbox" name="pattern-print-hide-tips" data-pattern-print-hide-tips value="yes" checked />
       <span>
-        <span class="pattern-print-choice-dialog__option-title">${PATTERN_PRINT_INCLUDE_TIPS_LABEL}</span>
-        <span class="pattern-print-choice-dialog__option-text">${PATTERN_PRINT_INCLUDE_TIPS_HELP}</span>
+        <span class="pattern-print-choice-dialog__option-title">${PATTERN_PRINT_HIDE_TIPS_LABEL}</span>
+        <span class="pattern-print-choice-dialog__option-text">${PATTERN_PRINT_HIDE_TIPS_HELP}</span>
       </span>
     </label>
     <p class="pattern-print-choice-dialog__reminder">${PATTERN_PRINT_CHOICE_REMINDER}</p>
@@ -48,7 +48,7 @@ function dialogHtml(): string {
 function ensureDialog(): HTMLDialogElement | null {
   const existing = document.getElementById(DIALOG_ID);
   if (existing instanceof HTMLDialogElement) {
-    if (existing.querySelector("[data-pattern-print-include-tips]")) return existing;
+    if (existing.querySelector("[data-pattern-print-hide-tips]")) return existing;
     existing.remove();
   }
   const dialog = document.createElement("dialog");
@@ -68,8 +68,9 @@ function selectedChoice(dialog: HTMLDialogElement): PatternPrintChoice {
 }
 
 function selectedIncludeTips(dialog: HTMLDialogElement): boolean {
-  const box = dialog.querySelector<HTMLInputElement>("[data-pattern-print-include-tips]");
-  return box?.checked === true;
+  const box = dialog.querySelector<HTMLInputElement>("[data-pattern-print-hide-tips]");
+  // Checked means hide tips. Unchecked prints the tip content. Charts stay charts-only.
+  return box?.checked !== true;
 }
 
 /**

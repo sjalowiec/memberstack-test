@@ -40,7 +40,7 @@ import {
   cuffUpNoRibbingCastOnSentence,
   sleeveCuffRibbingOmitted,
 } from "../sleeveCuffRibbingDepth";
-import { sweaterBodyHemChoiceLines } from "../sweaterBodyHemInstructions";
+import { sweaterBodyHemChoiceLines, sweaterBodyHemFrontLines } from "../sweaterBodyHemInstructions";
 import { buildNeckShoulderTimelineAndChartRows } from "../neckShoulderShapingChartRows";
 import {
   roundNeckBackShallowSleevelessSummaryWrittenLines,
@@ -770,13 +770,18 @@ function necklineInstructionLines(
 function bodyLines(result: SetInSleeveSweaterSuccess, piece: "back" | "front"): string[] {
   const { body } = result;
   const pieceName = piece === "back" ? "the back" : "the front";
+  const hemOptions = {
+    plainText: true,
+    rcPrefix: formatRcColon(0),
+    finishedDepthLabel: inches(body.hemInches),
+  };
+  const hemLines =
+    piece === "back"
+      ? sweaterBodyHemChoiceLines(body.bodyBlock.hemStitches, body.hemRows, hemOptions)
+      : sweaterBodyHemFrontLines(body.bodyBlock.hemStitches, body.hemRows, hemOptions);
   const lines = [
     `${formatRcColon(0)} Cast on ${body.bodyBlock.hemStitches} ${stitchWord(body.bodyBlock.hemStitches)} for ${pieceName}.`,
-    ...sweaterBodyHemChoiceLines(body.bodyBlock.hemStitches, body.hemRows, {
-      plainText: true,
-      rcPrefix: formatRcColon(0),
-      finishedDepthLabel: inches(body.hemInches),
-    }),
+    ...hemLines,
   ];
   if (body.bodyBlock.shapingDirection === "none" || body.bodyBlock.shapingRowNumbers.length === 0) {
     lines.push(

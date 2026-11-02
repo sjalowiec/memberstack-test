@@ -25,10 +25,10 @@ export const PATTERN_PRINT_CHOICES = [
 
 export type PatternPrintChoice = (typeof PATTERN_PRINT_CHOICES)[number]["id"];
 
-export const PATTERN_PRINT_INCLUDE_TIPS_LABEL = "Include Pattern Tips";
+export const PATTERN_PRINT_HIDE_TIPS_LABEL = "Hide Pattern Tips";
 
-export const PATTERN_PRINT_INCLUDE_TIPS_HELP =
-  "Use less paper by leaving tips out. Your complete knitting instructions will still print.";
+export const PATTERN_PRINT_HIDE_TIPS_HELP =
+  "Use less paper by leaving tips out. Your complete knitting instructions will still print. Uncheck to include tips.";
 
 export type PatternPrintSelection = {
   choice: PatternPrintChoice;

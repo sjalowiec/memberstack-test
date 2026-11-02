@@ -710,7 +710,7 @@ function sleeveLengthCaption(frame: SleeveFrame, model: SetInSleeveDiagramModel)
   return [
     `<g class="set-in-sleeve-diagram__sleeve-length" data-sleeve-length="true">`,
     `<text data-role="sleeve-length-caption" x="${fmtNum(frame.midX)}" y="${fmtNum(bands.lengthCaptionY)}" text-anchor="middle" fill="${DS_STROKE}" ${textFont(DS_FS_TITLE, DS_FW_TITLE)}>Sleeve length ${escapeXml(measure)}</text>`,
-    `<text data-role="sleeve-length-note" x="${fmtNum(frame.midX)}" y="${fmtNum(bands.lengthNoteY)}" text-anchor="middle" fill="${DS_MUTED}" ${textFont(11)}>cuff to underarm, not including the cap</text>`,
+    `<text data-role="sleeve-length-note" x="${fmtNum(frame.midX)}" y="${fmtNum(bands.lengthNoteY)}" text-anchor="middle" fill="${DS_MUTED}" ${textFont(15)}>cuff to underarm, not including the cap</text>`,
     `</g>`,
   ].join("");
 }

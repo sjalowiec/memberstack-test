@@ -85,6 +85,7 @@ import {
 import { hemSectionRow } from "./legoBlocks/hem";
 import {
   sweaterBodyHemChoiceDisplay,
+  sweaterBodyHemFrontDisplay,
   sweaterBodyHemTechniqueTipFields,
 } from "./sweaterBodyHemInstructions";
 import {
@@ -390,9 +391,13 @@ function hemBlocks(
   hemRows: number,
   hemRowsValid: boolean,
   sts: number,
-  includeTechniqueTip = false,
+  piece: "back" | "front" = "front",
 ): SleevelessPatternDisplayRow[] {
-  const choices = hemRowsValid ? sweaterBodyHemChoiceDisplay(sts, hemRows) : null;
+  const choices = hemRowsValid
+    ? piece === "back"
+      ? sweaterBodyHemChoiceDisplay(sts, hemRows)
+      : sweaterBodyHemFrontDisplay(sts, hemRows)
+    : null;
   return [
     hemSectionRow(),
     {
@@ -404,7 +409,7 @@ function hemBlocks(
             "Hem rows could not be calculated — check row gauge and sizing chart. Knit your hem to the depth you prefer, then continue.",
           ],
       ...(choices ? { trustedParagraphs: choices.trustedParagraphs } : {}),
-      ...(choices && includeTechniqueTip ? sweaterBodyHemTechniqueTipFields() : {}),
+      ...(choices && piece === "back" ? sweaterBodyHemTechniqueTipFields(sts, hemRows) : {}),
       stitchCount: sts > 0 ? sts : undefined,
     },
   ];
@@ -757,7 +762,7 @@ function buildBackRows(args: {
   rows.push({ kind: "piece", title: "BACK" });
   rows.push(pieceMarkersSeamingTipDisplayRow("back"));
   rows.push(castOnBlock(castOnSts, "the back", useAlineBody));
-  rows.push(...hemBlocks(args.hemRows, args.hemRowsValid, castOnSts, true));
+  rows.push(...hemBlocks(args.hemRows, args.hemRowsValid, castOnSts, "back"));
 
   rows.push({ kind: "section", title: "BODY" });
   if (useAlineBody && aline) {
