@@ -148,47 +148,8 @@ function sectionHasWrittenShaping(chart: HTMLElement): boolean {
   return Boolean(chart.closest(".pattern-section")?.querySelector(".pattern-print-written-shaping"));
 }
 
-function writtenShapingFollowsInPiece(pointer: HTMLElement): boolean {
-  const section = pointer.closest(".pattern-section");
-  if (section?.querySelector(".pattern-print-written-shaping")) return true;
-  const pieceSelector = ".sleeveless-pattern-piece, .print-piece-title, h2.pattern-piece";
-  const pieces = [...(pointer.ownerDocument?.querySelectorAll<HTMLElement>(pieceSelector) ?? [])];
-  const piece = [...pieces]
-    .reverse()
-    .find((item) => (item.compareDocumentPosition(pointer) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0);
-  const followingPiece = pieces.find(
-    (item) =>
-      item !== piece && (pointer.compareDocumentPosition(item) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0,
-  );
-  const written = [
-    ...(pointer.ownerDocument?.querySelectorAll<HTMLElement>(".pattern-print-written-shaping") ?? []),
-  ];
-  return written.some((block) => {
-    const afterPiece =
-      !piece ||
-      piece.contains(block) ||
-      (piece.compareDocumentPosition(block) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0;
-    const beforeNextPiece =
-      !followingPiece ||
-      (block.compareDocumentPosition(followingPiece) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0;
-    return afterPiece && beforeNextPiece;
-  });
-}
-
-function markUnresolvedPointers(doc: Document, cleanups: Array<() => void>): HTMLElement[] {
-  const kept: HTMLElement[] = [];
-  doc.querySelectorAll<HTMLElement>(".pattern-print-checklist-pointer").forEach((pointer) => {
-    if (writtenShapingFollowsInPiece(pointer)) return;
-    const section = pointer.closest<HTMLElement>(".pattern-section");
-    pointer.classList.add("pattern-print-unresolved-pointer");
-    cleanups.push(() => pointer.classList.remove("pattern-print-unresolved-pointer"));
-    if (section && !section.classList.contains("pattern-print-keep-charts")) {
-      section.classList.add("pattern-print-keep-charts");
-      cleanups.push(() => section.classList.remove("pattern-print-keep-charts"));
-      kept.push(section);
-    }
-  });
-  return kept;
+function markUnresolvedPointers(_doc: Document, _cleanups: Array<() => void>): HTMLElement[] {
+  return [];
 }
 
 function hostForAppendix(doc: Document): HTMLElement {

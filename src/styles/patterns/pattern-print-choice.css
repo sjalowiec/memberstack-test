@@ -157,21 +157,6 @@
     font-size: 10pt;
   }
 
-  html[data-pattern-print-choice="instructions"] .pattern-print-written-shaping[hidden],
-  html[data-pattern-print-choice="both"] .pattern-print-written-shaping[hidden] {
-    display: block !important;
-  }
-
-  html[data-pattern-print-choice="instructions"] .pattern-print-checklist-pointer,
-  html[data-pattern-print-choice="both"] .pattern-print-checklist-pointer {
-    display: none !important;
-  }
-
-  html[data-pattern-print-choice="instructions"] .pattern-print-unresolved-pointer,
-  html[data-pattern-print-choice="both"] .pattern-print-unresolved-pointer {
-    display: block !important;
-  }
-
   html[data-pattern-print-choice="instructions"] .ns-shaping-chart,
   html[data-pattern-print-choice="instructions"] .ns-visual-guides,
   html[data-pattern-print-choice="instructions"] .shaping-map,
