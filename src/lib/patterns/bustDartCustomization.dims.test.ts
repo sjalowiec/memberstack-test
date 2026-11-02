@@ -429,7 +429,7 @@ describe("bust dart custom width/depth", () => {
       const text = frontText(gen.frontDisplayRows);
       const slot = gen.frontDisplayRows.find((r) => r.kind === "bustDartCustomization");
       expect(slot?.kind === "bustDartCustomization" && slot.customized).toBe(true);
-      expect(text).toMatch(/Stop the row counter/);
+      expect(text).toMatch(/Disengage the row counter/);
       expect(text).not.toMatch(/Work the short-row bust darts/);
       expect(text).not.toMatch(/back or sleeves/i);
       expect(frontText(gen.displayRows)).not.toMatch(/bust dart/i);
@@ -459,7 +459,7 @@ describe("bust dart custom width/depth", () => {
     const printHtml = renderBustDartCustomizationPrintHtml(slot);
     expect(printHtml).toMatch(/Customized/);
     expect(printHtml).toMatch(/Cup C/);
-    expect(printHtml).toMatch(/Stop the row counter/);
+    expect(printHtml).toMatch(/Disengage the row counter/);
     expect(printHtml).not.toMatch(/Work the short-row bust darts/);
     expect(printHtml).not.toMatch(/Update Bust Dart|Remove Bust Dart/);
 

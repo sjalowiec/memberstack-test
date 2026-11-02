@@ -59,7 +59,7 @@ describe("drop-shoulder bust darts integration", () => {
     const back = allParagraphs(r.displayRows).join("\n");
     const sleeves = allParagraphs(r.sleeveDisplayRows).join("\n");
 
-    expect(front).toMatch(/Stop the row counter at RC \d+, 1″ below the armhole opening/i);
+    expect(front).toMatch(/Disengage the row counter at RC \d+, 1″ below the armhole opening/i);
     expect(front).toMatch(/On each side of the Front center/i);
     expect(front).toMatch(/place \d+ needles in hold/i);
     expect(front).not.toMatch(/Work the short-row bust darts/i);

@@ -98,7 +98,7 @@ describe("bust dart post-build customization", () => {
       style: { ...base.style, [BUST_DART_STYLE_KEY]: { enabled: true, cupSize: "C" } },
     });
     expect(frontInstructionText(withDart.frontDisplayRows)).toMatch(
-      /Stop the row counter at RC \d+, 1″ below the armhole opening/i,
+      /Disengage the row counter at RC \d+, 1″ below the armhole opening/i,
     );
     expect(frontInstructionText(withDart.displayRows)).not.toMatch(/bust dart/i);
     const slot = withDart.frontDisplayRows.find((r) => r.kind === "bustDartCustomization");
@@ -112,7 +112,7 @@ describe("bust dart post-build customization", () => {
     });
     const withDart = generateSleevelessBackPattern(base);
     expect(frontInstructionText(withDart.frontDisplayRows)).toMatch(
-      /Stop the row counter at RC \d+, 1″ below the armhole opening/i,
+      /Disengage the row counter at RC \d+, 1″ below the armhole opening/i,
     );
     const withSlot = withDart.frontDisplayRows.find((r) => r.kind === "bustDartCustomization");
     expect(withSlot?.kind === "bustDartCustomization" && withSlot.active).toBe(true);

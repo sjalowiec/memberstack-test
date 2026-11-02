@@ -46,7 +46,7 @@ const activeRow: BustDartCustomizationDisplayRow = {
   active: true,
   cupSize: "C",
   instructionParagraphs: [
-    "Stop the row counter at RC 133, 1â€³ below the armhole opening.",
+    "Disengage the row counter at RC 133, 1â€³ below the armhole opening.",
     "On each side of the Front center, place 4 needles in hold.",
   ],
 };
@@ -221,7 +221,7 @@ describe("optional bust dart is not a Pattern Tip", () => {
     expect(activeHtml).toMatch(/Update Bust Dart/);
     expect(activeHtml).toMatch(/Remove Bust Dart/);
     expect(activeHtml).toMatch(/Cup C/);
-    expect(activeHtml).toMatch(/Stop the row counter at RC 133/);
+    expect(activeHtml).toMatch(/Disengage the row counter at RC 133/);
     expect(activeHtml).toMatch(/bust-dart-front-slot__steps/);
     expect(activeHtml).not.toMatch(/Work the short-row bust darts/);
     expect(activeHtml).not.toMatch(/data-tip-id=/);
@@ -258,7 +258,7 @@ describe("optional bust dart is not a Pattern Tip", () => {
     const printActive = renderBustDartCustomizationPrintHtml(activeRow);
     expect(printActive).toMatch(/Bust Dart/);
     expect(printActive).toMatch(/Cup C/);
-    expect(printActive).toMatch(/Stop the row counter at RC 133/);
+    expect(printActive).toMatch(/Disengage the row counter at RC 133/);
     expect(printActive).not.toMatch(/Work the short-row bust darts/);
   });
 

@@ -66,7 +66,7 @@ describe("sleeveless bust darts integration", () => {
 
     const frontBody = sectionParagraphs(r.frontDisplayRows, "BODY").join("\n");
     const backBody = sectionParagraphs(r.displayRows, "BODY").join("\n");
-    expect(frontBody).toMatch(/Stop the row counter at RC \d+, 1″ below the armhole opening/i);
+    expect(frontBody).toMatch(/Disengage the row counter at RC \d+, 1″ below the armhole opening/i);
     expect(frontBody).toMatch(/On each side of the Front center/i);
     expect(frontBody).toMatch(/1″ below the armhole/i);
     expect(frontBody).toMatch(/place \d+ needles in hold/i);
@@ -86,7 +86,7 @@ describe("sleeveless bust darts integration", () => {
       expect(slot.cupSize).toBe("C");
       expect(slot.placementDistanceLabel).toBe("1″");
       const dartText = slot.instructionParagraphs.join("\n");
-      expect(dartText).toMatch(/Reset the row counter to RC/);
+      expect(dartText).toMatch(/Re-engage the row counter, still at RC/);
       expect(dartText).not.toMatch(/Continue knitting across all stitches to RC/i);
       expect(dartText).not.toMatch(new RegExp(`to RC ${armholeRc} \\(armhole opening\\)`));
     }
@@ -216,10 +216,10 @@ describe("sleeveless bust darts integration", () => {
 
     const inchRc = allParagraphs(inch.frontDisplayRows)
       .join("\n")
-      .match(/Stop the row counter at RC (\d+)/)?.[1];
+      .match(/Disengage the row counter at RC (\d+)/)?.[1];
     const cmRc = allParagraphs(cm.frontDisplayRows)
       .join("\n")
-      .match(/Stop the row counter at RC (\d+)/)?.[1];
+      .match(/Disengage the row counter at RC (\d+)/)?.[1];
     expect(inchRc).toBeDefined();
     expect(cmRc).toBe(inchRc);
     expect(inchesToRows(1, fromCmSwatch.gaugeRowsPerInch)).toBe(inchesToRows(1, 7));
@@ -247,7 +247,7 @@ describe("sleeveless bust darts integration", () => {
     const printWithout = renderSleevelessPrintPieceHtml(without.frontDisplayRows, "", "front");
     expect(printWith).toMatch(/>Bust Dart</);
     expect(printWith).toMatch(/Cup C/);
-    expect(printWith).toMatch(/Stop the row counter at RC \d+, 1″ below the armhole opening/i);
+    expect(printWith).toMatch(/Disengage the row counter at RC \d+, 1″ below the armhole opening/i);
     expect(printWith).toMatch(/On each side of the Front center/i);
     expect(printWith).toMatch(/bust-dart-front-slot__steps/);
     expect(printWith).not.toMatch(/Work the short-row bust darts/i);

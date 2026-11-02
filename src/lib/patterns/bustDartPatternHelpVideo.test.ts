@@ -144,7 +144,7 @@ describe("bust dart pattern help video (shared content_id 643)", () => {
       active: true,
       cupSize: "C",
       instructionParagraphs: [
-        "Stop the row counter at RC 133, 1″ below the armhole opening.",
+        "Disengage the row counter at RC 133, 1″ below the armhole opening.",
         "On each side of the Front center, place 4 needles in hold.",
       ],
     });
@@ -159,11 +159,11 @@ describe("bust dart pattern help video (shared content_id 643)", () => {
       active: true,
       cupSize: "C",
       instructionParagraphs: [
-        "Stop the row counter at RC 133, 1″ below the armhole opening.",
+        "Disengage the row counter at RC 133, 1″ below the armhole opening.",
         "On each side of the Front center, place 4 needles in hold.",
       ],
     });
-    expect(printActive).toMatch(/Stop the row counter/);
+    expect(printActive).toMatch(/Disengage the row counter/);
     expect(printActive).toMatch(/Cup C/);
     expect(printActive).not.toMatch(/Work the short-row bust darts/);
     expect(printActive).not.toContain(BUST_DART_INACTIVE_HELP_NOTE);

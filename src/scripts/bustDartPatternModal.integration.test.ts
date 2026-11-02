@@ -330,7 +330,7 @@ describe.skipIf(!hasDev)("BustDartPatternModal browser integration (Add / Update
     expect(afterAdd.titleText).toBe("Bust Dart");
     expect(afterAdd.cupText).toMatch(/^Cup C$/);
     expect(afterAdd.stepCount).toBeGreaterThanOrEqual(4);
-    expect(afterAdd.stepTexts[0]).toMatch(/Stop the row counter at RC \d+, 1″ below the armhole opening/);
+    expect(afterAdd.stepTexts[0]).toMatch(/Disengage the row counter at RC \d+, 1″ below the armhole opening/);
     expect(afterAdd.instructionText).toMatch(/place .+ needles in hold/i);
     expect(afterAdd.instructionText).not.toMatch(/Work the short-row bust darts/i);
     expect(afterAdd.slotId).toBe("bust-dart-front-slot");

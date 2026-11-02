@@ -327,14 +327,15 @@ function buildInstructionParagraphs(args: {
   holdLines: string[];
   placementDistanceLabel: string;
 }): { paragraphs: string[]; cardiganRightMirrorParagraph: string | null } {
-  // Tool hold lines end with turn-off / reset-RC / continue — sweater patterns own RC reset
-  // and the following Front BODY block owns knitting from dart start to the armhole.
+  // Tool hold lines end with turn-off / reset-RC / continue. Sweater patterns keep the
+  // counter disengaged through the holds, including turning the hold settings off, then
+  // re-engage it at the same RC. The following Front BODY block owns knitting onward.
   const holdSteps = formatHoldLinesForPattern(args.holdLines, args.frontConstruction);
 
   const paragraphs: string[] = [
-    `Stop the row counter at RC ${args.dartStartGarmentRc}, ${args.placementDistanceLabel} below the armhole opening.`,
+    `Disengage the row counter at RC ${args.dartStartGarmentRc}, ${args.placementDistanceLabel} below the armhole opening.`,
     ...holdSteps,
-    `Reset the row counter to RC ${args.dartStartGarmentRc} so the next plain row is counted correctly.`,
+    `Re-engage the row counter, still at RC ${args.dartStartGarmentRc}.`,
   ];
 
   const cardiganRightMirrorParagraph =

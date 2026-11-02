@@ -52,7 +52,7 @@ describe("insertBustDartIntoFrontBodyDisplayRows", () => {
     expect(slot?.kind).toBe("bustDartCustomization");
     if (slot?.kind === "bustDartCustomization") {
       expect(slot.active).toBe(true);
-      expect(slot.instructionParagraphs.join("\n")).toMatch(/Stop the row counter at RC 133/);
+      expect(slot.instructionParagraphs.join("\n")).toMatch(/Disengage the row counter at RC 133/);
       expect(slot.instructionParagraphs.join("\n")).toMatch(/On each side of the Front center/);
       expect(slot.instructionParagraphs.join("\n")).not.toMatch(/Work the short-row bust darts/);
       expect(slot.cupSize).toBe("C");
@@ -69,13 +69,73 @@ describe("insertBustDartIntoFrontBodyDisplayRows", () => {
 
     const dartText =
       slot?.kind === "bustDartCustomization" ? slot.instructionParagraphs.join("\n") : "";
-    expect(dartText).toMatch(/Reset the row counter to RC 133/);
+    expect(dartText).toMatch(/Re-engage the row counter, still at RC 133/);
     expect(dartText).not.toMatch(/Continue knitting across all stitches to RC/i);
     // Exactly one authoritative knit-to-armhole instruction (the post-dart BODY block).
     const continueToArmhole = [...bodyText.split("\n"), ...dartText.split("\n")].filter((line) =>
       /to RC 140/i.test(line),
     );
     expect(continueToArmhole).toEqual(["Knit 7 rows even to RC 140."]);
+  });
+
+  it("keeps a 15-row dart at the calculated RC and knits even to the armhole afterward", () => {
+    const result = calculateBustDart({
+      enabled: true,
+      cupSize: "C",
+      sizeGroup: "misses",
+      stitchesPerInch: 7,
+      rowsPerInch: 15,
+      frontConstruction: "pullover",
+      frontStitchCount: 140,
+      armholeOpeningGarmentRc: 150,
+      hemRows: 20,
+      bodyToArmholeRows: 130,
+    });
+    expect(result.active).toBe(true);
+    expect(result.dartStartGarmentRc).toBe(150 - 15);
+    expect(result.rowsFromDartToArmhole).toBe(15);
+
+    const rows: BustDartPatternDisplayRow[] = [
+      { kind: "piece", title: "FRONT" },
+      { kind: "section", title: "BODY" },
+      {
+        kind: "block",
+        rc: "RC: 020",
+        paragraphs: ["Knit to RC 150."],
+        stitchCount: 140,
+      },
+      { kind: "section", title: "ARMHOLE" },
+    ];
+    const out = insertBustDartIntoFrontBodyDisplayRows(rows, result, helpers);
+    const slot = out.find((r) => r.kind === "bustDartCustomization");
+    expect(slot?.kind).toBe("bustDartCustomization");
+    if (slot?.kind !== "bustDartCustomization") return;
+
+    const rc = slot.dartStartGarmentRc;
+    expect(slot.instructionParagraphs[0]).toBe(
+      `Disengage the row counter at RC ${rc}, 1″ below the armhole opening.`,
+    );
+    expect(slot.instructionParagraphs.at(-1)).toBe(
+      `Re-engage the row counter, still at RC ${rc}.`,
+    );
+    const turnOffAt = slot.instructionParagraphs.indexOf("Turn off the hold settings.");
+    expect(turnOffAt).toBeGreaterThan(0);
+    expect(turnOffAt).toBeLessThan(slot.instructionParagraphs.length - 1);
+    expect(slot.instructionParagraphs.join("\n")).not.toMatch(/Reset the row counter|Stop the row counter/);
+
+    const bodyText = out
+      .filter((r) => r.kind === "block")
+      .flatMap((r) => (r.kind === "block" ? r.paragraphs : []))
+      .join("\n");
+    expect(bodyText).toContain("Knit 15 rows even to RC 150.");
+
+    const screen = renderBustDartCustomizationScreenHtml(slot);
+    const printHtml = renderBustDartCustomizationPrintHtml(slot);
+    expect(screen).toContain(`Disengage the row counter at RC ${rc}, 1″ below the armhole opening.`);
+    expect(screen).toContain(`Re-engage the row counter, still at RC ${rc}.`);
+    expect(printHtml).toContain(`Disengage the row counter at RC ${rc}, 1″ below the armhole opening.`);
+    expect(printHtml).toContain(`Re-engage the row counter, still at RC ${rc}.`);
+    expect(printHtml).not.toMatch(/Update Bust Dart|Remove Bust Dart/);
   });
 
   it("eligible women’s pattern without dart still splits and inserts Optional Bust Dart slot", () => {
@@ -231,7 +291,7 @@ describe("bustDartFrontSlotHtml print/screen", () => {
       active: true,
       cupSize: "C",
       instructionParagraphs: [
-        "Stop the row counter at RC 133, 1″ below the armhole opening.",
+        "Disengage the row counter at RC 133, 1″ below the armhole opening.",
         "On each side of the Front center, place 4 needles in hold.",
       ],
     });
@@ -257,14 +317,14 @@ describe("bustDartFrontSlotHtml print/screen", () => {
       active: true,
       cupSize: "C",
       instructionParagraphs: [
-        "Stop the row counter at RC 133, 1″ below the armhole opening.",
+        "Disengage the row counter at RC 133, 1″ below the armhole opening.",
         "On each side of the Front center, place 4 needles in hold.",
       ],
     });
     expect(html).toMatch(/Bust Dart/);
     expect(html).toMatch(/Cup C/);
     expect(html).toMatch(/bust-dart-front-slot__steps|print-line/);
-    expect(html).toMatch(/Stop the row counter/);
+    expect(html).toMatch(/Disengage the row counter/);
     expect(html).not.toMatch(/Work the short-row bust darts/);
     expect(html).not.toMatch(/data-bust-dart-pattern-open|Update Bust Dart|Remove Bust Dart/);
   });

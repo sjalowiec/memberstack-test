@@ -82,7 +82,7 @@ describe("sleeveless new-pattern bust dart choice", () => {
     expect(onSlot?.kind).toBe("bustDartCustomization");
     if (onSlot?.kind !== "bustDartCustomization") return;
     expect(onSlot.active).toBe(true);
-    expect(onSlot.instructionParagraphs.join("\n")).toMatch(/Stop the row counter at RC/i);
+    expect(onSlot.instructionParagraphs.join("\n")).toMatch(/Disengage the row counter at RC/i);
     expect(onSlot.cupSize).toBe("C");
   });
 
@@ -101,7 +101,7 @@ describe("sleeveless new-pattern bust dart choice", () => {
     expect(onSlot?.kind).toBe("bustDartCustomization");
     if (onSlot?.kind !== "bustDartCustomization") return;
     expect(onSlot.active).toBe(true);
-    expect(onSlot.instructionParagraphs.join("\n")).toMatch(/Stop the row counter at RC/i);
+    expect(onSlot.instructionParagraphs.join("\n")).toMatch(/Disengage the row counter at RC/i);
   });
 
   it("eligible V-neck Cardigan preserves and generates the dart", () => {
@@ -117,7 +117,7 @@ describe("sleeveless new-pattern bust dart choice", () => {
     expect(slot?.kind).toBe("bustDartCustomization");
     if (slot?.kind !== "bustDartCustomization") return;
     expect(slot.active).toBe(true);
-    expect(slot.instructionParagraphs.join("\n")).toMatch(/Stop the row counter at RC/i);
+    expect(slot.instructionParagraphs.join("\n")).toMatch(/Disengage the row counter at RC/i);
     expect(slot.instructionParagraphs.join("\n")).toMatch(/side \(armhole\) edge/i);
   });
 

@@ -53,7 +53,7 @@ describe("bustDart lego block", () => {
     expect(r.shaping?.totalDepthRows).toBe(7);
     expect(r.placementDistanceLabel).toBe("1″");
     const text = r.instructionParagraphs.join("\n");
-    expect(text).toContain("Stop the row counter at RC 133, 1″ below the armhole opening.");
+    expect(text).toContain("Disengage the row counter at RC 133, 1″ below the armhole opening.");
     expect(text).toContain("On each side of the Front center");
     expect(text).not.toMatch(/Work the short-row bust darts/i);
     expect(text).not.toMatch(/back or sleeves/i);
@@ -66,25 +66,33 @@ describe("bustDart lego block", () => {
     const inch = calculateBustDart(baseInput({ measurementDisplayUnit: "in" }));
     const metric = calculateBustDart(baseInput({ measurementDisplayUnit: "cm" }));
     expect(inch.instructionParagraphs[0]).toBe(
-      "Stop the row counter at RC 133, 1″ below the armhole opening.",
+      "Disengage the row counter at RC 133, 1″ below the armhole opening.",
     );
     expect(metric.instructionParagraphs[0]).toBe(
-      "Stop the row counter at RC 133, 2.5 cm below the armhole opening.",
+      "Disengage the row counter at RC 133, 2.5 cm below the armhole opening.",
     );
     expect(metric.instructionParagraphs.join("\n")).not.toMatch(/″|1"/);
     expect(inch.dartStartGarmentRc).toBe(metric.dartStartGarmentRc);
     expect(inch.placementOffsetRows).toBe(metric.placementOffsetRows);
   });
 
-  it("ends sweater dart instructions after RC reset — Front BODY owns knit-to-armhole", () => {
+  it("keeps the counter disengaged through the holds, then re-engages the same RC", () => {
     const r = calculateBustDart(baseInput());
     expect(r.active).toBe(true);
     const text = r.instructionParagraphs.join("\n");
-    expect(text).toMatch(/Reset the row counter to RC 133/);
+    expect(r.instructionParagraphs[0]).toBe(
+      "Disengage the row counter at RC 133, 1″ below the armhole opening.",
+    );
     expect(text).toMatch(/Turn off the hold settings\./);
+    expect(text).not.toMatch(/Reset the row counter/i);
+    expect(text).not.toMatch(/Stop the row counter/i);
     expect(text).not.toMatch(/Continue knitting across all stitches to RC/i);
     expect(text).not.toMatch(/to RC 140 \(armhole opening\)/i);
-    expect(r.instructionParagraphs.at(-1)).toMatch(/^Reset the row counter to RC 133/);
+    const turnOffAt = r.instructionParagraphs.findIndex((line) => line === "Turn off the hold settings.");
+    expect(turnOffAt).toBeGreaterThan(0);
+    expect(r.instructionParagraphs.at(-1)).toBe("Re-engage the row counter, still at RC 133.");
+    expect(turnOffAt).toBeLessThan(r.instructionParagraphs.length - 1);
+    expect(r.dartStartGarmentRc).toBe(133);
   });
 
   it("cardigan uses armhole-edge placement wording (not both-sides-of-center)", () => {
