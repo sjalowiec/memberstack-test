@@ -10,6 +10,11 @@ import {
 } from "./legoBlocks/bustDart";
 import { shapingActionRowNumbers } from "./evenShapingSchedule";
 import { hemSectionRow } from "./legoBlocks/hem";
+import {
+  omitSweaterBodyHemTechniqueTip,
+  sweaterBodyHemChoiceDisplay,
+  sweaterBodyHemTechniqueTipFields,
+} from "./sweaterBodyHemInstructions";
 import { formatRowCounterResetGarmentRcLabel, RESET_ROW_COUNTER_TEXT } from "./rowCounterReset";
 import { parseInlineMarkedLine } from "./inlineRcHeading";
 import {
@@ -1922,14 +1927,19 @@ export function buildSleevelessBackDisplayRows(args: {
   });
 
   rows.push(hemSectionRow());
+  const hemChoices = args.hemRowsValid ? sweaterBodyHemChoiceDisplay(A, ribs) : null;
   rows.push({
     kind: "block",
     rc: hemRcLabel,
-    paragraphs: args.hemRowsValid
-      ? plainKnitSpanParagraphs(ribs, 0)
+    paragraphs: hemChoices
+      ? hemChoices.paragraphs
       : [
           "Hem rows could not be calculated — check row gauge and sizing chart. Knit your hem to the depth you prefer, then continue.",
         ],
+    ...(hemChoices ? { trustedParagraphs: hemChoices.trustedParagraphs } : {}),
+    ...(hemChoices && (args.castOnForPieceLabel ?? "the back") === "the back"
+      ? sweaterBodyHemTechniqueTipFields()
+      : {}),
     stitchCount: A > 0 ? A : undefined,
   });
 
@@ -2569,12 +2579,13 @@ export function buildSleevelessFrontDisplayRows(args: {
     if (row.tipId?.startsWith("sleeveless-piece-markers-")) {
       continue;
     }
+    const [copied] = omitSweaterBodyHemTechniqueTip([row]);
     sharedRows.push({
-      ...row,
-      paragraphs: row.paragraphs.map((p) =>
+      ...copied,
+      paragraphs: copied.paragraphs.map((p) =>
         p.replace(/\bfor the back\b/gi, (m) => (m[0] === "f" ? "for the front" : "For the front"))
       ),
-      ...(row.tipId === "sleeveless-cast-on-back" ? { tipId: "sleeveless-cast-on-front" } : {}),
+      ...(copied.tipId === "sleeveless-cast-on-back" ? { tipId: "sleeveless-cast-on-front" } : {}),
     });
   }
 

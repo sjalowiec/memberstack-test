@@ -25,6 +25,16 @@ export const PATTERN_PRINT_CHOICES = [
 
 export type PatternPrintChoice = (typeof PATTERN_PRINT_CHOICES)[number]["id"];
 
+export const PATTERN_PRINT_INCLUDE_TIPS_LABEL = "Include Pattern Tips";
+
+export const PATTERN_PRINT_INCLUDE_TIPS_HELP =
+  "Use less paper by leaving tips out. Your complete knitting instructions will still print.";
+
+export type PatternPrintSelection = {
+  choice: PatternPrintChoice;
+  includeTips: boolean;
+};
+
 export const PATTERN_PRINT_CHOICE_REMINDER =
   "You can also follow your pattern on a computer, tablet, or phone beside your knitting machine, with access to videos and interactive help.";
 

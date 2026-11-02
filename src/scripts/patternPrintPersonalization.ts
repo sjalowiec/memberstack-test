@@ -64,6 +64,7 @@ let listenersBound = false;
 let lastTrigger: HTMLElement | null = null;
 let pendingOpts: PatternPrintTriggerOptions | undefined;
 let pendingPrintChoice: PatternPrintChoice = "both";
+let pendingIncludeTips = false;
 let pendingPrintRestore: (() => void) | null = null;
 
 function getDialog(): HTMLDialogElement | null {
@@ -275,7 +276,9 @@ function runPatternPrint(opts?: PatternPrintTriggerOptions, printTitle = ""): vo
   prepareSavedMemberNotesForPrint();
   syncAllPatternTipDismissBeforePrint();
   restorePatternPrintLayout();
-  pendingPrintRestore = applyPatternPrintLayout(document, pendingPrintChoice);
+  pendingPrintRestore = applyPatternPrintLayout(document, pendingPrintChoice, {
+    includeTips: pendingIncludeTips,
+  });
   const restoreAfterPrint = (): void => {
     window.removeEventListener("afterprint", restoreAfterPrint);
     restorePatternPrintLayout();
@@ -358,9 +361,10 @@ export function triggerPatternPrint(
   triggerEl: HTMLElement | null,
   opts?: PatternPrintTriggerOptions,
 ): void {
-  void openPatternPrintChoiceDialog(triggerEl).then((choice) => {
-    if (!choice) return;
-    pendingPrintChoice = choice;
+  void openPatternPrintChoiceDialog(triggerEl).then((selection) => {
+    if (!selection) return;
+    pendingPrintChoice = selection.choice;
+    pendingIncludeTips = selection.includeTips;
     beginPatternPrint(triggerEl, opts);
   });
 }

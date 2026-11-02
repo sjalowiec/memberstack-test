@@ -150,7 +150,7 @@
   .section-divider,
   .no-print,
   button[type="submit"],
-  button[type="button"]:not(.print-visible) {
+  button[type="button"]:not(.print-visible):not(.glossary-tooltip-trigger) {
     display: none !important;
   }
 

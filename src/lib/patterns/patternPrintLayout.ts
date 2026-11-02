@@ -203,11 +203,28 @@ function hostForAppendix(doc: Document): HTMLElement {
  * Apply a print choice to the live document. Call the returned function after printing
  * so the on-screen pattern is unchanged.
  */
-export function applyPatternPrintLayout(doc: Document, choice: PatternPrintChoice): () => void {
+export function applyPatternPrintLayout(
+  doc: Document,
+  choice: PatternPrintChoice,
+  options?: { includeTips?: boolean },
+): () => void {
   const root = doc.documentElement;
   const previous = root.dataset.patternPrintChoice;
+  const previousTips = root.dataset.patternPrintIncludeTips;
   root.dataset.patternPrintChoice = choice;
+  const includeTips = options?.includeTips === true && choice !== "charts";
+  root.dataset.patternPrintIncludeTips = includeTips ? "true" : "false";
   const cleanups: Array<() => void> = [];
+  if (includeTips) {
+    doc.querySelectorAll<HTMLDetailsElement>(".pattern-tip details").forEach((details) => {
+      if (details.closest(".pattern-tip.no-print, .pattern-tips-control-box")) return;
+      const wasOpen = details.open;
+      details.open = true;
+      cleanups.push(() => {
+        details.open = wasOpen;
+      });
+    });
+  }
   const project = projectTitle(doc);
   const roots = chartRoots(doc);
   markPieceHeadings(doc, roots, cleanups);
@@ -287,5 +304,7 @@ export function applyPatternPrintLayout(doc: Document, choice: PatternPrintChoic
     for (const cleanup of cleanups.reverse()) cleanup();
     if (previous) root.dataset.patternPrintChoice = previous;
     else delete root.dataset.patternPrintChoice;
+    if (previousTips) root.dataset.patternPrintIncludeTips = previousTips;
+    else delete root.dataset.patternPrintIncludeTips;
   };
 }
