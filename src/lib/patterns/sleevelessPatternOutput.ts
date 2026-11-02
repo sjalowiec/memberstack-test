@@ -13,6 +13,7 @@ import { hemSectionRow } from "./legoBlocks/hem";
 import {
   omitSweaterBodyHemTechniqueTip,
   sweaterBodyHemChoiceDisplay,
+  sweaterBodyHemFrontDisplay,
   sweaterBodyHemTechniqueTipFields,
 } from "./sweaterBodyHemInstructions";
 import { formatRowCounterResetGarmentRcLabel, RESET_ROW_COUNTER_TEXT } from "./rowCounterReset";
@@ -1927,7 +1928,12 @@ export function buildSleevelessBackDisplayRows(args: {
   });
 
   rows.push(hemSectionRow());
-  const hemChoices = args.hemRowsValid ? sweaterBodyHemChoiceDisplay(A, ribs) : null;
+  const hemForBack = (args.castOnForPieceLabel ?? "the back") === "the back";
+  const hemChoices = args.hemRowsValid
+    ? hemForBack
+      ? sweaterBodyHemChoiceDisplay(A, ribs)
+      : sweaterBodyHemFrontDisplay(A, ribs)
+    : null;
   rows.push({
     kind: "block",
     rc: hemRcLabel,
@@ -1937,9 +1943,7 @@ export function buildSleevelessBackDisplayRows(args: {
           "Hem rows could not be calculated — check row gauge and sizing chart. Knit your hem to the depth you prefer, then continue.",
         ],
     ...(hemChoices ? { trustedParagraphs: hemChoices.trustedParagraphs } : {}),
-    ...(hemChoices && (args.castOnForPieceLabel ?? "the back") === "the back"
-      ? sweaterBodyHemTechniqueTipFields()
-      : {}),
+    ...(hemChoices && hemForBack ? sweaterBodyHemTechniqueTipFields(A, ribs) : {}),
     stitchCount: A > 0 ? A : undefined,
   });
 
@@ -2580,11 +2584,23 @@ export function buildSleevelessFrontDisplayRows(args: {
       continue;
     }
     const [copied] = omitSweaterBodyHemTechniqueTip([row]);
+    const asFrontHem = (lines: string[]) => {
+      const rcLine = lines.find((line) => line.includes("When the hem is complete, the row counter shows"));
+      if (!lines.some((line) => line.includes("The finished hem is "))) return lines;
+      return ["Finish your hem to match the back.", ...(rcLine ? [rcLine] : [])];
+    };
     sharedRows.push({
       ...copied,
-      paragraphs: copied.paragraphs.map((p) =>
+      paragraphs: asFrontHem(copied.paragraphs).map((p) =>
         p.replace(/\bfor the back\b/gi, (m) => (m[0] === "f" ? "for the front" : "For the front"))
       ),
+      ...(copied.trustedParagraphs
+        ? {
+            trustedParagraphs: asFrontHem(copied.trustedParagraphs).map((p) =>
+              p.replace(/\bfor the back\b/gi, (m) => (m[0] === "f" ? "for the front" : "For the front"))
+            ),
+          }
+        : {}),
       ...(copied.tipId === "sleeveless-cast-on-back" ? { tipId: "sleeveless-cast-on-front" } : {}),
     });
   }

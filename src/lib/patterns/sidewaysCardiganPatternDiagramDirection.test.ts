@@ -460,7 +460,8 @@ describe.each(["cardigan", "pullover"] as const)("Sideways %s diagram direction 
     expect(shell).toContain("data-sleeveless-diagram-enlarge");
     expect(shell).toContain("sideways-pattern-diagram-print-heading");
     expect(printCss).toContain(`.${SLEEVELESS_DIAGRAM_INLINE_CLASS}`);
-    expect(printCss).toContain("max-width: 2.6in");
+    expect(printCss).toContain("max-width: none");
+    expect(printCss).not.toContain("max-width: 2.6in");
     expect(printCss).toContain("overflow: visible");
     expect(page).toContain("pattern-diagram-tabs.css");
     expect(page).toContain(".sideways-pattern-diagram-print-heading");

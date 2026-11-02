@@ -30,11 +30,12 @@ describe("ns-shaping-chart print layout regression", () => {
     expect(printCss).toMatch(/\.ns-shaping-chart__table[\s\S]*width:\s*100%\s*!important/);
   });
 
-  it("spans shaping charts across the garment print grid diagram column", () => {
-    expect(sharedPrintCss).toMatch(/--garment-print-diagram-track:\s*2\.6in/);
+  it("prints diagrams at full content width and keeps charts on that same width", () => {
+    expect(sharedPrintCss).toMatch(/--garment-print-diagram-track:\s*0in/);
     expect(sharedPrintCss).toMatch(
-      /\.sleeveless-piece-split__text[\s\S]*\.ns-shaping-chart[\s\S]*margin-right:\s*calc/,
+      /\.sleeveless-piece-split__diagram svg[\s\S]*max-width:\s*none\s*!important/,
     );
+    expect(sharedPrintCss).not.toMatch(/max-width:\s*2\.6in/);
     expect(sharedPrintCss).toMatch(
       /#front-neckline-shoulder-chart-print-area[\s\S]*max-width:\s*none\s*!important/,
     );

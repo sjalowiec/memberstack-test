@@ -136,6 +136,11 @@ describe("sweater pattern hem instructions", () => {
     expect(back).toContain(`RC: 000 The finished hem is ${calculated.body.bodyBlock.hemStitches} stitches and ${hemRows} rows deep`);
     expect(back).toContain(`hung hem for ${hemRows * 2} rows. Reset the row counter to ${formatRcColon(hemRows)}.`);
     expect(back).toContain(`Knit in pattern to ${formatRcColon(armholeRc)}.`);
+    const front = setInSleeveInstructionSection(doc, "front");
+    expect(front).toContain("RC: 000 Finish your hem to match the back.");
+    expect(front).toContain(`When the hem is complete, the row counter shows ${formatRcColon(hemRows)}.`);
+    expect(front).not.toContain("hung hem");
+    expect(front).not.toContain("Choose one way to work it:");
     expect(back.indexOf("Choose one way to work it:")).toBeLessThan(
       back.indexOf(`Knit in pattern to ${formatRcColon(armholeRc)}.`),
     );
@@ -169,24 +174,23 @@ describe("sweater pattern hem instructions", () => {
     const sleeveless = generateSleevelessBackPattern(pattern);
     for (const result of [drop, sleeveless]) {
       const hem = hemSectionText(result.displayRows);
+      const finishedRc = formatRcColon(result.debug.hemRows);
       const folded = result.debug.hemRows * 2;
-      expect(hem).toContain(`Work ${result.debug.hemRows} rows of ribbing`);
-      expect(hem).toContain(`hung hem for ${folded} rows. Reset the row counter to ${formatRcColon(result.debug.hemRows)}.`);
-      expect(hem).toContain(`Reset the row counter to ${formatRcColon(result.debug.hemRows)}.`);
-      expect(hem).toContain(`Set the row counter to ${formatRcColon(result.debug.hemRows)}.`);
-      expect(hem).toContain("hung hem");
-      const hemBlock = result.displayRows.find(
-        (row, index) =>
-          row.kind === "block" &&
-          result.displayRows.slice(0, index).some((earlier) => earlier.kind === "section" && earlier.title === "HEM"),
+      expect(hem).toContain("The finished hem is ");
+      expect(hem).toContain(`${result.debug.hemRows} rows deep`);
+      expect(hem).toContain(`When the hem is complete, the row counter shows ${finishedRc}.`);
+      expect(hem).not.toContain("hung hem");
+      expect(hem).not.toContain("Choose one way to work it:");
+      const technique = sweaterBodyHemTechniqueTipBodyHtml(
+        result.debug.backStitches,
+        result.debug.hemRows,
+      ).replace(/<[^>]+>/g, "");
+      expect(technique).toContain(`1. Work ${result.debug.hemRows} rows of ribbing. When the hem is complete, the row counter shows ${finishedRc}.`);
+      expect(technique).toContain(`2. Knit a hung hem for ${folded} rows. Reset the row counter to ${finishedRc}.`);
+      expect(technique).toContain(`3. Knit mock ribbing for ${folded} rows. Reset the row counter to ${finishedRc}.`);
+      expect(technique).toContain(
+        `4. Hand knit ribbing to the finished hem depth and hang its stitches on the machine. Set the row counter to ${finishedRc}.`,
       );
-      expect(hemBlock && hemBlock.kind === "block" ? hemBlock.trustedParagraphs?.join("\n") : "").toContain(
-        `data-glossary-id="${SIDEWAYS_HUNG_HEM_GLOSSARY_ID}"`,
-      );
-      const technique = sweaterBodyHemTechniqueTipBodyHtml();
-      expect(technique).toContain("needle arrangement of your choice");
-      expect(technique).toContain("so the hem can be folded");
-      expect(technique).toContain("hang its stitches on the machine");
       const backTip = result.displayRows.find(
         (row) => row.kind === "block" && row.tipId === SWEATER_BODY_HEM_TECHNIQUE_TIP_ID,
       );
@@ -194,10 +198,18 @@ describe("sweater pattern hem instructions", () => {
         (row) => row.kind === "block" && row.tipId === SWEATER_BODY_HEM_TECHNIQUE_TIP_ID,
       );
       expect(backTip && backTip.kind === "block" ? backTip.tipHtml : "").toContain("Hem methods");
+      expect(backTip && backTip.kind === "block" ? backTip.tipHtml : "").toContain(
+        `data-glossary-id="${SIDEWAYS_HUNG_HEM_GLOSSARY_ID}"`,
+      );
+      expect(backTip && backTip.kind === "block" ? backTip.tipHtml.replace(/<[^>]+>/g, "") : "").toContain(
+        `hung hem for ${folded} rows`,
+      );
       expect(frontTip).toBeUndefined();
       const frontHem = hemSectionText(result.frontDisplayRows);
-      expect(frontHem).toContain(`Work ${result.debug.hemRows} rows of ribbing`);
-      expect(frontHem).not.toContain("needle arrangement of your choice");
+      expect(frontHem).toContain("Finish your hem to match the back.");
+      expect(frontHem).toContain(`When the hem is complete, the row counter shows ${finishedRc}.`);
+      expect(frontHem).not.toContain("hung hem");
+      expect(frontHem).not.toContain("Work ");
       expect(bodyStartRc(result.displayRows)).toBe(formatRcColon(result.debug.hemRows));
       expect(result.debug.rowsFromCastOnToArmholeStart).toBe(result.debug.hemRows + result.debug.bodyRows);
     }

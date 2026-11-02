@@ -92,14 +92,15 @@ describe("pattern print choices", () => {
     expect(personalization).toContain("applyPatternPrintLayout");
     const dialog = readFileSync("src/scripts/patternPrintChoiceDialog.ts", "utf8");
     const choiceSource = readFileSync("src/lib/patterns/patternPrintChoice.ts", "utf8");
-    expect(choiceSource).toContain('Include Pattern Tips');
+    expect(choiceSource).toContain("Hide Pattern Tips");
     expect(choiceSource).toContain(
-      "Use less paper by leaving tips out. Your complete knitting instructions will still print.",
+      "Use less paper by leaving tips out. Your complete knitting instructions will still print. Uncheck to include tips.",
     );
-    expect(dialog).toContain("PATTERN_PRINT_INCLUDE_TIPS_LABEL");
-    expect(dialog).toContain("PATTERN_PRINT_INCLUDE_TIPS_HELP");
-    expect(dialog).toContain('name="pattern-print-include-tips"');
-    expect(dialog).not.toContain('name="pattern-print-include-tips" checked');
+    expect(dialog).toContain("PATTERN_PRINT_HIDE_TIPS_LABEL");
+    expect(dialog).toContain("PATTERN_PRINT_HIDE_TIPS_HELP");
+    expect(dialog).toContain('name="pattern-print-hide-tips"');
+    expect(dialog).toContain('data-pattern-print-hide-tips value="yes" checked');
+    expect(dialog).toContain("box?.checked !== true");
     const css = readFileSync("src/styles/patterns/pattern-print-choice.css", "utf8");
     expect(css).toContain('html[data-pattern-print-choice="instructions"]');
     expect(css).toContain('html[data-pattern-print-choice="charts"]');
