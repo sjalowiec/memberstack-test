@@ -42,7 +42,7 @@ const ARROW = "#52682d";
 const FONT = "Poppins, system-ui, Arial, sans-serif";
 const FS_STITCH = 17;
 const FS_SECONDARY = 14;
-const LINE_GAP = 18;
+const LINE_GAP = 26;
 /**
  * Start-anchored row labels ("218 rows") begin just right of the body.
  * The garment canvas stays 400 wide; this extra viewBox width is only so
@@ -208,7 +208,7 @@ function drawMeasurements(model: SleevelessBackStsRowsDiagramModel, frame: Frame
   const totalArrowX = Math.max(40, frame.left - 24);
   const hemArrowX = Math.max(totalArrowX + 12, frame.left - 10);
   const leftGutterLabelX = 34;
-  const hemLineGap = 22;
+  const hemLineGap = 26;
   const rightArrowX = Math.min(VB_W - 28, frame.right + 22);
   const rightLabelX = Math.min(VB_W - 12, rightArrowX + 22);
   const neckDepthX = Math.min(frame.cx - 22, frame.neckLeft - 12);
@@ -298,17 +298,24 @@ function drawMeasurements(model: SleevelessBackStsRowsDiagramModel, frame: Frame
   );
 
   if (model.neckline.depthRows > 0) {
+    const neckLines = countLines(
+      model.neckline.depthRows,
+      "rows",
+      finished.neckDepthInches,
+      unit,
+      ` data-rows="${fmtNum(model.neckline.depthRows)}"`,
+    );
+    const neckLabelWidth = Math.max(...neckLines.map((line) => line.text.length * FS_STITCH * 0.56));
+    const neckLabelX = Math.max(8, neckDepthX - 12 - neckLabelWidth / 2);
     parts.push(
       verticalArrow(
         neckDepthX,
         frame.neckCornerY,
         frame.neckStartY,
-        neckDepthX - 20,
+        neckLabelX,
         "length-measurement",
         "neck-depth",
-        [
-          ...countLines(model.neckline.depthRows, "rows", finished.neckDepthInches, unit, ` data-rows="${fmtNum(model.neckline.depthRows)}"`),
-        ],
+        neckLines,
       ),
     );
   }
@@ -343,7 +350,7 @@ function drawMeasurements(model: SleevelessBackStsRowsDiagramModel, frame: Frame
   );
 
   const neckArrowY = Math.min(frame.neckCornerY + 14, frame.neckStartY - 24);
-  const neckLabelY = Math.min(frame.shoulderTopY - 22, neckArrowY - 26);
+  const neckLabelY = Math.min(frame.shoulderTopY - 26, neckArrowY - 30);
   parts.push(
     horizontalArrow(
       neckArrowY,
