@@ -30,10 +30,13 @@ describe("ns-shaping-chart print layout regression", () => {
     expect(printCss).toMatch(/\.ns-shaping-chart__table[\s\S]*width:\s*100%\s*!important/);
   });
 
-  it("prints diagrams at full content width and keeps charts on that same width", () => {
+  it("prints the two diagrams for a piece side by side and keeps charts full width", () => {
     expect(sharedPrintCss).toMatch(/--garment-print-diagram-track:\s*0in/);
     expect(sharedPrintCss).toMatch(
-      /\.sleeveless-piece-split__diagram svg[\s\S]*max-width:\s*none\s*!important/,
+      /\.sleeveless-pattern-diagram-tabs \{[\s\S]*grid-template-columns:\s*minmax\(0,\s*1fr\)\s*minmax\(0,\s*1fr\)/,
+    );
+    expect(sharedPrintCss).toMatch(
+      /\.sleeveless-piece-split__diagram svg[\s\S]*max-width:\s*100%\s*!important/,
     );
     expect(sharedPrintCss).not.toMatch(/max-width:\s*2\.6in/);
     expect(sharedPrintCss).toMatch(

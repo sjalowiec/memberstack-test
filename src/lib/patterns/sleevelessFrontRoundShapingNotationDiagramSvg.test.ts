@@ -374,7 +374,7 @@ describe("buildSleevelessFrontRoundShapingNotationDiagramSvg", () => {
     expect(armholeBo[0]!.x).toBeCloseTo(287.44, 2);
     expect(armholeBo[0]!.y).toBeCloseTo(184.43, 2);
     expect(armholeShaping[0]!.x).toBeCloseTo(287.44, 2);
-    expect(armholeShaping[0]!.y).toBeCloseTo(166.43, 2);
+    expect(armholeShaping[0]!.y).toBeCloseTo(160.43, 2);
     expect(shoulder[0]!.x).toBeCloseTo(254.76, 2);
     expect(Math.max(...shoulder.map((p) => p.y))).toBeCloseTo(86.46, 2);
   });
@@ -426,8 +426,8 @@ describe("buildSleevelessFrontRoundShapingNotationDiagramSvg", () => {
     const svg = buildSleevelessFrontRoundShapingNotationDiagramSvg(result, pattern);
     const sts = tryBuildLiveSleevelessFrontStsRowsDiagramSvg(result, pattern);
     expect(sts).toBeTruthy();
-    expect(sts).toContain('font-size="17"');
-    expect(sts).toContain('font-size="14"');
+    expect(sts).toContain('font-size="22"');
+    expect(sts).toContain('font-size="18"');
     expect(SLEEVELESS_FRONT_ROUND_NOTATION_FS_NOTATION).toBe(17);
     expect(SLEEVELESS_FRONT_ROUND_NOTATION_FS_RC).toBe(14);
 

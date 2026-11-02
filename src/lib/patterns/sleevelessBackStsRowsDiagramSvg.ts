@@ -40,15 +40,15 @@ const FILL = "#f4f6f1";
 const MUTED = "#4b5563";
 const ARROW = "#52682d";
 const FONT = "Poppins, system-ui, Arial, sans-serif";
-const FS_STITCH = 17;
-const FS_SECONDARY = 14;
-const LINE_GAP = 26;
+const FS_STITCH = 22;
+const FS_SECONDARY = 18;
+const LINE_GAP = 32;
 /**
  * Start-anchored row labels ("218 rows") begin just right of the body.
  * The garment canvas stays 400 wide; this extra viewBox width is only so
  * those labels are inside the SVG instead of being clipped to "218 ro".
  */
-const RIGHT_ROW_LABEL_CLEARANCE = 96;
+const RIGHT_ROW_LABEL_CLEARANCE = 130;
 
 export { SLEEVELESS_BACK_STS_ROWS_VISUAL };
 export const SLEEVELESS_BACK_STS_ROWS_VIEWBOX = {
@@ -207,8 +207,8 @@ function drawMeasurements(model: SleevelessBackStsRowsDiagramModel, frame: Frame
   const finished = model.finished;
   const totalArrowX = Math.max(40, frame.left - 24);
   const hemArrowX = Math.max(totalArrowX + 12, frame.left - 10);
-  const leftGutterLabelX = 34;
-  const hemLineGap = 26;
+  const leftGutterLabelX = 58;
+  const hemLineGap = 32;
   const rightArrowX = Math.min(VB_W - 28, frame.right + 22);
   const rightLabelX = Math.min(VB_W - 12, rightArrowX + 22);
   const neckDepthX = Math.min(frame.cx - 22, frame.neckLeft - 12);

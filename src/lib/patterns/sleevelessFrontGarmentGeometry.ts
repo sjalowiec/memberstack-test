@@ -55,7 +55,7 @@ export function sleevelessFrontMeasurementLastArmholeY(
  * Garment geometry stays on the 400-wide canvas; this extra viewBox width
  * only keeps those labels inside the SVG.
  */
-export const SLEEVELESS_FRONT_STS_ROWS_RIGHT_LABEL_CLEARANCE = 96;
+export const SLEEVELESS_FRONT_STS_ROWS_RIGHT_LABEL_CLEARANCE = 130;
 export const SLEEVELESS_FRONT_STS_ROWS_VIEWBOX = {
   width: SLEEVELESS_FRONT_GARMENT_VB_W + SLEEVELESS_FRONT_STS_ROWS_RIGHT_LABEL_CLEARANCE,
   height: SLEEVELESS_FRONT_GARMENT_VB_H,

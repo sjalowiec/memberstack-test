@@ -28,7 +28,6 @@ import {
   DS_ARROW,
   DS_FILL,
   DS_FONT,
-  DS_FS_TITLE,
   DS_FW_TITLE,
   DS_MUTED,
   DS_STROKE,
@@ -38,14 +37,19 @@ import {
   textFont,
   wrapGeneratedDiagramSvg,
 } from "../dropShoulderPatternDiagramSvgShared";
-import {
-  DS_FS_NOTATION,
-  DS_FS_RC,
-  dropShoulderNotationFontFace,
-} from "../dropShoulderShapingNotationDiagramShared";
+import { dropShoulderNotationFontFace } from "../dropShoulderShapingNotationDiagramShared";
 
-/** Same-side notation needs this much baseline room. Extra columns sit outside the sleeve. */
-const NOTATION_GAP = DS_FS_NOTATION + 7;
+/**
+ * Sleeve drawings are wider than the body drawings, so these sizes are larger
+ * than the shared drop-shoulder constants. At about half a letter page, a
+ * 27-unit label is near 10pt. Spacing stays ahead of the type.
+ */
+const SLEEVE_FS_TITLE = 24;
+const SLEEVE_FS_NOTE = 22;
+const SLEEVE_FS_NOTATION = 27;
+const SLEEVE_FS_RC = 22;
+const NOTATION_GAP = SLEEVE_FS_NOTATION + 10;
+const RC_LABEL_GAP = SLEEVE_FS_RC + 8;
 import {
   placeShapingNotationRcLandmarks,
   renderShapingNotationRcLeaders,
@@ -124,8 +128,9 @@ export type SetInSleeveDiagramModel = {
   rowsPerInch: number;
 };
 
-const LABEL_COUNT = 17;
-const LABEL_MEASURE = 14;
+const LABEL_COUNT = 27;
+const LABEL_MEASURE = 22;
+const LABEL_LINE_GAP = 36;
 
 function bindOffToken(stitches: number): string {
   const n = Math.max(0, Math.round(stitches));
@@ -619,6 +624,7 @@ function countMeasure(
     fill: DS_MUTED,
     countSize: LABEL_COUNT,
     measureSize: LABEL_MEASURE,
+    lineGap: LABEL_LINE_GAP,
     fontFamily: DS_FONT,
     extra,
     transform,
@@ -682,7 +688,7 @@ function drawOverview(frame: SleeveFrame): string {
     `<line data-role="cuff-join" x1="${fmtNum(frame.wristLeft)}" y1="${fmtNum(frame.cuffJoinY)}" x2="${fmtNum(frame.wristRight)}" y2="${fmtNum(frame.cuffJoinY)}" stroke="${DS_STROKE}" stroke-width="1.1" fill="none"/>`,
     `<line data-role="cap-start" data-sleeve-upper-arm-axis="true" x1="${fmtNum(frame.upperLeft)}" y1="${fmtNum(frame.capStartY)}" x2="${fmtNum(frame.upperRight)}" y2="${fmtNum(frame.capStartY)}" stroke="${DS_STROKE}" stroke-width="1.1" fill="none"/>`,
     `<line data-sleeve-length-axis="true" x1="${fmtNum(frame.midX)}" y1="${fmtNum(frame.capStartY)}" x2="${fmtNum(frame.midX)}" y2="${fmtNum(frame.wristY)}" stroke="transparent" stroke-width="1" fill="none"/>`,
-    `<text data-role="sleeve-piece-label" x="${fmtNum(frame.midX)}" y="${fmtNum(titleY)}" text-anchor="middle" dominant-baseline="middle" fill="${DS_STROKE}" ${textFont(DS_FS_TITLE, DS_FW_TITLE)}>SLEEVE</text>`,
+    `<text data-role="sleeve-piece-label" x="${fmtNum(frame.midX)}" y="${fmtNum(titleY)}" text-anchor="middle" dominant-baseline="middle" fill="${DS_STROKE}" ${textFont(SLEEVE_FS_TITLE, DS_FW_TITLE)}>SLEEVE</text>`,
   ].join("");
 }
 
@@ -696,10 +702,10 @@ function stitchesRowsBands(capTopY: number): {
   capLabelY: number;
   capLineY: number;
 } {
-  const capLineY = capTopY - 18;
-  const capLabelY = capLineY - 42;
-  const lengthNoteY = capLabelY - 40;
-  const lengthCaptionY = lengthNoteY - 24;
+  const capLineY = capTopY - 22;
+  const capLabelY = capLineY - 56;
+  const lengthNoteY = capLabelY - 50;
+  const lengthCaptionY = lengthNoteY - 34;
   return { lengthCaptionY, lengthNoteY, capLabelY, capLineY };
 }
 
@@ -709,8 +715,8 @@ function sleeveLengthCaption(frame: SleeveFrame, model: SetInSleeveDiagramModel)
   const bands = stitchesRowsBands(frame.capTopY);
   return [
     `<g class="set-in-sleeve-diagram__sleeve-length" data-sleeve-length="true">`,
-    `<text data-role="sleeve-length-caption" x="${fmtNum(frame.midX)}" y="${fmtNum(bands.lengthCaptionY)}" text-anchor="middle" fill="${DS_STROKE}" ${textFont(DS_FS_TITLE, DS_FW_TITLE)}>Sleeve length ${escapeXml(measure)}</text>`,
-    `<text data-role="sleeve-length-note" x="${fmtNum(frame.midX)}" y="${fmtNum(bands.lengthNoteY)}" text-anchor="middle" fill="${DS_MUTED}" ${textFont(15)}>cuff to underarm, not including the cap</text>`,
+    `<text data-role="sleeve-length-caption" x="${fmtNum(frame.midX)}" y="${fmtNum(bands.lengthCaptionY)}" text-anchor="middle" fill="${DS_STROKE}" ${textFont(SLEEVE_FS_TITLE, DS_FW_TITLE)}>Sleeve length ${escapeXml(measure)}</text>`,
+    `<text data-role="sleeve-length-note" x="${fmtNum(frame.midX)}" y="${fmtNum(bands.lengthNoteY)}" text-anchor="middle" fill="${DS_MUTED}" ${textFont(SLEEVE_FS_NOTE)}>cuff to underarm, not including the cap</text>`,
     `</g>`,
   ].join("");
 }
@@ -850,8 +856,8 @@ function separateCloseRcLabels(placed: PlacedShapingNotationRcLeader[]): void {
     const previous = sorted[index - 1]!;
     const label = sorted[index]!;
     if (Math.abs(label.labelX - previous.labelX) > 48) continue;
-    if (label.labelY - previous.labelY >= 22) continue;
-    label.labelY = previous.labelY + 22;
+    if (label.labelY - previous.labelY >= RC_LABEL_GAP) continue;
+    label.labelY = previous.labelY + RC_LABEL_GAP;
     label.stacked = true;
   }
 }
@@ -865,10 +871,10 @@ function drawRcLandmarks(
   const placed = placeShapingNotationRcLandmarks({
     landmarks: sectionRcMarks(model, frame, includeShaping),
     side: "left",
-    fontSize: DS_FS_RC,
+    fontSize: SLEEVE_FS_RC,
     bounds: { minX: 4, minY: 14, maxX: frame.canvasWidth - 4, maxY: frame.canvasHeight - 10 },
     obstacles,
-    labelGap: 28,
+    labelGap: RC_LABEL_GAP,
   });
   separateCloseRcLabels(placed);
   return renderShapingNotationRcLeaders({
@@ -884,7 +890,7 @@ function notationText(label: SleeveNotationLabel): string {
   if (!label.text) return "";
   return (
     `<text data-role="${escapeXml(label.role)}" x="${fmtNum(label.x)}" y="${fmtNum(label.y)}"` +
-    ` text-anchor="${label.anchor}" fill="${DS_MUTED}" ${textFont(DS_FS_NOTATION)}${label.extra}>${escapeXml(label.text)}</text>`
+    ` text-anchor="${label.anchor}" fill="${DS_MUTED}" ${textFont(SLEEVE_FS_NOTATION)}${label.extra}>${escapeXml(label.text)}</text>`
   );
 }
 
@@ -895,7 +901,7 @@ function outsideLabel(
   side: "left" | "right",
 ): { x: number; anchor: "start" | "end" } {
   const outline = sideX(frame, y, side);
-  const width = Math.max(DS_FS_NOTATION, text.length * DS_FS_NOTATION * 0.56);
+  const width = Math.max(SLEEVE_FS_NOTATION, text.length * SLEEVE_FS_NOTATION * 0.56);
   if (side === "right") {
     const preferred = outline + 10;
     const maxX = frame.canvasWidth - 8 - width;
@@ -1015,7 +1021,7 @@ function bodyNotationLabels(model: SetInSleeveDiagramModel, frame: SleeveFrame):
     castOnLabel: `co${model.wristStitches} sts`,
     bindOffLabel: "",
     workingTokens,
-    fontSize: DS_FS_NOTATION,
+    fontSize: SLEEVE_FS_NOTATION,
     canvasRight: frame.canvasWidth,
   });
   return labels.map((label) => {
@@ -1030,8 +1036,8 @@ function leftNotationObstacles(labels: readonly SleeveNotationLabel[]): ShapingN
   return labels
     .filter((label) => label.anchor === "end")
     .map((label) => {
-      const width = Math.max(DS_FS_NOTATION, label.text.length * DS_FS_NOTATION * 0.56);
-      return { x: label.x - width, y: label.y - DS_FS_NOTATION, w: width, h: DS_FS_NOTATION + 4 };
+      const width = Math.max(SLEEVE_FS_NOTATION, label.text.length * SLEEVE_FS_NOTATION * 0.56);
+      return { x: label.x - width, y: label.y - SLEEVE_FS_NOTATION, w: width, h: SLEEVE_FS_NOTATION + 4 };
     });
 }
 
