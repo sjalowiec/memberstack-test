@@ -43,6 +43,8 @@ const FONT = "Poppins, system-ui, Arial, sans-serif";
 const FS_STITCH = 22;
 const FS_SECONDARY = 18;
 const LINE_GAP = 32;
+/** The hem width measure sits below the cast-on arrow. This keeps that line inside the frame. */
+const BOTTOM_LABEL_CLEARANCE = 22;
 /**
  * Start-anchored row labels ("218 rows") begin just right of the body.
  * The garment canvas stays 400 wide; this extra viewBox width is only so
@@ -53,7 +55,7 @@ const RIGHT_ROW_LABEL_CLEARANCE = 130;
 export { SLEEVELESS_BACK_STS_ROWS_VISUAL };
 export const SLEEVELESS_BACK_STS_ROWS_VIEWBOX = {
   width: VB_W + RIGHT_ROW_LABEL_CLEARANCE,
-  height: VB_H,
+  height: VB_H + BOTTOM_LABEL_CLEARANCE,
 } as const;
 
 type Frame = SleevelessBackGarmentFrame;

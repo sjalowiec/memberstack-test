@@ -205,6 +205,10 @@ describe("buildSleevelessBackStsRowsDiagramSvg", () => {
     expect(lengthLabelRows(svg, "neck-depth")).toBe(model.neckline.depthRows);
     expect(svg).toContain(formatPatternDiagramMeasurement(model.finished.bustWidthInches, "in"));
     expect(svg).toContain(formatPatternDiagramMeasurement(model.finished.garmentLengthInches, "in"));
+    const castOnYs = [...svg.matchAll(/data-role="width-measurement" data-measure="cast-on"[^>]* y="([^"]+)"/g)].map(
+      (match) => Number(match[1]),
+    );
+    expect(Math.max(...castOnYs) + 9).toBeLessThan(SLEEVELESS_BACK_STS_ROWS_VIEWBOX.height - 8);
   });
 
   it("derives post-armhole width from the Back stitch budget", () => {
