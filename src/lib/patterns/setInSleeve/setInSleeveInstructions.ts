@@ -35,6 +35,7 @@ import { formatRepeatedShapingInstruction } from "../legoBlocks/repeatedShapingI
 import { formatParentheticalRcList, normalizeParentheticalRcLists } from "../parentheticalRcList";
 import { RESET_ROW_COUNTER_TEXT } from "../rowCounterReset";
 import { cuffUpSleeveBodyRowCounterResetBlock } from "../legoBlocks/cuffUpSleeveRowCounter";
+import { buildPatternQuickTipInnerHtml } from "../patternQuickTip";
 import { sidewaysCuffUpCuffChoiceLines } from "../sidewaysCardiganSleeveCuffCopy";
 import {
   cuffUpNoRibbingCastOnSentence,
@@ -113,6 +114,33 @@ const KNIT_OTHER_ROWS =
  * Hem depth resets and the second-shoulder counter instruction stay in their own writers.
  */
 const SET_IN_ROW_COUNTER_RESET = "Reset row counter to RC: 000.";
+const SET_IN_CUFF_METHODS_TIP_ID = "set-in-sleeve-cuff-methods";
+const SET_IN_CUFF_CHOOSE = "Choose one way to begin:";
+
+/** Keep the existing finished-cuff sentence, and the existing four steps for the tip. */
+function splitSetInCuffChoiceLines(lines: readonly string[]): { summary: string; methods: string[] } {
+  const [lead = "", ...steps] = lines;
+  const marker = ` ${SET_IN_CUFF_CHOOSE}`;
+  const summary = lead.endsWith(marker) ? lead.slice(0, -marker.length) : lead;
+  return { summary, methods: [SET_IN_CUFF_CHOOSE, ...steps] };
+}
+
+function setInCuffMethodsTipFields(methodLines: readonly string[]): {
+  tipHtml: string;
+  tipHtmlIsFull: true;
+  tipPresentation: "quick-tip";
+  tipId: string;
+} {
+  return {
+    tipHtml: buildPatternQuickTipInnerHtml({
+      summaryLabel: "Cuff methods",
+      bodyHtml: methodLines.map((line) => `<p>${line}</p>`).join(""),
+    }),
+    tipHtmlIsFull: true,
+    tipPresentation: "quick-tip",
+    tipId: SET_IN_CUFF_METHODS_TIP_ID,
+  };
+}
 
 /** One armhole step. `plainText` keeps the written document; screen and print use the fields. */
 export type SetInArmholeDisplayBlock = {
@@ -554,13 +582,15 @@ export function buildSetInCuffUpSleevePresentation(
   const capLines = capModel.lines.map((line) => line.text);
   const omitRibbing = sleeveCuffRibbingOmitted(input.cuffRows);
   const cuffChoiceHtml = omitRibbing
-    ? []
-    : sidewaysCuffUpCuffChoiceLines(input.wristStitches, input.cuffRows);
+    ? { summary: "", methods: [] as string[] }
+    : splitSetInCuffChoiceLines(sidewaysCuffUpCuffChoiceLines(input.wristStitches, input.cuffRows));
   const cuffChoicePlain = omitRibbing
-    ? [cuffUpNoRibbingCastOnSentence(input.wristStitches)]
-    : sidewaysCuffUpCuffChoiceLines(input.wristStitches, input.cuffRows, {
-        plainText: true,
-      });
+    ? { summary: cuffUpNoRibbingCastOnSentence(input.wristStitches), methods: [] as string[] }
+    : splitSetInCuffChoiceLines(
+        sidewaysCuffUpCuffChoiceLines(input.wristStitches, input.cuffRows, {
+          plainText: true,
+        }),
+      );
   const cuffLines = omitRibbing
     ? [
         "Make 2 sleeves.",
@@ -623,7 +653,7 @@ export function buildSetInCuffUpSleevePresentation(
           {
             kind: "block" as const,
             rc: formatRcColon(0),
-            paragraphs: cuffChoicePlain,
+            paragraphs: [cuffChoicePlain.summary],
             stitchCount: input.wristStitches > 0 ? input.wristStitches : undefined,
           },
         ]
@@ -632,9 +662,10 @@ export function buildSetInCuffUpSleevePresentation(
           {
             kind: "block" as const,
             rc: formatRcColon(0),
-            paragraphs: cuffChoicePlain,
-            trustedParagraphs: cuffChoiceHtml,
+            paragraphs: [cuffChoicePlain.summary],
+            trustedParagraphs: [cuffChoiceHtml.summary],
             stitchCount: input.wristStitches > 0 ? input.wristStitches : undefined,
+            ...setInCuffMethodsTipFields(cuffChoiceHtml.methods),
           },
           cuffUpSleeveBodyRowCounterResetBlock(),
         ]),

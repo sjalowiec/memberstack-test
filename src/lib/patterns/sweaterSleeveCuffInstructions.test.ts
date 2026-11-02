@@ -337,8 +337,33 @@ describe("shared sweater cuff instructions", () => {
       });
       const screen = visible(renderPatternDisplayRowsHtml(pattern.sleeveDisplayRows, { pieceSectionId: "sleeve" }));
       const print = visible(renderSleevelessPrintPieceHtml(pattern.sleeveDisplayRows, "", "sleeve"));
+      const cuffBlock = presentation.displayRows.find(
+        (rowItem) => rowItem.kind === "block" && rowItem.tipId === "set-in-sleeve-cuff-methods",
+      );
+      const cuffParagraphs = cuffBlock && cuffBlock.kind === "block" ? cuffBlock.paragraphs.join("\n") : "";
+      const cuffTip = cuffBlock && cuffBlock.kind === "block" ? cuffBlock.tipHtml ?? "" : "";
+      expect(cuffParagraphs, label).toBe(
+        `The finished cuff is ${sweater.sleeve.wristStitches} stitches and ${cuffRows === 1 ? "1 row" : `${cuffRows} rows`} deep.`,
+      );
+      expect(cuffParagraphs, label).not.toContain("Choose one way to begin");
+      expect(cuffParagraphs, label).not.toContain("1. Cast on");
+      expect(cuffTip, label).toContain("Cuff methods");
+      expect(cuffTip, label).toContain("Choose one way to begin:");
+      expect(cuffTip, label).toContain(
+        `1. Cast on ${sweater.sleeve.wristStitches} stitches in the ribbing needle arrangement of your choice and knit ${cuffRows === 1 ? "1 row" : `${cuffRows} rows`} of ribbing, then transfer the stitches to the main bed to continue the sleeve.`,
+      );
+      expect(cuffTip, label).toContain('data-glossary-id="284"');
+      expect(cuffTip, label).toContain('data-glossary-id="291"');
+      expect(cuffTip, label).toContain(`for ${cuffRows * 2} rows so the hem can be folded.`);
+      expect(cuffTip, label).toContain(
+        "4. Hand knit ribbing to the desired finished cuff depth, then hang its stitches on the machine to continue the sleeve.",
+      );
       for (const html of [screen, print]) {
+        expect(html, label).toContain("Cuff methods");
         expect(html, label).toContain("Choose one way to begin");
+        expect(html, label).toContain(
+          `The finished cuff is ${sweater.sleeve.wristStitches} stitches and ${cuffRows === 1 ? "1 row" : `${cuffRows} rows`} deep.`,
+        );
         expect(html, label).toContain(
           `for ${(pattern.sleevePiece?.cuffRows ?? 0) * 2} rows so the hem can be folded`,
         );

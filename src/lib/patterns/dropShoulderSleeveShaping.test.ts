@@ -1,5 +1,4 @@
 import { describe, expect, it } from "vitest";
-import { formatParentheticalShapingRowNumbers } from "./evenShapingSchedule";
 import { formatParentheticalRcList } from "./parentheticalRcList";
 import {
   dropShoulderSleevePreShapingSpan,
@@ -46,7 +45,7 @@ describe("dropShoulderSleeveShaping", () => {
     expect(
       formatDropShoulderSleeveShapingWrittenLines(plan.shapingDirection, plan.steps, rcList),
     ).toEqual([
-      `Increase 1 stitch at each side every 4 rows 20 times. ${formatParentheticalShapingRowNumbers(rcList)}`,
+      `Increase 1 stitch at each side every 4 rows 20 times. ${formatParentheticalRcList(rcList)}`,
     ]);
   });
 
@@ -59,7 +58,7 @@ describe("dropShoulderSleeveShaping", () => {
     expect(
       formatDropShoulderSleeveShapingWrittenLines(plan.shapingDirection, plan.steps, rcList),
     ).toEqual([
-      `Decrease 1 stitch at each side every 4 rows 20 times. ${formatParentheticalShapingRowNumbers(rcList)}`,
+      `Decrease 1 stitch at each side every 4 rows 20 times. ${formatParentheticalRcList(rcList)}`,
     ]);
   });
 
@@ -74,7 +73,7 @@ describe("dropShoulderSleeveShaping", () => {
       rcList,
     );
     expect(lines).toEqual([
-      `Increase 1 stitch at each side every 6 rows 4 times, then every 8 rows 3 times. ${formatParentheticalShapingRowNumbers(rcList)}`,
+      `Increase 1 stitch at each side every 6 rows 4 times, then every 8 rows 3 times. ${formatParentheticalRcList(rcList)}`,
     ]);
     expect(lines[0]).not.toMatch(/RC: \d+, RC:/);
   });
@@ -87,7 +86,7 @@ describe("dropShoulderSleeveShaping", () => {
       rows,
     );
     expect(line).toBe(
-      `Increase 1 stitch at each side every 6 rows 7 times. <em>${formatParentheticalRcList(rows)}</em>`,
+      `Increase 1 stitch at each side every 6 rows 7 times. ${formatParentheticalRcList(rows)}`,
     );
     expect(formatParentheticalRcList(rows)).toBe("(RC: 006, 012, 018, 024, 030, 036, 042)");
     expect(line).not.toMatch(/RC: \d+, RC:/);
