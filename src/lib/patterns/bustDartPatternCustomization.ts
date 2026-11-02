@@ -21,6 +21,7 @@ import {
   savePatternData,
 } from "./patternStorage";
 import { generateDropShoulderPattern } from "./dropShoulderPatternOutput";
+import { generateSetInSleevePattern } from "./setInSleevePatternOutput";
 import { generateSleevelessBackPattern } from "./sleevelessPatternOutput";
 import {
   BUST_DART_STYLE_KEY,
@@ -166,13 +167,12 @@ export function buildBustDartPatternContext(
     sizeGroup,
   );
   const isDrop = hasAuthoritativeDropShoulderConstruction(style);
-  const setInAudienceLabel = hasAuthoritativeSetInSleeveConstruction(style)
-    ? setInSleeveAdultChartLabel(sizeGroup)
-    : "";
+  const isSetIn = hasAuthoritativeSetInSleeveConstruction(style);
+  const setInAudienceLabel = isSetIn ? setInSleeveAdultChartLabel(sizeGroup) : "";
   const isCardigan = isCardiganStyle(style);
   const frontConstruction: BustDartFrontConstruction = isCardigan ? "cardigan" : "pullover";
 
-  const constructionLabel = isDrop ? "Drop Shoulder" : "Sleeveless";
+  const constructionLabel = isDrop ? "Drop Shoulder" : isSetIn ? "Set-in Sleeve" : "Sleeveless";
   const garmentLabel = isCardigan ? "Cardigan" : "Pullover";
   const fit = section(patternData.fit);
   const selectedMeasurements = section(fit.selectedMeasurements);
@@ -218,7 +218,9 @@ export function buildBustDartPatternContext(
 
   const result = isDrop
     ? generateDropShoulderPattern(patternData)
-    : generateSleevelessBackPattern(patternData);
+    : isSetIn
+      ? generateSetInSleevePattern(patternData)
+      : generateSleevelessBackPattern(patternData);
   const debug = result.debug as Record<string, unknown>;
   const spi = Number(debug.stitchesPerInch) || 0;
   const rpi = Number(debug.rowsPerInch) || 0;
