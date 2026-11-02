@@ -912,8 +912,16 @@ export function buildSleevelessFrontRoundShapingNotationDiagramSvg(
   const shAnchorX = shoulderMidX + (-slopeDy / slopeLen) * SHOULDER_LABEL_GAP;
   const shAnchorY = shoulderMidY + (slopeDx / slopeLen) * SHOULDER_LABEL_GAP;
   const shLastBaseline = shAnchorY;
+  const neckStackText = [...neckShapingLines, labels.neckBo].filter((line) => line.length > 0);
+  const neckStackRight =
+    neckLabelX +
+    Math.max(0, ...neckStackText.map((line) => line.length * FS_NOTATION * 0.7)) / 2;
   const shLabelX = clamp(
-    Math.max(shAnchorX, rightShoulderOutlineXAtY(frame, shLastBaseline) + SHOULDER_OUTLINE_CLEARANCE),
+    Math.max(
+      shAnchorX,
+      rightShoulderOutlineXAtY(frame, shLastBaseline) + SHOULDER_OUTLINE_CLEARANCE,
+      neckStackRight + 10,
+    ),
     frame.neckRight + 4,
     ARMHOLE_LABEL_SAFE_MAX_X,
   );
