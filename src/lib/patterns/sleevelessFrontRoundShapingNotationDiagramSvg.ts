@@ -873,15 +873,17 @@ export function buildSleevelessFrontRoundShapingNotationDiagramSvg(
   const neckShapingLines = labels.neckShaping.split("\n").filter(Boolean);
   const neckLabelX = frame.cx;
   const neckGuideY = frame.neckStartY;
-  const neckBoY = neckGuideY + NECK_BO_BELOW_GUIDE;
   const neckInsideTop = frame.neckCornerY + Math.max(4, Math.round(FS_NOTATION * 0.25));
   const neckCount = neckShapingLines.length;
-  const preferredFirstY = neckGuideY - neckCount * NECK_NOTATION_GAP;
-  const neckShapingStep =
-    neckCount > 0 && preferredFirstY < neckInsideTop
-      ? (neckGuideY - neckInsideTop) / neckCount
-      : NECK_NOTATION_GAP;
-  const neckShapingFirstY = neckGuideY - neckCount * neckShapingStep;
+  const neckShapingStep = NECK_NOTATION_GAP;
+  const upwardFirstY = neckGuideY - neckCount * neckShapingStep;
+  // A shallow scoop cannot hold the stack. Continue it downward through the
+  // upper body instead of crushing the lines together or into the shoulder labels.
+  const neckShapingFirstY = upwardFirstY < neckInsideTop ? neckInsideTop : upwardFirstY;
+  const neckBoY = Math.max(
+    neckGuideY + NECK_BO_BELOW_GUIDE,
+    neckShapingFirstY + neckCount * neckShapingStep,
+  );
   parts.push(
     `<g data-role="neck-label-zone" data-x="${fmtNum(neckLabelX)}" data-y="${fmtNum(neckShapingFirstY)}" data-bo-y="${fmtNum(neckBoY)}"></g>`,
   );
