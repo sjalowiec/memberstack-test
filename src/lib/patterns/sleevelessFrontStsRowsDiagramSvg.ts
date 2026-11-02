@@ -48,7 +48,7 @@ const ARROW = "#52682d";
 const FONT = "Poppins, system-ui, Arial, sans-serif";
 const FS_STITCH = 17;
 const FS_SECONDARY = 14;
-const LINE_GAP = 18;
+const LINE_GAP = 26;
 
 type YBand = SleevelessFrontGarmentYBand;
 type Pt = SleevelessFrontGarmentPt;
@@ -332,7 +332,7 @@ function drawMeasurements(model: SleevelessFrontStsRowsDiagramModel, frame: Fram
   const totalArrowX = Math.max(40, frame.left - 24);
   const hemArrowX = Math.max(totalArrowX + 12, frame.left - 10);
   const leftGutterLabelX = 34;
-  const hemLineGap = 22;
+  const hemLineGap = 26;
   const rightArrowX = Math.min(VB_W - 28, frame.right + 22);
   const rightLabelX = Math.min(VB_W - 12, rightArrowX + 22);
   const cardigan = isCardiganFrontModel(model);
@@ -489,10 +489,10 @@ function drawMeasurements(model: SleevelessFrontStsRowsDiagramModel, frame: Fram
       ? frame.shoulderTopY - 10
       : Math.min(frame.neckCornerY + 14, frame.neckStartY - 24);
   const neckLabelY = cardiganV
-    ? neckArrowY - 20
+    ? neckArrowY - 24
     : cardiganRound
-      ? neckArrowY - 20
-      : Math.min(frame.shoulderTopY - 22, neckArrowY - 26);
+      ? neckArrowY - 24
+      : Math.min(frame.shoulderTopY - 26, neckArrowY - 30);
   parts.push(
     horizontalArrow(
       neckArrowY,
