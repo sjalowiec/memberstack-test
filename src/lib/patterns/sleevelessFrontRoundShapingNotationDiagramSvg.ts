@@ -403,16 +403,26 @@ function buildLabels(
   const shoulderLocal =
     shoulderShapingBeginLocalRCForDiagram(d) ??
     displayRcAfterArmholeReset(model.shoulder.startGarmentRc, armholeStart);
+  const notation = buildFrontJapaneseNotationReplacements(result, patternData);
+  // The drawn ledge uses the summed bind-off. Each bo token is one edge action.
+  const setInArmholeLines = result.setInArmholePlan?.ok
+    ? [notation["jp-armhole-bo"] ?? "", ...(notation["jp-armhole-shaping"] ?? "").split("\n")]
+        .map((line) => line.trim())
+        .filter((line) => line.length > 0)
+    : null;
   return {
     castOn: formatCastOnNotation(model.widths.hemStitches),
-    armholeBo: formatBindOffNotation(model.armhole.bindOffStsEachSide),
-    armholeShaping: joinNotationLines(
-      compressStitchDecreasePointsToNotationLines(pulloverRoundFrontArmholeDecreasePoints(result)),
-    ),
+    armholeBo:
+      setInArmholeLines?.[0] ?? formatBindOffNotation(model.armhole.bindOffStsEachSide),
+    armholeShaping: setInArmholeLines
+      ? setInArmholeLines.slice(1).join("\n")
+      : joinNotationLines(
+          compressStitchDecreasePointsToNotationLines(pulloverRoundFrontArmholeDecreasePoints(result)),
+        ),
     neckBo: pulloverRoundFrontCenterNeckNotation(result, neckline),
     neckShaping: joinNotationLines(pulloverRoundFrontNeckNotationLines(result)),
     shoulderShaping: joinNotationLines(pulloverRoundFrontShoulderNotationLines(result)),
-    bodyShaping: buildFrontJapaneseNotationReplacements(result, patternData)["jp-body-shaping"] ?? "",
+    bodyShaping: notation["jp-body-shaping"] ?? "",
     rcCastOn: formatRcNotation(0),
     rcHem: formatRcNotation(model.rows.hemRows),
     rcArmholeBo: formatRcNotation(armholeStart),
