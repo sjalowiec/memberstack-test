@@ -1052,7 +1052,10 @@ function frameForSleeve(model: SetInSleeveDiagramModel): SleeveFrame {
   const labels = notationLabelsFor(model, probe);
   const captionY = stitchesRowsBands(probe.capTopY).lengthCaptionY;
   const top = Math.min(captionY, ...labels.map((label) => label.y));
-  const overflow = Math.max(0, 18 - top);
+  // Baselines need a full notation em above them. A fixed 18-unit pad clips the
+  // larger sleeve type against the top of the drawing.
+  const topLabelClearance = SLEEVE_FS_NOTATION + 8;
+  const overflow = Math.max(0, topLabelClearance - top);
   return overflow > 0 ? buildSleeveFrame(model, SLEEVE_ANNOTATION_TOP + overflow) : probe;
 }
 
