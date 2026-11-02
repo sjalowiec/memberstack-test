@@ -9,11 +9,7 @@ import { parseInlineMarkedLine } from "./inlineRcHeading";
 import { renderSleevelessBodyShapingChartHtml } from "./sleevelessBodyShapingChartHtml";
 import { renderDropShoulderSleeveShapingChartHtml } from "./dropShoulderSleeveShapingChart";
 import { renderBustDartCustomizationPrintHtml } from "./bustDartFrontSlotHtml";
-import {
-  alinePrintWrittenParagraphs,
-  instructionParagraphClass,
-  printWrittenShapingBlockHtml,
-} from "./patternPrintWrittenShaping";
+import { instructionParagraphClass } from "./patternPrintWrittenShaping";
 
 function escapeHtml(s: string): string {
   return String(s)
@@ -86,13 +82,6 @@ function renderPrintBlockRow(
       const t = String(p).trim();
       if (t) leftBits.push(`<p class="${instructionParagraphClass(t, "print-line")}">${escapeHtml(t)}</p>`);
     }
-  }
-  const printParagraphs = [
-    ...(row.printInstructionParagraphs ?? []),
-    ...alinePrintWrittenParagraphs(row.bodyShapingChartRows),
-  ];
-  if (printParagraphs.length > 0) {
-    leftBits.push(printWrittenShapingBlockHtml(printParagraphs, escapeHtml, "print-line"));
   }
   if (row.bodyShapingChartRows && row.bodyShapingChartRows.length > 0) {
     leftBits.push(
