@@ -17,6 +17,10 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 
 <script>
   import { fetchAdminJson } from "../../lib/admin/adminAuthClient";
+  import {
+    MARKETING_CALENDAR_SYNCING_MESSAGE,
+    marketingCalendarSyncMessage,
+  } from "../../lib/marketingCalendar/syncJobClient";
 
   const button = document.querySelector<HTMLButtonElement>("#marketing-sync-now");
   const status = document.querySelector<HTMLParagraphElement>("#marketing-sync-status");
@@ -24,32 +28,29 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 
   type SyncChange = { action: string; title: string; date: string | null; campaignId: string };
   type SyncBody = {
+    status?: string;
+    jobId?: string;
     created?: number;
     updated?: number;
-    deleted?: number;
+    skipped?: number;
+    error?: string | null;
     changes?: SyncChange[];
     proposedDeletions?: Array<{ title: string; campaignId: string }>;
     skippedConflicts?: Array<{ title: string; manualSummary: string }>;
   };
 
-  button?.addEventListener("click", async () => {
-    if (!button || !status || !results) return;
-    button.disabled = true;
-    status.textContent = "Syncing…";
+  function wait(ms: number): Promise<void> {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  }
+
+  function showResult(data: SyncBody): void {
+    if (!status || !results) return;
     results.replaceChildren();
-    const response = await fetchAdminJson<SyncBody>("/api/admin/marketing-calendar/sync", {
-      method: "POST",
-      body: {},
-    });
-    button.disabled = false;
-    if (!response.ok) {
-      status.textContent = response.error || "Sync failed.";
+    if (data.status === "failed") {
+      status.textContent = marketingCalendarSyncMessage(data);
       return;
     }
-    const data = response.data;
-    const created = data.created ?? 0;
-    const updated = data.updated ?? 0;
-    status.textContent = `Added ${created}, updated ${updated}, deleted 0.`;
+    status.textContent = marketingCalendarSyncMessage(data);
     for (const change of data.changes ?? []) {
       const item = document.createElement("li");
       item.textContent = `${change.action === "create" ? "Added" : "Updated"}: ${change.title} (${change.date || "no date"})`;
@@ -64,6 +65,44 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
       const item = document.createElement("li");
       item.textContent = `Left alone because it matches “${conflict.manualSummary}”: ${conflict.title}`;
       results.append(item);
+    }
+  }
+
+  button?.addEventListener("click", async () => {
+    if (!button || !status || !results) return;
+    button.disabled = true;
+    status.textContent = MARKETING_CALENDAR_SYNCING_MESSAGE;
+    results.replaceChildren();
+    try {
+      const response = await fetchAdminJson<SyncBody>("/api/admin/marketing-calendar/sync", {
+        method: "POST",
+        body: {},
+      });
+      if (!response.ok || !response.data.jobId) {
+        status.textContent = response.error || "Marketing calendar sync failed.";
+        return;
+      }
+      const deadline = Date.now() + 16 * 60 * 1000;
+      while (Date.now() < deadline) {
+        const poll = await fetchAdminJson<SyncBody>(
+          `/api/admin/marketing-calendar/sync?job=${encodeURIComponent(response.data.jobId)}`,
+          { method: "GET" },
+        );
+        if (!poll.ok) {
+          status.textContent = poll.error || "Marketing calendar sync failed.";
+          return;
+        }
+        if (poll.data.status === "running") {
+          status.textContent = MARKETING_CALENDAR_SYNCING_MESSAGE;
+          await wait(2000);
+          continue;
+        }
+        showResult(poll.data);
+        return;
+      }
+      status.textContent = "The sync did not finish. Run it again.";
+    } finally {
+      button.disabled = false;
     }
   });
 </script>

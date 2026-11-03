@@ -10,26 +10,30 @@ function source(path: string): string {
 }
 
 describe("marketing calendar stays unwired", () => {
-  it("keeps the evening schedule off until daily sync is approved", () => {
+  it("keeps the evening schedule off and the calendar writes behind the background lock", () => {
     const toml = source("netlify.toml");
-    expect(toml).not.toContain("[functions.\"marketing-calendar-sync\"]");
-    expect(toml).not.toContain("schedule = \"0 4 * * *\"");
-    expect(toml).toContain("LEGACY_RENEWAL_REMINDER_LIVE_ENABLED = \"true\"");
+    expect(toml).not.toContain("marketing-calendar-sync");
+    expect(toml).toContain('LEGACY_RENEWAL_REMINDER_LIVE_ENABLED = "true"');
+    expect(source("netlify/functions/marketing-calendar-sync.ts")).toContain("MARKETING_CALENDAR_SYNC_LIVE_ENABLED");
+    expect(source("netlify/functions/marketing-calendar-sync.ts")).not.toContain("runMarketingCalendarSync");
     expect(source("netlify/functions/marketing-calendar-sync.ts")).not.toContain("allowWrites: true");
     const entryPoints = [
       "src/lib/marketingCalendar/runDryRun.ts",
+      "src/lib/marketingCalendar/syncJob.ts",
       "netlify/functions/marketing-calendar-sync.ts",
+      "netlify/functions/marketing-calendar-sync-background.ts",
     ].map(source);
     for (const file of entryPoints) {
       expect(file).not.toContain("applyMarketingCalendarPlan");
       expect(file).not.toContain("createGoogleCalendarWriter");
       expect(file).not.toContain("allowWrites: true");
+      expect(file).not.toContain("deleteEvent");
     }
     const importer = source("src/lib/marketingCalendar/importApproved.ts");
     expect(importer).not.toContain("deleteEvent");
     const sync = source("src/lib/marketingCalendar/runSync.ts");
     expect(sync).not.toContain("deleteEvent");
-    expect(source("netlify/functions/marketing-calendar-sync.ts")).toContain("MARKETING_CALENDAR_SYNC_LIVE_ENABLED");
+    expect(source("src/lib/marketingCalendar/syncJob.ts")).toContain("dryRun: false");
     expect(source("src/lib/marketingCalendar/activeCampaignCampaigns.ts")).not.toContain('method: "POST"');
     expect(source("src/lib/marketingCalendar/activeCampaignCampaigns.ts")).not.toContain('method: "DELETE"');
     expect(source("src/lib/marketingCalendar/activeCampaignCampaigns.ts")).not.toContain('method: "PATCH"');
