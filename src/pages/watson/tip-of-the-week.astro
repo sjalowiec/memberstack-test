@@ -1,12 +1,12 @@
 ---
 import WatsonPageShell from "../../components/watson/WatsonPageShell.astro";
-import { resolveVideoForTip } from "../../lib/tipOfTheWeek/map";
-import { formatTipAvailabilityDate } from "../../lib/tipOfTheWeek/map";
+import { loadTipCatalogWithPosters, resolveTipCatalogVideo } from "../../lib/tipOfTheWeek";
 import {
-  statusLabel,
-  tipLosAngelesCalendarDate,
-  tipScheduleBucket,
-} from "../../lib/tipOfTheWeek/schedule";
+  renderTipAdminBoardHtml,
+  serializeTipAdminJson,
+  type TipAdminListItem,
+} from "../../lib/tipOfTheWeek/adminList";
+import { tipLosAngelesCalendarDate } from "../../lib/tipOfTheWeek/schedule";
 import { listAllTipOfTheWeek } from "../../lib/tipOfTheWeek/store";
 import type { TipOfTheWeekRecord } from "../../lib/tipOfTheWeek/types";
 import {
@@ -21,6 +21,7 @@ Astro.response.headers.set("Cache-Control", "no-store");
 let loadError: string | null = null;
 let tips: TipOfTheWeekRecord[] = [];
 const todayLa = tipLosAngelesCalendarDate();
+const tipCatalog = await loadTipCatalogWithPosters();
 
 try {
   tips = await listAllTipOfTheWeek();
@@ -30,15 +31,6 @@ try {
       ? error.message
       : "Unable to load Tip of the Week. Apply the schema SQL first.";
 }
-
-const current = tips.filter((t) => tipScheduleBucket(t, todayLa) === "current");
-const scheduled = tips.filter((t) => tipScheduleBucket(t, todayLa) === "scheduled");
-const drafts = tips.filter((t) => tipScheduleBucket(t, todayLa) === "draft");
-const archived = tips.filter(
-  (t) =>
-    tipScheduleBucket(t, todayLa) === "archived" ||
-    tipScheduleBucket(t, todayLa) === "expired",
-);
 
 const reactionSummaries = new Map<
   string,
@@ -62,23 +54,19 @@ if (!loadError) {
   }
 }
 
-function tipDataAttr(tip: TipOfTheWeekRecord): string {
-  return encodeURIComponent(JSON.stringify(tip));
-}
-
-function renderTipCard(tip: TipOfTheWeekRecord) {
-  const video = resolveVideoForTip(tip);
-  const bucket = tipScheduleBucket(tip, todayLa);
+const items: TipAdminListItem[] = tips.map((tip) => {
+  const video = resolveTipCatalogVideo({ videoContentId: tip.videoContentId }, tipCatalog);
   const reactions = reactionSummaries.get(tip.tipId) || { rows: [], topicCount: 0 };
   return {
     tip,
-    video,
-    bucket,
-    reactions,
-    fromLabel: formatTipAvailabilityDate(tip.availableFrom),
-    throughLabel: formatTipAvailabilityDate(tip.availableThrough),
+    videoTitle: video?.catalogTitle?.trim() || null,
+    reactionRows: reactions.rows.map((row) => ({ label: row.label, count: row.count })),
+    topicCount: reactions.topicCount,
   };
-}
+});
+
+const adminPayload = serializeTipAdminJson({ todayLa, items });
+const boardHtml = renderTipAdminBoardHtml({ todayLa, items, archiveQuery: "" });
 ---
 
 <WatsonPageShell
@@ -127,81 +115,23 @@ function renderTipCard(tip: TipOfTheWeekRecord) {
     </a>
   </p>
 
-  <div class="watson-totw__status" data-totw-status hidden></div>
+  <div class="watson-totw__status" data-totw-status data-totw-page-status hidden></div>
 
-  <section class="watson-totw__board" aria-label="Tip lists">
-    {
-      [
-        { key: "current", title: "Current (public)", items: current },
-        { key: "scheduled", title: "Scheduled", items: scheduled },
-        { key: "draft", title: "Drafts", items: drafts },
-        { key: "archived", title: "Archived / past", items: archived },
-      ].map((group) => (
-        <section class="watson-totw__group" aria-labelledby={`totw-group-${group.key}`}>
-          <h2 id={`totw-group-${group.key}`}>{group.title}</h2>
-          {group.items.length === 0 ? (
-            <p class="watson-totw__empty">None</p>
-          ) : (
-            <ul class="watson-totw__cards">
-              {group.items.map((tip) => {
-                const card = renderTipCard(tip);
-                return (
-                  <li class="watson-totw__card">
-                    <div class="watson-totw__card-top">
-                      <h3>{tip.title}</h3>
-                      <span class="watson-totw__badge">{statusLabel(tip.status)}</span>
-                    </div>
-                    <p class="watson-totw__meta">
-                      tip_id <code>{tip.tipId}</code> · video {tip.videoContentId}
-                      {card.video ? ` · ${card.video.catalogTitle}` : " · video unresolved"}
-                    </p>
-                    <p class="watson-totw__meta">
-                      {card.fromLabel} → {card.throughLabel}
-                    </p>
-                    {card.reactions.rows.length > 0 ? (
-                      <ul class="watson-totw__mini-reactions">
-                        {card.reactions.rows.map((row) => (
-                          <li>
-                            {row.label}: <strong>{row.count}</strong>
-                          </li>
-                        ))}
-                      </ul>
-                    ) : null}
-                    {card.reactions.topicCount > 0 ? (
-                      <p class="watson-totw__meta">
-                        Topic suggestions: <strong>{card.reactions.topicCount}</strong>
-                      </p>
-                    ) : null}
-                    <div class="watson-totw__card-actions">
-                      <button
-                        type="button"
-                        class="watson-totw__btn watson-totw__btn--small"
-                        data-totw-edit={tipDataAttr(tip)}
-                      >
-                        Edit
-                      </button>
-                      <a
-                        class="watson-totw__btn watson-totw__btn--small watson-totw__btn--link"
-                        href={`/tip-of-the-week?preview=${tip.id}`}
-                        target="_blank"
-                        rel="noopener"
-                      >
-                        Preview
-                      </a>
-                    </div>
-                  </li>
-                );
-              })}
-            </ul>
-          )}
-        </section>
-      ))
-    }
-  </section>
+  <div
+    class="watson-totw__board"
+    data-totw-board
+    role="region"
+    aria-label="Tip lists"
+    set:html={boardHtml}
+  ></div>
+  <script id="totw-admin-data" type="application/json" set:html={adminPayload}></script>
 
-  <section class="watson-totw__editor" aria-labelledby="totw-form-heading">
-    <h2 id="totw-form-heading" data-totw-form-heading>New tip</h2>
+  <dialog class="watson-totw__dialog" data-totw-dialog aria-labelledby="totw-form-heading">
     <form class="watson-totw__form" data-totw-form novalidate>
+      <div class="watson-totw__dialog-header">
+        <h2 id="totw-form-heading" data-totw-form-heading>New tip</h2>
+      </div>
+      <div class="watson-totw__dialog-body">
       <input type="hidden" name="id" value="" />
 
       <div class="watson-totw__grid">
@@ -353,6 +283,7 @@ function renderTipCard(tip: TipOfTheWeekRecord) {
         <span class="watson-totw__field-error" data-totw-field-error="videoContentId" hidden></span>
       </label>
       <div class="watson-totw__preview" data-video-preview hidden></div>
+      <div class="watson-totw__usage" data-video-usage hidden></div>
 
       <label>
         Availability notice
@@ -563,6 +494,7 @@ function renderTipCard(tip: TipOfTheWeekRecord) {
         </div>
       </section>
 
+      </div>
       <div class="watson-totw__actions">
         <div class="watson-totw__status" data-totw-status data-totw-form-status hidden></div>
         <button type="submit" class="watson-totw__btn watson-totw__btn--primary" formnovalidate>
@@ -572,9 +504,10 @@ function renderTipCard(tip: TipOfTheWeekRecord) {
         <button type="button" class="watson-totw__btn" data-totw-schedule>Schedule</button>
         <button type="button" class="watson-totw__btn" data-totw-activate>Activate</button>
         <button type="button" class="watson-totw__btn" data-totw-archive>Archive</button>
+        <button type="button" class="watson-totw__btn" data-totw-cancel>Cancel</button>
       </div>
     </form>
-  </section>
+  </dialog>
 </WatsonPageShell>
 
 <script>
@@ -633,20 +566,14 @@ function renderTipCard(tip: TipOfTheWeekRecord) {
   }
 
   .watson-totw__board {
-    display: grid;
-    gap: 1.25rem;
-    margin-bottom: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
   }
 
-  @media (min-width: 900px) {
-    .watson-totw__board {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-  }
-
-  .watson-totw__group h2 {
-    margin: 0 0 0.5rem;
-    font-size: 1.05rem;
+  .watson-totw__group.watson__panel {
+    margin-top: 0;
   }
 
   .watson-totw__empty {
@@ -655,31 +582,62 @@ function renderTipCard(tip: TipOfTheWeekRecord) {
     font-size: 0.9rem;
   }
 
-  .watson-totw__cards {
+  .watson-totw__archive-search {
+    margin: 0 0 0.75rem;
+    font-weight: 600;
+    font-size: 0.92rem;
+  }
+
+  .watson-totw__archive-search label {
+    display: grid;
+    gap: 0.35rem;
+  }
+
+  .watson-totw__archive-search input {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .watson-totw__rows {
     list-style: none;
     margin: 0;
     padding: 0;
-    display: grid;
-    gap: 0.75rem;
   }
 
-  .watson-totw__card {
-    border: 1px solid #e5e8e0;
-    border-radius: 10px;
-    background: #fff;
-    padding: 0.85rem 1rem;
-  }
-
-  .watson-totw__card-top {
+  .watson-totw__row {
     display: flex;
-    gap: 0.5rem;
+    flex-wrap: wrap;
     align-items: flex-start;
-    justify-content: space-between;
+    gap: 0.45rem 0.75rem;
+    padding: 0.55rem 0;
+    border-bottom: 1px solid #e5e8e0;
   }
 
-  .watson-totw__card-top h3 {
+  .watson-totw__row:last-child {
+    border-bottom: 0;
+    padding-bottom: 0;
+  }
+
+  .watson-totw__row-main {
+    flex: 1 1 16rem;
+    min-width: 0;
+  }
+
+  .watson-totw__row-primary {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.35rem 0.75rem;
+  }
+
+  .watson-totw__row-title {
     margin: 0;
     font-size: 1rem;
+  }
+
+  .watson-totw__row-dates {
+    color: #374151;
+    font-size: 0.92rem;
   }
 
   .watson-totw__badge {
@@ -692,29 +650,135 @@ function renderTipCard(tip: TipOfTheWeekRecord) {
     color: #52682d;
   }
 
-  .watson-totw__meta {
-    margin: 0.35rem 0 0;
+  .watson-totw__reactions-inline {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 0.75rem;
+    margin: 0.25rem 0 0;
     font-size: 0.85rem;
+    color: #374151;
+  }
+
+  .watson-totw__meta {
+    margin: 0.25rem 0 0;
+    font-size: 0.8rem;
     color: #6b7280;
   }
 
-  .watson-totw__mini-reactions {
-    margin: 0.5rem 0 0;
-    padding: 0;
-    list-style: none;
-    font-size: 0.85rem;
-  }
-
-  .watson-totw__card-actions {
-    margin-top: 0.65rem;
+  .watson-totw__row-actions {
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     gap: 0.4rem;
+    margin-left: auto;
+    flex: 0 0 auto;
+    align-items: center;
   }
 
-  .watson-totw__editor {
-    border-top: 1px solid #e5e8e0;
-    padding-top: 1.25rem;
+  @media (max-width: 640px) {
+    .watson-totw__row-actions {
+      flex: 1 1 100%;
+      margin-left: 0;
+    }
+  }
+
+  .watson-totw__dialog {
+    padding: 0;
+    border: 1px solid #d9e0d2;
+    border-radius: 12px;
+    background: #fff;
+    color: #243015;
+    box-sizing: border-box;
+  }
+
+  .watson-totw__dialog[open] {
+    display: flex;
+    flex-direction: column;
+    width: min(52rem, calc(100vw - 1.5rem));
+    max-height: calc(100dvh - 2rem);
+    margin: auto;
+    box-shadow: 0 18px 50px rgba(36, 48, 21, 0.18);
+  }
+
+  .watson-totw__dialog::backdrop {
+    background: rgba(36, 48, 21, 0.45);
+  }
+
+  .watson-totw__dialog .watson-totw__form {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    max-height: calc(100dvh - 2rem);
+    width: 100%;
+    margin: 0;
+  }
+
+  .watson-totw__dialog-header {
+    flex: none;
+    padding: 1rem 1.15rem 0.35rem;
+  }
+
+  .watson-totw__dialog-header h2 {
+    margin: 0;
+    font-size: 1.25rem;
+  }
+
+  .watson-totw__dialog-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: auto;
+    padding: 0.5rem 1.15rem 0.85rem;
+  }
+
+  .watson-totw__usage {
+    margin: 0 0 0.85rem;
+  }
+
+  .watson-totw__usage-card {
+    padding: 0.75rem 0.85rem;
+    border: 1px solid #e5e8e0;
+    border-radius: 8px;
+    background: #f8faf7;
+  }
+
+  .watson-totw__usage-summary,
+  .watson-totw__usage-label,
+  .watson-totw__usage-empty {
+    margin: 0;
+  }
+
+  .watson-totw__usage-summary {
+    font-weight: 650;
+  }
+
+  .watson-totw__usage-label {
+    margin-top: 0.75rem;
+    font-size: 0.92rem;
+  }
+
+  .watson-totw__usage-list {
+    margin: 0.35rem 0 0;
+    padding-left: 1.1rem;
+  }
+
+  .watson-totw__usage-list li {
+    margin: 0.2rem 0;
+  }
+
+  .watson-totw__usage-dates {
+    color: #4b5563;
+  }
+
+  .watson-totw__usage-past {
+    margin-top: 0.65rem;
+  }
+
+  .watson-totw__usage-past summary {
+    cursor: pointer;
+    font-weight: 650;
+  }
+
+  .watson-totw__usage-card .watson-totw__hint {
+    margin: 0.65rem 0 0;
   }
 
   .watson-totw__form label {
@@ -914,6 +978,11 @@ function renderTipCard(tip: TipOfTheWeekRecord) {
     color: #374151;
   }
 
+  .watson-totw__btn:focus-visible {
+    outline: 2px solid #52682d;
+    outline-offset: 2px;
+  }
+
   .watson-totw__field {
     display: grid;
     gap: 0.35rem;
@@ -996,6 +1065,14 @@ function renderTipCard(tip: TipOfTheWeekRecord) {
     flex-wrap: wrap;
     gap: 0.5rem;
     margin-top: 1rem;
+  }
+
+  .watson-totw__dialog .watson-totw__actions {
+    flex: none;
+    margin-top: 0;
+    padding: 0.75rem 1.15rem;
+    border-top: 1px solid #e5e8e0;
+    background: #fff;
   }
 
   .watson-totw__reactions {

@@ -258,7 +258,10 @@ describe("Tip of the Week page route", () => {
     expect(pageSource).toContain('searchParams.get("preview")');
     expect(pageSource).toContain("totw-preview-banner");
     expect(pageSource).toContain("Watson preview");
-    expect(watsonPage).toContain("/tip-of-the-week?preview=");
+    expect(watsonPage).toContain("renderTipAdminBoardHtml");
+    expect(
+      readFileSync(join(pageDir, "../lib/tipOfTheWeek/adminList.ts"), "utf8"),
+    ).toContain("/tip-of-the-week?preview=");
   });
 
   it("wires accessible video trigger props when a catalog video is found", () => {
