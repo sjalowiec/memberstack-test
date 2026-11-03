@@ -12,7 +12,9 @@ describe("combined account favorites accordion", () => {
     expect(account).toContain("MyFavoritesPanel");
     expect(account).not.toContain("AccountSavedFavoritesPanel");
     expect(account).not.toContain("account-saved-favorites");
-    expect(panel.match(/<h2\b/g)).toHaveLength(1);
+    expect(panel.match(/<h2\b/g)).toHaveLength(2);
+    expect(panel).toContain('id="my-favorites-heading"');
+    expect(panel).toContain('id="favorites-help-title"');
     expect(panel).toContain('data-kbm-my-favorites-accordion');
     expect(panel).not.toMatch(/<details[^>]*\sopen[\s>]/);
     expect(FAVORITE_GROUP_ORDER.map((group) => group.label)).toEqual([
