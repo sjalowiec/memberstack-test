@@ -5,6 +5,9 @@
 import type { FavoriteContentType } from "./favoriteContentTypes";
 import { normalizeFavoriteHref, titleFromFavoriteHref } from "./favoriteHref";
 
+/** Help Hub is a display group. Its rows stay stored as reference favorites. */
+export type FavoriteGroupId = FavoriteContentType | "help-hub";
+
 export type FavoriteItemMeta = {
   content_id: string;
   title: string;
@@ -13,15 +16,15 @@ export type FavoriteItemMeta = {
 };
 
 export const FAVORITE_GROUP_ORDER: readonly {
-  contentType: FavoriteContentType;
+  contentType: FavoriteGroupId;
   label: string;
   viewAllHref?: string;
 }[] = [
   { contentType: "video", label: "Videos", viewAllHref: "/videos/?cat=favorites" },
   { contentType: "stitch", label: "Stitches" },
   { contentType: "reference", label: "Reference Pages" },
+  { contentType: "help-hub", label: "Help Hub" },
   { contentType: "tool", label: "Tools" },
-  { contentType: "tip-of-the-week", label: "Tips of the Week" },
   { contentType: "knit-able", label: "Knit-ables" },
 ] as const;
 

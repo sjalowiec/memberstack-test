@@ -168,15 +168,24 @@ export async function loadMemberVisibleTip(
   return match;
 }
 
+export type PublicTipArchiveItem = SavedContentMeta & {
+  /** Raw tip field. The page shows a star only after the catalog resolves it. */
+  videoContentId: string;
+};
+
 /** Earlier public tips, newest first, excluding the tip already on the page. */
 export async function loadPublicTipArchive(
   excludeTipId = "",
   now: Date = new Date(),
-): Promise<SavedContentMeta[]> {
+): Promise<PublicTipArchiveItem[]> {
   if (useDevJsonFallback()) return [];
   const tips = await listAllTipOfTheWeek();
+  const videoIdByTip = new Map(tips.map((tip) => [tip.tipId.trim(), tip.videoContentId.trim()]));
   const exclude = excludeTipId.trim();
-  return tipSavedMeta(tips, tipLosAngelesCalendarDate(now)).filter(
-    (row) => row.contentId !== exclude,
-  );
+  return tipSavedMeta(tips, tipLosAngelesCalendarDate(now))
+    .filter((row) => row.contentId !== exclude)
+    .map((row) => ({
+      ...row,
+      videoContentId: videoIdByTip.get(row.contentId) || "",
+    }));
 }

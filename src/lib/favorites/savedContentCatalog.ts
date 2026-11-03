@@ -25,6 +25,29 @@ export function tipFavoriteHref(tipId: string): string {
   return `/tip-of-the-week?tip=${encodeURIComponent(tipId)}`;
 }
 
+/** Tip id → the Learning Library video that tip was built around. */
+export function tipVideoIdsForFavoriteMigration(
+  tips: readonly Pick<TipOfTheWeekRecord, "tipId" | "videoContentId">[],
+): { contentId: string; videoContentId: string }[] {
+  const seen = new Set<string>();
+  const rows: { contentId: string; videoContentId: string }[] = [];
+  for (const tip of tips) {
+    const contentId = tip.tipId.trim();
+    const videoContentId = tip.videoContentId.trim();
+    if (!contentId || !videoContentId || seen.has(contentId)) continue;
+    seen.add(contentId);
+    rows.push({ contentId, videoContentId });
+  }
+  return rows;
+}
+
+/** Permanent video page for a Tip of the Week lesson. */
+export function permanentTipVideoHref(videoContentId: string | number | null | undefined): string {
+  const id = videoContentId == null ? "" : String(videoContentId).trim();
+  if (!id) return "";
+  return `/videos/${encodeURIComponent(id)}`;
+}
+
 /**
  * Tips a member may open and save.
  * The current featured tip, a past active tip, and an archived tip whose start

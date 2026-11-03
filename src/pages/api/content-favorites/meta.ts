@@ -4,7 +4,13 @@
  * keep a title and an empty href so a saved row can say it is unavailable.
  */
 import type { APIRoute } from "astro";
-import { knitAbleFavoriteEntries, tipSavedMeta } from "../../../lib/favorites/savedContentCatalog";
+import {
+  knitAbleFavoriteEntries,
+  tipSavedMeta,
+  tipVideoIdsForFavoriteMigration,
+} from "../../../lib/favorites/savedContentCatalog";
+import { helpHubFavoriteHref, helpHubFavoriteTipCatalog } from "../../../lib/helpHub/favoriteTips";
+import { loadPublicHelpHubTips } from "../../../lib/helpHub/loadTips";
 import { knitAbleSlugFromPath } from "../../../lib/knit-ables/schedule";
 import { listPublicKnitAbleCards } from "../../../lib/knit-ables/scheduleStore";
 import { listAllTipOfTheWeek } from "../../../lib/tipOfTheWeek/store";
@@ -13,8 +19,10 @@ export const prerender = false;
 
 export const GET: APIRoute = async () => {
   let tips: Awaited<ReturnType<typeof listAllTipOfTheWeek>> = [];
+  let tipsLoaded = false;
   try {
     tips = await listAllTipOfTheWeek();
+    tipsLoaded = true;
   } catch (error) {
     console.error(
       "[content-favorites] tip lookup failed:",
@@ -36,12 +44,31 @@ export const GET: APIRoute = async () => {
     );
   }
 
+  let helpHub: { contentId: string; title: string; href: string; slug: string }[] | null = null;
+  try {
+    helpHub = helpHubFavoriteTipCatalog(await loadPublicHelpHubTips()).map((tip) => ({
+      contentId: tip.contentId,
+      title: tip.question,
+      href: helpHubFavoriteHref(tip.slug),
+      slug: tip.slug,
+    }));
+  } catch (error) {
+    console.error(
+      "[content-favorites] help hub lookup failed:",
+      error instanceof Error ? error.message : "unknown error",
+    );
+  }
+
+  const payload: Record<string, unknown> = {
+    ok: true,
+    "tip-of-the-week": tipSavedMeta(tips),
+    "knit-able": knitAbleFavoriteEntries(publishedSlugs),
+  };
+  if (tipsLoaded) payload["tip-video-ids"] = tipVideoIdsForFavoriteMigration(tips);
+  if (helpHub != null) payload["help-hub"] = helpHub;
+
   return new Response(
-    JSON.stringify({
-      ok: true,
-      "tip-of-the-week": tipSavedMeta(tips),
-      "knit-able": knitAbleFavoriteEntries(publishedSlugs),
-    }),
+    JSON.stringify(payload),
     {
       status: 200,
       headers: {

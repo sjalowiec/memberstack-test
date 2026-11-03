@@ -150,6 +150,44 @@ describe("favoriteStarUi", () => {
     expect(button.getAttribute("aria-label")).toBe("Save Demo to favorites");
   });
 
+  it("uses the save and remove phrases for a label tooltip", () => {
+    const html = favoriteStarButtonHtml({
+      contentType: "video",
+      contentId: "649",
+      title: "video",
+      isFavorite: false,
+      labelTooltip: true,
+    });
+    expect(html).toContain('aria-label="Save video to favorites"');
+    expect(html).toContain('data-tooltip="Save video to favorites"');
+    expect(html).toContain('data-content-type="video"');
+    expect(html).toContain('data-content-id="649"');
+    expect(html).not.toContain("data-favorite-action-tooltip");
+
+    const attrs = new Map<string, string>([
+      ["data-favorite-title", "video"],
+      ["data-favorite-label-tooltip", "true"],
+      ["data-tooltip", "Save video to favorites"],
+      ["aria-pressed", "false"],
+      ["aria-label", "Save video to favorites"],
+    ]);
+    const button = {
+      classList: { toggle() {} },
+      getAttribute(name: string) {
+        return attrs.get(name) ?? null;
+      },
+      setAttribute(name: string, value: string) {
+        attrs.set(name, value);
+      },
+      querySelector() {
+        return { classList: { remove() {}, add() {} }, setAttribute() {} };
+      },
+    };
+    applyFavoriteStarState(button as unknown as HTMLButtonElement, true);
+    expect(button.getAttribute("aria-label")).toBe("Remove video from favorites");
+    expect(button.getAttribute("data-tooltip")).toBe("Remove video from favorites");
+  });
+
   it("filters catalog videos by hydrated favorite ids", () => {
     const videos = [
       { content_id: 1, title: "A" },

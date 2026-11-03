@@ -19,13 +19,16 @@ describe("combined account favorites accordion", () => {
       "Videos",
       "Stitches",
       "Reference Pages",
+      "Help Hub",
       "Tools",
-      "Tips of the Week",
       "Knit-ables",
     ]);
     expect(panel).toContain('href="/videos"');
+    expect(panel).toContain('href="/help-hub"');
     expect(panel).toContain('href="/tip-of-the-week"');
     expect(panel).toContain('href="/knit-ables"');
+    expect(panel).toContain("data-kbm-my-favorites-group={group.contentType}");
+    expect(panel).not.toContain('data-kbm-my-favorites-group="tip-of-the-week"');
   });
 
   it("records one accordion open and keeps saved-link and removal tracking", () => {
@@ -36,5 +39,11 @@ describe("combined account favorites accordion", () => {
     expect(script).toContain("aAt < bAt ? 1");
     expect(script).toContain("Could not remove that favorite. It is still saved.");
     expect(script).toContain("favoriteStarButtonHtml");
+    expect(script).toContain("accountHelpHubFavorites");
+    expect(script).toContain("settleTipOfTheWeekFavorites");
+    const settleAt = script.indexOf("await settleTipOfTheWeekFavorites()");
+    const reloadAt = script.indexOf("loadAllFavorites(), catalogPromise");
+    expect(settleAt).toBeGreaterThan(-1);
+    expect(reloadAt).toBeGreaterThan(settleAt);
   });
 });

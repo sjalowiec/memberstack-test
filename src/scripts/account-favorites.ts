@@ -12,6 +12,11 @@ import {
   sortFavoriteIdsByTitle,
 } from "../lib/favorites/accountFavoritesPreview";
 import {
+  accountHelpHubFavoriteItemHtml,
+  accountHelpHubFavorites,
+  referenceFavoriteIdsForAccount,
+} from "../lib/favorites/accountHelpHubFavorites";
+import {
   FAVORITE_GROUP_ORDER,
   hrefForFavorite,
   titleForFavorite,
@@ -22,10 +27,12 @@ import { initFavoriteStarController } from "../lib/favorites/favoriteStarControl
 import type { FavoriteContentType, FavoriteRecord } from "../lib/favorites/favoriteContentTypes";
 import { FAVORITE_CONTENT_TYPES } from "../lib/favorites/favoriteContentTypes";
 import { FavoritesAuthError, listFavorites, removeFavorite } from "../lib/favorites/favoritesClient";
+import type { HelpHubFavoriteTip } from "../lib/helpHub/favoriteTips";
+import { isRotatingTipOfTheWeekFavorite } from "../lib/favorites/tipOfTheWeekFavoriteMigration";
+import { settleTipOfTheWeekFavorites } from "../lib/favorites/settleTipOfTheWeekFavorites";
 
-const CATALOG_TYPES = new Set<FavoriteContentType>(["tip-of-the-week", "knit-able"]);
+const CATALOG_TYPES = new Set<FavoriteContentType>(["knit-able"]);
 const CATALOG_UNAVAILABLE: Partial<Record<FavoriteContentType, string>> = {
-  "tip-of-the-week": "This tip is no longer available.",
   "knit-able": "This Knit-able is no longer available.",
 };
 const CONTENT_META_URL = "/api/content-favorites/meta";
@@ -71,12 +78,26 @@ function readMeta(): MetaByType {
   return maps;
 }
 
-async function loadCatalogMeta(maps: MetaByType): Promise<void> {
+function readHelpHubCatalog(value: unknown): HelpHubFavoriteTip[] | null {
+  if (!Array.isArray(value)) return null;
+  const catalog: HelpHubFavoriteTip[] = [];
+  for (const row of value) {
+    if (!row || typeof row !== "object") continue;
+    const slug = String((row as { slug?: unknown }).slug ?? "").trim();
+    const question = String((row as { title?: unknown }).title ?? "").trim();
+    const contentId = String((row as { contentId?: unknown }).contentId ?? "").trim();
+    if (!slug || !question || !contentId) continue;
+    catalog.push({ slug, question, contentId });
+  }
+  return catalog;
+}
+
+async function loadCatalogMeta(maps: MetaByType): Promise<HelpHubFavoriteTip[] | null> {
   try {
     const response = await fetch(CONTENT_META_URL, { credentials: "same-origin" });
-    if (!response.ok) return;
+    if (!response.ok) return null;
     const body = (await response.json()) as Partial<
-      Record<FavoriteContentType, { contentId?: string; title?: string; href?: string }[]>
+      Record<FavoriteContentType | "help-hub", { contentId?: string; title?: string; href?: string; slug?: string }[]>
     >;
     for (const contentType of CATALOG_TYPES) {
       const rows = body[contentType];
@@ -91,8 +112,10 @@ async function loadCatalogMeta(maps: MetaByType): Promise<void> {
         });
       }
     }
+    return readHelpHubCatalog(body["help-hub"]);
   } catch {
     /* Saved rows still render with an unavailable title. */
+    return null;
   }
 }
 
@@ -220,9 +243,8 @@ function renderGroup(options: {
 }
 
 async function loadAllFavorites(): Promise<Record<FavoriteContentType, FavoriteRecord[]>> {
-  const legacyTypes = FAVORITE_GROUP_ORDER.map((group) => group.contentType);
   const entries = await Promise.all(
-    legacyTypes.map(async (contentType) => {
+    FAVORITE_CONTENT_TYPES.map(async (contentType) => {
       try {
         const favorites = await listFavorites(contentType);
         return [contentType, favorites] as const;
@@ -244,6 +266,7 @@ async function boot(): Promise<void> {
   if (!statusEl || !emptyEl) return;
 
   const metaByType = readMeta();
+  let helpHubCatalog: HelpHubFavoriteTip[] | null = null;
   let favoritesByType = Object.fromEntries(
     FAVORITE_CONTENT_TYPES.map((t) => [t, [] as FavoriteRecord[]]),
   ) as Record<FavoriteContentType, FavoriteRecord[]>;
@@ -323,13 +346,32 @@ async function boot(): Promise<void> {
       );
       if (!detailsEl || !listEl || !labelEl) continue;
 
-      const rows = favoritesByType[group.contentType] ?? [];
-      const meta = metaByType[group.contentType];
-      const ids = CATALOG_TYPES.has(group.contentType)
+      if (group.contentType === "help-hub") {
+        const items = accountHelpHubFavorites(favoritesByType.reference ?? [], helpHubCatalog);
+        labelEl.textContent = formatFavoriteGroupHeading(group.label, items.length);
+        if (items.length === 0) {
+          listEl.innerHTML = "";
+          detailsEl.hidden = true;
+          detailsEl.open = false;
+        } else {
+          detailsEl.hidden = false;
+          listEl.innerHTML = items.map((item) => accountHelpHubFavoriteItemHtml(item)).join("");
+        }
+        total += items.length;
+        continue;
+      }
+
+      const storedType = group.contentType as FavoriteContentType;
+      const rows = favoritesByType[storedType] ?? [];
+      const meta = metaByType[storedType];
+      const sourceIds =
+        storedType === "reference"
+          ? referenceFavoriteIdsForAccount(rows, isRotatingTipOfTheWeekFavorite)
+          : rows.map((row) => row.content_id).filter(Boolean);
+      const ids = CATALOG_TYPES.has(storedType)
         ? newestIds(rows)
-        : sortFavoriteIdsByTitle(
-            rows.map((f) => f.content_id).filter(Boolean),
-            (id) => titleForFavorite(group.contentType, id, meta.get(id) ?? null),
+        : sortFavoriteIdsByTitle(sourceIds, (id) =>
+            titleForFavorite(storedType, id, meta.get(id) ?? null),
           );
 
       total += ids.length;
@@ -337,7 +379,7 @@ async function boot(): Promise<void> {
         detailsEl,
         listEl,
         labelEl,
-        contentType: group.contentType,
+        contentType: storedType,
         label: group.label,
         ids,
         meta,
@@ -378,8 +420,11 @@ async function boot(): Promise<void> {
   });
 
   try {
-    const [loaded] = await Promise.all([loadAllFavorites(), loadCatalogMeta(metaByType)]);
+    const catalogPromise = loadCatalogMeta(metaByType);
+    await settleTipOfTheWeekFavorites();
+    const [loaded, catalog] = await Promise.all([loadAllFavorites(), catalogPromise]);
     favoritesByType = loaded;
+    helpHubCatalog = catalog;
     paint();
   } catch (error) {
     if (error instanceof FavoritesAuthError) {
