@@ -6,12 +6,14 @@
  */
 import Layout from "../layouts/Layout.astro";
 import FavoriteStar from "../components/favorites/FavoriteStar.astro";
-import FavoritesRuntime from "../components/favorites/FavoritesRuntime.astro";
 import GlossaryTooltip from "../components/common/GlossaryTooltip.astro";
 import TipReactions from "../components/tip-of-the-week/TipReactions.astro";
 import WeeklyTipSignup from "../components/tip-of-the-week/WeeklyTipSignup.astro";
-import { resolveTipCatalogVideo } from "../lib/tipOfTheWeek";
-import { loadPublicVideoPosterOverrides } from "../lib/videos/videoPosterStore";
+import {
+  loadTipCatalogWithPosters,
+  resolveTipCatalogVideo,
+  tipVideoFavoriteContentId,
+} from "../lib/tipOfTheWeek";
 import { tipOfTheWeekIntroParts } from "../lib/tipOfTheWeek/introGlossary";
 import { tipPublicCta } from "../lib/tipOfTheWeek/map";
 import {
@@ -21,7 +23,7 @@ import {
   loadTipOfTheWeekPreview,
   publicTipPageFromRecord,
 } from "../lib/tipOfTheWeek/publicPage";
-import type { SavedContentMeta } from "../lib/favorites/savedContentCatalog";
+import { permanentTipVideoHref } from "../lib/favorites/savedContentCatalog";
 import { isWatsonSessionAuthenticated } from "../lib/watson/watsonAuth";
 import {
   billboardMessageHasText,
@@ -55,13 +57,6 @@ if (requestedTipId) {
 const featured = pageState.kind === "featured" ? pageState.model : null;
 const isPreview = Boolean(featured?.isPreview);
 const tip = featured?.tip ?? null;
-const resolvedVideo = tip ? resolveTipCatalogVideo({ videoContentId: tip.videoContentId }) : null;
-const posterOverrides = await loadPublicVideoPosterOverrides();
-const storedPoster = resolvedVideo ? posterOverrides.get(resolvedVideo.contentId) : undefined;
-const video =
-  resolvedVideo && storedPoster !== undefined
-    ? { ...resolvedVideo, posterUrl: storedPoster }
-    : resolvedVideo;
 const relatedLinks = featured?.relatedLinks ?? [];
 const availableThroughDisplay = featured?.availableThroughDisplay ?? "";
 const availabilityFooter = featured?.availabilityFooter ?? "";
@@ -87,14 +82,40 @@ const introParts =
     : [];
 const cta = tipPublicCta(tip);
 
-let archiveTips: SavedContentMeta[] = [];
+let video: ReturnType<typeof resolveTipCatalogVideo> = null;
+let catalog: Awaited<ReturnType<typeof loadTipCatalogWithPosters>> = [];
+try {
+  if (tip || !isPreview) catalog = await loadTipCatalogWithPosters();
+  video = tip ? resolveTipCatalogVideo({ videoContentId: tip.videoContentId }, catalog) : null;
+} catch {
+  video = tip ? resolveTipCatalogVideo({ videoContentId: tip.videoContentId }) : null;
+}
+const videoPageHref = tip
+  ? permanentTipVideoHref(video?.contentId || tip.videoContentId)
+  : "";
+const featuredVideoFavoriteId = video?.contentId ?? "";
+
+let archiveTips: {
+  contentId: string;
+  title: string;
+  href: string;
+  videoFavoriteId: string;
+}[] = [];
 if (!isPreview) {
   try {
-    archiveTips = await loadPublicTipArchive(tip?.tipId ?? "");
+    const archived = await loadPublicTipArchive(tip?.tipId ?? "");
+    archiveTips = archived.map((item) => ({
+      contentId: item.contentId,
+      title: item.title,
+      href: item.href,
+      videoFavoriteId: tipVideoFavoriteContentId(item.videoContentId, catalog),
+    }));
   } catch {
     archiveTips = [];
   }
 }
+const showVideoFavoriteStars =
+  Boolean(featuredVideoFavoriteId) || archiveTips.some((item) => item.videoFavoriteId);
 ---
 
 <Layout
@@ -144,13 +165,15 @@ if (!isPreview) {
               </p>
               <div class="totw-title-row">
                 <h1 class="totw-title">{tip.title}</h1>
-                <FavoriteStar
-                  contentType="tip-of-the-week"
-                  contentId={tip.tipId}
-                  title={tip.title}
-                  source="tip-page"
-                  actionTooltip
-                />
+                {featuredVideoFavoriteId ? (
+                  <FavoriteStar
+                    contentType="video"
+                    contentId={featuredVideoFavoriteId}
+                    title="video"
+                    labelTooltip
+                    source="tip-page"
+                  />
+                ) : null}
               </div>
               {introHasRichMarkup ? (
                 <div class="totw-lede" set:html={introHtml} />
@@ -231,10 +254,17 @@ if (!isPreview) {
           ) : (
             <p class="totw-video__missing" role="status">
               The featured video could not be resolved from the Learning Library catalog.
-              Check that video content_id {tip.videoContentId} exists in videos-public.json
+              Check that video content_id {tip.videoContentId} exists in the catalog
               with a numeric Vimeo id.
             </p>
           )}
+          {videoPageHref ? (
+            <p class="totw-video__actions">
+              <a class="kbm-btn kbm-btn-outline totw-video__view" href={videoPageHref}>
+                View video
+              </a>
+            </p>
+          ) : null}
         </section>
 
         <TipReactions tipId={tip.tipId} />
@@ -370,14 +400,16 @@ if (!isPreview) {
             archiveTips.map((item) => (
               <li class="totw-archive__item">
                 <a class="totw-archive__link" href={item.href}>{item.title}</a>
-                <FavoriteStar
-                  contentType="tip-of-the-week"
-                  contentId={item.contentId}
-                  title={item.title}
-                  class="favorite-star--compact"
-                  source="tip-archive"
-                  actionTooltip
-                />
+                {item.videoFavoriteId ? (
+                  <FavoriteStar
+                    contentType="video"
+                    contentId={item.videoFavoriteId}
+                    title="video"
+                    labelTooltip
+                    class="favorite-star--compact"
+                    source="tip-archive"
+                  />
+                ) : null}
               </li>
             ))
           }
@@ -385,7 +417,36 @@ if (!isPreview) {
       </section>
     ) : null
   }
-  {tip || archiveTips.length > 0 ? <FavoritesRuntime contentType="tip-of-the-week" /> : null}
+  {
+    showVideoFavoriteStars ? (
+      <>
+        <p class="sr-only" data-favorites-status aria-live="polite" role="status"></p>
+        <script>
+          import { initFavoriteStarController, hydrateFavoriteStars } from "../lib/favorites/favoriteStarController";
+          import { isFavoritesMemberLoggedIn, listFavorites } from "../lib/favorites/favoritesClient";
+          import { settleTipOfTheWeekFavorites } from "../lib/favorites/settleTipOfTheWeekFavorites";
+
+          const statusEl = document.querySelector<HTMLElement>("[data-favorites-status]");
+          initFavoriteStarController({ statusEl });
+
+          void (async function () {
+            const loggedIn = await isFavoritesMemberLoggedIn();
+            if (!loggedIn) return;
+            try {
+              await settleTipOfTheWeekFavorites({ includeReference: false });
+              const rows = await listFavorites("video");
+              hydrateFavoriteStars(
+                "video",
+                new Set(rows.map((row) => String(row.content_id))),
+              );
+            } catch {
+              if (statusEl) statusEl.textContent = "Could not load favorite status.";
+            }
+          })();
+        </script>
+      </>
+    ) : null
+  }
 </Layout>
 
 <style>
@@ -471,6 +532,60 @@ if (!isPreview) {
     align-items: flex-start;
     gap: 0.75rem;
     margin: 0 0 0.75rem;
+  }
+
+  .totw-title-row :global(.favorite-star[data-favorite-label-tooltip]),
+  .totw-archive__item :global(.favorite-star[data-favorite-label-tooltip]) {
+    position: relative;
+  }
+
+  .totw-title-row :global(.favorite-star[data-favorite-label-tooltip][data-tooltip])::after,
+  .totw-archive__item :global(.favorite-star[data-favorite-label-tooltip][data-tooltip])::after,
+  .totw-title-row :global(.favorite-star[data-favorite-label-tooltip][data-tooltip])::before,
+  .totw-archive__item :global(.favorite-star[data-favorite-label-tooltip][data-tooltip])::before {
+    position: absolute;
+    left: 0;
+    bottom: calc(100% + 8px);
+    z-index: 30;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .totw-title-row :global(.favorite-star[data-favorite-label-tooltip][data-tooltip])::after,
+  .totw-archive__item :global(.favorite-star[data-favorite-label-tooltip][data-tooltip])::after {
+    content: attr(data-tooltip);
+    width: max-content;
+    max-width: 16rem;
+    padding: 0.4rem 0.65rem;
+    border-radius: 6px;
+    background: #52682d;
+    color: #fff;
+    font-size: 0.85rem;
+    font-weight: 600;
+    line-height: 1.3;
+    text-align: left;
+    white-space: nowrap;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+  }
+
+  .totw-title-row :global(.favorite-star[data-favorite-label-tooltip][data-tooltip])::before,
+  .totw-archive__item :global(.favorite-star[data-favorite-label-tooltip][data-tooltip])::before {
+    content: "";
+    bottom: calc(100% + 3px);
+    border-width: 5px;
+    border-style: solid;
+    border-color: #52682d transparent transparent transparent;
+  }
+
+  .totw-title-row :global(.favorite-star[data-favorite-label-tooltip][data-tooltip]:hover)::after,
+  .totw-title-row :global(.favorite-star[data-favorite-label-tooltip][data-tooltip]:focus-visible)::after,
+  .totw-title-row :global(.favorite-star[data-favorite-label-tooltip][data-tooltip]:hover)::before,
+  .totw-title-row :global(.favorite-star[data-favorite-label-tooltip][data-tooltip]:focus-visible)::before,
+  .totw-archive__item :global(.favorite-star[data-favorite-label-tooltip][data-tooltip]:hover)::after,
+  .totw-archive__item :global(.favorite-star[data-favorite-label-tooltip][data-tooltip]:focus-visible)::after,
+  .totw-archive__item :global(.favorite-star[data-favorite-label-tooltip][data-tooltip]:hover)::before,
+  .totw-archive__item :global(.favorite-star[data-favorite-label-tooltip][data-tooltip]:focus-visible)::before {
+    opacity: 1;
   }
 
   .totw-title {
@@ -626,6 +741,16 @@ if (!isPreview) {
     margin: 0.55rem 0 0;
     font-size: 0.88rem;
     color: var(--text-muted, #6b7280);
+  }
+
+  .totw-video__actions {
+    margin: 0.85rem 0 0;
+  }
+
+  .totw-video__view {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .totw-video__missing {

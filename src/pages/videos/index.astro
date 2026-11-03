@@ -307,6 +307,7 @@ const forceMemberView =
     import { favoriteStarButtonHtml, filterVideosByFavoriteIds } from "../../lib/favorites/favoriteStarUi";
     import { initFavoriteStarController } from "../../lib/favorites/favoriteStarController";
     import { listFavorites } from "../../lib/favorites/favoritesClient";
+    import { settleTipOfTheWeekFavorites } from "../../lib/favorites/settleTipOfTheWeekFavorites";
     import {
       syncVideoFiltersLayoutForViewport,
       syncVideoSearchPlaceholder,
@@ -821,6 +822,7 @@ const forceMemberView =
         return;
       }
       try {
+        await settleTipOfTheWeekFavorites({ includeReference: false });
         const rows = await listFavorites("video");
         favoriteIds = new Set(rows.map((row) => String(row.content_id)));
       } catch {

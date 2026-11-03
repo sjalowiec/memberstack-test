@@ -3,7 +3,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import tipConfig from "../data/tip-of-the-week.json";
-import { resolveTipCatalogVideo, tipOfTheWeek } from "../lib/tipOfTheWeek";
+import { resolveTipCatalogVideo, tipOfTheWeek, tipVideoFavoriteContentId } from "../lib/tipOfTheWeek";
 import {
   TIP_FEEDBACK_CHOICES,
   TIP_REACTION_HISTORY,
@@ -104,6 +104,24 @@ describe("Tip of the Week page route", () => {
     expect(pageSource).not.toContain("TIP_OF_THE_WEEK_FLOATS");
   });
 
+  it("saves the tip video with the video favorite star and keeps the permanent link", () => {
+    expect(pageSource).toContain("permanentTipVideoHref");
+    expect(pageSource).toContain("View video");
+    expect(pageSource).toContain('class="kbm-btn kbm-btn-outline totw-video__view"');
+    expect(pageSource).toContain("FavoriteStar");
+    expect(pageSource).toContain('contentType="video"');
+    expect(pageSource).toContain('title="video"');
+    expect(pageSource).toContain("labelTooltip");
+    expect(pageSource).toContain("featuredVideoFavoriteId");
+    expect(pageSource).toContain("item.videoFavoriteId");
+    expect(pageSource).toContain("tipVideoFavoriteContentId");
+    expect(pageSource).toContain("settleTipOfTheWeekFavorites");
+    expect(pageSource).toContain('listFavorites("video")');
+    expect(pageSource).not.toContain('contentType="tip-of-the-week"');
+    expect(pageSource).not.toContain("FavoritesRuntime");
+    expect(pageSource).toContain("data-vimeo-id={video.vimeoId}");
+  });
+
   it("places What You’ll Learn above the featured video", () => {
     const learnIdx = pageSource.indexOf('id="totw-learn-heading"');
     const videoIdx = pageSource.indexOf('class="totw-video"');
@@ -161,11 +179,25 @@ describe("Tip of the Week page route", () => {
     expect(pageSource).toContain('bodyClass="page--tight-header"');
   });
 
+  it("resolves the featured video from the same catalog as the Video Library", () => {
+    expect(pageSource).toContain("loadTipCatalogWithPosters");
+    expect(pageSource).toContain("resolveTipCatalogVideo");
+    expect(pageSource).not.toContain("loadPublicVideoPosterOverrides");
+  });
+
   it("resolves Learning Library video 339 from the catalog", () => {
     const video = resolveTipCatalogVideo({ videoContentId: 339 });
     expect(video?.vimeoId).toBe("151857510");
     expect(video?.posterUrl).toContain("vimeocdn.com");
     expect(video?.catalogTitle).toBe("Taming the Curl");
+  });
+
+  it("uses only a resolved catalog video id for a tip favorite", () => {
+    expect(tipVideoFavoriteContentId(339)).toBe("339");
+    expect(tipVideoFavoriteContentId(" 649 ")).toBe("649");
+    expect(tipVideoFavoriteContentId("")).toBe("");
+    expect(tipVideoFavoriteContentId(null)).toBe("");
+    expect(tipVideoFavoriteContentId("not-a-video")).toBe("");
   });
 
   it("wires Related Help external-link attributes on the public page", () => {

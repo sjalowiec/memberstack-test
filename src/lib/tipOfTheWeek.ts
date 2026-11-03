@@ -3,13 +3,16 @@
  *
  * Featured tip content for production is managed in Watson Postgres
  * (`src/lib/tipOfTheWeek/`). This module still:
- * - resolves Learning Library videos from `videos-public.json`
+ * - resolves Learning Library videos from the live catalog (bundled file plus admin edits)
  * - exposes the JSON config as an explicit **dev-only** fallback source
  *   (`TIP_OF_THE_WEEK_DEV_JSON=true` via `publicPage.ts`)
  */
 import tipConfig from "../data/tip-of-the-week.json";
 import videosPublic from "../data/videos-public.json";
 import type { TipRelatedResource } from "./tipOfTheWeek/types";
+import { loadMergedVideoCatalog } from "./videos/videoCatalogStore";
+import { applyVideoPosterOverrides, videoContentIdKey } from "./videos/videoPosterOverrides";
+import { loadPublicVideoPosterOverrides } from "./videos/videoPosterStore";
 
 export type TipRelatedLink = TipRelatedResource;
 
@@ -96,7 +99,35 @@ export function tipAvailabilityFooter(
 }
 
 function contentIdKey(value: string | number | undefined): string {
-  return String(value ?? "").trim();
+  return videoContentIdKey(value);
+}
+
+/** Same catalog and thumbnail the Video Library and video page use. */
+export async function loadTipCatalogWithPosters(): Promise<PublicVideoRow[]> {
+  const [catalog, posters] = await Promise.all([
+    loadMergedVideoCatalog(),
+    loadPublicVideoPosterOverrides(),
+  ]);
+  return applyVideoPosterOverrides(catalog, posters) as PublicVideoRow[];
+}
+
+/**
+ * Catalog content id for a tip's video favorite.
+ * Empty when the tip has no published Learning Library video. Does not guess.
+ */
+export function tipVideoFavoriteContentId(
+  videoContentId: number | string | null | undefined,
+  catalog: PublicVideoRow[] = videosPublic as PublicVideoRow[],
+): string {
+  if (videoContentId == null || String(videoContentId).trim() === "") return "";
+  return resolveTipCatalogVideo({ videoContentId }, catalog)?.contentId ?? "";
+}
+
+/** Vimeo ID and thumbnail come from one catalog row, then the stored thumbnail wins. */
+export async function loadResolvedTipCatalogVideo(
+  videoContentId: number | string,
+): Promise<TipCatalogVideo | null> {
+  return resolveTipCatalogVideo({ videoContentId }, await loadTipCatalogWithPosters());
 }
 
 /** Resolve a Learning Library row (Vimeo id + poster) by content_id. */

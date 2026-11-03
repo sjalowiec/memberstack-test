@@ -53,6 +53,8 @@ export type FavoriteStarButtonOptions = {
   extraClass?: string;
   /** Short hover/focus tooltip. The accessible name stays the full save/remove label. */
   actionTooltip?: boolean;
+  /** Hover/focus tooltip uses the same save/remove phrase as the accessible name. */
+  labelTooltip?: boolean;
 };
 
 /** Safe HTML for a favorite star button (catalog string rendering). */
@@ -65,9 +67,11 @@ export function favoriteStarButtonHtml(options: FavoriteStarButtonOptions): stri
   const label = escapeHtml(favoriteAriaLabel(title, options.isFavorite));
   const extra = options.extraClass ? ` ${escapeHtml(options.extraClass)}` : "";
   const savedClass = options.isFavorite ? " is-favorite" : "";
-  const tooltip = options.actionTooltip
-    ? ` data-favorite-action-tooltip="true" data-tooltip="${escapeHtml(favoriteActionTooltip(options.isFavorite))}"`
-    : "";
+  const tooltip = options.labelTooltip
+    ? ` data-favorite-label-tooltip="true" data-tooltip="${label}"`
+    : options.actionTooltip
+      ? ` data-favorite-action-tooltip="true" data-tooltip="${escapeHtml(favoriteActionTooltip(options.isFavorite))}"`
+      : "";
 
   return (
     `<button type="button"` +
@@ -96,7 +100,9 @@ export function applyFavoriteStarState(
   button.setAttribute("data-favorite-title", resolvedTitle);
   button.setAttribute("aria-pressed", isFavorite ? "true" : "false");
   button.setAttribute("aria-label", favoriteAriaLabel(resolvedTitle, isFavorite));
-  if (button.getAttribute("data-favorite-action-tooltip") != null) {
+  if (button.getAttribute("data-favorite-label-tooltip") != null) {
+    button.setAttribute("data-tooltip", favoriteAriaLabel(resolvedTitle, isFavorite));
+  } else if (button.getAttribute("data-favorite-action-tooltip") != null) {
     button.setAttribute("data-tooltip", favoriteActionTooltip(isFavorite));
   }
   button.classList.toggle("is-favorite", isFavorite);
