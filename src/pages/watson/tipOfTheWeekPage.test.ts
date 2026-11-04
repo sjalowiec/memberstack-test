@@ -48,7 +48,11 @@ describe("Watson Tip of the Week page", () => {
   });
 
   it("links Preview to a Watson-gated preview query on the public page", () => {
-    expect(page).toContain("/tip-of-the-week?preview=");
+    const list = readFileSync("src/lib/tipOfTheWeek/adminList.ts", "utf8");
+    expect(page).toContain("renderTipAdminBoardHtml");
+    expect(list).toContain("/tip-of-the-week?preview=");
+    expect(list).toContain('target="_blank"');
+    expect(list).toContain('rel="noopener"');
     expect(script).toContain("/api/watson/tip-of-the-week");
   });
 
@@ -172,7 +176,9 @@ describe("Watson Tip of the Week page", () => {
     expect(relatedIdx).toBeGreaterThan(ctaIdx);
     expect(page).toContain('name="ctaText"');
     expect(page).toContain('name="ctaUrl"');
-    expect(page).toContain("JSON.stringify(tip)");
+    expect(page).toContain("serializeTipAdminJson");
+    expect(script).toContain("openTipModal");
+    expect(script).toContain("data-totw-edit");
     expect(script).toContain('set("ctaText"');
     expect(script).toContain('set("ctaUrl"');
     expect(script).toContain("ctaText: get(");
@@ -191,8 +197,40 @@ describe("Watson Tip of the Week page", () => {
     expect(script).toContain("parseTipAdminSaveJson");
     expect(script).toContain("clientTipAdminFieldErrors");
     expect(script).toContain("Save failed — network error.");
-    expect(script).toContain("queueTipAdminFlash");
     expect(script).toContain("readTipAdminFlash");
+    expect(script).toContain("renderTipAdminBoardHtml");
+    expect(script).toContain("finishSave");
+    expect(script).not.toContain("window.location.reload");
     expect(apiIndex).toContain("field: result.field");
+  });
+
+  it("uses one compact tip table and one modal for New tip and Edit", () => {
+    const list = readFileSync("src/lib/tipOfTheWeek/adminList.ts", "utf8");
+    expect(page).toContain('data-totw-dialog');
+    expect(page).toContain("data-totw-cancel");
+    expect(page).toContain("data-video-usage");
+    expect(page).toContain("data-totw-page-status");
+    expect(page).toContain('class="watson-totw__dialog-body"');
+    expect(page).toContain(".watson-totw__table");
+    expect(page).toContain("white-space: nowrap");
+    expect(list).toContain("data-sortable-table");
+    expect(list).toContain('data-sort-key="title"');
+    expect(list).toContain('data-sort-key="status"');
+    expect(script).toContain("initSortableTable");
+    expect(script).toContain("aria-sort");
+    expect(list).toContain("<th scope=\"col\">Edit</th>");
+    expect(list).toContain("<th scope=\"col\">Preview</th>");
+    expect(list).not.toContain("Past & archived");
+    expect(list).toContain("data-totw-archive-search");
+    expect(list).toContain("View past runs");
+    expect(list).toContain("Past scheduled runs");
+    expect(list).toContain("No past runs found");
+    expect(list).toContain("Live now");
+    expect(list).toContain("Future scheduled runs");
+    expect(script).toContain("Discard unsaved edits?");
+    expect(script).toContain("showModal");
+    expect(script).toContain("buildVideoUsageSummary");
+    expect(script).toContain("applyArchiveFilter");
+    expect(script).not.toContain("scrollIntoView({ behavior: \"smooth\", block: \"start\" })");
   });
 });
