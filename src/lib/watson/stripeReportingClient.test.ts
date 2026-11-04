@@ -10,6 +10,8 @@ import {
   normalizeStripeCharge,
   readStripeReportingConfig,
   shouldUseStripeTlsInsecure,
+  splitStripeCreatedRange,
+  STRIPE_RANGE_CHUNK_SECONDS,
   stripeMinorToMajor,
   summarizeStripeFetchCause,
 } from "./stripeReportingClient";
@@ -151,6 +153,25 @@ describe("normalizeStripeCharge", () => {
   });
 });
 
+describe("splitStripeCreatedRange", () => {
+  it("tiles a multi-week window without gaps or overlaps", () => {
+    const gte = 1_785_567_600; // 2026-08-01T07:00:00Z
+    const lt = gte + 14 * 24 * 60 * 60;
+    const chunks = splitStripeCreatedRange(gte, lt, STRIPE_RANGE_CHUNK_SECONDS);
+    expect(chunks.length).toBeGreaterThan(1);
+    expect(chunks[0]?.createdGte).toBe(gte);
+    expect(chunks.at(-1)?.createdLt).toBe(lt);
+    for (let index = 1; index < chunks.length; index += 1) {
+      expect(chunks[index]?.createdGte).toBe(chunks[index - 1]?.createdLt);
+    }
+  });
+
+  it("keeps a short range in one window", () => {
+    const chunks = splitStripeCreatedRange(100, 200, STRIPE_RANGE_CHUNK_SECONDS);
+    expect(chunks).toEqual([{ createdGte: 100, createdLt: 200 }]);
+  });
+});
+
 describe("fetchStripeChargesInRange pagination", () => {
   it("follows cursor pagination and de-duplicates charge ids", async () => {
     const pages: Record<string, { data: Array<{ id: string }>; has_more: boolean }> = {
@@ -184,6 +205,120 @@ describe("fetchStripeChargesInRange pagination", () => {
     expect(firstParams.get("created[gte]")).toBe("1785567600");
     expect(firstParams.get("created[lt]")).toBe("1785654000");
     expect(firstParams.getAll("expand[]")).toContain("data.invoice");
+  });
+
+  it("keeps charges from every week of a longer range, including a boundary second", async () => {
+    const startUtc = new Date("2026-08-01T07:00:00.000Z");
+    const endUtc = new Date("2026-08-15T07:00:00.000Z");
+    const boundary = Math.floor(startUtc.getTime() / 1000) + STRIPE_RANGE_CHUNK_SECONDS;
+    const windows: string[] = [];
+
+    const fetchImpl = (async (url: string) => {
+      const parsed = new URL(url);
+      const gte = Number(parsed.searchParams.get("created[gte]"));
+      const lt = Number(parsed.searchParams.get("created[lt]"));
+      windows.push(`${parsed.pathname}:${gte}:${lt}`);
+      if (parsed.pathname.endsWith("/invoices")) {
+        if (gte === boundary) {
+          return new Response(
+            JSON.stringify({
+              data: [{ id: "in_boundary", paid_out_of_band: false, charge: "ch_boundary" }],
+              has_more: false,
+            }),
+            { status: 200 },
+          );
+        }
+        return new Response(JSON.stringify({ data: [], has_more: false }), { status: 200 });
+      }
+      if (parsed.pathname.endsWith("/charges/ch_boundary")) {
+        return new Response(
+          JSON.stringify({
+            id: "ch_boundary",
+            amount: 500,
+            amount_captured: 500,
+            amount_refunded: 0,
+            currency: "usd",
+            created: boundary,
+            livemode: true,
+            paid: true,
+            status: "succeeded",
+          }),
+          { status: 200 },
+        );
+      }
+      return new Response(
+        JSON.stringify({
+          data: [
+            {
+              id: `ch_${gte}`,
+              amount: 100,
+              amount_captured: 100,
+              amount_refunded: 0,
+              currency: "usd",
+              created: gte,
+              livemode: true,
+              paid: true,
+              status: "succeeded",
+            },
+          ],
+          has_more: false,
+        }),
+        { status: 200 },
+      );
+    }) as unknown as typeof fetch;
+
+    const charges = await fetchStripeChargesInRange({
+      startUtc,
+      endUtc,
+      config: { secretKey: "sk_test", apiBase: "https://api.stripe.test/v1" },
+      fetchImpl,
+    });
+
+    const chunkStarts = splitStripeCreatedRange(
+      Math.floor(startUtc.getTime() / 1000),
+      Math.ceil(endUtc.getTime() / 1000),
+    ).map((chunk) => `ch_${chunk.createdGte}`);
+    expect(charges.map((charge) => charge.id).sort()).toEqual(
+      [...chunkStarts, "ch_boundary"].sort(),
+    );
+    const chargeWindows = windows.filter((window) => window.includes("/charges:"));
+    expect(chargeWindows).toHaveLength(chunkStarts.length);
+    expect(windows.some((window) => window.includes("/invoices:"))).toBe(true);
+  });
+
+  it("de-duplicates a charge id returned by two windows", async () => {
+    const fetchImpl = (async (url: string) => {
+      if (String(url).includes("/invoices")) {
+        return new Response(JSON.stringify({ data: [], has_more: false }), { status: 200 });
+      }
+      return new Response(
+        JSON.stringify({
+          data: [
+            {
+              id: "ch_same",
+              amount: 100,
+              amount_captured: 100,
+              amount_refunded: 0,
+              currency: "usd",
+              created: 1_785_567_600,
+              livemode: true,
+              paid: true,
+              status: "succeeded",
+            },
+          ],
+          has_more: false,
+        }),
+        { status: 200 },
+      );
+    }) as unknown as typeof fetch;
+
+    const charges = await fetchStripeChargesInRange({
+      startUtc: new Date("2026-08-01T07:00:00.000Z"),
+      endUtc: new Date("2026-08-15T07:00:00.000Z"),
+      config: { secretKey: "sk_test", apiBase: "https://api.stripe.test/v1" },
+      fetchImpl,
+    });
+    expect(charges.map((charge) => charge.id)).toEqual(["ch_same"]);
   });
 
   it("backfills a paid-invoice Charge missing from the charges list, once", async () => {
