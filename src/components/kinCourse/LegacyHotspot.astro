@@ -1,4 +1,6 @@
 ---
+import { formatHotspotTooltipHtml, hotspotTooltipAccessibleName } from "../../lib/kinCourse/hotspotTooltip";
+
 interface Spot {
   index: number;
   text?: string;
@@ -19,16 +21,6 @@ interface Props {
 }
 
 const { lessonId, image, imageWidth, imageHeight, wrapperStyle, stageStyle, spots = [] } = Astro.props;
-
-function linkifyHotspotText(text: string): string {
-  const escaped = text
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;');
-  return escaped
-    .replace(/\r\n|\n|\r/g, '<br>')
-    .replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>');
-}
 
 const usableSpots = spots.filter((spot) => spot.style || spot.text);
 ---
@@ -54,9 +46,9 @@ const usableSpots = spots.filter((spot) => spot.style || spot.text);
             class="legacy-hotspot-spot"
             style={spot.style || undefined}
             aria-expanded="false"
-            aria-label={spot.text ? spot.text.replace(/\s+/g, ' ').trim() : `Hotspot ${spot.index}`}
+            aria-label={spot.text ? hotspotTooltipAccessibleName(spot.text) || `Hotspot ${spot.index}` : `Hotspot ${spot.index}`}
           >
-            <span class="legacy-hotspot-label" set:html={linkifyHotspotText(spot.text || '')} />
+            <span class="legacy-hotspot-label" set:html={formatHotspotTooltipHtml(spot.text || '')} />
           </button>
         ))}
       </div>

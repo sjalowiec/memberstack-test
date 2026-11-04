@@ -41,6 +41,17 @@
       "thumbnail": "/images/courses/260.webp"
     },
     {
+      "slug": "ultimate-brother-930-940-workshop",
+      "title": "Ultimate Brother 930/940 Workshop",
+      "category": "Brother",
+      "catalogStatus": "available",
+      "access": "member",
+      "description": "A workshop for the Brother KH930 and KH940, from setup and plain knitting through electronics, stitch patterns, and the ribber.",
+      "href": "/courses/103",
+      "buttonLabel": "View Course",
+      "thumbnail": "/images/courses/940_course_thumb.webp"
+    },
+    {
       "slug": "master-lk-patterning",
       "title": "Master LK-150 Patterning",
       "category": "LK-150",

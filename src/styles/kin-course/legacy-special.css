@@ -70,6 +70,18 @@
   pointer-events: auto;
 }
 
+.legacy-hotspot-label strong,
+.legacy-hotspot-label b {
+  font-weight: 800;
+}
+
+.legacy-hotspot-label ul,
+.legacy-hotspot-label ol {
+  margin: 0.35em 0 0;
+  padding-left: 1.15em;
+  text-align: left;
+}
+
 .legacy-hotspot-spot:not(:hover):not(:focus-visible):not(.is-open) .legacy-hotspot-label {
   display: none;
 }
