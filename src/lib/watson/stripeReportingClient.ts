@@ -24,8 +24,17 @@ import type { StripeChargeLineRef } from "./stripeSalesClassify";
 
 const STRIPE_API_BASE = "https://api.stripe.com/v1";
 const PAGE_LIMIT = 100;
-const MAX_PAGES = 1000; // hard safety cap (~100k charges)
+const MAX_PAGES = 1000; // hard safety cap (~100k charges per window)
 const MAX_RETRIES = 4;
+/**
+ * One expanded Charges page is several seconds and about 1MB. A calendar
+ * month is 5–6 of those pages, then a second pass over paid invoices. Done
+ * one after another, that exceeds the synchronous gateway limit. Three-day
+ * chunks stay near one page each and are a slice of the same created window,
+ * not a sample of it.
+ */
+export const STRIPE_RANGE_CHUNK_SECONDS = 3 * 24 * 60 * 60;
+const STRIPE_RANGE_CONCURRENCY = 6;
 
 export interface StripeReportingConfig {
   secretKey: string;
@@ -625,11 +634,57 @@ export interface FetchStripeChargesOptions {
 }
 
 /**
+ * Split a Stripe `created` second range into contiguous [gte, lt) windows.
+ * The windows share every boundary second with exactly one slice, so a charge
+ * created on a boundary stays in the result exactly once.
+ */
+export function splitStripeCreatedRange(
+  createdGte: number,
+  createdLt: number,
+  chunkSeconds = STRIPE_RANGE_CHUNK_SECONDS,
+): Array<{ createdGte: number; createdLt: number }> {
+  if (!(createdLt > createdGte) || chunkSeconds <= 0) {
+    return [{ createdGte, createdLt }];
+  }
+  const chunks: Array<{ createdGte: number; createdLt: number }> = [];
+  for (let cursor = createdGte; cursor < createdLt; ) {
+    const next = Math.min(createdLt, cursor + chunkSeconds);
+    chunks.push({ createdGte: cursor, createdLt: next });
+    cursor = next;
+  }
+  return chunks;
+}
+
+async function mapWithConcurrency<T, R>(
+  items: T[],
+  limit: number,
+  fn: (item: T, index: number) => Promise<R>,
+): Promise<R[]> {
+  const results = new Array<R>(items.length);
+  let nextIndex = 0;
+  const workers = Array.from({ length: Math.min(limit, items.length) }, async () => {
+    while (nextIndex < items.length) {
+      const index = nextIndex;
+      nextIndex += 1;
+      results[index] = await fn(items[index]!, index);
+    }
+  });
+  await Promise.all(workers);
+  return results;
+}
+
+/**
  * Fetch charges created within [startUtc, endUtc), then backfill any paid
  * invoices created in the same window whose Charge was missing from the list.
  * Throws a classified, secret-free error if the Charges endpoint cannot be
  * queried. Invoice backfill is best-effort (missing Invoices permission must
  * not fail the report).
+ *
+ * Longer ranges are partitioned into 3-day created windows and those windows
+ * are listed together. A week of expanded charges is more than one Stripe
+ * page, and those pages are what push a month past the gateway limit. The
+ * partition is exhaustive: every second in the caller's range is queried,
+ * and charge ids are de-duplicated.
  */
 export async function fetchStripeChargesInRange(
   options: FetchStripeChargesOptions,
@@ -644,30 +699,84 @@ export async function fetchStripeChargesInRange(
   const createdGte = Math.floor(options.startUtc.getTime() / 1000);
   // Stripe `created[lt]` is exclusive of the boundary second.
   const createdLt = Math.ceil(options.endUtc.getTime() / 1000);
-
-  const charges: NormalizedStripeCharge[] = [];
-  const seen = new Set<string>();
-  let startingAfter: string | null = null;
-  let page = 0;
+  const chunks = splitStripeCreatedRange(createdGte, createdLt);
   const listExpands = options.expand?.length ? options.expand : ["data.invoice"];
   const chargeExpands = listExpands.map((item) =>
     item.startsWith("data.") ? item.slice("data.".length) : item,
   );
 
+  const [chargeGroups, invoiceGroups] = await Promise.all([
+    mapWithConcurrency(chunks, STRIPE_RANGE_CONCURRENCY, (chunk) =>
+      listChargesInWindow({
+        createdGte: chunk.createdGte,
+        createdLt: chunk.createdLt,
+        config,
+        fetchImpl,
+        listExpands,
+      }),
+    ),
+    mapWithConcurrency(chunks, STRIPE_RANGE_CONCURRENCY, (chunk) =>
+      listPaidInvoicesInWindow({
+        createdGte: chunk.createdGte,
+        createdLt: chunk.createdLt,
+        config,
+        fetchImpl,
+      }),
+    ),
+  ]);
+
+  const charges: NormalizedStripeCharge[] = [];
+  const seen = new Set<string>();
+  for (const group of chargeGroups) {
+    for (const charge of group) {
+      if (seen.has(charge.id)) continue;
+      seen.add(charge.id);
+      charges.push(charge);
+    }
+  }
+
+  if (invoiceGroups.every((group) => group.ok)) {
+    await appendMissingInvoiceCharges({
+      charges,
+      seen,
+      createdGte,
+      createdLt,
+      invoices: invoiceGroups.flatMap((group) => (group.ok ? group.invoices : [])),
+      config,
+      fetchImpl,
+      chargeExpands,
+    });
+  }
+
+  return charges;
+}
+
+async function listChargesInWindow(options: {
+  createdGte: number;
+  createdLt: number;
+  config: StripeReportingConfig;
+  fetchImpl: typeof fetch;
+  listExpands: string[];
+}): Promise<NormalizedStripeCharge[]> {
+  const charges: NormalizedStripeCharge[] = [];
+  const seen = new Set<string>();
+  let startingAfter: string | null = null;
+  let page = 0;
+
   while (page < MAX_PAGES) {
     page += 1;
     const params = new URLSearchParams();
     params.set("limit", String(PAGE_LIMIT));
-    params.set("created[gte]", String(createdGte));
-    params.set("created[lt]", String(createdLt));
-    for (const expand of listExpands) params.append("expand[]", expand);
+    params.set("created[gte]", String(options.createdGte));
+    params.set("created[lt]", String(options.createdLt));
+    for (const expand of options.listExpands) params.append("expand[]", expand);
     if (startingAfter) params.set("starting_after", startingAfter);
 
-    const url = `${config.apiBase}/charges?${params.toString()}`;
+    const url = `${options.config.apiBase}/charges?${params.toString()}`;
     const response = await fetchStripeWithRetry(
       url,
-      config.secretKey,
-      fetchImpl,
+      options.config.secretKey,
+      options.fetchImpl,
       `charges page ${page}`,
     );
 
@@ -689,16 +798,6 @@ export async function fetchStripeChargesInRange(
     if (!startingAfter) break;
   }
 
-  await appendMissingInvoiceCharges({
-    charges,
-    seen,
-    createdGte,
-    createdLt,
-    config,
-    fetchImpl,
-    chargeExpands,
-  });
-
   return charges;
 }
 
@@ -715,16 +814,13 @@ interface RawStripeInvoiceListItem {
  * window. If the Charges list missed one, fetch that Charge and append it.
  * Out-of-band payments have no Charge and are not Stripe-collected.
  */
-async function appendMissingInvoiceCharges(options: {
-  charges: NormalizedStripeCharge[];
-  seen: Set<string>;
+async function listPaidInvoicesInWindow(options: {
   createdGte: number;
   createdLt: number;
   config: StripeReportingConfig;
   fetchImpl: typeof fetch;
-  chargeExpands: string[];
-}): Promise<void> {
-  const { charges, seen, createdGte, createdLt, config, fetchImpl, chargeExpands } = options;
+}): Promise<{ ok: true; invoices: RawStripeInvoiceListItem[] } | { ok: false }> {
+  const invoices: RawStripeInvoiceListItem[] = [];
   let startingAfter: string | null = null;
   let page = 0;
 
@@ -734,20 +830,20 @@ async function appendMissingInvoiceCharges(options: {
       const params = new URLSearchParams();
       params.set("limit", String(PAGE_LIMIT));
       params.set("status", "paid");
-      params.set("created[gte]", String(createdGte));
-      params.set("created[lt]", String(createdLt));
+      params.set("created[gte]", String(options.createdGte));
+      params.set("created[lt]", String(options.createdLt));
       if (startingAfter) params.set("starting_after", startingAfter);
 
-      const url = `${config.apiBase}/invoices?${params.toString()}`;
+      const url = `${options.config.apiBase}/invoices?${params.toString()}`;
       const response = await fetchStripeWithRetry(
         url,
-        config.secretKey,
-        fetchImpl,
+        options.config.secretKey,
+        options.fetchImpl,
         `invoices page ${page}`,
       );
       if (!response.ok) {
         // Restricted keys without Invoices read should still report Charges.
-        return;
+        return { ok: false };
       }
 
       const payload = (await response.json()) as {
@@ -755,23 +851,43 @@ async function appendMissingInvoiceCharges(options: {
         has_more?: boolean;
       };
       const rows = Array.isArray(payload.data) ? payload.data : [];
-      for (const invoice of rows) {
-        if (invoice.paid_out_of_band) continue;
-        const chargeId =
-          typeof invoice.charge === "string"
-            ? invoice.charge
-            : invoice.charge?.id ?? null;
-        if (!chargeId || seen.has(chargeId)) continue;
-        const extra = await fetchStripeChargeById(chargeId, config, fetchImpl, chargeExpands);
-        if (!extra) continue;
-        if (extra.created < createdGte || extra.created >= createdLt) continue;
-        seen.add(extra.id);
-        charges.push(extra);
-      }
-
+      invoices.push(...rows);
       if (!payload.has_more || rows.length === 0) break;
       startingAfter = rows[rows.length - 1]?.id ?? null;
       if (!startingAfter) break;
+    }
+  } catch {
+    // Best-effort: a failed invoice list must not hide Charge totals.
+    return { ok: false };
+  }
+
+  return { ok: true, invoices };
+}
+
+async function appendMissingInvoiceCharges(options: {
+  charges: NormalizedStripeCharge[];
+  seen: Set<string>;
+  createdGte: number;
+  createdLt: number;
+  invoices: RawStripeInvoiceListItem[];
+  config: StripeReportingConfig;
+  fetchImpl: typeof fetch;
+  chargeExpands: string[];
+}): Promise<void> {
+  const { charges, seen, createdGte, createdLt, invoices, config, fetchImpl, chargeExpands } =
+    options;
+
+  try {
+    for (const invoice of invoices) {
+      if (invoice.paid_out_of_band) continue;
+      const chargeId =
+        typeof invoice.charge === "string" ? invoice.charge : invoice.charge?.id ?? null;
+      if (!chargeId || seen.has(chargeId)) continue;
+      const extra = await fetchStripeChargeById(chargeId, config, fetchImpl, chargeExpands);
+      if (!extra) continue;
+      if (extra.created < createdGte || extra.created >= createdLt) continue;
+      seen.add(extra.id);
+      charges.push(extra);
     }
   } catch {
     // Best-effort: a failed invoice backfill must not hide Charge totals.

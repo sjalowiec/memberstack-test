@@ -179,6 +179,46 @@ describe("resolveDayRange presets", () => {
 });
 
 describe("custom range validation", () => {
+  it("treats custom From and To as inclusive Los Angeles days, including a month that ends on the 1st", () => {
+    const now = new Date("2026-11-03T20:00:00.000Z");
+    const result = resolveDayRange(
+      { preset: "custom", from: "2026-08-01", to: "2026-09-01" },
+      now,
+    );
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.range.fromCivil).toBe("2026-08-01");
+    expect(result.range.toCivil).toBe("2026-09-01");
+    // Aug 1 00:00 PDT through the end of Sep 1 PDT. Sep 2 is excluded.
+    expect(result.range.startUtc.toISOString()).toBe("2026-08-01T07:00:00.000Z");
+    expect(result.range.endUtc.toISOString()).toBe("2026-09-02T07:00:00.000Z");
+    const days = eachCivilDay(result.range.fromCivil, result.range.toCivil);
+    expect(days[0]).toBe("2026-08-01");
+    expect(days.at(-1)).toBe("2026-09-01");
+    expect(days).toHaveLength(32);
+    expect(days).not.toContain("2026-07-31");
+    expect(days).not.toContain("2026-09-02");
+  });
+
+  it("keeps inclusive Los Angeles days across the November daylight-saving change", () => {
+    const now = new Date("2026-11-03T20:00:00.000Z");
+    const result = resolveDayRange(
+      { preset: "custom", from: "2026-10-30", to: "2026-11-03" },
+      now,
+    );
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.range.startUtc.toISOString()).toBe("2026-10-30T07:00:00.000Z");
+    expect(result.range.endUtc.toISOString()).toBe("2026-11-04T08:00:00.000Z");
+    expect(eachCivilDay(result.range.fromCivil, result.range.toCivil)).toEqual([
+      "2026-10-30",
+      "2026-10-31",
+      "2026-11-01",
+      "2026-11-02",
+      "2026-11-03",
+    ]);
+  });
+
   it("accepts a valid custom range", () => {
     const result = resolveDayRange(
       { preset: "custom", from: "2026-07-01", to: "2026-07-15" },

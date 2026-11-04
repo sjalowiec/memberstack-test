@@ -616,7 +616,39 @@ export async function loadSalesReport(
   const queryFn = options.queryFn ?? queryWatson;
   const env = options.env ?? process.env;
 
-  // ---- Shopify (live Admin API, Postgres sync as fallback) ----
+  // Shopify and Stripe are independent. Running them together keeps a slow
+  // Stripe month from waiting on Shopify, and the other way around.
+  const [shopifyLoaded, stripeLoaded] = await Promise.all([
+    loadShopifySide(options, now, queryFn, env),
+    loadStripeSide(options, now, env),
+  ]);
+  const { shopifyOrders, shopifySource } = shopifyLoaded;
+  const { stripeCharges, stripeSource, classifyConfig } = stripeLoaded;
+
+  const report = computeSalesReport({
+    range: options.range,
+    now,
+    shopifyOrders,
+    stripeCharges,
+    classifyConfig,
+    shopifySource,
+    stripeSource,
+    includeStripeDiagnostics: true,
+  });
+  if (options.includeStripeDiagnostics) {
+    console.info(
+      `[watson-sales] diagnostics: shopify ${report.summary.shopify.transactionCount}/${report.summary.shopify.netCollected}, stripe returned ${stripeCharges.length} counted ${report.summary.stripe.transactionCount} net ${report.summary.stripe.netCollected}, combined ${report.summary.combined.netCollected}, recon ${report.reconciliation.matchesSummary}`,
+    );
+  }
+  return report;
+}
+
+async function loadShopifySide(
+  options: LoadSalesReportOptions,
+  now: Date,
+  queryFn: WatsonQueryFn,
+  env: NodeJS.ProcessEnv,
+): Promise<{ shopifyOrders: NormalizedShopifyOrder[]; shopifySource: SourceStatus }> {
   let shopifyOrders: NormalizedShopifyOrder[] = [];
   let shopifySource: SourceStatus | undefined;
   let liveShopifyError: string | null = null;
@@ -680,7 +712,18 @@ export async function loadSalesReport(
     }
   }
 
-  // ---- Stripe (live collected Charges) ----
+  return { shopifyOrders, shopifySource };
+}
+
+async function loadStripeSide(
+  options: LoadSalesReportOptions,
+  now: Date,
+  env: NodeJS.ProcessEnv,
+): Promise<{
+  stripeCharges: NormalizedStripeCharge[];
+  stripeSource: SourceStatus;
+  classifyConfig: StripeMembershipClassificationConfig;
+}> {
   const classifyConfig = readStripeMembershipConfig(env);
   const classifyConfigEmpty = stripeMembershipConfigIsEmpty(classifyConfig);
   let stripeCharges: NormalizedStripeCharge[] = [];
@@ -730,22 +773,7 @@ export async function loadSalesReport(
     }
   }
 
-  const report = computeSalesReport({
-    range: options.range,
-    now,
-    shopifyOrders,
-    stripeCharges,
-    classifyConfig,
-    shopifySource,
-    stripeSource,
-    includeStripeDiagnostics: true,
-  });
-  if (options.includeStripeDiagnostics) {
-    console.info(
-      `[watson-sales] diagnostics: shopify ${report.summary.shopify.transactionCount}/${report.summary.shopify.netCollected}, stripe returned ${stripeCharges.length} counted ${report.summary.stripe.transactionCount} net ${report.summary.stripe.netCollected}, combined ${report.summary.combined.netCollected}, recon ${report.reconciliation.matchesSummary}`,
-    );
-  }
-  return report;
+  return { stripeCharges, stripeSource, classifyConfig };
 }
 
 export function formatReportUsd(amount: number): string {
