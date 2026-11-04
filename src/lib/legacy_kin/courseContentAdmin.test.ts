@@ -475,4 +475,13 @@ describe("reviewDraftReplacesStaleOverlay", () => {
     expect(reviewDraftReplacesStaleOverlay(other, course33(1, false))).toBe(false);
     expect(reviewDraftReplacesStaleOverlay(course33(0, true), course33(1, true))).toBe(false);
   });
+
+  it("replaces an older Brother 930/940 overlay once, then keeps the editor save", () => {
+    const older = course33(0, true);
+    older.course.legacyChallengeId = 103;
+    const review = course33(1, false);
+    review.course.legacyChallengeId = 103;
+    expect(reviewDraftReplacesStaleOverlay(older, review)).toBe(true);
+    expect(reviewDraftReplacesStaleOverlay(review, review)).toBe(false);
+  });
 });

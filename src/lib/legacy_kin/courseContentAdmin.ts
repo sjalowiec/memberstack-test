@@ -272,16 +272,20 @@ export function publishedBundleReplacesImplicitOverlay(
 }
 
 /**
- * Beginner Workshop's DEV blob can keep the older published copy after this
- * git draft is deployed. A higher contentRevision replaces that overlay once.
- * A later editor save keeps the same revision, so it is left in place.
+ * Beginner Workshop and the Brother 930/940 review can have a DEV blob that
+ * keeps an older copy after this git draft is deployed. A higher
+ * contentRevision replaces that overlay once. A later editor save keeps the
+ * same revision, so it is left in place.
  */
+const REVIEW_DRAFT_OVERLAY_IDS = new Set([33, 103]);
+
 export function reviewDraftReplacesStaleOverlay(
   overlay: CoursePreviewData,
   bundled: CoursePreviewData,
 ): boolean {
-  if (Number(bundled.course.legacyChallengeId) !== 33) return false;
-  if (Number(overlay.course.legacyChallengeId) !== 33) return false;
+  const bundledId = Number(bundled.course.legacyChallengeId);
+  const overlayId = Number(overlay.course.legacyChallengeId);
+  if (!REVIEW_DRAFT_OVERLAY_IDS.has(bundledId) || bundledId !== overlayId) return false;
   if (isExplicitlyPublished(bundled.course)) return false;
   return contentRevision(bundled) > contentRevision(overlay);
 }
