@@ -25,7 +25,11 @@ import type { StripeChargeLineRef } from "./stripeSalesClassify";
 const STRIPE_API_BASE = "https://api.stripe.com/v1";
 const PAGE_LIMIT = 100;
 const MAX_PAGES = 1000; // hard safety cap (~100k charges per window)
-const MAX_RETRIES = 4;
+/** One extra attempt after a timeout or a 429/5xx. Keeps a hung socket from holding the HTML document. */
+const STRIPE_MAX_EXTRA_ATTEMPTS = 1;
+const STRIPE_ATTEMPT_TIMEOUT_MS = 10_000;
+const STRIPE_RETRY_BASE_MS = 500;
+const STRIPE_RETRY_MAX_MS = 1_000;
 /**
  * One expanded Charges page is several seconds and about 1MB. A calendar
  * month is 5–6 of those pages, then a second pass over paid invoices. Done
@@ -617,6 +621,51 @@ function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+class StripeAttemptTimeoutError extends Error {
+  constructor(timeoutMs: number) {
+    super(`timed out after ${timeoutMs}ms`);
+    this.name = "StripeAttemptTimeoutError";
+  }
+}
+
+function isAttemptTimeout(err: unknown): boolean {
+  if (err instanceof StripeAttemptTimeoutError) return true;
+  return err instanceof Error && (err.name === "AbortError" || /timed out/i.test(err.message));
+}
+
+/**
+ * Race the request against a deadline. Node fetch has no default timeout, so
+ * one silent socket would hold the sales-report document until the gateway
+ * gave up. AbortSignal is not enough: the local TLS fetch ignores it.
+ */
+async function fetchWithDeadline(
+  fetchImpl: typeof fetch,
+  url: string,
+  init: RequestInit,
+  timeoutMs: number,
+): Promise<Response> {
+  const controller = new AbortController();
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const timeout = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => {
+      controller.abort();
+      reject(new StripeAttemptTimeoutError(timeoutMs));
+    }, timeoutMs);
+  });
+  const request = fetchImpl(url, { ...init, signal: controller.signal });
+  // The loser of the race can still reject after we have moved on.
+  void request.catch(() => {});
+  try {
+    return await Promise.race([request, timeout]);
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
+}
+
+function salesTimingEnabled(): boolean {
+  return process.env.NODE_ENV !== "test";
+}
+
 export interface FetchStripeChargesOptions {
   /** Inclusive UTC window start. */
   startUtc: Date;
@@ -631,6 +680,10 @@ export interface FetchStripeChargesOptions {
    * line price ids and recurring intervals. Do not expand past four levels.
    */
   expand?: string[];
+  /** Per-attempt deadline. Tests use a short value. Default is 10s. */
+  attemptTimeoutMs?: number;
+  /** Base backoff after a timeout or 429/5xx. */
+  retryBaseMs?: number;
 }
 
 /**
@@ -695,6 +748,9 @@ export async function fetchStripeChargesInRange(
   }
   const config = configResult;
   const fetchImpl = options.fetchImpl ?? resolveStripeReportingFetch(options.env);
+  const attemptTimeoutMs = options.attemptTimeoutMs ?? STRIPE_ATTEMPT_TIMEOUT_MS;
+  const retryBaseMs = options.retryBaseMs ?? STRIPE_RETRY_BASE_MS;
+  const stats = { retries: 0 };
 
   const createdGte = Math.floor(options.startUtc.getTime() / 1000);
   // Stripe `created[lt]` is exclusive of the boundary second.
@@ -705,6 +761,7 @@ export async function fetchStripeChargesInRange(
     item.startsWith("data.") ? item.slice("data.".length) : item,
   );
 
+  const listStarted = performance.now();
   const [chargeGroups, invoiceGroups] = await Promise.all([
     mapWithConcurrency(chunks, STRIPE_RANGE_CONCURRENCY, (chunk) =>
       listChargesInWindow({
@@ -713,6 +770,9 @@ export async function fetchStripeChargesInRange(
         config,
         fetchImpl,
         listExpands,
+        attemptTimeoutMs,
+        retryBaseMs,
+        stats,
       }),
     ),
     mapWithConcurrency(chunks, STRIPE_RANGE_CONCURRENCY, (chunk) =>
@@ -721,9 +781,13 @@ export async function fetchStripeChargesInRange(
         createdLt: chunk.createdLt,
         config,
         fetchImpl,
+        attemptTimeoutMs,
+        retryBaseMs,
+        stats,
       }),
     ),
   ]);
+  const listMs = Math.round(performance.now() - listStarted);
 
   const charges: NormalizedStripeCharge[] = [];
   const seen = new Set<string>();
@@ -735,7 +799,10 @@ export async function fetchStripeChargesInRange(
     }
   }
 
+  const backfillStarted = performance.now();
+  let backfillAdded = 0;
   if (invoiceGroups.every((group) => group.ok)) {
+    const before = charges.length;
     await appendMissingInvoiceCharges({
       charges,
       seen,
@@ -745,10 +812,26 @@ export async function fetchStripeChargesInRange(
       config,
       fetchImpl,
       chargeExpands,
+      attemptTimeoutMs,
+      retryBaseMs,
+      stats,
     });
+    backfillAdded = charges.length - before;
+  }
+  const backfillMs = Math.round(performance.now() - backfillStarted);
+  if (salesTimingEnabled()) {
+    console.info(
+      `[watson-sales] timing phase=stripe list_ms=${listMs} backfill_ms=${backfillMs} chunks=${chunks.length} charges=${charges.length} backfill_added=${backfillAdded} retries=${stats.retries} invoices_ok=${invoiceGroups.every((group) => group.ok) ? 1 : 0}`,
+    );
   }
 
   return charges;
+}
+
+interface StripeRequestPolicy {
+  attemptTimeoutMs: number;
+  retryBaseMs: number;
+  stats: { retries: number };
 }
 
 async function listChargesInWindow(options: {
@@ -757,7 +840,7 @@ async function listChargesInWindow(options: {
   config: StripeReportingConfig;
   fetchImpl: typeof fetch;
   listExpands: string[];
-}): Promise<NormalizedStripeCharge[]> {
+} & StripeRequestPolicy): Promise<NormalizedStripeCharge[]> {
   const charges: NormalizedStripeCharge[] = [];
   const seen = new Set<string>();
   let startingAfter: string | null = null;
@@ -778,6 +861,7 @@ async function listChargesInWindow(options: {
       options.config.secretKey,
       options.fetchImpl,
       `charges page ${page}`,
+      options,
     );
 
     if (!response.ok) {
@@ -819,7 +903,7 @@ async function listPaidInvoicesInWindow(options: {
   createdLt: number;
   config: StripeReportingConfig;
   fetchImpl: typeof fetch;
-}): Promise<{ ok: true; invoices: RawStripeInvoiceListItem[] } | { ok: false }> {
+} & StripeRequestPolicy): Promise<{ ok: true; invoices: RawStripeInvoiceListItem[] } | { ok: false }> {
   const invoices: RawStripeInvoiceListItem[] = [];
   let startingAfter: string | null = null;
   let page = 0;
@@ -840,6 +924,7 @@ async function listPaidInvoicesInWindow(options: {
         options.config.secretKey,
         options.fetchImpl,
         `invoices page ${page}`,
+        options,
       );
       if (!response.ok) {
         // Restricted keys without Invoices read should still report Charges.
@@ -873,7 +958,7 @@ async function appendMissingInvoiceCharges(options: {
   config: StripeReportingConfig;
   fetchImpl: typeof fetch;
   chargeExpands: string[];
-}): Promise<void> {
+} & StripeRequestPolicy): Promise<void> {
   const { charges, seen, createdGte, createdLt, invoices, config, fetchImpl, chargeExpands } =
     options;
 
@@ -883,7 +968,7 @@ async function appendMissingInvoiceCharges(options: {
       const chargeId =
         typeof invoice.charge === "string" ? invoice.charge : invoice.charge?.id ?? null;
       if (!chargeId || seen.has(chargeId)) continue;
-      const extra = await fetchStripeChargeById(chargeId, config, fetchImpl, chargeExpands);
+      const extra = await fetchStripeChargeById(chargeId, config, fetchImpl, chargeExpands, options);
       if (!extra) continue;
       if (extra.created < createdGte || extra.created >= createdLt) continue;
       seen.add(extra.id);
@@ -899,6 +984,7 @@ export async function fetchStripeChargeById(
   config: StripeReportingConfig,
   fetchImpl: typeof fetch,
   expand: string[] = ["invoice"],
+  policy?: StripeRequestPolicy,
 ): Promise<NormalizedStripeCharge | null> {
   const params = new URLSearchParams();
   for (const item of expand) params.append("expand[]", item);
@@ -908,6 +994,7 @@ export async function fetchStripeChargeById(
     config.secretKey,
     fetchImpl,
     `charge ${chargeId}`,
+    policy,
   );
   if (!response.ok) return null;
   const raw = (await response.json()) as RawStripeCharge;
@@ -920,31 +1007,44 @@ async function fetchStripeWithRetry(
   secretKey: string,
   fetchImpl: typeof fetch,
   label: string,
+  policy?: StripeRequestPolicy,
 ): Promise<Response> {
-  let attempt = 0;
+  const attemptTimeoutMs = policy?.attemptTimeoutMs ?? STRIPE_ATTEMPT_TIMEOUT_MS;
+  const retryBaseMs = policy?.retryBaseMs ?? STRIPE_RETRY_BASE_MS;
+  const headers = {
+    Authorization: `Bearer ${secretKey}`,
+    Accept: "application/json",
+    "Stripe-Version": "2024-06-20",
+  };
+  let extra = 0;
   while (true) {
     let response: Response;
     try {
-      response = await fetchImpl(url, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${secretKey}`,
-          Accept: "application/json",
-          "Stripe-Version": "2024-06-20",
-        },
-      });
+      response = await fetchWithDeadline(
+        fetchImpl,
+        url,
+        { method: "GET", headers },
+        attemptTimeoutMs,
+      );
     } catch (err) {
-      throw new Error(`${describeStripeConnectionError(err)} (${label})`);
+      if (!isAttemptTimeout(err) || extra >= STRIPE_MAX_EXTRA_ATTEMPTS) {
+        throw new Error(`${describeStripeConnectionError(err)} (${label})`);
+      }
+      extra += 1;
+      if (policy) policy.stats.retries += 1;
+      await sleep(Math.min(retryBaseMs * extra, STRIPE_RETRY_MAX_MS));
+      continue;
     }
 
     if (response.status !== 429 && response.status < 500) {
       return response;
     }
 
-    attempt += 1;
-    if (attempt > MAX_RETRIES) {
+    if (extra >= STRIPE_MAX_EXTRA_ATTEMPTS) {
       return response;
     }
-    await sleep(Math.min(500 * 2 ** attempt, 8000));
+    extra += 1;
+    if (policy) policy.stats.retries += 1;
+    await sleep(Math.min(retryBaseMs * extra, STRIPE_RETRY_MAX_MS));
   }
 }

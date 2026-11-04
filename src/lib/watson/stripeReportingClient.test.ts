@@ -418,6 +418,70 @@ describe("fetchStripeChargesInRange pagination", () => {
       }),
     ).rejects.toThrow(/Unable to connect to Stripe: TLS certificate verification failed/);
   });
+
+  it("retries one rate-limit response and still returns the charge", async () => {
+    let chargeCalls = 0;
+    const fetchImpl = (async (url: string) => {
+      if (String(url).includes("/invoices")) {
+        return new Response(JSON.stringify({ data: [], has_more: false }), { status: 200 });
+      }
+      chargeCalls += 1;
+      if (chargeCalls === 1) return new Response("{}", { status: 429 });
+      return new Response(
+        JSON.stringify({
+          data: [
+            {
+              id: "ch_ok",
+              amount: 100,
+              amount_captured: 100,
+              amount_refunded: 0,
+              currency: "usd",
+              created: 1_785_567_600,
+              livemode: true,
+              paid: true,
+              status: "succeeded",
+            },
+          ],
+          has_more: false,
+        }),
+        { status: 200 },
+      );
+    }) as unknown as typeof fetch;
+
+    const charges = await fetchStripeChargesInRange({
+      startUtc: new Date("2026-08-01T07:00:00Z"),
+      endUtc: new Date("2026-08-02T07:00:00Z"),
+      config: { secretKey: "sk_test", apiBase: "https://api.stripe.test/v1" },
+      fetchImpl,
+      retryBaseMs: 5,
+    });
+    expect(charges.map((charge) => charge.id)).toEqual(["ch_ok"]);
+    expect(chargeCalls).toBe(2);
+  });
+
+  it("stops a hung Stripe request at the attempt deadline", async () => {
+    const fetchImpl = ((url: string, init?: { signal?: AbortSignal }) =>
+      new Promise((_resolve, reject) => {
+        const timer = setTimeout(() => reject(new Error("should have timed out")), 5_000);
+        init?.signal?.addEventListener("abort", () => {
+          clearTimeout(timer);
+          reject(Object.assign(new Error("aborted"), { name: "AbortError" }));
+        });
+      })) as unknown as typeof fetch;
+
+    const started = Date.now();
+    await expect(
+      fetchStripeChargesInRange({
+        startUtc: new Date("2026-08-01T07:00:00Z"),
+        endUtc: new Date("2026-08-02T07:00:00Z"),
+        config: { secretKey: "sk_test", apiBase: "https://api.stripe.test/v1" },
+        fetchImpl,
+        attemptTimeoutMs: 40,
+        retryBaseMs: 5,
+      }),
+    ).rejects.toThrow(/timed out|Unable to connect to Stripe/);
+    expect(Date.now() - started).toBeLessThan(2_000);
+  });
 });
 
 describe("stripe error classification", () => {

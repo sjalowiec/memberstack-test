@@ -1,0 +1,22 @@
+---
+import { countNewContactMessages } from "../../lib/contact/contactMessagesDb";
+
+let newContactCount: number | null = null;
+try {
+  newContactCount = await countNewContactMessages();
+} catch (error) {
+  console.error(
+    "[watson] Contact message count unavailable:",
+    error instanceof Error ? error.message : "unknown error",
+  );
+  newContactCount = null;
+}
+---
+
+{
+  newContactCount !== null ? (
+    <span class="watson-nav__count" data-contact-new-count>
+      {newContactCount}
+    </span>
+  ) : null
+}

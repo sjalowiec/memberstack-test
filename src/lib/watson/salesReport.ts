@@ -24,7 +24,10 @@ import {
   SHOPIFY_STALE_HOURS,
   type DayRange,
 } from "./salesReportDates";
-import { fetchShopifyOrdersProcessedInRange } from "./shopifyAdminClient";
+import {
+  fetchShopifyOrdersProcessedInRange,
+  SALES_REPORT_SHOPIFY_FETCH_POLICY,
+} from "./shopifyAdminClient";
 import { getShopifyAdminConfig } from "./shopifyEnv";
 import { mapShopifyRestOrder, type MappedShopifyOrder } from "./shopifyOrderMap";
 import { getShopifySyncStatus } from "./shopifyOrdersSync";
@@ -164,6 +167,11 @@ export interface NormalizedShopifyOrder {
   refunds: number;
   financialStatus?: string | null;
   cancelledAt?: string | null;
+}
+
+function logSalesTiming(message: string): void {
+  if (process.env.NODE_ENV === "test") return;
+  console.info(`[watson-sales] timing ${message}`);
 }
 
 function emptyTotals(): RevenueTotals {
@@ -582,6 +590,7 @@ async function loadLiveShopifyOrdersForRange(
     processedAtMax: range.endUtc.toISOString(),
     config,
     fetchImpl: options.fetchImpl,
+    fetchPolicy: SALES_REPORT_SHOPIFY_FETCH_POLICY,
   });
   const orders: NormalizedShopifyOrder[] = [];
   for (const rawOrder of raw) {
@@ -625,6 +634,7 @@ export async function loadSalesReport(
   const { shopifyOrders, shopifySource } = shopifyLoaded;
   const { stripeCharges, stripeSource, classifyConfig } = stripeLoaded;
 
+  const computeStarted = Date.now();
   const report = computeSalesReport({
     range: options.range,
     now,
@@ -635,6 +645,9 @@ export async function loadSalesReport(
     stripeSource,
     includeStripeDiagnostics: true,
   });
+  logSalesTiming(
+    `phase=render ms=${Date.now() - computeStarted} transactions=${report.transactions.length} days=${report.daily.length} recon=${report.reconciliation.matchesSummary ? 1 : 0}`,
+  );
   if (options.includeStripeDiagnostics) {
     console.info(
       `[watson-sales] diagnostics: shopify ${report.summary.shopify.transactionCount}/${report.summary.shopify.netCollected}, stripe returned ${stripeCharges.length} counted ${report.summary.stripe.transactionCount} net ${report.summary.stripe.netCollected}, combined ${report.summary.combined.netCollected}, recon ${report.reconciliation.matchesSummary}`,
@@ -649,6 +662,7 @@ async function loadShopifySide(
   queryFn: WatsonQueryFn,
   env: NodeJS.ProcessEnv,
 ): Promise<{ shopifyOrders: NormalizedShopifyOrder[]; shopifySource: SourceStatus }> {
+  const started = Date.now();
   let shopifyOrders: NormalizedShopifyOrder[] = [];
   let shopifySource: SourceStatus | undefined;
   let liveShopifyError: string | null = null;
@@ -712,6 +726,10 @@ async function loadShopifySide(
     }
   }
 
+  const live = shopifySource.detail.startsWith("Retrieved live") ? 1 : 0;
+  logSalesTiming(
+    `phase=shopify ms=${Date.now() - started} orders=${shopifyOrders.length} live=${live} available=${shopifySource.available ? 1 : 0}`,
+  );
   return { shopifyOrders, shopifySource };
 }
 

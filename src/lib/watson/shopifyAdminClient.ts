@@ -9,6 +9,26 @@ import type { ShopifyRestOrder } from "./shopifyOrderMap";
 const MAX_RETRIES = 5;
 const PAGE_LIMIT = 250;
 
+/**
+ * Sales-report requests share the HTML document. A 16s Shopify backoff, or a
+ * socket with no deadline, is what leaves that document silent long enough
+ * for the gateway inactivity timeout. Background sync keeps the longer default.
+ */
+export const SALES_REPORT_SHOPIFY_FETCH_POLICY: ShopifyFetchPolicy = {
+  maxExtraAttempts: 1,
+  maxWaitMs: 1_000,
+  attemptTimeoutMs: 10_000,
+};
+
+export interface ShopifyFetchPolicy {
+  /** Extra tries after the first attempt. Default 5 for background sync. */
+  maxExtraAttempts?: number;
+  /** Cap on the exponential backoff between tries. */
+  maxWaitMs?: number;
+  /** Per-attempt deadline. Unset means no deadline (background sync). */
+  attemptTimeoutMs?: number;
+}
+
 const ORDER_FIELDS = [
   "id",
   "admin_graphql_api_id",
@@ -41,6 +61,7 @@ export interface FetchShopifyOrdersOptions {
   config?: ShopifyAdminConfig;
   fetchImpl?: typeof fetch;
   onPage?: (info: { page: number; orderCount: number }) => void;
+  fetchPolicy?: ShopifyFetchPolicy;
 }
 
 export interface FetchShopifyOrdersProcessedRangeOptions {
@@ -51,6 +72,7 @@ export interface FetchShopifyOrdersProcessedRangeOptions {
   config?: ShopifyAdminConfig;
   fetchImpl?: typeof fetch;
   onPage?: (info: { page: number; orderCount: number }) => void;
+  fetchPolicy?: ShopifyFetchPolicy;
 }
 
 function sleep(ms: number): Promise<void> {
@@ -69,34 +91,81 @@ function parseNextPageUrl(linkHeader: string | null): string | null {
   return null;
 }
 
+function isShopifyAttemptTimeout(err: unknown): boolean {
+  return err instanceof Error && (err.name === "AbortError" || err.name === "ShopifyAttemptTimeoutError" || /timed out/i.test(err.message));
+}
+
+async function fetchShopifyWithDeadline(
+  fetchImpl: typeof fetch,
+  url: string,
+  init: RequestInit,
+  timeoutMs: number,
+): Promise<Response> {
+  const controller = new AbortController();
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const timeout = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => {
+      controller.abort();
+      const error = new Error(`timed out after ${timeoutMs}ms`);
+      error.name = "ShopifyAttemptTimeoutError";
+      reject(error);
+    }, timeoutMs);
+  });
+  const request = fetchImpl(url, { ...init, signal: controller.signal });
+  void request.catch(() => {});
+  try {
+    return await Promise.race([request, timeout]);
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
+}
+
 async function fetchWithRetry(
   url: string,
   accessToken: string,
   fetchImpl: typeof fetch,
+  policy?: ShopifyFetchPolicy,
 ): Promise<Response> {
-  let attempt = 0;
+  const maxExtraAttempts = policy?.maxExtraAttempts ?? MAX_RETRIES;
+  const maxWaitMs = policy?.maxWaitMs ?? 16_000;
+  const attemptTimeoutMs = policy?.attemptTimeoutMs ?? 0;
+  const headers = {
+    "X-Shopify-Access-Token": accessToken,
+    Accept: "application/json",
+  };
+  let extra = 0;
   while (true) {
-    const response = await fetchImpl(url, {
-      method: "GET",
-      headers: {
-        "X-Shopify-Access-Token": accessToken,
-        Accept: "application/json",
-      },
-    });
+    let response: Response;
+    try {
+      response = attemptTimeoutMs > 0
+        ? await fetchShopifyWithDeadline(
+            fetchImpl,
+            url,
+            { method: "GET", headers },
+            attemptTimeoutMs,
+          )
+        : await fetchImpl(url, { method: "GET", headers });
+    } catch (error) {
+      if (attemptTimeoutMs <= 0 || !isShopifyAttemptTimeout(error) || extra >= maxExtraAttempts) {
+        throw error;
+      }
+      extra += 1;
+      await sleep(Math.min(500 * extra, maxWaitMs));
+      continue;
+    }
 
     if (response.status !== 429 && response.status < 500) {
       return response;
     }
 
-    attempt += 1;
-    if (attempt > MAX_RETRIES) {
+    if (extra >= maxExtraAttempts) {
       return response;
     }
-
+    extra += 1;
     const retryAfter = Number.parseInt(response.headers.get("Retry-After") ?? "", 10);
     const waitMs = Number.isFinite(retryAfter) && retryAfter > 0
-      ? retryAfter * 1000
-      : Math.min(1000 * 2 ** attempt, 16_000);
+      ? Math.min(retryAfter * 1000, maxWaitMs)
+      : Math.min(1000 * 2 ** extra, maxWaitMs);
     await sleep(waitMs);
   }
 }
@@ -106,8 +175,21 @@ async function paginateShopifyOrders(options: {
   fetchImpl: typeof fetch;
   params: URLSearchParams;
   onPage?: (info: { page: number; orderCount: number }) => void;
+  fetchPolicy?: ShopifyFetchPolicy;
 }): Promise<ShopifyRestOrder[]> {
-  const accessToken = await resolveShopifyAccessToken(options.config, options.fetchImpl);
+  const tokenTimeoutMs = options.fetchPolicy?.attemptTimeoutMs ?? 0;
+  const tokenFetch: typeof fetch = tokenTimeoutMs > 0
+    ? (input, init) => {
+        const url =
+          typeof input === "string"
+            ? input
+            : input instanceof URL
+              ? input.toString()
+              : input.url;
+        return fetchShopifyWithDeadline(options.fetchImpl, url, init ?? {}, tokenTimeoutMs);
+      }
+    : options.fetchImpl;
+  const accessToken = await resolveShopifyAccessToken(options.config, tokenFetch);
   let nextUrl: string | null =
     `${shopifyAdminBaseUrl(options.config)}/orders.json?${options.params.toString()}`;
   const orders: ShopifyRestOrder[] = [];
@@ -115,7 +197,7 @@ async function paginateShopifyOrders(options: {
 
   while (nextUrl) {
     page += 1;
-    const response = await fetchWithRetry(nextUrl, accessToken, options.fetchImpl);
+    const response = await fetchWithRetry(nextUrl, accessToken, options.fetchImpl, options.fetchPolicy);
     if (!response.ok) {
       const body = await response.text().catch(() => "");
       const snippet = body.slice(0, 300);
@@ -166,6 +248,7 @@ export async function fetchShopifyOrdersSince(
       order: "created_at asc",
     }),
     onPage: options.onPage,
+    fetchPolicy: options.fetchPolicy,
   });
 }
 
@@ -188,5 +271,6 @@ export async function fetchShopifyOrdersProcessedInRange(
       processed_at_max: options.processedAtMax,
     }),
     onPage: options.onPage,
+    fetchPolicy: options.fetchPolicy,
   });
 }
