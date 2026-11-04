@@ -22,6 +22,7 @@ const otherSlugs = [
   "taitexma-th-tr-160-getting-started",
   "mastering-the-silver-reed-sk840",
   "brother-kh-kr-260-quick-start",
+  "ultimate-brother-930-940-workshop",
   "master-lk-patterning",
   "lk-150-quick-start",
   "lk-150-fun",

@@ -507,6 +507,25 @@ const purchaseCopy =
     cursor: pointer;
   }
 
+  .legacy-content .lesson-watch-video {
+    display: inline-block;
+    margin: 0.35rem 0 0.5rem;
+    padding: 10px 18px;
+    border: 0;
+    border-radius: 8px;
+    background: #52682d;
+    color: #fff;
+    font: inherit;
+    font-weight: 700;
+    line-height: 1.3;
+    cursor: pointer;
+  }
+
+  .legacy-content .lesson-watch-video:hover,
+  .legacy-content .lesson-watch-video:focus-visible {
+    background: #3e4f22;
+  }
+
   .legacy-content a.glossaryhelp[href] {
     cursor: pointer;
     color: #52682d;
@@ -772,11 +791,16 @@ const purchaseCopy =
   const glossaryBodyEl = document.getElementById('legacy-glossary-body');
   const glossaryCloseBtn = glossaryModal?.querySelector<HTMLButtonElement>('[data-glossary-close].legacy-lightbox-close');
   let glossaryReturnFocus: HTMLElement | null = null;
+  let videoReturnFocus: HTMLElement | null = null;
 
   function closeLegacyVideo() {
     if (!lightbox || !player) return;
+    const wasOpen = !lightbox.hidden;
     player.replaceChildren();
     lightbox.hidden = true;
+    const returnFocus = videoReturnFocus;
+    videoReturnFocus = null;
+    if (wasOpen && returnFocus) returnFocus.focus();
   }
 
   function closeLegacyImage() {
@@ -802,10 +826,11 @@ const purchaseCopy =
     closeLegacyGlossary();
   }
 
-  function openLegacyVideo(vimeoId: string, title: string) {
+  function openLegacyVideo(vimeoId: string, title: string, returnFocus: HTMLElement | null) {
     if (!lightbox || !player || !titleEl || !vimeoId) return;
     closeLegacyImage();
     closeLegacyGlossary();
+    videoReturnFocus = returnFocus;
     titleEl.textContent = title || 'Video';
     player.replaceChildren();
     const iframe = document.createElement('iframe');
@@ -815,6 +840,7 @@ const purchaseCopy =
     iframe.allowFullscreen = true;
     player.appendChild(iframe);
     lightbox.hidden = false;
+    lightbox.querySelector<HTMLButtonElement>('.legacy-lightbox-close')?.focus();
   }
 
   function openLegacyImage(src: string, title: string) {
@@ -930,7 +956,7 @@ const purchaseCopy =
       trigger.getAttribute('data-videotitle') ||
       trigger.getAttribute('title') ||
       'Video';
-    openLegacyVideo(vimeoId, title);
+    openLegacyVideo(vimeoId, title, trigger);
   });
 
   document.addEventListener('keydown', (event) => {

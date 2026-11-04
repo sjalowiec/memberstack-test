@@ -211,7 +211,12 @@ describe("public course catalog cleanup", () => {
     ]);
     expect(sections[3]?.courses.map((course) => course.slug)).toEqual([
       "brother-kh-kr-260-quick-start",
+      "ultimate-brother-930-940-workshop",
     ]);
+    expect(sections[3]?.courses[1]?.href).toBe("/courses/103");
+    expect(sections[3]?.courses[1]?.access).toBe("member");
+    expect(sections[3]?.courses[1]?.status).toBe("available");
+    expect(sections[3]?.courses[1]?.thumbnail).toBe("/images/courses/940_course_thumb.webp");
     expect(sections[3]?.courses[0]?.href).toBe("/courses/87");
     expect(sections[3]?.courses[0]?.buttonLabel).toBe("View Course");
     expect(sections[3]?.courses[0]?.access).toBe("purchase");
@@ -243,7 +248,7 @@ describe("public course catalog cleanup", () => {
     expect(sections[2]?.courses[0]?.thumbnail).toBe("/images/courses/taitexma_160.webp");
 
     const entries = getCourseCatalogEntries();
-    expect(entries).toHaveLength(7);
+    expect(entries).toHaveLength(8);
     expect(entries[0]?.slug).toBe("mastering-the-silver-reed-sk840");
     expect(entries[0]?.title).toBe("Mastering the Silver Reed SK840");
     expect(entries[0]?.buttonLabel).toBe("View Course");
@@ -255,6 +260,7 @@ describe("public course catalog cleanup", () => {
       "/courses/111",
       "/courses/86",
       "/courses/87",
+      "/courses/103",
       "/courses/34",
       "/courses/50",
       "/courses/51",
@@ -354,21 +360,25 @@ describe("groupCourseCatalogSections", () => {
       "mastering-the-silver-reed-sk840",
       "taitexma-th-tr-160-getting-started",
       "brother-kh-kr-260-quick-start",
+      "ultimate-brother-930-940-workshop",
     ]);
     expect(sections[1]?.courses.map((course) => course.category)).toEqual([
       "Silver Reed",
       "Taitexma",
+      "Brother",
       "Brother",
     ]);
     expect(sections[1]?.courses.map((course) => course.href)).toEqual([
       "/courses/111",
       "/courses/86",
       "/courses/87",
+      "/courses/103",
     ]);
     expect(sections[1]?.courses.map((course) => course.access)).toEqual([
       "purchase",
       "purchase",
       "purchase",
+      "member",
     ]);
     expect(sections[2]?.courses.map((course) => ({
       slug: course.slug,
@@ -401,7 +411,7 @@ describe("groupCourseCatalogSections", () => {
     ]);
 
     const published = sections.flatMap((section) => section.courses);
-    expect(published.filter((course) => course.status === "available")).toHaveLength(7);
+    expect(published.filter((course) => course.status === "available")).toHaveLength(8);
     expect(published.map((course) => course.slug)).toContain("lk-150-quick-start");
   });
 });
