@@ -1,6 +1,7 @@
 ---
 import WatsonPageShell from "../../../components/watson/WatsonPageShell.astro";
 import WatsonSalesReport from "../../../components/watson/WatsonSalesReport.astro";
+import WatsonSalesReportLoader from "../../../components/watson/WatsonSalesReportLoader.astro";
 import { detectSiteEnvironment } from "../../../lib/env/siteEnvironment";
 import { loadSalesReport, type SalesReport } from "../../../lib/watson/salesReport";
 import { DEFAULT_SALES_RANGE_PRESET, resolveDayRange } from "../../../lib/watson/salesReportDates";
@@ -18,24 +19,44 @@ const isLocalhost =
 
 const resolved = resolveDayRange({ preset: presetParam, from: fromParam, to: toParam });
 
-let report: SalesReport | null = null;
 let rangeError: string | null = null;
+// Start the report before the shell renders so Stripe and Shopify overlap
+// the rest of the page, and so the document can send its first bytes
+// without waiting on those calls.
+const reportPromise = resolved.ok
+  ? loadSalesReport({
+      range: resolved.range,
+      includeStripeDiagnostics: isLocalhost,
+    }).then(
+      (report): { report: SalesReport | null; rangeError: string | null } => ({
+        report,
+        rangeError: null,
+      }),
+      (error) => ({
+        report: null,
+        rangeError:
+          error instanceof Error
+            ? error.message
+            : "Sales report failed to load. Check WATSON_DATABASE_URL and Stripe configuration.",
+      }),
+    )
+  : null;
 
 if (!resolved.ok) {
   rangeError = resolved.error;
-} else {
-  try {
-    report = await loadSalesReport({
-      range: resolved.range,
-      includeStripeDiagnostics: isLocalhost,
-    });
-  } catch (error) {
-    rangeError =
-      error instanceof Error
-        ? error.message
-        : "Sales report failed to load. Check WATSON_DATABASE_URL and Stripe configuration.";
-  }
 }
+
+const filters = resolved.ok
+  ? {
+      preset: resolved.range.preset,
+      from: resolved.range.fromCivil,
+      to: resolved.range.toCivil,
+    }
+  : {
+      preset: presetParam || DEFAULT_SALES_RANGE_PRESET,
+      from: fromParam,
+      to: toParam,
+    };
 ---
 
 <WatsonPageShell
@@ -44,13 +65,11 @@ if (!resolved.ok) {
   heading="Sales"
   intro="Read-only report of actual money collected (live Shopify orders + succeeded Stripe Charges, including paid invoices). Defaults to This Month in America/Los_Angeles time."
 >
-  <WatsonSalesReport
-    report={report}
-    rangeError={rangeError}
-    filters={{
-      preset: resolved.ok ? resolved.range.preset : presetParam || DEFAULT_SALES_RANGE_PRESET,
-      from: resolved.ok ? resolved.range.fromCivil : fromParam,
-      to: resolved.ok ? resolved.range.toCivil : toParam,
-    }}
-  />
+  {
+    reportPromise ? (
+      <WatsonSalesReportLoader reportPromise={reportPromise} filters={filters} />
+    ) : (
+      <WatsonSalesReport report={null} rangeError={rangeError} filters={filters} />
+    )
+  }
 </WatsonPageShell>

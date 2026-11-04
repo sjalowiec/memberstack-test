@@ -1,0 +1,22 @@
+---
+import WatsonSalesReport from "./WatsonSalesReport.astro";
+import type { SalesReport } from "../../lib/watson/salesReport";
+
+interface Props {
+  reportPromise: Promise<{ report: SalesReport | null; rangeError: string | null }>;
+  filters: { preset: string; from: string; to: string };
+}
+
+const { reportPromise, filters } = Astro.props;
+const started = Date.now();
+const { report, rangeError } = await reportPromise;
+const loadMs = Date.now() - started;
+---
+
+<WatsonSalesReport report={report} rangeError={rangeError} filters={filters} />
+{
+  (() => {
+    console.info(`[watson-sales] timing phase=html ms=${Date.now() - started - loadMs} load_wait_ms=${loadMs}`);
+    return null;
+  })()
+}

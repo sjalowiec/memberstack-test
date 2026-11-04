@@ -65,8 +65,13 @@ describe("Watson member search pages", () => {
     expect(shell).toContain('<a href="/watson/responses">Responses</a>');
     expect(shell).toContain('href="/watson/contact-messages"');
     expect(shell).toContain("Contact Messages");
-    expect(shell).toContain("countNewContactMessages");
-    expect(shell).toContain("newContactCount");
+    expect(shell).toContain("WatsonNavContactCount");
+    const contactCount = fs.readFileSync(
+      path.resolve("src/components/watson/WatsonNavContactCount.astro"),
+      "utf8",
+    );
+    expect(contactCount).toContain("countNewContactMessages");
+    expect(contactCount).toContain("newContactCount");
     expect(shell).toContain('<a href="/watson/member-account-repair">Account Repair</a>');
     expect(shell).toContain("watsonAdminNavHref");
     expect(shell).toContain("<a href={adminHref}>Admin</a>");
