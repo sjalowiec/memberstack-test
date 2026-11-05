@@ -7,20 +7,17 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
   description="Browse and manage the public video catalog (videos-public.json)"
   bodyClass="videos-admin-body help-hub-admin-body"
 >
-  <Fragment slot="head">
-    <script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-    <script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.31.3/js/jquery.tablesorter.min.js"></script>
-  </Fragment>
   <main class="help-hub-admin">
     <header class="help-hub-admin__head">
       <h1 class="help-hub-admin__title">Videos Admin</h1>
       <p class="help-hub-admin__sub">
-        Search by Knit It Now video number, title, slug, or Vimeo ID. Saving stores the video on the site immediately.
-        Lessons still use the video key (<code>slug</code>, or <code>content_id</code>).
+        Search by KIN ID, title, or Vimeo ID.
+        Favorite totals and Tip of the Week dates are calculated from saved records.
       </p>
     </header>
 
     <p id="videos-admin-status" class="help-hub-admin__status" aria-live="polite"></p>
+    <p id="videos-admin-data-note" class="videos-admin__note" hidden></p>
 
     <div class="help-hub-admin__toolbar">
       <a href="/admin/videos-edit" class="kbm-btn kbm-btn-primary">+ New video</a>
@@ -36,7 +33,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
         <label id="videos-admin-search-label" for="videos-admin-search">Search videos</label>
         <p id="videos-admin-search-count" class="videos-admin-search__count" aria-live="polite"></p>
       </div>
-      <p class="videos-admin-search__hint">Video number, title, or Vimeo ID. For example, 707.</p>
+      <p class="videos-admin-search__hint">KIN ID, title, or Vimeo ID. For example, 707.</p>
       <div class="videos-admin-search__row">
         <input
           type="search"
@@ -56,14 +53,13 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
       <h2 id="videos-admin-match-title" class="videos-admin-match__title"></h2>
       <dl class="videos-admin-match__facts">
         <div>
-          <dt>Video number</dt>
+          <dt>KIN ID</dt>
           <dd id="videos-admin-match-number"></dd>
         </div>
         <div>
           <dt>Vimeo ID</dt>
           <dd>
             <code id="videos-admin-match-vimeo"></code>
-            <button type="button" id="videos-admin-copy-vimeo" class="kbm-btn kbm-btn-outline">Copy Vimeo ID</button>
           </dd>
         </div>
       </dl>
@@ -79,13 +75,27 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
         <table id="videos-admin-table" class="help-hub-admin__table">
           <thead>
             <tr>
-              <th scope="col">Key</th>
-              <th scope="col">Video number</th>
-              <th scope="col">Title</th>
-              <th scope="col">Vimeo ID</th>
-              <th scope="col">Category</th>
-              <th scope="col">Status</th>
-              <th scope="col">Transcript</th>
+              <th scope="col" data-sort-column="kinId" aria-sort="ascending">
+                <button type="button" class="videos-admin__sort">KIN ID <span class="videos-admin__sort-mark" aria-hidden="true">↑</span></button>
+              </th>
+              <th scope="col" data-sort-column="title" aria-sort="none">
+                <button type="button" class="videos-admin__sort">Title <span class="videos-admin__sort-mark" aria-hidden="true"></span></button>
+              </th>
+              <th scope="col" data-sort-column="status" aria-sort="none">
+                <button type="button" class="videos-admin__sort">Status <span class="videos-admin__sort-mark" aria-hidden="true"></span></button>
+              </th>
+              <th scope="col" data-sort-column="access" aria-sort="none">
+                <button type="button" class="videos-admin__sort">Access <span class="videos-admin__sort-mark" aria-hidden="true"></span></button>
+              </th>
+              <th scope="col" data-sort-column="vimeoId" aria-sort="none">
+                <button type="button" class="videos-admin__sort">Vimeo ID <span class="videos-admin__sort-mark" aria-hidden="true"></span></button>
+              </th>
+              <th scope="col" data-sort-column="favorites" aria-sort="none">
+                <button type="button" class="videos-admin__sort">Favorites <span class="videos-admin__sort-mark" aria-hidden="true"></span></button>
+              </th>
+              <th scope="col" data-sort-column="tip" aria-sort="none">
+                <button type="button" class="videos-admin__sort">Tip of the Week <span class="videos-admin__sort-mark" aria-hidden="true"></span></button>
+              </th>
               <th scope="col" class="help-hub-admin__th-actions">Actions</th>
             </tr>
           </thead>
@@ -161,6 +171,13 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 
     .help-hub-admin__status.is-ok {
       color: #166534;
+    }
+
+    .videos-admin__note {
+      margin: -0.35rem 0 1rem;
+      max-width: 56rem;
+      color: #9a3412;
+      font-size: 0.92rem;
     }
 
     .help-hub-admin__toolbar {
@@ -295,13 +312,6 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
       margin: 0.9rem 0 0 0;
     }
 
-    .videos-admin__vimeo-cell {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 0.4rem;
-    }
-
     .admin-panel {
       background: #fff;
       border: 1px solid #e5e7eb;
@@ -327,13 +337,13 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
     .help-hub-admin__table {
       width: 100%;
       border-collapse: collapse;
-      font-size: 0.92rem;
+      font-size: 0.84rem;
     }
 
     .help-hub-admin__table th,
     .help-hub-admin__table td {
       border-bottom: 1px solid #e5e7eb;
-      padding: 0.65rem 0.5rem;
+      padding: 0.4rem 0.4rem;
       text-align: left;
       vertical-align: top;
     }
@@ -353,13 +363,36 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
     }
 
     .help-hub-admin__table thead th {
-      cursor: pointer;
-      user-select: none;
+      white-space: nowrap;
     }
 
-    .help-hub-admin__table thead th.help-hub-admin__th-actions {
-      cursor: default;
-      user-select: auto;
+    .videos-admin__sort {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      margin: 0;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      color: inherit;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .videos-admin__sort:focus-visible {
+      outline: 2px solid #5d7340;
+      outline-offset: 2px;
+    }
+
+    .help-hub-admin__table thead th[aria-sort="ascending"],
+    .help-hub-admin__table thead th[aria-sort="descending"] {
+      background: #ecfdf5;
+      color: #14532d;
+    }
+
+    .videos-admin__sort-mark {
+      font-size: 0.75rem;
     }
 
     .help-hub-admin__actions {
@@ -377,36 +410,69 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
     .col-title {
       font-weight: 600;
       color: #111827;
-      max-width: 22rem;
+      max-width: 18rem;
     }
 
-    .col-key code {
-      font-size: 0.85em;
-      background: #f1f5f9;
-      padding: 0.1rem 0.35rem;
-      border-radius: 4px;
-      word-break: break-all;
+    .col-id,
+    .col-vimeo,
+    .col-count {
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+
+    .videos-admin__tip span {
+      display: block;
+      white-space: nowrap;
+      line-height: 1.35;
+    }
+
+    .videos-admin__gap {
+      color: #9a3412;
+      font-weight: 700;
     }
   </style>
 
   <script>
     import { fetchAdminJson, promptAdminSignIn } from "../../lib/admin/adminAuthClient";
+    import { stableVideoKey } from "../../lib/lessonVideo";
     import { videoMatchesAdminSearch, vimeoIdKey } from "../../lib/videos/videoAdminSearch";
+    import {
+      favoriteCountForVideo,
+      orderVideoAdminRows,
+      tipSummaryForVideo,
+      videoAdminAccessLabel,
+      videoAdminDataNotes,
+      videoAdminKinId,
+      videoAdminStatusLabel,
+      videoAdminTipLines,
+      type VideoAdminFavoritesSource,
+      type VideoAdminSortColumn,
+      type VideoAdminSortable,
+      type VideoAdminTipsSource,
+    } from "../../lib/videos/videoAdminPlanning";
 
     const API_BASE = "/api/admin/videos";
+    const PLANNING_API = "/api/admin/videos/planning";
 
     type VideoRow = Record<string, unknown>;
+    type SortDirection = "asc" | "desc";
+    type ListedVideo = VideoAdminSortable & { video: VideoRow; key: string; tipLines: string[] | null };
 
     let videos: VideoRow[] = [];
-    let transcripts: Record<string, string> = {};
-
-    function stableVideoKey(v: VideoRow): string {
-      const s = typeof v.slug === "string" ? v.slug.trim() : "";
-      if (s) return s;
-      return String(v.content_id ?? "");
-    }
+    let favoritesSource: VideoAdminFavoritesSource = {
+      ok: false,
+      error: "Favorite counts have not loaded.",
+    };
+    let tipsSource: VideoAdminTipsSource = {
+      ok: false,
+      error: "Tip of the Week history has not loaded.",
+    };
+    let sortColumn: VideoAdminSortColumn = "kinId";
+    let sortDirection: SortDirection = "asc";
 
     const statusEl = document.getElementById("videos-admin-status");
+    const dataNoteEl = document.getElementById("videos-admin-data-note");
+    const tableEl = document.getElementById("videos-admin-table");
     const loadingEl = document.getElementById("videos-admin-loading");
     const tableWrapEl = document.getElementById("videos-table-wrap");
     const tbodyEl = document.getElementById("videos-table-body");
@@ -448,39 +514,6 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
       statusEl.classList.toggle("is-ok", kind === "ok");
     }
 
-    let tableSorterInited = false;
-
-    function refreshTableSorter() {
-      const w = window as unknown as {
-        jQuery?: (sel: string) => {
-          length: number;
-          tablesorter: (opts?: object) => unknown;
-          trigger: (name: string, ...args: unknown[]) => unknown;
-        };
-      };
-      const $ = w.jQuery;
-      if (!$) return;
-      const $tab = $("#videos-admin-table");
-      if ($tab.length === 0) return;
-      if (videos.length === 0) {
-        if (tableSorterInited) {
-          $tab.trigger("destroy");
-          tableSorterInited = false;
-        }
-        return;
-      }
-      if (!tableSorterInited) {
-        $tab.tablesorter({
-          headers: {
-            5: { sorter: false },
-          },
-        });
-        tableSorterInited = true;
-      } else {
-        $tab.trigger("update");
-      }
-    }
-
     function asString(v: unknown) {
       return v === null || v === undefined ? "" : String(v);
     }
@@ -489,102 +522,114 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
       return vimeoIdKey(v.vimeo_id);
     }
 
-    function visibleVideos() {
-      return videos
-        .map((v) => ({ v, key: stableVideoKey(v) }))
-        .filter((x) => x.key.length > 0 && videoMatchesAdminSearch(x.v, searchQuery))
-        .sort((a, b) => a.key.localeCompare(b.key, undefined, { sensitivity: "base" }));
+    function isSortColumn(value: string | undefined): value is VideoAdminSortColumn {
+      return (
+        value === "kinId" ||
+        value === "title" ||
+        value === "status" ||
+        value === "access" ||
+        value === "vimeoId" ||
+        value === "favorites" ||
+        value === "tip"
+      );
     }
 
-    async function copyText(value: string, button: HTMLButtonElement | null) {
-      if (!value) return;
-      try {
-        await navigator.clipboard.writeText(value);
-      } catch {
-        const area = document.createElement("textarea");
-        area.value = value;
-        document.body.appendChild(area);
-        area.select();
-        document.execCommand("copy");
-        area.remove();
+    function listedVideos(): ListedVideo[] {
+      const prepared = videos.flatMap((video) => {
+        const key = stableVideoKey(video as Parameters<typeof stableVideoKey>[0]);
+        if (!key || !videoMatchesAdminSearch(video, searchQuery)) return [];
+        const favoriteCount = favoriteCountForVideo(favoritesSource, video.content_id);
+        const tip = tipSummaryForVideo(tipsSource, video.content_id);
+        return [
+          {
+            video,
+            key,
+            kinId: videoAdminKinId(video.content_id),
+            title: asString(video.title),
+            status: videoAdminStatusLabel(video.status),
+            access: videoAdminAccessLabel(video.access_level),
+            vimeoId: vimeoLabel(video),
+            favoriteCount,
+            tipSortDate: tip ? (tip.latestStart ?? "") : null,
+            tipLines: tip ? videoAdminTipLines(tip) : null,
+            stableKey: key,
+          },
+        ];
+      });
+      return orderVideoAdminRows(prepared, sortColumn, sortDirection);
+    }
+
+    function updateSortHeaders() {
+      if (!(tableEl instanceof HTMLTableElement)) return;
+      const headers = tableEl.querySelectorAll("th[data-sort-column]");
+      for (const header of headers) {
+        if (!(header instanceof HTMLTableCellElement)) continue;
+        const column = header.dataset.sortColumn;
+        const active = column === sortColumn;
+        header.setAttribute("aria-sort", active ? (sortDirection === "asc" ? "ascending" : "descending") : "none");
+        const mark = header.querySelector(".videos-admin__sort-mark");
+        if (mark) mark.textContent = active ? (sortDirection === "asc" ? "↑" : "↓") : "";
       }
-      if (!button) return;
-      const previous = button.textContent;
-      button.textContent = "Copied";
-      window.setTimeout(() => {
-        button.textContent = previous;
-      }, 1600);
     }
 
-    function renderMatch(rows: Array<{ v: VideoRow; key: string }>) {
+    function renderMatch(rows: ListedVideo[]) {
       if (!matchEl || !matchTitleEl || !matchNumberEl || !matchVimeoEl || !matchEditEl) return;
       const query = searchQuery.trim();
       if (!query || rows.length !== 1) {
         matchEl.hidden = true;
         return;
       }
-      const { v, key } = rows[0];
-      const vimeoId = vimeoLabel(v);
-      matchTitleEl.textContent = asString(v.title) || key;
-      matchNumberEl.textContent = asString(v.content_id);
+      const { video, key, kinId, vimeoId } = rows[0];
+      matchTitleEl.textContent = asString(video.title) || key;
+      matchNumberEl.textContent = kinId || "None";
       matchVimeoEl.textContent = vimeoId || "None";
-      matchEditEl.setAttribute("href", `/admin/videos-edit?key=${encodeURIComponent(key)}`);
-      const copyButton = document.getElementById("videos-admin-copy-vimeo");
-      if (copyButton instanceof HTMLButtonElement) copyButton.disabled = !vimeoId;
+      matchEditEl.href = `/admin/videos-edit?key=${encodeURIComponent(key)}`;
       matchEl.hidden = false;
+    }
+
+    function favoriteCell(count: number | null) {
+      if (count === null) return `<td class="videos-admin__gap">Unavailable</td>`;
+      return `<td class="col-count">${count}</td>`;
+    }
+
+    function tipCell(lines: string[] | null) {
+      if (!lines) return `<td class="videos-admin__gap">Unavailable</td>`;
+      return `<td class="videos-admin__tip">${lines.map((line) => `<span>${escapeHtml(line)}</span>`).join("")}</td>`;
     }
 
     function renderTable() {
       if (!tbodyEl || !tableWrapEl || !emptyEl || !loadingEl) return;
       loadingEl.hidden = true;
-      const rows = visibleVideos();
+      const rows = listedVideos();
       renderMatch(rows);
+      updateSortHeaders();
       if (rows.length === 0) {
         tableWrapEl.hidden = true;
         emptyEl.hidden = false;
         emptyEl.textContent = searchQuery.trim() ? "No matching videos" : "No videos in catalog.";
         tbodyEl.innerHTML = "";
-        refreshTableSorter();
         return;
       }
       emptyEl.hidden = true;
       tableWrapEl.hidden = false;
 
       tbodyEl.innerHTML = rows
-        .map(({ v, key }) => {
-          const idStr = vimeoLabel(v);
-          const href = `/admin/videos-edit?key=${encodeURIComponent(key)}`;
-          const copy = idStr
-            ? `<button type="button" class="kbm-btn kbm-btn-outline" data-copy-vimeo="${escapeHtml(idStr)}">Copy</button>`
-            : "";
+        .map((row) => {
+          const href = `/admin/videos-edit?key=${encodeURIComponent(row.key)}`;
           return `<tr>
-            <td class="col-key"><code>${escapeHtml(key)}</code></td>
-            <td>${escapeHtml(asString(v.content_id))}</td>
-            <td class="col-title">${escapeHtml(asString(v.title))}</td>
-            <td><div class="videos-admin__vimeo-cell"><span>${escapeHtml(idStr)}</span>${copy}</div></td>
-            <td>${escapeHtml(asString(v.category))}</td>
-            <td>${escapeHtml(statusLabel(v))}</td>
-            <td>${escapeHtml(TRANSCRIPT_LABEL[transcripts[asString(v.content_id)] ?? "none"])}</td>
+            <td class="col-id">${escapeHtml(row.kinId)}</td>
+            <td class="col-title">${escapeHtml(row.title)}</td>
+            <td>${escapeHtml(row.status)}</td>
+            <td>${escapeHtml(row.access)}</td>
+            <td class="col-vimeo">${escapeHtml(row.vimeoId)}</td>
+            ${favoriteCell(row.favoriteCount)}
+            ${tipCell(row.tipLines)}
             <td class="help-hub-admin__actions">
               <a class="kbm-btn kbm-btn-outline" href="${href}">Edit</a>
             </td>
           </tr>`;
         })
         .join("");
-      refreshTableSorter();
-    }
-
-    const TRANSCRIPT_LABEL: Record<string, string> = {
-      published: "Yes",
-      draft: "Waiting for publish",
-      none: "",
-    };
-
-    function statusLabel(v: VideoRow) {
-      const raw = asString(v.status).trim().toLowerCase();
-      if (raw === "draft") return "Draft";
-      if (raw === "archived") return "Archived";
-      return "Published";
     }
 
     function escapeHtml(s: string) {
@@ -597,7 +642,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 
     function reportSearch() {
       const query = searchQuery.trim();
-      const shown = query ? visibleVideos().length : videos.length;
+      const shown = query ? listedVideos().length : videos.length;
       if (searchCountEl) {
         if (!videos.length && !query) searchCountEl.textContent = "";
         else if (!query) searchCountEl.textContent = `${videos.length} videos`;
@@ -611,20 +656,47 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
       setStatus(shown === 1 ? "1 match." : `${shown} matches.`, shown ? "ok" : "neutral");
     }
 
+    function showDataNotes() {
+      if (!dataNoteEl) return;
+      const notes = videoAdminDataNotes({ favorites: favoritesSource, tips: tipsSource });
+      dataNoteEl.hidden = notes.length === 0;
+      dataNoteEl.textContent = notes.join(" ");
+    }
+
     async function load() {
       setStatus("Loading catalog…");
       try {
-        const result = await fetchAdminJson<{ videos?: VideoRow[]; transcripts?: Record<string, string> }>(
-          API_BASE,
-          { method: "GET" },
-        );
-        if (!result.ok || !Array.isArray(result.data.videos)) {
-          if (result.needsSignIn) promptAdminSignIn("/admin/videos-admin");
-          setStatus(result.error || "Load failed.", "err");
+        const [catalogResult, planningResult] = await Promise.all([
+          fetchAdminJson<{ videos?: VideoRow[] }>(API_BASE, { method: "GET" }),
+          fetchAdminJson<{
+            favorites?: VideoAdminFavoritesSource;
+            tips?: VideoAdminTipsSource;
+          }>(PLANNING_API, { method: "GET" }),
+        ]);
+        if (!catalogResult.ok || !Array.isArray(catalogResult.data.videos)) {
+          if (catalogResult.needsSignIn) promptAdminSignIn("/admin/videos-admin");
+          setStatus(catalogResult.error || "Load failed.", "err");
           return;
         }
-        videos = result.data.videos;
-        transcripts = result.data.transcripts ?? {};
+        videos = catalogResult.data.videos;
+        if (
+          planningResult.ok &&
+          planningResult.data.favorites &&
+          planningResult.data.tips &&
+          typeof planningResult.data.favorites.ok === "boolean" &&
+          typeof planningResult.data.tips.ok === "boolean"
+        ) {
+          favoritesSource = planningResult.data.favorites;
+          tipsSource = planningResult.data.tips;
+        } else {
+          if (planningResult.needsSignIn) promptAdminSignIn("/admin/videos-admin");
+          const message =
+            planningResult.error ||
+            "Favorite counts and Tip of the Week history could not be loaded.";
+          favoritesSource = { ok: false, error: message };
+          tipsSource = { ok: false, error: message };
+        }
+        showDataNotes();
         reportSearch();
         renderTable();
       } catch {
@@ -651,18 +723,19 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
       renderTable();
     });
 
-    document.getElementById("videos-admin-copy-vimeo")?.addEventListener("click", () => {
-      const button = document.getElementById("videos-admin-copy-vimeo");
-      const value = matchVimeoEl?.textContent?.trim() ?? "";
-      void copyText(value, button instanceof HTMLButtonElement ? button : null);
-    });
-
-    tbodyEl?.addEventListener("click", (event) => {
+    tableEl?.addEventListener("click", (event) => {
       const target = event.target;
-      if (!(target instanceof HTMLButtonElement)) return;
-      const value = target.getAttribute("data-copy-vimeo");
-      if (!value) return;
-      void copyText(value, target);
+      if (!(target instanceof Element)) return;
+      const header = target.closest("th[data-sort-column]");
+      if (!(header instanceof HTMLTableCellElement)) return;
+      const column = header.dataset.sortColumn;
+      if (!isSortColumn(column)) return;
+      if (column === sortColumn) sortDirection = sortDirection === "asc" ? "desc" : "asc";
+      else {
+        sortColumn = column;
+        sortDirection = "asc";
+      }
+      renderTable();
     });
 
     load();
