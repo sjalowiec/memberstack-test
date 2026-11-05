@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { getMachineBySlug } from "./referenceCatalog";
 import {
   buildSaleCheckoutSummary,
   displayStripePaymentLink,
@@ -6,11 +7,41 @@ import {
   formatEditingMachineIdLabel,
   getCheckoutInactiveReason,
   getSaleAdminWarnings,
+  shopAvailabilityBadge,
   validateStripePaymentLink,
 } from "./machineAdminFields";
 
 const FULL_STRIPE_LINK =
   "https://buy.stripe.com/test_a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6";
+
+describe("TR-850 in-stock listing", () => {
+  it("shows In Stock on the shop badge and keeps the existing purchase link", () => {
+    const machine = getMachineBySlug("taitexma-tr-850");
+    expect(machine?.model).toBe("TR-850");
+    expect(machine?.sale?.availabilityStatus).toBe("available");
+    expect(machine?.sale?.expectedDate).toBeNull();
+    expect(machine?.sale?.status).toBe("available");
+    expect(machine?.sale?.price).toBe(1399);
+    expect(machine?.sale?.stripePaymentLink).toBe(
+      "https://buy.stripe.com/bJe8wO7pY46f4Dc7Gi0oM0V"
+    );
+    expect(shopAvailabilityBadge(machine!.sale!, machine!.model)).toBe("In Stock");
+    expect(machine?.sale?.shippingNotes).toContain(
+      "The Taitexma TR-850 ribber is in stock and available to order."
+    );
+    expect(machine?.sale?.shippingNotes).not.toMatch(/September|reserve/i);
+    expect(machine?.sale?.longDescriptionHtml).toContain("double-bed knitting system");
+  });
+
+  it("leaves other available products labeled Available", () => {
+    expect(
+      shopAvailabilityBadge(
+        { availabilityStatus: "available", expectedDate: null },
+        "TA-8200"
+      )
+    ).toBe("Available");
+  });
+});
 
 describe("Stripe Payment Link visibility", () => {
   it("keeps the full Stripe link visible (never truncates or replaces with ellipsis)", () => {

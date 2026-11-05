@@ -11,7 +11,7 @@ import {
   machineTitle,
   formatPitch,
 } from "../../../lib/machines/referenceCatalog";
-import { availabilityLabel } from "../../../lib/machines/machineAdminFields";
+import { shopAvailabilityBadge } from "../../../lib/machines/machineAdminFields";
 import { LK150_SECOND_TENSION_MAST_KIT } from "../../../data/shop/lk150SecondTensionMastKit";
 import { isEasyCutYarnCutterProductionBlocked } from "../../../lib/shop/easyCutYarnCutter";
 import { isHobbyKnitNeedlesProductionBlocked } from "../../../lib/shop/hobbyKnitNeedles";
@@ -69,7 +69,7 @@ function formatPrice(value: number | null): string | null {
           const name = machineTitle(machine);
           const pitch = formatPitch(machine);
           const priceLabel = formatPrice(sale.price);
-          const availLabel = availabilityLabel(sale);
+          const availLabel = shopAvailabilityBadge(sale, machine.model);
           const shortHtml = sale.shortDescriptionHtml || null;
           return (
             <article class="machine-card">

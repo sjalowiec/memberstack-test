@@ -370,6 +370,24 @@ export function availabilityLabel(
   return "Available";
 }
 
+/**
+ * Badge text for shop cards and product pages.
+ * An in-stock TR-850 is labeled "In Stock". Other available products stay "Available".
+ */
+export function shopAvailabilityBadge(
+  sale: Pick<MachineSale, "availabilityStatus" | "expectedDate">,
+  model?: string | null
+): string {
+  if (
+    asString(model).trim().toUpperCase() === "TR-850" &&
+    sale.availabilityStatus === "available" &&
+    !sale.expectedDate
+  ) {
+    return "In Stock";
+  }
+  return availabilityLabel(sale);
+}
+
 /** Required prefix for Stripe Payment Links pasted into admin. */
 export const STRIPE_PAYMENT_LINK_PREFIX = "https://buy.stripe.com/";
 
