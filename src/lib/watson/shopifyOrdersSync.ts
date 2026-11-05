@@ -47,6 +47,7 @@ async function upsertMappedOrder(
   );
   const isUpdate = existing.length > 0;
 
+  // $11 is tracking_links (jsonb). $25 is is_designaknit (boolean).
   await queryWatson(
     `
     INSERT INTO watson_shopify_orders (
@@ -80,8 +81,8 @@ async function upsertMappedOrder(
       updated_at
     ) VALUES (
       $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,
-      $11,$12,$13,$14,$15,$16,$17,$18,$19,$20,
-      $21,$22,$23,$24,$25::jsonb,'shopify',NOW(),NOW()
+      $11::jsonb,$12,$13,$14,$15,$16,$17,$18,$19,$20,
+      $21,$22,$23,$24,$25::boolean,'shopify',NOW(),NOW()
     )
     ON CONFLICT (shopify_order_id) DO UPDATE SET
       shopify_order_gid = EXCLUDED.shopify_order_gid,
