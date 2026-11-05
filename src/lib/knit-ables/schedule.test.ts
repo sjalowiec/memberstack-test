@@ -60,6 +60,7 @@ describe("Knit-able Pacific publish dates", () => {
     expect(KNIT_ABLE_INITIAL_PUBLISH_DATES["worsted-color-block-socks"]).toBe("2026-09-21");
     expect(KNIT_ABLE_INITIAL_PUBLISH_DATES["cap-sleeve-tank"]).toBe("2026-10-01");
     expect(KNIT_ABLE_INITIAL_PUBLISH_DATES["vest-in-show"]).toBe("2026-10-22");
+    expect(KNIT_ABLE_INITIAL_PUBLISH_DATES["nifty-gifty-stocking"]).toBe("2026-11-05");
     expect(KNIT_ABLE_INITIAL_PUBLISH_DATES["coco-loco-tank"]).toBeUndefined();
     expect(KNIT_ABLE_INITIAL_PUBLISH_DATES["rhythmic-colour-top"]).toBeUndefined();
     expect(KNIT_ABLE_INITIAL_PUBLISH_DATES["christmas-stockings-your-way"]).toBeUndefined();
@@ -67,6 +68,7 @@ describe("Knit-able Pacific publish dates", () => {
     const rows = buildKnitAbleAdminRows(KNIT_ABLE_INITIAL_PUBLISH_DATES, SEP_29_NOON_PACIFIC);
     expect(rows.map((row) => [row.slug, row.status])).toEqual([
       ["christmas-stockings-your-way", "unpublished"],
+      ["nifty-gifty-stocking", "scheduled"],
       ["rhythmic-colour-top", "unpublished"],
       ["vest-in-show", "scheduled"],
       ["coco-loco-tank", "unpublished"],
@@ -93,6 +95,18 @@ describe("Knit-able Pacific publish dates", () => {
         new Date("2026-10-22T19:00:00.000Z"),
       ).map((card) => card.href),
     ).toEqual([
+      "/knit-ables/vest-in-show",
+      "/knit-ables/cap-sleeve-tank",
+      "/knit-ables/teenage-kicks-socks",
+      "/knit-ables/worsted-color-block-socks",
+    ]);
+    expect(
+      selectPublishedKnitAbleCards(
+        KNIT_ABLE_INITIAL_PUBLISH_DATES,
+        new Date("2026-11-05T08:00:00.000Z"),
+      ).map((card) => card.href),
+    ).toEqual([
+      "/knit-ables/nifty-gifty-stocking",
       "/knit-ables/vest-in-show",
       "/knit-ables/cap-sleeve-tank",
       "/knit-ables/teenage-kicks-socks",
@@ -168,9 +182,11 @@ describe("Knit-able Pacific publish dates", () => {
     expect(sql).toContain("CREATE TABLE IF NOT EXISTS watson_knit_able_schedules");
     expect(sql).toContain(knitAbleScheduleSeedSql());
     expect(knitAbleScheduleSeedSql()).toContain("ON CONFLICT (slug) DO NOTHING");
+    expect(knitAbleScheduleSeedSql()).toContain("('nifty-gifty-stocking', DATE '2026-11-05')");
     expect(knitAbleScheduleSeedSql()).toContain("('vest-in-show', DATE '2026-10-22')");
     expect(knitAbleScheduleSeedSql()).not.toContain("coco-loco-tank");
     expect(knitAbleScheduleSeedSql()).not.toContain("rhythmic-colour-top");
+    expect(sql).toContain("('nifty-gifty-stocking', DATE '2026-11-05')");
     expect(sql).toContain("('vest-in-show', DATE '2026-10-22')");
     expect(knitAbleScheduleSeedSql()).not.toContain("christmas-stockings-your-way");
     expect(sql).not.toContain("coco-loco-tank");
