@@ -214,7 +214,7 @@ describe("public course catalog cleanup", () => {
       "ultimate-brother-930-940-workshop",
     ]);
     expect(sections[3]?.courses[1]?.href).toBe("/courses/103");
-    expect(sections[3]?.courses[1]?.access).toBe("member");
+    expect(sections[3]?.courses[1]?.access).toBe("purchase");
     expect(sections[3]?.courses[1]?.status).toBe("available");
     expect(sections[3]?.courses[1]?.thumbnail).toBe("/images/courses/940_course_thumb.webp");
     expect(sections[3]?.courses[0]?.href).toBe("/courses/87");
@@ -378,7 +378,7 @@ describe("groupCourseCatalogSections", () => {
       "purchase",
       "purchase",
       "purchase",
-      "member",
+      "purchase",
     ]);
     expect(sections[2]?.courses.map((course) => ({
       slug: course.slug,

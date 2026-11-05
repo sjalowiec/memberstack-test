@@ -1,7 +1,10 @@
 import { describe, expect, it, vi } from "vitest";
 import {
+  BROTHER_930_940_COURSE_PRICE_ID,
+  BROTHER_930_940_COURSE_SLUG,
   KIN_TAITEXMA_160_COURSE_SLUG,
   LEGACY_SK840_COURSE_SLUG,
+  PAID_BROTHER_930_940_COURSE_PLAN_ID,
   PAID_SK840_COURSE_PLAN_ID,
   PAID_TH160_COURSE_PLAN_ID,
   SK840_COURSE_PRICE_ID,
@@ -71,6 +74,33 @@ describe("startCourseCheckout", () => {
     expect(purchasePlansWithCheckout.mock.calls[0]?.[0]?.priceId).not.toBe(
       PAID_SK840_COURSE_PLAN_ID,
     );
+  });
+
+  it("uses the Brother 930/940 Price ID, not the Paid Plan ID", async () => {
+    const purchasePlansWithCheckout = vi.fn().mockResolvedValue({
+      data: { url: "https://checkout.stripe.com/brother-930" },
+    });
+    const assignLocation = vi.fn();
+    const result = await startCourseCheckout(BROTHER_930_940_COURSE_SLUG, {
+      waitForMemberstack: async () =>
+        memberstackDom({
+          purchasePlansWithCheckout,
+        }),
+      getLocation: () => ({ href: "https://knititnow.com/courses/103" }) as Location,
+      assignLocation,
+    });
+
+    expect(result).toMatchObject({ ok: true, priceId: BROTHER_930_940_COURSE_PRICE_ID });
+    expect(purchasePlansWithCheckout).toHaveBeenCalledWith(
+      expect.objectContaining({
+        priceId: "prc_course-930-940-ap5j0fkk",
+        autoRedirect: false,
+      }),
+    );
+    expect(purchasePlansWithCheckout.mock.calls[0]?.[0]?.priceId).not.toBe(
+      PAID_BROTHER_930_940_COURSE_PLAN_ID,
+    );
+    expect(assignLocation).toHaveBeenCalledWith("https://checkout.stripe.com/brother-930");
   });
 
   it("lets a logged-in nonmember purchase without opening signup", async () => {

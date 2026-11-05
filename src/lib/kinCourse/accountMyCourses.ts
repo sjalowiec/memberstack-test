@@ -21,7 +21,7 @@ export type AccountOwnedCourseCard = {
 
 /** Browser-safe display + entitlement metadata for individually owned courses. */
 export type AccountOwnableCourse = {
-  courseId: 86 | 111 | 87 | 34 | 50 | 51 | 33;
+  courseId: 86 | 111 | 87 | 103 | 34 | 50 | 51 | 33;
   slug: string;
   title: string;
   href: string;
@@ -57,6 +57,13 @@ export const ACCOUNT_OWNABLE_COURSES: readonly AccountOwnableCourse[] = [
     title: "Brother KH/KR-260 Quick Start",
     href: "/courses/87",
     planIds: ownablePlanIds(COURSE_INDIVIDUAL_SALES.brother260),
+  },
+  {
+    courseId: COURSE_INDIVIDUAL_SALES.brother930940.courseId,
+    slug: COURSE_INDIVIDUAL_SALES.brother930940.slug,
+    title: "Ultimate Brother 930/940 Workshop",
+    href: "/courses/103",
+    planIds: ownablePlanIds(COURSE_INDIVIDUAL_SALES.brother930940),
   },
   {
     courseId: COURSE_INDIVIDUAL_SALES.lk150Patterning.courseId,

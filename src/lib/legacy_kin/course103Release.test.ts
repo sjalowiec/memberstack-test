@@ -2,7 +2,12 @@ import { existsSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { MEMBERSHIPS } from "../../config/memberships";
-import { LEGACY_COURSE_PLAN_SLUGS } from "../../config/legacyCourseEntitlements";
+import {
+  BROTHER_930_940_COURSE_PRICE_ID,
+  LEGACY_BROTHER_930_940_COURSE_PLAN_ID,
+  LEGACY_COURSE_PLAN_SLUGS,
+  PAID_BROTHER_930_940_COURSE_PLAN_ID,
+} from "../../config/legacyCourseEntitlements";
 import { canAccessCourse } from "../courseAccess";
 import { getCourseCatalogEntries } from "../coursesCatalog";
 import { getCourseAccessBySlug } from "../coursesCatalogAccess";
@@ -38,8 +43,12 @@ describe("published Brother 930/940 workshop", () => {
     expect(raw).toContain("Watch the video");
     expect(raw).toContain("1046394794");
     expect(raw).toContain("742452827");
-    expect(Object.values(LEGACY_COURSE_PLAN_SLUGS).some((slugs) => slugs.includes(SLUG))).toBe(
-      false,
+    const plansForThisCourse = Object.entries(LEGACY_COURSE_PLAN_SLUGS)
+      .filter(([, slugs]) => slugs.includes(SLUG))
+      .map(([planId]) => planId)
+      .sort();
+    expect(plansForThisCourse).toEqual(
+      [LEGACY_BROTHER_930_940_COURSE_PLAN_ID, PAID_BROTHER_930_940_COURSE_PLAN_ID].sort(),
     );
   });
 
@@ -82,14 +91,17 @@ describe("published Brother 930/940 workshop", () => {
       },
     };
     const loggedOut = { data: { member: null } };
-    expect(getCourseAccessBySlug(SLUG)).toBe("member");
-    expect(canAccessCourse("member", member, { courseSlug: SLUG })).toBe(true);
-    expect(canAccessCourse("member", loggedOut, { courseSlug: SLUG })).toBe(false);
+    expect(getCourseAccessBySlug(SLUG)).toBe("purchase");
+    expect(canAccessCourse("purchase", member, { courseSlug: SLUG })).toBe(true);
+    expect(canAccessCourse("purchase", loggedOut, { courseSlug: SLUG })).toBe(false);
+    expect(LEGACY_COURSE_PLAN_SLUGS[LEGACY_BROTHER_930_940_COURSE_PLAN_ID]).toEqual([SLUG]);
+    expect(LEGACY_COURSE_PLAN_SLUGS[PAID_BROTHER_930_940_COURSE_PLAN_ID]).toEqual([SLUG]);
+    expect(LEGACY_COURSE_PLAN_SLUGS[BROTHER_930_940_COURSE_PRICE_ID]).toBeUndefined();
     expect(getCourseCatalogEntries({ hostname: "knititnow.com" })).toContainEqual(
       expect.objectContaining({
         slug: SLUG,
         href: "/courses/103",
-        access: "member",
+        access: "purchase",
         status: "available",
       }),
     );
