@@ -1,8 +1,10 @@
 /**
  * Nifty Gifty Stocking Knit-able.
  * The project photo filename is nifty-grifty-stocking.png. Visible copy uses Nifty Gifty Stocking.
- * Ribbing copy lives in NIFTY_GIFTY_STOCKING_RIB_INSTRUCTIONS until the cuff steps are added.
+ * The ribbed cuff points to the existing Corrugated Rib video. Stocking instructions use the Christmas Stocking builder.
  */
+import { CHRISTMAS_STOCKING_PATTERN_BUILDER_LANDING } from "../patterns/christmasStockingPatternLanding";
+import { buildSockBuilderNewPatternHref } from "../patterns/christmasStocking/sockFreshStart";
 import { getStitchCatalogItems } from "../stitch-data";
 import { KNIT_ABLE_AFFILIATE_REL } from "./links";
 
@@ -67,13 +69,29 @@ export const NIFTY_GIFTY_STOCKING_YARN = {
 
 export const NIFTY_GIFTY_STOCKING_RIB_HEADING = "Ribbed cuff";
 
-/**
- * Machine-knitting ribbing for the cuff.
- * Replace these paragraphs with the ribbing instructions. The Ribbed cuff section renders this list.
- */
-export const NIFTY_GIFTY_STOCKING_RIB_INSTRUCTIONS = [
-  "Placeholder for review: the machine-knitting ribbing instructions for this cuff will go here.",
-] as const;
+/** Existing member video. Playback access stays on /videos/698. */
+export const NIFTY_GIFTY_STOCKING_RIB_VIDEO = {
+  href: "/videos/698",
+  title: "Corrugated Rib on the Machine",
+  prompt: "For the ribbed cuff, watch",
+  accessLabel: "Members",
+} as const;
+
+export const NIFTY_GIFTY_STOCKING_BUILDER_HEADING = "Stocking instructions";
+
+export const NIFTY_GIFTY_STOCKING_BUILDER_COPY_BEFORE =
+  "Create the machine-knitting instructions for your stocking with the ";
+
+export const NIFTY_GIFTY_STOCKING_BUILDER_LINK_LABEL = "Christmas Stocking builder";
+
+export const NIFTY_GIFTY_STOCKING_BUILDER_COPY_AFTER = ".";
+
+/** Same visitor actions as the Christmas Stocking landing page. The button opens a new stocking. */
+export const NIFTY_GIFTY_STOCKING_BUILDER_CTA = CHRISTMAS_STOCKING_PATTERN_BUILDER_LANDING.cta;
+
+export function niftyGiftyStockingBuilderHref(): string {
+  return buildSockBuilderNewPatternHref();
+}
 
 export const NIFTY_GIFTY_STOCKING_MOTIF_HEADING = "Make It Your Own";
 

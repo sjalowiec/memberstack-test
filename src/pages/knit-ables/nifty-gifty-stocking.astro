@@ -32,13 +32,19 @@ import {
   NIFTY_GIFTY_STOCKING_PATTERN_NOTE,
   NIFTY_GIFTY_STOCKING_PATTERN_URL,
   NIFTY_GIFTY_STOCKING_RIB_HEADING,
-  NIFTY_GIFTY_STOCKING_RIB_INSTRUCTIONS,
+  NIFTY_GIFTY_STOCKING_RIB_VIDEO,
+  NIFTY_GIFTY_STOCKING_BUILDER_COPY_AFTER,
+  NIFTY_GIFTY_STOCKING_BUILDER_COPY_BEFORE,
+  NIFTY_GIFTY_STOCKING_BUILDER_CTA,
+  NIFTY_GIFTY_STOCKING_BUILDER_HEADING,
+  NIFTY_GIFTY_STOCKING_BUILDER_LINK_LABEL,
   NIFTY_GIFTY_STOCKING_TAGLINE,
   NIFTY_GIFTY_STOCKING_TITLE,
   NIFTY_GIFTY_STOCKING_TREE_HEADING,
   NIFTY_GIFTY_STOCKING_TREE_INTRO,
   NIFTY_GIFTY_STOCKING_YARN,
   NIFTY_GIFTY_STOCKING_YARN_HEADING,
+  niftyGiftyStockingBuilderHref,
 } from "../../lib/knit-ables/niftyGiftyStocking";
 
 const heroImage = NIFTY_GIFTY_STOCKING_IMAGES.hero;
@@ -133,9 +139,60 @@ const knitAblePublishDate = knitAbleAccess.visible ? knitAbleAccess.publishDate 
 
           <section aria-labelledby="knit-able-rib-heading" data-nifty-gifty-rib>
             <h2 id="knit-able-rib-heading">{NIFTY_GIFTY_STOCKING_RIB_HEADING}</h2>
-            {NIFTY_GIFTY_STOCKING_RIB_INSTRUCTIONS.map((paragraph) => (
-              <p>{paragraph}</p>
-            ))}
+            <p class="knit-able-member-resource">
+              {NIFTY_GIFTY_STOCKING_RIB_VIDEO.prompt}{" "}
+              <a href={NIFTY_GIFTY_STOCKING_RIB_VIDEO.href}>
+                {NIFTY_GIFTY_STOCKING_RIB_VIDEO.title}</a>.
+              <span class="knit-able-member-resource__label">
+                {NIFTY_GIFTY_STOCKING_RIB_VIDEO.accessLabel}
+              </span>
+            </p>
+          </section>
+
+          <section aria-labelledby="knit-able-builder-heading" data-nifty-gifty-builder>
+            <h2 id="knit-able-builder-heading">{NIFTY_GIFTY_STOCKING_BUILDER_HEADING}</h2>
+            <p>
+              {NIFTY_GIFTY_STOCKING_BUILDER_COPY_BEFORE}
+              <a class="knit-able-text-link" href={niftyGiftyStockingBuilderHref()}>
+                {NIFTY_GIFTY_STOCKING_BUILDER_LINK_LABEL}
+              </a>
+              {NIFTY_GIFTY_STOCKING_BUILDER_COPY_AFTER}
+            </p>
+            <div
+              class="knit-able-builder-cta"
+              data-pattern-builder-landing
+              data-cta-mode="pending"
+            >
+              <p
+                class="knit-able-builder-cta__loading"
+                data-pattern-builder-landing-cta-loading
+                role="status"
+              >
+                {NIFTY_GIFTY_STOCKING_BUILDER_CTA.checkingLabel}
+              </p>
+              <div data-pattern-builder-landing-cta-member hidden>
+                <a class="kbm-btn kbm-btn-accent" href={NIFTY_GIFTY_STOCKING_BUILDER_CTA.memberHref}>
+                  {NIFTY_GIFTY_STOCKING_BUILDER_CTA.memberLabel}
+                </a>
+              </div>
+              <div
+                class="knit-able-builder-cta__prospect"
+                data-pattern-builder-landing-cta-prospect
+                hidden
+              >
+                <a class="kbm-btn kbm-btn-accent" href={NIFTY_GIFTY_STOCKING_BUILDER_CTA.prospectHref}>
+                  {NIFTY_GIFTY_STOCKING_BUILDER_CTA.prospectLabel}
+                </a>
+                <a
+                  class="knit-able-text-link"
+                  href="#"
+                  data-ms-modal="login"
+                  data-ms-redirect="current-url"
+                >
+                  {NIFTY_GIFTY_STOCKING_BUILDER_CTA.signInLabel}
+                </a>
+              </div>
+            </div>
           </section>
 
           <section aria-labelledby="knit-able-motif-heading">
@@ -274,6 +331,55 @@ const knitAblePublishDate = knitAbleAccess.visible ? knitAbleAccess.publishDate 
     color: #5a6350;
   }
 
+  .knit-able-member-resource {
+    margin: 0;
+    font-size: 1.05rem;
+    line-height: 1.65;
+  }
+
+  .knit-able-member-resource a {
+    color: var(--kbm-green, #52682d);
+    font-weight: 600;
+    text-underline-offset: 2px;
+  }
+
+  .knit-able-member-resource__label {
+    display: inline-block;
+    margin-left: 0.45rem;
+    padding: 0.05rem 0.45rem;
+    border-radius: 999px;
+    background: rgba(82, 104, 45, 0.12);
+    color: var(--kbm-green, #52682d);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    vertical-align: 0.1em;
+  }
+
+  .knit-able-builder-cta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .knit-able-builder-cta [hidden] {
+    display: none !important;
+  }
+
+  .knit-able-builder-cta__loading {
+    margin: 0;
+    color: #5a6350;
+    font-size: 0.95rem;
+  }
+
+  .knit-able-builder-cta__prospect {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.85rem 1.15rem;
+  }
+
   .knit-able-trees {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -364,3 +470,10 @@ const knitAblePublishDate = knitAbleAccess.visible ? knitAbleAccess.publishDate 
     }
   }
 </style>
+
+<script>
+  import { initPatternBuilderLandingCta } from "../../lib/patterns/patternBuilderLandingCta";
+
+  const root = document.querySelector("[data-nifty-gifty-builder] [data-pattern-builder-landing]");
+  if (root instanceof HTMLElement) void initPatternBuilderLandingCta(root);
+</script>
