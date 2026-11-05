@@ -15,6 +15,12 @@ loadEnvFile();
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const csvPath = join(root, "legacy-data", "private", "reviews", "legacy-reviews.csv");
 const migrationPath = join(root, "supabase", "migrations", "20261105103000_testimonials.sql");
+const deletedLegacyIdsPath = join(
+  root,
+  "supabase",
+  "migrations",
+  "20261105160000_testimonial_deleted_legacy_ids.sql",
+);
 const apply = process.argv.includes("--apply");
 const targetIndex = process.argv.indexOf("--target");
 const target = targetIndex >= 0 ? process.argv[targetIndex + 1] ?? "" : null;
@@ -26,6 +32,7 @@ async function main() {
   console.log(JSON.stringify(summary, null, 2));
   console.log("Every inserted row starts inactive. Legacy Show is stored and does not publish.");
   console.log("Repeat imports refresh historical fields only. Activation and display edits stay.");
+  console.log("A deleted legacy rating id is not imported again.");
 
   const plan = resolveLegacyImportDestination({
     apply,
@@ -47,9 +54,11 @@ async function main() {
   const pool = new pg.Pool({ connectionString: plan.url });
   try {
     const migration = readFileSync(migrationPath, "utf8");
+    const deletedLegacyIds = readFileSync(deletedLegacyIdsPath, "utf8");
     const statement = legacyImportStatement();
     await pool.query("BEGIN");
     await pool.query(migration);
+    await pool.query(deletedLegacyIds);
     for (const row of rows) {
       await pool.query(statement, [
         row.legacyRatingId,

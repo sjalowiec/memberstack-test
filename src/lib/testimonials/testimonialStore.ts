@@ -220,6 +220,35 @@ export async function createAdminTestimonial(
   return mapAdmin(rows[0]);
 }
 
+export const DELETE_TESTIMONIAL_SQL = `
+WITH removed AS (
+  DELETE FROM testimonials
+  WHERE id = $1
+  RETURNING id, legacy_rating_id
+), marked AS (
+  INSERT INTO testimonial_deleted_legacy_ids (legacy_rating_id)
+  SELECT legacy_rating_id
+  FROM removed
+  WHERE legacy_rating_id IS NOT NULL
+  ON CONFLICT (legacy_rating_id) DO NOTHING
+)
+SELECT removed.id, removed.legacy_rating_id, (SELECT COUNT(*)::int FROM marked) AS marked_count
+FROM removed
+`;
+
+export async function deleteTestimonial(
+  id: string,
+  query: Query = queryTestimonials,
+): Promise<{ legacyRatingId: number | null } | null> {
+  const rows = await query<{ id: string; legacy_rating_id: number | null; marked_count: number }>(
+    DELETE_TESTIMONIAL_SQL,
+    [id],
+  );
+  const row = rows[0];
+  if (!row) return null;
+  return { legacyRatingId: intOrNull(row.legacy_rating_id) };
+}
+
 export async function countRecentMemberSubmissions(
   memberstackMemberId: string,
   query: Query = queryTestimonials,

@@ -73,8 +73,12 @@ INSERT INTO testimonials (
   legacy_show,
   legacy_viewed,
   legacy_use_in_email
-) VALUES (
-  $1, $2, $3, $4, $5, $6, 'legacy_import', FALSE, $7, $8, $9
+)
+SELECT $1, $2, $3, $4, $5, $6, 'legacy_import', FALSE, $7, $8, $9
+WHERE NOT EXISTS (
+  SELECT 1
+  FROM testimonial_deleted_legacy_ids
+  WHERE legacy_rating_id = $1
 )
 ON CONFLICT (legacy_rating_id) DO UPDATE SET
   ${refresh}

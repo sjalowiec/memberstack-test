@@ -5,13 +5,13 @@ import { resolveLegacyImportDestination } from "./legacyImportTarget";
 import { resolveTestimonialConnection } from "./testimonialQuery";
 import { summarizeLegacyReviews } from "./legacyReviewImport";
 import { parseReviewsCsv } from "./parseReviewsCsv";
-import { testimonialPlainText } from "./testimonialPlainText";
+import { testimonialPlainText, testimonialDeleteConfirmation } from "./testimonialPlainText";
 import { memberSubmissionAllowed, parseDisplayCorrection, parseTestimonialDraft } from "./testimonialDraft";
 import {
   LEGACY_IMPORT_PRESERVED_COLUMNS,
   legacyImportUpsertSql,
 } from "./testimonialRules";
-import { PUBLIC_TESTIMONIAL_SQL } from "./testimonialStore";
+import { PUBLIC_TESTIMONIAL_SQL, DELETE_TESTIMONIAL_SQL } from "./testimonialStore";
 
 describe("testimonial publication rules", () => {
   it("removes legacy HTML and links before public display", () => {
@@ -37,6 +37,32 @@ describe("testimonial publication rules", () => {
     expect(update).toContain("original_quote = EXCLUDED.original_quote");
     expect(update).toContain("legacy_member_id = EXCLUDED.legacy_member_id");
     expect(update).toContain("legacy_show = EXCLUDED.legacy_show");
+    expect(sql).toContain("testimonial_deleted_legacy_ids");
+    expect(sql).toMatch(/WHERE NOT EXISTS \([\s\S]*legacy_rating_id = \$1/);
+  });
+
+  it("asks for confirmation with the attribution and a short quote preview", () => {
+    const message = testimonialDeleteConfirmation(
+      "Ada <b>Knitter</b>",
+      `${"Thank you for the clear lessons. ".repeat(8)}https://example.com/secret`,
+    );
+    expect(message).toContain("Ada Knitter");
+    expect(message).not.toMatch(/<|https?:/);
+    expect(message).toContain("Thank you for the clear lessons.");
+    expect(message.length).toBeLessThan(180);
+  });
+
+  it("keeps only the legacy rating id when a deleted review is remembered", () => {
+    const migration = readFileSync(
+      "supabase/migrations/20261105160000_testimonial_deleted_legacy_ids.sql",
+      "utf8",
+    );
+    expect(migration).toContain("legacy_rating_id INTEGER PRIMARY KEY");
+    expect(migration).not.toMatch(/quote|attribution|email|member/i);
+    expect(DELETE_TESTIMONIAL_SQL).toContain(
+      "INSERT INTO testimonial_deleted_legacy_ids (legacy_rating_id)",
+    );
+    expect(DELETE_TESTIMONIAL_SQL).not.toMatch(/original_quote|original_attribution|memberstack_member_id/);
   });
 
   it("keeps a remote testimonial override off the shared database", () => {
