@@ -1,6 +1,8 @@
 import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
+import { CHRISTMAS_STOCKING_PATTERN_BUILDER_LANDING } from "../patterns/christmasStockingPatternLanding";
+import { buildSockBuilderNewPatternHref } from "../patterns/christmasStocking/sockFreshStart";
 import { CHRISTMAS_STOCKINGS_YOUR_WAY_AFFILIATE_DISCLOSURE } from "./christmasStockingsYourWay";
 import { KNIT_ABLE_AFFILIATE_REL } from "./links";
 import { KNIT_ABLES_CARDS } from "./knitAblesLanding";
@@ -8,8 +10,11 @@ import { KNIT_ABLE_INITIAL_PUBLISH_DATES } from "./schedule";
 import {
   formatNiftyGiftyTreeSize,
   getNiftyGiftyStockingTrees,
+  niftyGiftyStockingBuilderHref,
   NIFTY_GIFTY_STOCKING_AFFILIATE_DISCLOSURE,
   NIFTY_GIFTY_STOCKING_AFFILIATE_REL,
+  NIFTY_GIFTY_STOCKING_BUILDER_CTA,
+  NIFTY_GIFTY_STOCKING_BUILDER_LINK_LABEL,
   NIFTY_GIFTY_STOCKING_CANONICAL_URL,
   NIFTY_GIFTY_STOCKING_CARD_COPY,
   NIFTY_GIFTY_STOCKING_DESCRIPTION,
@@ -23,7 +28,7 @@ import {
   NIFTY_GIFTY_STOCKING_PATTERN_NOTE,
   NIFTY_GIFTY_STOCKING_PATTERN_URL,
   NIFTY_GIFTY_STOCKING_RIB_HEADING,
-  NIFTY_GIFTY_STOCKING_RIB_INSTRUCTIONS,
+  NIFTY_GIFTY_STOCKING_RIB_VIDEO,
   NIFTY_GIFTY_STOCKING_TITLE,
   NIFTY_GIFTY_STOCKING_TREE_INTRO,
   NIFTY_GIFTY_STOCKING_TREE_SPECS,
@@ -88,6 +93,7 @@ describe("Nifty Gifty Stocking Knit-able", () => {
     const patternLink = markup.indexOf("NIFTY_GIFTY_STOCKING_PATTERN_URL");
     const yarn = markup.indexOf("knit-able-yarn-heading");
     const rib = markup.indexOf("data-nifty-gifty-rib");
+    const builder = markup.indexOf("data-nifty-gifty-builder");
     const motif = markup.indexOf("knit-able-motif-heading");
     const graphPaper = markup.indexOf("NIFTY_GIFTY_STOCKING_GRAPH_PAPER_HREF");
     const gallery = markup.indexOf("knit-able-trees");
@@ -100,7 +106,8 @@ describe("Nifty Gifty Stocking Knit-able", () => {
     expect(yarn).toBeGreaterThan(patternLink);
     expect(offers).toBeLessThan(rib);
     expect(rib).toBeGreaterThan(yarn);
-    expect(motif).toBeGreaterThan(rib);
+    expect(builder).toBeGreaterThan(rib);
+    expect(motif).toBeGreaterThan(builder);
     expect(graphPaper).toBeGreaterThan(motif);
     expect(gallery).toBeGreaterThan(graphPaper);
     expect(markup.slice(motif, gallery)).toContain("NIFTY_GIFTY_STOCKING_MOTIF_INTRO");
@@ -131,12 +138,30 @@ describe("Nifty Gifty Stocking Knit-able", () => {
     expect(NIFTY_GIFTY_STOCKING_AFFILIATE_REL).toBe("sponsored noopener noreferrer");
   });
 
-  it("leaves a ribbing placeholder for review", () => {
+  it("points the cuff to the Corrugated Rib video and the instructions to the stocking builder", () => {
     expect(NIFTY_GIFTY_STOCKING_RIB_HEADING).toBe("Ribbed cuff");
-    expect(NIFTY_GIFTY_STOCKING_RIB_INSTRUCTIONS).toEqual([
-      "Placeholder for review: the machine-knitting ribbing instructions for this cuff will go here.",
-    ]);
-    expect(pageSource).toContain("NIFTY_GIFTY_STOCKING_RIB_INSTRUCTIONS.map");
+    expect(NIFTY_GIFTY_STOCKING_RIB_VIDEO).toEqual({
+      href: "/videos/698",
+      title: "Corrugated Rib on the Machine",
+      prompt: "For the ribbed cuff, watch",
+      accessLabel: "Members",
+    });
+    expect(pageSource).toContain("NIFTY_GIFTY_STOCKING_RIB_VIDEO.href");
+    expect(pageSource).toContain("knit-able-member-resource__label");
+    expect(pageSource).not.toContain("Placeholder for review");
+    expect(pageSource).not.toContain("ribbing instructions");
+
+    expect(existsSync(resolve("src/pages/patterns/christmas-stocking/builder.astro"))).toBe(true);
+    expect(NIFTY_GIFTY_STOCKING_BUILDER_LINK_LABEL).toBe("Christmas Stocking builder");
+    expect(niftyGiftyStockingBuilderHref()).toBe("/patterns/christmas-stocking/builder?new=1");
+    expect(niftyGiftyStockingBuilderHref()).toBe(buildSockBuilderNewPatternHref());
+    expect(niftyGiftyStockingBuilderHref()).not.toBe("/patterns/socks/builder?new=1");
+    expect(NIFTY_GIFTY_STOCKING_BUILDER_CTA).toBe(CHRISTMAS_STOCKING_PATTERN_BUILDER_LANDING.cta);
+    expect(NIFTY_GIFTY_STOCKING_BUILDER_CTA.memberHref).toBe(niftyGiftyStockingBuilderHref());
+    expect(pageSource).toContain("niftyGiftyStockingBuilderHref()");
+    expect(pageSource).toContain("data-pattern-builder-landing");
+    expect(pageSource).toContain("initPatternBuilderLandingCta");
+    expect(pageSource).not.toContain("/patterns/socks/builder");
   });
 
   it("links the graph paper tool and all 13 Stitch Library trees", () => {
