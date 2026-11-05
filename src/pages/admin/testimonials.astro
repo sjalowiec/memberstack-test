@@ -1,0 +1,314 @@
+---
+export const prerender = false;
+import Layout from "../../layouts/Layout.astro";
+import { publicTestimonialCopy } from "../../lib/testimonials/testimonialPlainText";
+import {
+  getTestimonialForAdmin,
+  listTestimonialsForAdmin,
+} from "../../lib/testimonials/testimonialStore";
+import type { TestimonialRecord } from "../../lib/testimonials/testimonialRules";
+
+const statusParam = Astro.url.searchParams.get("status");
+const status = statusParam === "active" || statusParam === "inactive" ? statusParam : "all";
+const q = Astro.url.searchParams.get("q")?.trim() ?? "";
+const page = Math.max(Number(Astro.url.searchParams.get("page") ?? "1") || 1, 1);
+const pageSize = 40;
+const selectedId = Astro.url.searchParams.get("id")?.trim() ?? "";
+
+let rows: TestimonialRecord[] = [];
+let total = 0;
+let selected: TestimonialRecord | null = null;
+let loadError = "";
+
+try {
+  const listed = await listTestimonialsForAdmin({
+    q,
+    status,
+    limit: pageSize,
+    offset: (page - 1) * pageSize,
+  });
+  rows = listed.rows;
+  total = listed.total;
+  if (selectedId) selected = await getTestimonialForAdmin(selectedId);
+} catch (error) {
+  const message = error instanceof Error ? error.message : "Could not read testimonials.";
+  loadError = /relation .*testimonials.* does not exist/i.test(message)
+    ? "The testimonials table is not on this database yet. Nothing has been imported here."
+    : message;
+}
+
+const pageCount = Math.max(Math.ceil(total / pageSize), 1);
+
+function listHref(next: { status?: string; page?: number; id?: string }) {
+  const params = new URLSearchParams();
+  const nextStatus = next.status ?? status;
+  if (nextStatus !== "all") params.set("status", nextStatus);
+  if (q) params.set("q", q);
+  const nextPage = next.page ?? page;
+  if (nextPage > 1) params.set("page", String(nextPage));
+  if (next.id) params.set("id", next.id);
+  const query = params.toString();
+  return query ? `/admin/testimonials?${query}` : "/admin/testimonials";
+}
+
+function snippet(row: TestimonialRecord): string {
+  const copy = publicTestimonialCopy(row);
+  return copy.quote.length > 160 ? `${copy.quote.slice(0, 157)}…` : copy.quote;
+}
+
+function memberLabel(row: TestimonialRecord): string {
+  if (row.memberstackMemberId) return `Signed-in member ${row.memberstackMemberId}`;
+  if (row.legacyMemberId) return `Legacy member ${row.legacyMemberId}`;
+  return "No linked member";
+}
+---
+
+<Layout title="Testimonials | Knit it Now" description="Review, correct, and activate testimonials.">
+  <main class="page-wrap testimonial-admin">
+    <header>
+      <h1>Testimonials</h1>
+      <p>
+        Imported and submitted testimonials stay inactive until you activate one.
+        The old site’s Show flag does not publish anything. Inactivating a testimonial
+        removes it from the public testimonials page.
+      </p>
+    </header>
+    <p><a class="kbm-btn kbm-btn-outline" href="/admin">Back to Creator Control Panel</a></p>
+    {loadError ? <p role="alert">{loadError}</p> : null}
+
+    {
+      !loadError ? (
+        <>
+          <form class="testimonial-admin__filters" method="get" action="/admin/testimonials">
+            <label>
+              Search
+              <input type="search" name="q" value={q} />
+            </label>
+            <label>
+              Status
+              <select name="status">
+                <option value="all" selected={status === "all"}>All</option>
+                <option value="active" selected={status === "active"}>Active</option>
+                <option value="inactive" selected={status === "inactive"}>Inactive</option>
+              </select>
+            </label>
+            <button class="kbm-btn kbm-btn-primary" type="submit">Apply</button>
+          </form>
+          <p>{total} testimonial{total === 1 ? "" : "s"}</p>
+
+          <details class="testimonial-admin__add">
+            <summary>Add a testimonial received by email</summary>
+            <form id="testimonial-add-form" class="contact-form">
+              <div class="contact-form__field">
+                <label for="add-attribution">Name to display</label>
+                <input id="add-attribution" name="attribution" required maxlength="80" />
+              </div>
+              <div class="contact-form__field">
+                <label for="add-quote">Testimonial</label>
+                <textarea id="add-quote" name="quote" required minlength="20" maxlength="4000" rows="6"></textarea>
+              </div>
+              <div class="contact-form__field">
+                <label for="add-date">Date received</label>
+                <input id="add-date" name="reviewDate" type="date" />
+              </div>
+              <button class="kbm-btn kbm-btn-primary" type="submit">Save as inactive</button>
+              <p class="testimonial-admin__status" data-add-status role="status"></p>
+            </form>
+          </details>
+
+          {
+            selected ? (
+              <article class="testimonial-admin__detail" aria-labelledby="testimonial-detail-heading">
+                <h2 id="testimonial-detail-heading">{selected.originalAttribution}</h2>
+                <p>
+                  {selected.active ? "Active" : "Inactive"} · {selected.source.replaceAll("_", " ")} ·{" "}
+                  {memberLabel(selected)}
+                </p>
+                <p>
+                  {selected.reviewDate ?? "No review date"}
+                  {selected.rating != null ? ` · rating ${selected.rating}` : ""}
+                  {selected.legacyRatingId != null ? ` · legacy rating ${selected.legacyRatingId}` : ""}
+                </p>
+                <h3>Original text</h3>
+                <pre class="testimonial-admin__original">{selected.originalQuote}</pre>
+                <p class="testimonial-admin__history">
+                  Legacy history, not publication:
+                  Show {selected.legacyShow == null ? "unknown" : selected.legacyShow ? "1" : "0"},
+                  Viewed {selected.legacyViewed == null ? "unknown" : selected.legacyViewed ? "1" : "0"},
+                  UseInEmail {selected.legacyUseInEmail == null ? "unknown" : selected.legacyUseInEmail ? "1" : "0"}.
+                </p>
+                <form id="testimonial-display-form" class="contact-form" data-id={selected.id}>
+                  <div class="contact-form__field">
+                    <label for="display-attribution">Display name</label>
+                    <input
+                      id="display-attribution"
+                      name="displayAttribution"
+                      maxlength="80"
+                      value={selected.displayAttribution ?? ""}
+                    />
+                  </div>
+                  <div class="contact-form__field">
+                    <label for="display-quote">Display quote</label>
+                    <textarea id="display-quote" name="displayQuote" maxlength="4000" rows="6">{selected.displayQuote ?? ""}</textarea>
+                  </div>
+                  <p>Leave both blank to show the original wording, with legacy HTML and links removed.</p>
+                  <button class="kbm-btn kbm-btn-primary" type="submit">Save display text</button>
+                </form>
+                <p>
+                  <button
+                    class="kbm-btn kbm-btn-accent"
+                    type="button"
+                    data-testimonial-active={selected.active ? "false" : "true"}
+                    data-testimonial-id={selected.id}
+                  >
+                    {selected.active ? "Inactivate" : "Activate"}
+                  </button>
+                </p>
+                <p class="testimonial-admin__status" data-detail-status role="status"></p>
+              </article>
+            ) : null
+          }
+
+          {
+            rows.length === 0 ? (
+              <p>No testimonials match this search.</p>
+            ) : (
+              <table class="testimonial-admin__table">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Quote</th>
+                    <th>Source</th>
+                    <th>Member</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {rows.map((row) => (
+                    <tr>
+                      <td><a href={listHref({ id: row.id })}>{row.displayAttribution || row.originalAttribution}</a></td>
+                      <td>{snippet(row)}</td>
+                      <td>{row.source.replaceAll("_", " ")}</td>
+                      <td>{memberLabel(row)}</td>
+                      <td>
+                        {row.active ? "Active" : "Inactive"}
+                        <button
+                          type="button"
+                          data-testimonial-active={row.active ? "false" : "true"}
+                          data-testimonial-id={row.id}
+                        >
+                          {row.active ? "Inactivate" : "Activate"}
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )
+          }
+
+          <p class="testimonial-admin__pager">
+            {page > 1 ? <a href={listHref({ page: page - 1 })}>Previous</a> : null}
+            <span>Page {page} of {pageCount}</span>
+            {page < pageCount ? <a href={listHref({ page: page + 1 })}>Next</a> : null}
+          </p>
+        </>
+      ) : null
+    }
+  </main>
+</Layout>
+
+<script>
+  import { fetchAdminJson } from "../../lib/admin/adminAuthClient";
+
+  async function patchTestimonial(id: string, body: Record<string, unknown>, status: HTMLElement | null) {
+    const result = await fetchAdminJson<{ ok: boolean; error?: string }>(`/api/admin/testimonials/${encodeURIComponent(id)}`, {
+      method: "PATCH",
+      body,
+    });
+    if (!result.ok || !result.data?.ok) {
+      if (status) status.textContent = result.data?.error || result.error || "Could not save.";
+      return;
+    }
+    window.location.reload();
+  }
+
+  document.querySelectorAll<HTMLButtonElement>("[data-testimonial-active]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const id = button.dataset.testimonialId || "";
+      const active = button.dataset.testimonialActive === "true";
+      const status = document.querySelector<HTMLElement>("[data-detail-status]");
+      void patchTestimonial(id, { active }, status);
+    });
+  });
+
+  document.getElementById("testimonial-display-form")?.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const form = event.currentTarget;
+    if (!(form instanceof HTMLFormElement)) return;
+    const data = new FormData(form);
+    const status = document.querySelector<HTMLElement>("[data-detail-status]");
+    void patchTestimonial(form.dataset.id || "", {
+      displayQuote: String(data.get("displayQuote") ?? ""),
+      displayAttribution: String(data.get("displayAttribution") ?? ""),
+    }, status);
+  });
+
+  document.getElementById("testimonial-add-form")?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const form = event.currentTarget;
+    if (!(form instanceof HTMLFormElement)) return;
+    const data = new FormData(form);
+    const status = document.querySelector<HTMLElement>("[data-add-status]");
+    const result = await fetchAdminJson<{ ok: boolean; error?: string }>("/api/admin/testimonials", {
+      method: "POST",
+      body: {
+        attribution: String(data.get("attribution") ?? ""),
+        quote: String(data.get("quote") ?? ""),
+        reviewDate: String(data.get("reviewDate") ?? ""),
+      },
+    });
+    if (!result.ok || !result.data?.ok) {
+      if (status) status.textContent = result.data?.error || result.error || "Could not save.";
+      return;
+    }
+    window.location.href = "/admin/testimonials?status=inactive";
+  });
+</script>
+
+<style>
+  .testimonial-admin__filters,
+  .testimonial-admin__pager {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    align-items: end;
+  }
+  .testimonial-admin__table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .testimonial-admin__table th,
+  .testimonial-admin__table td {
+    text-align: left;
+    vertical-align: top;
+    padding: 0.55rem 0.75rem 0.55rem 0;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  }
+  .testimonial-admin__original {
+    white-space: pre-wrap;
+    font: inherit;
+    margin: 0;
+  }
+  .testimonial-admin__detail,
+  .testimonial-admin__add {
+    margin: 1.25rem 0;
+    padding: 1rem;
+    border: 1px solid #d6dbc9;
+    border-radius: 1rem;
+    background: #fff;
+  }
+  .testimonial-admin__history {
+    color: #4d5a48;
+  }
+</style>

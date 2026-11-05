@@ -1,0 +1,148 @@
+import { readFileSync } from "node:fs";
+import { describe, expect, it } from "vitest";
+import { isolatedLocalTestimonialDatabase } from "./testimonialDatabase";
+import { resolveLegacyImportDestination } from "./legacyImportTarget";
+import { resolveTestimonialConnection } from "./testimonialQuery";
+import { summarizeLegacyReviews } from "./legacyReviewImport";
+import { parseReviewsCsv } from "./parseReviewsCsv";
+import { testimonialPlainText } from "./testimonialPlainText";
+import { memberSubmissionAllowed, parseDisplayCorrection, parseTestimonialDraft } from "./testimonialDraft";
+import {
+  LEGACY_IMPORT_PRESERVED_COLUMNS,
+  legacyImportUpsertSql,
+} from "./testimonialRules";
+import { PUBLIC_TESTIMONIAL_SQL } from "./testimonialStore";
+
+describe("testimonial publication rules", () => {
+  it("removes legacy HTML and links before public display", () => {
+    const text = testimonialPlainText(
+      'Thank you for the<a href="/challenge/103/ultimate-brother-workshop"> Brother course</a>. See https://www.knititnow.com/v/857 <b>today</b>.',
+    );
+    expect(text).toBe("Thank you for the Brother course. See today.");
+    expect(text).not.toMatch(/<|https?:/);
+  });
+
+  it("keeps inactive rows off the public query and hides member ids", () => {
+    expect(PUBLIC_TESTIMONIAL_SQL).toMatch(/WHERE active = TRUE/);
+    expect(PUBLIC_TESTIMONIAL_SQL).not.toMatch(/legacy_member_id|memberstack_member_id|email/i);
+  });
+
+  it("does not let a repeat import change activation or display edits", () => {
+    const sql = legacyImportUpsertSql();
+    expect(sql).toMatch(/'legacy_import', FALSE/);
+    const update = sql.split("DO UPDATE SET")[1] ?? "";
+    for (const column of LEGACY_IMPORT_PRESERVED_COLUMNS) {
+      expect(update).not.toContain(`${column} = EXCLUDED.${column}`);
+    }
+    expect(update).toContain("original_quote = EXCLUDED.original_quote");
+    expect(update).toContain("legacy_member_id = EXCLUDED.legacy_member_id");
+    expect(update).toContain("legacy_show = EXCLUDED.legacy_show");
+  });
+
+  it("keeps a remote testimonial override off the shared database", () => {
+    expect(resolveTestimonialConnection({}).mode).toBe("shared");
+    expect(
+      resolveTestimonialConnection({
+        TESTIMONIALS_DATABASE_URL: "postgresql://postgres:secret@aws-0-us-west-1.pooler.supabase.com:5432/postgres",
+      }).mode,
+    ).toBe("refused");
+    expect(
+      resolveTestimonialConnection({
+        TESTIMONIALS_DATABASE_URL: "postgresql://postgres:secret@127.0.0.1:54329/knititnow_testimonials",
+      }).mode,
+    ).toBe("local");
+  });
+
+  it("refuses schema changes on the shared Supabase database", () => {
+    const shared = isolatedLocalTestimonialDatabase(
+      "postgresql://postgres:secret@aws-0-us-west-1.pooler.supabase.com:5432/postgres",
+    );
+    expect(shared.ok).toBe(false);
+    const local = isolatedLocalTestimonialDatabase("postgresql://postgres:secret@127.0.0.1:5432/watson");
+    expect(local.ok).toBe(true);
+  });
+
+  it("writes to the configured Watson database only when that target is applied", () => {
+    const pooler = "postgresql://postgres:secret@aws-0-us-west-1.pooler.supabase.com:5432/postgres";
+    const local = "postgresql://postgres:secret@127.0.0.1:54329/knititnow_testimonials";
+    const plainApply = resolveLegacyImportDestination({
+      apply: true,
+      target: null,
+      localUrl: pooler,
+      watsonUrl: pooler,
+    });
+    expect(plainApply.ok).toBe(false);
+    const namedOnly = resolveLegacyImportDestination({
+      apply: false,
+      target: "configured-watson",
+      localUrl: local,
+      watsonUrl: pooler,
+    });
+    expect(namedOnly.ok && namedOnly.write).toBe(false);
+    const namedApply = resolveLegacyImportDestination({
+      apply: true,
+      target: "configured-watson",
+      localUrl: local,
+      watsonUrl: pooler,
+    });
+    expect(namedApply.ok && namedApply.write).toBe(true);
+    if (namedApply.ok && namedApply.write) expect(namedApply.url).toBe(pooler);
+    const localApply = resolveLegacyImportDestination({
+      apply: true,
+      target: null,
+      localUrl: local,
+      watsonUrl: pooler,
+    });
+    expect(localApply.ok && localApply.write).toBe(true);
+    if (localApply.ok && localApply.write) expect(localApply.url).toBe(local);
+  });
+
+  it("keeps duplicate legacy rows and missing member ids", () => {
+    const summary = summarizeLegacyReviews(
+      parseReviewsCsv(
+        [
+          "ratingid,Rating,Consumer,Dateadd,Description,Show,Memberid,Viewed,UseInEmail",
+          '1,10,Ada,2020-01-01,Hello from Ada,1,NULL,1,0',
+          '2,10,Ada,2020-01-02,Hello from Ada,0,ABC-1,0,1',
+        ].join("\n"),
+      ),
+    );
+    expect(summary.rows).toBe(2);
+    expect(summary.missingMemberId).toBe(1);
+    expect(summary.duplicateQuoteGroups).toBe(1);
+    expect(summary.inactiveOnInsert).toBe(true);
+  });
+
+  it("ignores a browser-supplied member id and requires agreement separately", () => {
+    const parsed = parseTestimonialDraft({
+      attribution: "Ada",
+      quote: "This is a long enough note about machine knitting.",
+      memberstackMemberId: "mem_from_browser",
+      email: "ada@example.com",
+      active: true,
+    });
+    expect(parsed.ok).toBe(true);
+    if (parsed.ok) {
+      expect(parsed.value).not.toHaveProperty("memberstackMemberId");
+      expect(parsed.value.attribution).toBe("Ada");
+    }
+    expect(memberSubmissionAllowed(3)).toBe(false);
+    expect(memberSubmissionAllowed(2)).toBe(true);
+  });
+
+  it("requires both display fields, or neither, so the original text remains available", () => {
+    expect(parseDisplayCorrection({ displayQuote: "Edited", displayAttribution: "" }).ok).toBe(false);
+    const cleared = parseDisplayCorrection({ displayQuote: "  ", displayAttribution: "" });
+    expect(cleared).toEqual({ ok: true, displayQuote: null, displayAttribution: null });
+  });
+
+  it("does not publish testimonials from the membership page", () => {
+    const membership = readFileSync("src/pages/membership.astro", "utf8");
+    const page = readFileSync("src/pages/testimonials.astro", "utf8");
+    expect(membership).toContain("Wisdom from Fellow Knitters");
+    expect(membership).not.toContain("What members say");
+    expect(page).toContain("listPublicTestimonials");
+    expect(page).not.toContain("set:html");
+    expect(readFileSync("src/pages/account.astro", "utf8")).toContain('href="/testimonials/share"');
+  });
+});
