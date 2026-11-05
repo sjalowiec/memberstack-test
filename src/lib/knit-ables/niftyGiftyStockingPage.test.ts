@@ -78,9 +78,11 @@ describe("Nifty Gifty Stocking Knit-able", () => {
     expect(pageSource).toContain('loading="eager"');
   });
 
-  it("puts the pattern link under the photo, then yarn, ribbing, and motif planning", () => {
+  it("places the pattern and yarn beside the photo, then ribbing and motif planning", () => {
     const markup = pageSource.slice(pageSource.indexOf("<article>"));
+    const intro = markup.indexOf("knit-able-hero__intro");
     const photo = markup.indexOf("knit-able-hero__figure");
+    const offers = markup.indexOf("knit-able-hero__offers");
     const disclosure = markup.indexOf("NIFTY_GIFTY_STOCKING_AFFILIATE_DISCLOSURE");
     const patternNote = markup.indexOf("NIFTY_GIFTY_STOCKING_PATTERN_NOTE");
     const patternLink = markup.indexOf("NIFTY_GIFTY_STOCKING_PATTERN_URL");
@@ -89,16 +91,22 @@ describe("Nifty Gifty Stocking Knit-able", () => {
     const motif = markup.indexOf("knit-able-motif-heading");
     const graphPaper = markup.indexOf("NIFTY_GIFTY_STOCKING_GRAPH_PAPER_HREF");
     const gallery = markup.indexOf("knit-able-trees");
-    expect(photo).toBeGreaterThan(-1);
-    expect(disclosure).toBeGreaterThan(photo);
+    expect(intro).toBeGreaterThan(-1);
+    expect(photo).toBeGreaterThan(intro);
+    expect(offers).toBeGreaterThan(photo);
+    expect(disclosure).toBeGreaterThan(offers);
     expect(patternNote).toBeGreaterThan(disclosure);
     expect(patternLink).toBeGreaterThan(patternNote);
     expect(yarn).toBeGreaterThan(patternLink);
+    expect(offers).toBeLessThan(rib);
     expect(rib).toBeGreaterThan(yarn);
     expect(motif).toBeGreaterThan(rib);
     expect(graphPaper).toBeGreaterThan(motif);
     expect(gallery).toBeGreaterThan(graphPaper);
     expect(markup.slice(motif, gallery)).toContain("NIFTY_GIFTY_STOCKING_MOTIF_INTRO");
+    expect(pageSource).toContain('"photo intro"');
+    expect(pageSource).toContain('"photo offers"');
+    expect(pageSource).toContain("height: auto");
     expect(pageSource).toContain('target="_blank"');
     expect(pageSource).toContain("rel={NIFTY_GIFTY_STOCKING_AFFILIATE_REL}");
     expect(pageSource).not.toContain("stocking body instructions");
@@ -138,8 +146,9 @@ describe("Nifty Gifty Stocking Knit-able", () => {
     expect(NIFTY_GIFTY_STOCKING_GRAPH_PAPER_LABEL).toBe(
       "Open the free knitting graph paper tool",
     );
-    expect(NIFTY_GIFTY_STOCKING_TREE_INTRO).toContain("inspiration");
-    expect(NIFTY_GIFTY_STOCKING_TREE_INTRO).toContain("stitch and row counts");
+    expect(NIFTY_GIFTY_STOCKING_TREE_INTRO).toBe(
+      "Choose a Christmas tree for your stocking. Click a design to visit its Stitch Library page. Members can download the DesignaKnit file and a full-size punch card template.",
+    );
     expect(pageSource).toContain("object-fit: contain");
     expect(pageSource).toContain("repeat(2, minmax(0, 1fr))");
     expect(pageSource).toContain("minmax(150px, 1fr)");
