@@ -1,5 +1,6 @@
 ---
 export const prerender = false;
+import "../styles/testimonials-public.css";
 import Layout from "../layouts/Layout.astro";
 import { listPublicTestimonials } from "../lib/testimonials/testimonialStore";
 import type { PublicTestimonial } from "../lib/testimonials/testimonialRules";
@@ -18,28 +19,34 @@ function yearLabel(reviewDate: string | null): string | null {
 
 <Layout
   title="What Knitters Say | Knit it Now"
-  description="Notes from Knit It Now members, in their own words."
+  description="Every knitter has a story. Here’s what learning, trying, and succeeding with Knit It Now has meant to them."
   bodyClass="page--tight-header"
 >
   <main class="testimonials-page page-wrap">
     <header class="testimonials-page__header">
       <h1>What Knitters Say</h1>
-      <p>Notes from machine knitters, published after review.</p>
+      <p class="testimonials-page__intro">
+        Every knitter has a story. Here’s what learning, trying, and succeeding with Knit It Now has meant to them.
+      </p>
     </header>
 
-    <p data-ms-content="members">
+    <p class="testimonials-page__share">
       <a class="kbm-btn kbm-btn-outline" href="/testimonials/share">Share your experience</a>
     </p>
 
     {
       testimonials.length === 0 ? (
-        <p>No testimonials are published yet.</p>
+        <p class="testimonials-page__intro">No testimonials are published yet.</p>
       ) : (
         <div class="testimonials-page__list">
           {testimonials.map((item) => (
             <article class="kbm-card testimonials-page__card">
               <blockquote>
-                {item.quote.split("\n").filter((line) => line.length > 0).map((line) => <p>{line}</p>)}
+                <p class="testimonials-page__quote">
+                  {item.before}
+                  {item.highlight ? <span class="testimonials-page__highlight">{item.highlight}</span> : null}
+                  {item.after}
+                </p>
               </blockquote>
               <p class="testimonials-page__name">
                 {item.attribution}
@@ -50,44 +57,9 @@ function yearLabel(reviewDate: string | null): string | null {
         </div>
       )
     }
+
+    <p class="testimonials-page__share testimonials-page__share--bottom">
+      <a class="kbm-btn kbm-btn-outline" href="/testimonials/share">Share your experience</a>
+    </p>
   </main>
 </Layout>
-
-<style>
-  .testimonials-page.page-wrap {
-    padding-top: 8px;
-    max-width: 46rem;
-  }
-  .testimonials-page__header {
-    text-align: center;
-    margin-bottom: 1.5rem;
-  }
-  .testimonials-page__header h1 {
-    margin-bottom: 0.5rem;
-  }
-  .testimonials-page__list {
-    display: grid;
-    gap: 1rem;
-  }
-  .testimonials-page__card {
-    cursor: default;
-    padding: 1.5rem;
-  }
-  .testimonials-page__card:hover {
-    transform: none;
-  }
-  .testimonials-page__card blockquote {
-    margin: 0;
-  }
-  .testimonials-page__card p {
-    margin: 0 0 0.65rem;
-    font-weight: 400;
-    color: #4d5a48;
-    line-height: 1.55;
-  }
-  .testimonials-page__name {
-    margin: 0.9rem 0 0;
-    font-weight: 600;
-    color: #4d5a48;
-  }
-</style>

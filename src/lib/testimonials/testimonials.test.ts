@@ -5,8 +5,8 @@ import { resolveLegacyImportDestination } from "./legacyImportTarget";
 import { resolveTestimonialConnection } from "./testimonialQuery";
 import { summarizeLegacyReviews } from "./legacyReviewImport";
 import { parseReviewsCsv } from "./parseReviewsCsv";
-import { testimonialPlainText, testimonialDeleteConfirmation } from "./testimonialPlainText";
-import { memberSubmissionAllowed, parseDisplayCorrection, parseTestimonialDraft } from "./testimonialDraft";
+import { testimonialPlainText, testimonialDeleteConfirmation, quoteWithHighlight } from "./testimonialPlainText";
+import { memberSubmissionAllowed, parseDisplayCorrection, parseTestimonialDraft, HIGHLIGHT_RESELECT_MESSAGE, highlightWasInvalidated } from "./testimonialDraft";
 import {
   LEGACY_IMPORT_PRESERVED_COLUMNS,
   legacyImportUpsertSql,
@@ -159,7 +159,52 @@ describe("testimonial publication rules", () => {
   it("requires both display fields, or neither, so the original text remains available", () => {
     expect(parseDisplayCorrection({ displayQuote: "Edited", displayAttribution: "" }).ok).toBe(false);
     const cleared = parseDisplayCorrection({ displayQuote: "  ", displayAttribution: "" });
-    expect(cleared).toEqual({ ok: true, displayQuote: null, displayAttribution: null });
+    expect(cleared).toEqual({ ok: true, displayQuote: null, displayAttribution: null, highlight: null });
+  });
+
+  it("keeps one exact highlight, including a repeated word and punctuation", () => {
+    const quote = "I love this class. I love the clear photos!";
+    const second = quote.lastIndexOf("love");
+    const saved = parseDisplayCorrection({
+      displayQuote: quote,
+      displayAttribution: "Ada",
+      highlight: { start: second, end: second + "love the clear photos!".length },
+    });
+    expect(saved.ok).toBe(true);
+    if (saved.ok) {
+      expect(quote.slice(saved.highlight?.start, saved.highlight?.end)).toBe("love the clear photos!");
+      expect(saved.highlight?.start).toBe(second);
+    }
+    const parts = quoteWithHighlight(quote, second, second + 4);
+    expect(parts.highlight).toBe("love");
+    expect(`${parts.before}${parts.highlight}${parts.after}`).toBe(quote);
+    expect(parts.before.endsWith("I ")).toBe(true);
+  });
+
+  it("asks for a new highlight when the saved selection no longer matches", () => {
+    const outside = parseDisplayCorrection({
+      displayQuote: "Short note.",
+      displayAttribution: "Ada",
+      highlight: { start: 2, end: 40 },
+    });
+    expect(outside).toEqual({ ok: false, error: HIGHLIGHT_RESELECT_MESSAGE });
+    expect(quoteWithHighlight("Short note.", 2, 40).highlight).toBeNull();
+    expect(
+      highlightWasInvalidated(
+        "I love the lessons.",
+        { start: 2, end: 6 },
+        "I lost the lessons.",
+        { start: 2, end: 6 },
+      ),
+    ).toBe(true);
+    expect(
+      highlightWasInvalidated(
+        "I love the lessons.",
+        { start: 2, end: 6 },
+        "I love the lessons now.",
+        { start: 2, end: 6 },
+      ),
+    ).toBe(false);
   });
 
   it("does not publish testimonials from the membership page", () => {
@@ -167,6 +212,8 @@ describe("testimonial publication rules", () => {
     const page = readFileSync("src/pages/testimonials.astro", "utf8");
     expect(membership).toContain("Wisdom from Fellow Knitters");
     expect(membership).not.toContain("What members say");
+    expect(page).toContain("What Knitters Say");
+    expect(page).toContain("Every knitter has a story.");
     expect(page).toContain("listPublicTestimonials");
     expect(page).not.toContain("set:html");
     expect(readFileSync("src/pages/account.astro", "utf8")).toContain('href="/testimonials/share"');
