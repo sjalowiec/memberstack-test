@@ -37,3 +37,15 @@ export function publicTestimonialCopy(input: {
     attribution: testimonialPlainText(attributionSource),
   };
 }
+
+/** One-line preview for the admin delete confirmation. */
+export function shortQuotePreview(quote: string, limit = 80): string {
+  const plain = testimonialPlainText(quote).replace(/\s+/g, " ").trim();
+  if (plain.length <= limit) return plain;
+  return `${plain.slice(0, limit - 1).trimEnd()}…`;
+}
+
+export function testimonialDeleteConfirmation(attribution: string, quote: string): string {
+  const name = testimonialPlainText(attribution).replace(/\s+/g, " ").trim() || "this member";
+  return `Delete the testimonial from ${name}?\n\n“${shortQuotePreview(quote)}”`;
+}

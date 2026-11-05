@@ -1,7 +1,7 @@
 ---
 export const prerender = false;
 import Layout from "../../layouts/Layout.astro";
-import { publicTestimonialCopy } from "../../lib/testimonials/testimonialPlainText";
+import { publicTestimonialCopy, testimonialDeleteConfirmation } from "../../lib/testimonials/testimonialPlainText";
 import {
   getTestimonialForAdmin,
   listTestimonialsForAdmin,
@@ -163,6 +163,17 @@ function memberLabel(row: TestimonialRecord): string {
                   >
                     {selected.active ? "Inactivate" : "Activate"}
                   </button>
+                  <button
+                    class="kbm-btn kbm-btn-outline"
+                    type="button"
+                    data-testimonial-delete={selected.id}
+                    data-delete-confirm={testimonialDeleteConfirmation(
+                      selected.originalAttribution,
+                      selected.originalQuote,
+                    )}
+                  >
+                    Delete
+                  </button>
                 </p>
                 <p class="testimonial-admin__status" data-detail-status role="status"></p>
               </article>
@@ -242,6 +253,26 @@ function memberLabel(row: TestimonialRecord): string {
     });
   });
 
+  document.querySelectorAll<HTMLButtonElement>("[data-testimonial-delete]").forEach((button) => {
+    button.addEventListener("click", async () => {
+      const id = button.dataset.testimonialDelete || "";
+      const confirmation = button.dataset.deleteConfirm || "Delete this testimonial?";
+      if (!id || !window.confirm(confirmation)) return;
+      const status = document.querySelector<HTMLElement>("[data-detail-status]");
+      const result = await fetchAdminJson<{ ok: boolean; error?: string }>(
+        `/api/admin/testimonials/${encodeURIComponent(id)}`,
+        { method: "DELETE" },
+      );
+      if (!result.ok || !result.data?.ok) {
+        if (status) status.textContent = result.data?.error || result.error || "Could not delete.";
+        return;
+      }
+      const url = new URL(window.location.href);
+      url.searchParams.delete("id");
+      window.location.href = `${url.pathname}${url.search}`;
+    });
+  });
+
   document.getElementById("testimonial-display-form")?.addEventListener("submit", (event) => {
     event.preventDefault();
     const form = event.currentTarget;
@@ -308,7 +339,7 @@ function memberLabel(row: TestimonialRecord): string {
     border-radius: 1rem;
     background: #fff;
   }
-  .testimonial-admin__history {
-    color: #4d5a48;
+  .testimonial-admin__detail p .kbm-btn + .kbm-btn {
+    margin-left: 0.75rem;
   }
 </style>

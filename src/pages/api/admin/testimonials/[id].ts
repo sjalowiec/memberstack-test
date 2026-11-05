@@ -2,6 +2,7 @@ import type { APIRoute } from "astro";
 import { adminAuthErrorBody, requireAdminForRequest } from "../../../../lib/admin/requireAdminRequest";
 import { parseDisplayCorrection } from "../../../../lib/testimonials/testimonialDraft";
 import {
+  deleteTestimonial,
   getTestimonialForAdmin,
   setTestimonialActive,
   updateTestimonialDisplay,
@@ -57,6 +58,21 @@ export const PATCH: APIRoute = async ({ params, request, cookies }) => {
     return json({ ok: true, testimonial });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Could not update the testimonial.";
+    return json({ ok: false, error: message }, 500);
+  }
+};
+
+export const DELETE: APIRoute = async ({ params, request, cookies }) => {
+  const auth = await requireAdminForRequest(request, cookies);
+  if (!auth.ok) return json(adminAuthErrorBody(auth), auth.status);
+  const id = params.id?.trim() || "";
+  if (!id) return json({ ok: false, error: "Missing testimonial." }, 400);
+  try {
+    const removed = await deleteTestimonial(id);
+    if (!removed) return json({ ok: false, error: "Testimonial not found." }, 404);
+    return json({ ok: true });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Could not delete the testimonial.";
     return json({ ok: false, error: message }, 500);
   }
 };

@@ -5,6 +5,7 @@ const listTestimonialsForAdmin = vi.hoisted(() => vi.fn());
 const createAdminTestimonial = vi.hoisted(() => vi.fn());
 const setTestimonialActive = vi.hoisted(() => vi.fn());
 const updateTestimonialDisplay = vi.hoisted(() => vi.fn());
+const deleteTestimonial = vi.hoisted(() => vi.fn());
 
 vi.mock("../../../../lib/admin/requireAdminRequest", async (importOriginal) => {
   const actual = await importOriginal<typeof import("../../../../lib/admin/requireAdminRequest")>();
@@ -16,11 +17,12 @@ vi.mock("../../../../lib/testimonials/testimonialStore", () => ({
   createAdminTestimonial,
   setTestimonialActive,
   updateTestimonialDisplay,
+  deleteTestimonial,
   getTestimonialForAdmin: vi.fn(),
 }));
 
 import { GET, POST } from "./index";
-import { PATCH } from "./[id]";
+import { PATCH, DELETE } from "./[id]";
 
 const cookies = { get: () => undefined };
 
@@ -31,6 +33,7 @@ describe("testimonial admin API", () => {
     createAdminTestimonial.mockReset();
     setTestimonialActive.mockReset();
     updateTestimonialDisplay.mockReset();
+    deleteTestimonial.mockReset();
   });
 
   it("rejects a signed-out reader before loading testimonials", async () => {
@@ -109,5 +112,36 @@ describe("testimonial admin API", () => {
     expect(response.status).toBe(200);
     expect(setTestimonialActive).toHaveBeenCalledWith("row-1", false);
     expect(updateTestimonialDisplay).not.toHaveBeenCalled();
+  });
+
+  it("rejects a non-admin delete before removing a testimonial", async () => {
+    requireAdminForRequest.mockResolvedValue({
+      ok: false,
+      status: 403,
+      error: "This account does not have admin access.",
+    });
+    const response = await DELETE({
+      params: { id: "row-1" },
+      request: new Request("https://knititnow.test/api/admin/testimonials/row-1", { method: "DELETE" }),
+      cookies,
+    } as never);
+    expect(response.status).toBe(403);
+    expect(deleteTestimonial).not.toHaveBeenCalled();
+  });
+
+  it("deletes one testimonial for an admin", async () => {
+    requireAdminForRequest.mockResolvedValue({
+      ok: true,
+      member: { id: "mem_admin", email: null },
+      mode: "verified",
+    });
+    deleteTestimonial.mockResolvedValue({ legacyRatingId: 572 });
+    const response = await DELETE({
+      params: { id: "row-1" },
+      request: new Request("https://knititnow.test/api/admin/testimonials/row-1", { method: "DELETE" }),
+      cookies,
+    } as never);
+    expect(response.status).toBe(200);
+    expect(deleteTestimonial).toHaveBeenCalledWith("row-1");
   });
 });
