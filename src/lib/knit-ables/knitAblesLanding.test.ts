@@ -14,6 +14,12 @@ import {
   CAP_SLEEVE_TANK_TITLE,
 } from "./capSleeveTank";
 import {
+  NIFTY_GIFTY_STOCKING_CARD_COPY,
+  NIFTY_GIFTY_STOCKING_IMAGES,
+  NIFTY_GIFTY_STOCKING_PATH,
+  NIFTY_GIFTY_STOCKING_TITLE,
+} from "./niftyGiftyStocking";
+import {
   CHRISTMAS_STOCKINGS_YOUR_WAY_CARD_COPY,
   CHRISTMAS_STOCKINGS_YOUR_WAY_IMAGES,
   CHRISTMAS_STOCKINGS_YOUR_WAY_PATH,
@@ -102,7 +108,7 @@ describe("Knit-ables landing page cards", () => {
     expect(landingSource).toContain("publicCards.map");
     expect(landingSource).toContain("knit-ables-card-list");
     expect(landingSource).toContain("knit-ables-feature-card");
-    expect(KNIT_ABLES_CARDS).toHaveLength(7);
+    expect(KNIT_ABLES_CARDS).toHaveLength(8);
 
     const christmasStockings = KNIT_ABLES_CARDS[0];
     expect(christmasStockings?.href).toBe(CHRISTMAS_STOCKINGS_YOUR_WAY_PATH);
@@ -118,7 +124,19 @@ describe("Knit-ables landing page cards", () => {
       true,
     );
 
-    const rhythmicColourTop = KNIT_ABLES_CARDS[1];
+    const niftyGiftyStocking = KNIT_ABLES_CARDS[1];
+    expect(niftyGiftyStocking?.href).toBe(NIFTY_GIFTY_STOCKING_PATH);
+    expect(niftyGiftyStocking?.href).toBe("/knit-ables/nifty-gifty-stocking");
+    expect(niftyGiftyStocking?.title).toBe(NIFTY_GIFTY_STOCKING_TITLE);
+    expect(niftyGiftyStocking?.title).toBe("Nifty Gifty Stocking");
+    expect(niftyGiftyStocking?.description).toBe(NIFTY_GIFTY_STOCKING_CARD_COPY);
+    expect(niftyGiftyStocking?.image.src).toBe(NIFTY_GIFTY_STOCKING_IMAGES.hero.src);
+    expect(niftyGiftyStocking?.image.src).toBe(
+      "/images/knit-ables/christmas-stockings/nifty-grifty-stocking.png",
+    );
+    expect(existsSync(resolve(`public${NIFTY_GIFTY_STOCKING_IMAGES.hero.src}`))).toBe(true);
+
+    const rhythmicColourTop = KNIT_ABLES_CARDS[2];
     expect(rhythmicColourTop?.href).toBe(RHYTHMIC_COLOUR_TOP_PATH);
     expect(rhythmicColourTop?.href).toBe("/knit-ables/rhythmic-colour-top");
     expect(rhythmicColourTop?.title).toBe(RHYTHMIC_COLOUR_TOP_TITLE);
@@ -128,7 +146,7 @@ describe("Knit-ables landing page cards", () => {
     expect(rhythmicColourTop?.image.src).toBe("/images/knit-ables/rhythmic-color.jpg");
     expect(existsSync(resolve(`public${RHYTHMIC_COLOUR_TOP_IMAGES.hero.src}`))).toBe(true);
 
-    const vestInShow = KNIT_ABLES_CARDS[2];
+    const vestInShow = KNIT_ABLES_CARDS[3];
     expect(vestInShow?.href).toBe(VEST_IN_SHOW_PATH);
     expect(vestInShow?.href).toBe("/knit-ables/vest-in-show");
     expect(vestInShow?.title).toBe(VEST_IN_SHOW_TITLE);
@@ -137,7 +155,7 @@ describe("Knit-ables landing page cards", () => {
     expect(vestInShow?.image.src).toBe(VEST_IN_SHOW_IMAGES.hero.src);
     expect(existsSync(resolve(`public${VEST_IN_SHOW_IMAGES.hero.src}`))).toBe(true);
 
-    const cocoLocoTank = KNIT_ABLES_CARDS[3];
+    const cocoLocoTank = KNIT_ABLES_CARDS[4];
     expect(cocoLocoTank?.href).toBe(COCO_LOCO_TANK_PATH);
     expect(cocoLocoTank?.href).toBe("/knit-ables/coco-loco-tank");
     expect(cocoLocoTank?.title).toBe(COCO_LOCO_TANK_TITLE);
@@ -147,7 +165,7 @@ describe("Knit-ables landing page cards", () => {
     expect(cocoLocoTank?.image.src).toBe("/images/knit-ables/coco-loco-tank.jpg");
     expect(existsSync(resolve(`public${COCO_LOCO_TANK_IMAGES.hero.src}`))).toBe(true);
 
-    const capSleeveTank = KNIT_ABLES_CARDS[4];
+    const capSleeveTank = KNIT_ABLES_CARDS[5];
     expect(capSleeveTank?.href).toBe(CAP_SLEEVE_TANK_PATH);
     expect(capSleeveTank?.href).toBe("/knit-ables/cap-sleeve-tank");
     expect(capSleeveTank?.title).toBe(CAP_SLEEVE_TANK_TITLE);
@@ -155,7 +173,7 @@ describe("Knit-ables landing page cards", () => {
     expect(capSleeveTank?.image.src).toBe(CAP_SLEEVE_TANK_IMAGES.hero.src);
     expect(existsSync(resolve(`public${CAP_SLEEVE_TANK_IMAGES.hero.src}`))).toBe(true);
 
-    const teenageKicks = KNIT_ABLES_CARDS[5];
+    const teenageKicks = KNIT_ABLES_CARDS[6];
     expect(teenageKicks?.href).toBe(TEENAGE_KICKS_SOCKS_PATH);
     expect(teenageKicks?.href).toBe("/knit-ables/teenage-kicks-socks");
     expect(teenageKicks?.title).toBe("Colorful Self-Striping Socks");
@@ -165,7 +183,7 @@ describe("Knit-ables landing page cards", () => {
     expect(teenageKicks?.image.src).toBe(TEENAGE_KICKS_IMAGES.hero.src);
     expect(existsSync(resolve(`public${TEENAGE_KICKS_IMAGES.hero.src}`))).toBe(true);
 
-    const worstedSocks = KNIT_ABLES_CARDS[6];
+    const worstedSocks = KNIT_ABLES_CARDS[7];
     expect(worstedSocks?.href).toBe(WORSTED_COLOR_BLOCK_SOCKS_PATH);
     expect(worstedSocks?.href).toBe("/knit-ables/worsted-color-block-socks");
     expect(worstedSocks?.title).toBe(WORSTED_COLOR_BLOCK_SOCKS_TITLE);
