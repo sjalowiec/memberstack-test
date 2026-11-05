@@ -1,0 +1,113 @@
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+const requireAdminForRequest = vi.hoisted(() => vi.fn());
+const listTestimonialsForAdmin = vi.hoisted(() => vi.fn());
+const createAdminTestimonial = vi.hoisted(() => vi.fn());
+const setTestimonialActive = vi.hoisted(() => vi.fn());
+const updateTestimonialDisplay = vi.hoisted(() => vi.fn());
+
+vi.mock("../../../../lib/admin/requireAdminRequest", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../../../../lib/admin/requireAdminRequest")>();
+  return { ...actual, requireAdminForRequest };
+});
+
+vi.mock("../../../../lib/testimonials/testimonialStore", () => ({
+  listTestimonialsForAdmin,
+  createAdminTestimonial,
+  setTestimonialActive,
+  updateTestimonialDisplay,
+  getTestimonialForAdmin: vi.fn(),
+}));
+
+import { GET, POST } from "./index";
+import { PATCH } from "./[id]";
+
+const cookies = { get: () => undefined };
+
+describe("testimonial admin API", () => {
+  beforeEach(() => {
+    requireAdminForRequest.mockReset();
+    listTestimonialsForAdmin.mockReset();
+    createAdminTestimonial.mockReset();
+    setTestimonialActive.mockReset();
+    updateTestimonialDisplay.mockReset();
+  });
+
+  it("rejects a signed-out reader before loading testimonials", async () => {
+    requireAdminForRequest.mockResolvedValue({ ok: false, status: 401, error: "Sign in required." });
+    const response = await GET({
+      request: new Request("https://knititnow.test/api/admin/testimonials"),
+      cookies,
+    } as never);
+    expect(response.status).toBe(401);
+    expect(listTestimonialsForAdmin).not.toHaveBeenCalled();
+  });
+
+  it("rejects a non-admin activation", async () => {
+    requireAdminForRequest.mockResolvedValue({
+      ok: false,
+      status: 403,
+      error: "This account does not have admin access.",
+    });
+    const response = await PATCH({
+      params: { id: "row-1" },
+      request: new Request("https://knititnow.test/api/admin/testimonials/row-1", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ active: true }),
+      }),
+      cookies,
+    } as never);
+    expect(response.status).toBe(403);
+    expect(setTestimonialActive).not.toHaveBeenCalled();
+  });
+
+  it("saves an email testimonial as inactive", async () => {
+    requireAdminForRequest.mockResolvedValue({
+      ok: true,
+      member: { id: "mem_admin", email: "admin@example.com" },
+      mode: "verified",
+    });
+    createAdminTestimonial.mockResolvedValue({ id: "row-2", active: false });
+    const response = await POST({
+      request: new Request("https://knititnow.test/api/admin/testimonials", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          attribution: "Pat",
+          quote: "I sent this note by email after finishing a sweater.",
+          active: true,
+        }),
+      }),
+      cookies,
+    } as never);
+    expect(response.status).toBe(201);
+    expect(createAdminTestimonial).toHaveBeenCalledWith({
+      attribution: "Pat",
+      quote: "I sent this note by email after finishing a sweater.",
+      reviewDate: null,
+      rating: null,
+    });
+  });
+
+  it("inactivates one testimonial without changing its words", async () => {
+    requireAdminForRequest.mockResolvedValue({
+      ok: true,
+      member: { id: "mem_admin", email: null },
+      mode: "verified",
+    });
+    setTestimonialActive.mockResolvedValue({ id: "row-1", active: false });
+    const response = await PATCH({
+      params: { id: "row-1" },
+      request: new Request("https://knititnow.test/api/admin/testimonials/row-1", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ active: false }),
+      }),
+      cookies,
+    } as never);
+    expect(response.status).toBe(200);
+    expect(setTestimonialActive).toHaveBeenCalledWith("row-1", false);
+    expect(updateTestimonialDisplay).not.toHaveBeenCalled();
+  });
+});

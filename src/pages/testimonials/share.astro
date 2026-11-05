@@ -1,0 +1,114 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import TurnstileWidget from "../../components/TurnstileWidget.astro";
+
+const title = "Share your experience | Knit it Now";
+const description = "Send a testimonial for Knit It Now to review before it is published.";
+---
+
+<Layout {title} {description} bodyClass="page--tight-header">
+  <main class="share-experience page-wrap">
+    <header>
+      <h1>Share your experience</h1>
+      <p>
+        Tell us what machine knitting with Knit It Now has been like. Your note stays private
+        until it is reviewed. If it is published, it can appear on the site with the name you enter here.
+      </p>
+    </header>
+
+    <div data-ms-content="!members">
+      <p>Log in to send a testimonial.</p>
+      <p><a href="#" data-ms-modal="login" data-ms-redirect="/testimonials/share">Log in</a></p>
+    </div>
+
+    <form id="share-experience-form" class="contact-form" data-ms-content="members">
+      <p class="share-experience__honeypot" aria-hidden="true">
+        <label for="share-bot-field">Company</label>
+        <input id="share-bot-field" name="bot-field" type="text" tabindex="-1" autocomplete="off" />
+      </p>
+      <div class="contact-form__field">
+        <label for="share-attribution">Name to display</label>
+        <input id="share-attribution" name="attribution" required maxlength="80" autocomplete="name" />
+      </div>
+      <div class="contact-form__field">
+        <label for="share-quote">Your testimonial</label>
+        <textarea id="share-quote" name="quote" required minlength="20" maxlength="4000" rows="8"></textarea>
+      </div>
+      <label class="share-experience__agree">
+        <input type="checkbox" name="agreement" required />
+        I agree that Knit It Now may show this testimonial publicly with the name I entered.
+      </label>
+      <TurnstileWidget id="share-experience-turnstile" />
+      <button class="contact-form__submit" type="submit">Send testimonial</button>
+      <p role="status" data-share-status></p>
+    </form>
+    <p><a href="/testimonials">Back to What Knitters Say</a></p>
+  </main>
+</Layout>
+
+<script>
+  import { getMembershipStatusAuthHeaders } from "../../lib/membership/membershipStatusClient";
+
+  const form = document.getElementById("share-experience-form");
+  form?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    if (!(form instanceof HTMLFormElement)) return;
+    const status = form.querySelector<HTMLElement>("[data-share-status]");
+    const data = new FormData(form);
+    const token = document.querySelector<HTMLTextAreaElement>(
+      "#share-experience-turnstile textarea[name='cf-turnstile-response'], #share-experience-turnstile input[name='cf-turnstile-response']",
+    )?.value
+      || document.querySelector<HTMLInputElement | HTMLTextAreaElement>("[name='cf-turnstile-response']")?.value
+      || "";
+    if (status) status.textContent = "";
+    const headers = await getMembershipStatusAuthHeaders();
+    if (!headers.Authorization) {
+      if (status) status.textContent = "Log in to send a testimonial.";
+      return;
+    }
+    const response = await fetch("/api/testimonials/submit", {
+      method: "POST",
+      headers: { ...headers, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        attribution: String(data.get("attribution") ?? ""),
+        quote: String(data.get("quote") ?? ""),
+        agreement: data.get("agreement") === "on",
+        "bot-field": String(data.get("bot-field") ?? ""),
+        turnstileToken: token,
+      }),
+    });
+    let body: { ok?: boolean; error?: string } = {};
+    try {
+      body = await response.json();
+    } catch {
+      body = {};
+    }
+    if (!response.ok || !body.ok) {
+      if (status) status.textContent = body.error || "Could not send the testimonial.";
+      return;
+    }
+    form.reset();
+    if (status) status.textContent = "Thank you. Your testimonial was received and is waiting for review.";
+  });
+</script>
+
+<style>
+  .share-experience.page-wrap {
+    padding-top: 8px;
+    max-width: 40rem;
+  }
+  .share-experience__honeypot {
+    position: absolute;
+    left: -10000px;
+    top: auto;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+  }
+  .share-experience__agree {
+    display: flex;
+    gap: 0.5rem;
+    align-items: flex-start;
+    margin: 0.75rem 0;
+  }
+</style>
