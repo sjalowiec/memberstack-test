@@ -5,6 +5,7 @@ const listTestimonialsForAdmin = vi.hoisted(() => vi.fn());
 const createAdminTestimonial = vi.hoisted(() => vi.fn());
 const setTestimonialActive = vi.hoisted(() => vi.fn());
 const updateTestimonialDisplay = vi.hoisted(() => vi.fn());
+const getTestimonialForAdmin = vi.hoisted(() => vi.fn());
 const deleteTestimonial = vi.hoisted(() => vi.fn());
 
 vi.mock("../../../../lib/admin/requireAdminRequest", async (importOriginal) => {
@@ -18,7 +19,7 @@ vi.mock("../../../../lib/testimonials/testimonialStore", () => ({
   setTestimonialActive,
   updateTestimonialDisplay,
   deleteTestimonial,
-  getTestimonialForAdmin: vi.fn(),
+  getTestimonialForAdmin,
 }));
 
 import { GET, POST } from "./index";
@@ -34,6 +35,7 @@ describe("testimonial admin API", () => {
     setTestimonialActive.mockReset();
     updateTestimonialDisplay.mockReset();
     deleteTestimonial.mockReset();
+    getTestimonialForAdmin.mockReset();
   });
 
   it("rejects a signed-out reader before loading testimonials", async () => {
@@ -143,5 +145,34 @@ describe("testimonial admin API", () => {
     } as never);
     expect(response.status).toBe(200);
     expect(deleteTestimonial).toHaveBeenCalledWith("row-1");
+  });
+
+  it("refuses a stale highlight instead of emphasizing different words", async () => {
+    requireAdminForRequest.mockResolvedValue({
+      ok: true,
+      member: { id: "mem_admin", email: null },
+      mode: "verified",
+    });
+    getTestimonialForAdmin.mockResolvedValue({
+      id: "row-1",
+      displayQuote: "I love the lessons.",
+      displayHighlightStart: 2,
+      displayHighlightEnd: 6,
+    });
+    const response = await PATCH({
+      params: { id: "row-1" },
+      request: new Request("https://knititnow.test/api/admin/testimonials/row-1", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          displayQuote: "I lost the lessons.",
+          displayAttribution: "Ada",
+          highlight: { start: 2, end: 6 },
+        }),
+      }),
+      cookies,
+    } as never);
+    expect(response.status).toBe(400);
+    expect(updateTestimonialDisplay).not.toHaveBeenCalled();
   });
 });

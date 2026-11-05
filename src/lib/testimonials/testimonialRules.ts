@@ -22,15 +22,23 @@ export type TestimonialRecord = {
   legacyShow: boolean | null;
   legacyViewed: boolean | null;
   legacyUseInEmail: boolean | null;
+  displayHighlightStart: number | null;
+  displayHighlightEnd: number | null;
   createdAt: string;
   updatedAt: string;
 };
 
 export type PublicTestimonial = {
-  id: string;
-  quote: string;
+  before: string;
+  highlight: string | null;
+  after: string;
   attribution: string;
   reviewDate: string | null;
+};
+
+export type DisplayHighlight = {
+  start: number;
+  end: number;
 };
 
 /** Columns a repeat legacy import may refresh. Publication and display edits are absent. */
@@ -50,6 +58,8 @@ export const LEGACY_IMPORT_PRESERVED_COLUMNS = [
   "active",
   "display_quote",
   "display_attribution",
+  "display_highlight_start",
+  "display_highlight_end",
   "memberstack_member_id",
   "source",
   "created_at",

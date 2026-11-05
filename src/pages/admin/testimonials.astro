@@ -1,7 +1,8 @@
 ---
 export const prerender = false;
 import Layout from "../../layouts/Layout.astro";
-import { publicTestimonialCopy, testimonialDeleteConfirmation } from "../../lib/testimonials/testimonialPlainText";
+import "../../styles/testimonials-public.css";
+import { publicTestimonialCopy, quoteWithHighlight, testimonialDeleteConfirmation } from "../../lib/testimonials/testimonialPlainText";
 import {
   getTestimonialForAdmin,
   listTestimonialsForAdmin,
@@ -61,6 +62,10 @@ function memberLabel(row: TestimonialRecord): string {
   if (row.legacyMemberId) return `Legacy member ${row.legacyMemberId}`;
   return "No linked member";
 }
+
+const previewParts = selected?.displayQuote
+  ? quoteWithHighlight(selected.displayQuote, selected.displayHighlightStart, selected.displayHighlightEnd)
+  : null;
 ---
 
 <Layout title="Testimonials | Knit it Now" description="Review, correct, and activate testimonials.">
@@ -152,6 +157,32 @@ function memberLabel(row: TestimonialRecord): string {
                     <textarea id="display-quote" name="displayQuote" maxlength="4000" rows="6">{selected.displayQuote ?? ""}</textarea>
                   </div>
                   <p>Leave both blank to show the original wording, with legacy HTML and links removed.</p>
+                  <p class="testimonial-admin__highlight-actions">
+                    <button class="kbm-btn kbm-btn-outline" type="button" id="highlight-selection">Highlight</button>
+                    <button class="kbm-btn kbm-btn-outline" type="button" id="highlight-remove">Remove highlight</button>
+                  </p>
+                  <p class="testimonial-admin__status" id="highlight-status" role="status"></p>
+                  <p class="testimonial-admin__history">Preview</p>
+                  <div
+                    class="kbm-card testimonials-page__card testimonial-admin__preview"
+                    id="highlight-preview"
+                    data-highlight-start={selected.displayHighlightStart ?? ""}
+                    data-highlight-end={selected.displayHighlightEnd ?? ""}
+                  >
+                    <p class="testimonials-page__quote" id="highlight-preview-quote">
+                      {previewParts ? (
+                        <>
+                          {previewParts.before}
+                          {previewParts.highlight ? (
+                            <span class="testimonials-page__highlight">{previewParts.highlight}</span>
+                          ) : null}
+                          {previewParts.after}
+                        </>
+                      ) : (
+                        "Enter a display quote to preview it."
+                      )}
+                    </p>
+                  </div>
                   <button class="kbm-btn kbm-btn-primary" type="submit">Save display text</button>
                 </form>
                 <p>
@@ -279,10 +310,98 @@ function memberLabel(row: TestimonialRecord): string {
     if (!(form instanceof HTMLFormElement)) return;
     const data = new FormData(form);
     const status = document.querySelector<HTMLElement>("[data-detail-status]");
+    const quote = document.getElementById("display-quote");
+    const preview = document.getElementById("highlight-preview");
+    const quoteText = quote instanceof HTMLTextAreaElement ? quote.value : "";
+    const start = Number(preview?.getAttribute("data-highlight-start"));
+    const end = Number(preview?.getAttribute("data-highlight-end"));
+    const highlight = Number.isInteger(start) && Number.isInteger(end) && quoteText.slice(start, end).trim()
+      ? { start, end }
+      : null;
     void patchTestimonial(form.dataset.id || "", {
       displayQuote: String(data.get("displayQuote") ?? ""),
       displayAttribution: String(data.get("displayAttribution") ?? ""),
+      highlight,
     }, status);
+  });
+
+  const quoteField = document.getElementById("display-quote");
+  const previewCard = document.getElementById("highlight-preview");
+  const previewQuote = document.getElementById("highlight-preview-quote");
+  const highlightStatus = document.getElementById("highlight-status");
+  let highlightedPhrase = "";
+  if (quoteField instanceof HTMLTextAreaElement && previewCard) {
+    const start = Number(previewCard.getAttribute("data-highlight-start"));
+    const end = Number(previewCard.getAttribute("data-highlight-end"));
+    if (Number.isInteger(start) && Number.isInteger(end)) {
+      highlightedPhrase = quoteField.value.slice(start, end);
+    }
+  }
+
+  function currentHighlight(): { start: number; end: number } | null {
+    if (!(previewCard instanceof HTMLElement)) return null;
+    const start = Number(previewCard.getAttribute("data-highlight-start"));
+    const end = Number(previewCard.getAttribute("data-highlight-end"));
+    if (!Number.isInteger(start) || !Number.isInteger(end)) return null;
+    return { start, end };
+  }
+
+  function renderHighlightPreview() {
+    if (!(quoteField instanceof HTMLTextAreaElement) || !(previewQuote instanceof HTMLElement)) return;
+    const quote = quoteField.value;
+    const range = currentHighlight();
+    previewQuote.replaceChildren();
+    if (!quote.trim()) {
+      previewQuote.textContent = "Enter a display quote to preview it.";
+      return;
+    }
+    if (!range || quote.slice(range.start, range.end) !== highlightedPhrase || !highlightedPhrase.trim()) {
+      previewQuote.textContent = quote;
+      return;
+    }
+    previewQuote.append(quote.slice(0, range.start));
+    const emphasis = document.createElement("span");
+    emphasis.className = "testimonials-page__highlight";
+    emphasis.textContent = quote.slice(range.start, range.end);
+    previewQuote.append(emphasis, quote.slice(range.end));
+  }
+
+  function clearHighlight(message: string) {
+    highlightedPhrase = "";
+    previewCard?.setAttribute("data-highlight-start", "");
+    previewCard?.setAttribute("data-highlight-end", "");
+    if (highlightStatus) highlightStatus.textContent = message;
+    renderHighlightPreview();
+  }
+
+  quoteField?.addEventListener("input", () => {
+    const range = currentHighlight();
+    const quote = quoteField instanceof HTMLTextAreaElement ? quoteField.value : "";
+    if (range && quote.slice(range.start, range.end) !== highlightedPhrase) {
+      clearHighlight("The quote changed. Select the highlight again.");
+      return;
+    }
+    renderHighlightPreview();
+  });
+
+  document.getElementById("highlight-selection")?.addEventListener("click", () => {
+    if (!(quoteField instanceof HTMLTextAreaElement) || !(previewCard instanceof HTMLElement)) return;
+    const start = quoteField.selectionStart ?? 0;
+    const end = quoteField.selectionEnd ?? 0;
+    const phrase = quoteField.value.slice(start, end);
+    if (!phrase.trim()) {
+      if (highlightStatus) highlightStatus.textContent = "Select the words to highlight.";
+      return;
+    }
+    highlightedPhrase = phrase;
+    previewCard.setAttribute("data-highlight-start", String(start));
+    previewCard.setAttribute("data-highlight-end", String(end));
+    if (highlightStatus) highlightStatus.textContent = "";
+    renderHighlightPreview();
+  });
+
+  document.getElementById("highlight-remove")?.addEventListener("click", () => {
+    clearHighlight("Highlight removed. Save to keep this change.");
   });
 
   document.getElementById("testimonial-add-form")?.addEventListener("submit", async (event) => {
@@ -339,7 +458,11 @@ function memberLabel(row: TestimonialRecord): string {
     border-radius: 1rem;
     background: #fff;
   }
-  .testimonial-admin__detail p .kbm-btn + .kbm-btn {
+  .testimonial-admin__detail p .kbm-btn + .kbm-btn,
+  .testimonial-admin__highlight-actions .kbm-btn + .kbm-btn {
     margin-left: 0.75rem;
+  }
+  .testimonial-admin__preview {
+    margin-top: 0.5rem;
   }
 </style>

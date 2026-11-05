@@ -1,6 +1,6 @@
 import { queryTestimonials } from "./testimonialQuery";
 import type { WatsonQueryFn } from "../watson/memberSearch";
-import { publicTestimonialCopy } from "./testimonialPlainText";
+import { publicTestimonialCopy, quoteWithHighlight } from "./testimonialPlainText";
 import type { PublicTestimonial, TestimonialRecord, TestimonialSource } from "./testimonialRules";
 
 const ADMIN_COLUMNS = `
@@ -19,17 +19,20 @@ const ADMIN_COLUMNS = `
   legacy_show,
   legacy_viewed,
   legacy_use_in_email,
+  display_highlight_start,
+  display_highlight_end,
   created_at,
   updated_at
 `;
 
 export const PUBLIC_TESTIMONIAL_SQL = `
 SELECT
-  id,
   original_quote,
   original_attribution,
   display_quote,
   display_attribution,
+  display_highlight_start,
+  display_highlight_end,
   review_date
 FROM testimonials
 WHERE active = TRUE
@@ -40,6 +43,11 @@ type Query = WatsonQueryFn;
 
 function text(value: unknown): string {
   return typeof value === "string" ? value : value == null ? "" : String(value);
+}
+
+function storedText(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+  return value.trim() ? value : null;
 }
 
 function nullableText(value: unknown): string | null {
@@ -89,7 +97,7 @@ function mapAdmin(row: Record<string, unknown>): TestimonialRecord {
     legacyRatingId: intOrNull(row.legacy_rating_id),
     originalQuote: text(row.original_quote),
     originalAttribution: text(row.original_attribution),
-    displayQuote: nullableText(row.display_quote),
+    displayQuote: storedText(row.display_quote),
     displayAttribution: nullableText(row.display_attribution),
     reviewDate: dateOnly(row.review_date),
     rating: intOrNull(row.rating),
@@ -100,6 +108,8 @@ function mapAdmin(row: Record<string, unknown>): TestimonialRecord {
     legacyShow: nullableBool(row.legacy_show),
     legacyViewed: nullableBool(row.legacy_viewed),
     legacyUseInEmail: nullableBool(row.legacy_use_in_email),
+    displayHighlightStart: intOrNull(row.display_highlight_start),
+    displayHighlightEnd: intOrNull(row.display_highlight_end),
     createdAt: iso(row.created_at),
     updatedAt: iso(row.updated_at),
   };
@@ -119,10 +129,19 @@ export async function listPublicTestimonials(query: Query = queryTestimonials): 
         displayQuote: nullableText(row.display_quote),
         displayAttribution: nullableText(row.display_attribution),
       });
-      if (!copy.quote || !copy.attribution) return null;
+      const displayQuote = storedText(row.display_quote);
+      const parts = displayQuote
+        ? quoteWithHighlight(
+            displayQuote,
+            intOrNull(row.display_highlight_start),
+            intOrNull(row.display_highlight_end),
+          )
+        : { before: copy.quote, highlight: null, after: "" };
+      if (!(displayQuote || copy.quote) || !copy.attribution) return null;
       return {
-        id: text(row.id),
-        quote: copy.quote,
+        before: parts.before,
+        highlight: parts.highlight,
+        after: parts.after,
         attribution: copy.attribution,
         reviewDate: dateOnly(row.review_date),
       };
@@ -193,15 +212,29 @@ export async function setTestimonialActive(
 
 export async function updateTestimonialDisplay(
   id: string,
-  input: { displayQuote: string | null; displayAttribution: string | null },
+  input: {
+    displayQuote: string | null;
+    displayAttribution: string | null;
+    highlight: { start: number; end: number } | null;
+  },
   query: Query = queryTestimonials,
 ): Promise<TestimonialRecord | null> {
   const rows = await query<Record<string, unknown>>(
     `UPDATE testimonials
-     SET display_quote = $2, display_attribution = $3, updated_at = NOW()
+     SET display_quote = $2,
+         display_attribution = $3,
+         display_highlight_start = $4,
+         display_highlight_end = $5,
+         updated_at = NOW()
      WHERE id = $1
      RETURNING ${ADMIN_COLUMNS}`,
-    [id, input.displayQuote, input.displayAttribution],
+    [
+      id,
+      input.displayQuote,
+      input.displayAttribution,
+      input.highlight?.start ?? null,
+      input.highlight?.end ?? null,
+    ],
   );
   return rows[0] ? mapAdmin(rows[0]) : null;
 }
@@ -231,6 +264,7 @@ WITH removed AS (
   FROM removed
   WHERE legacy_rating_id IS NOT NULL
   ON CONFLICT (legacy_rating_id) DO NOTHING
+  RETURNING legacy_rating_id
 )
 SELECT removed.id, removed.legacy_rating_id, (SELECT COUNT(*)::int FROM marked) AS marked_count
 FROM removed

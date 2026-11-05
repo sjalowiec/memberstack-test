@@ -22,6 +22,37 @@ export function testimonialPlainText(value: string): string {
     .trim();
 }
 
+export type PublicQuoteParts = {
+  before: string;
+  highlight: string | null;
+  after: string;
+};
+
+/** Split a saved display quote at a validated highlight. Invalid ranges are not emphasized. */
+export function quoteWithHighlight(
+  quote: string,
+  start: number | null,
+  end: number | null,
+): PublicQuoteParts {
+  if (
+    start == null ||
+    end == null ||
+    !Number.isInteger(start) ||
+    !Number.isInteger(end) ||
+    start < 0 ||
+    end <= start ||
+    end > quote.length ||
+    !quote.slice(start, end).trim()
+  ) {
+    return { before: quote, highlight: null, after: "" };
+  }
+  return {
+    before: quote.slice(0, start),
+    highlight: quote.slice(start, end),
+    after: quote.slice(end),
+  };
+}
+
 export function publicTestimonialCopy(input: {
   originalQuote: string;
   originalAttribution: string;

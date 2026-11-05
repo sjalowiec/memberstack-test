@@ -1,6 +1,6 @@
 import type { APIRoute } from "astro";
 import { adminAuthErrorBody, requireAdminForRequest } from "../../../../lib/admin/requireAdminRequest";
-import { parseDisplayCorrection } from "../../../../lib/testimonials/testimonialDraft";
+import { parseDisplayCorrection, HIGHLIGHT_RESELECT_MESSAGE, highlightWasInvalidated } from "../../../../lib/testimonials/testimonialDraft";
 import {
   deleteTestimonial,
   getTestimonialForAdmin,
@@ -53,6 +53,20 @@ export const PATCH: APIRoute = async ({ params, request, cookies }) => {
     }
     const display = parseDisplayCorrection(record);
     if (!display.ok) return json({ ok: false, error: display.error }, 400);
+    const existing = await getTestimonialForAdmin(id);
+    if (!existing) return json({ ok: false, error: "Testimonial not found." }, 404);
+    if (
+      highlightWasInvalidated(
+        existing.displayQuote,
+        existing.displayHighlightStart == null || existing.displayHighlightEnd == null
+          ? null
+          : { start: existing.displayHighlightStart, end: existing.displayHighlightEnd },
+        display.displayQuote,
+        display.highlight,
+      )
+    ) {
+      return json({ ok: false, error: HIGHLIGHT_RESELECT_MESSAGE }, 400);
+    }
     const testimonial = await updateTestimonialDisplay(id, display);
     if (!testimonial) return json({ ok: false, error: "Testimonial not found." }, 404);
     return json({ ok: true, testimonial });

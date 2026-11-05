@@ -38,23 +38,70 @@ export function parseTestimonialDraft(input: unknown, options?: { requireDate?: 
   return { ok: true, value: { attribution, quote, reviewDate, rating } };
 }
 
+export const HIGHLIGHT_RESELECT_MESSAGE =
+  "The quote changed, so that highlight no longer matches. Select the words again.";
+
+export function highlightWasInvalidated(
+  previousQuote: string | null,
+  previous: { start: number; end: number } | null,
+  nextQuote: string | null,
+  next: { start: number; end: number } | null,
+): boolean {
+  if (!previous || !next || !previousQuote || !nextQuote) return false;
+  if (previous.start !== next.start || previous.end !== next.end) return false;
+  return previousQuote.slice(previous.start, previous.end) !== nextQuote.slice(next.start, next.end);
+}
+
+export function parseDisplayHighlight(
+  input: Record<string, unknown>,
+  displayQuote: string | null,
+): { ok: true; highlight: { start: number; end: number } | null } | { ok: false; error: string } {
+  const raw = input.highlight;
+  if (raw == null) return { ok: true, highlight: null };
+  if (typeof raw !== "object" || Array.isArray(raw)) {
+    return { ok: false, error: HIGHLIGHT_RESELECT_MESSAGE };
+  }
+  const range = raw as Record<string, unknown>;
+  const start = range.start;
+  const end = range.end;
+  if (!displayQuote) return { ok: false, error: HIGHLIGHT_RESELECT_MESSAGE };
+  if (!Number.isInteger(start) || !Number.isInteger(end) || (start as number) < 0 || (end as number) <= (start as number) || (end as number) > displayQuote.length) {
+    return { ok: false, error: HIGHLIGHT_RESELECT_MESSAGE };
+  }
+  if (!displayQuote.slice(start as number, end as number).trim()) {
+    return { ok: false, error: "Select the words to highlight." };
+  }
+  return { ok: true, highlight: { start: start as number, end: end as number } };
+}
+
 export function parseDisplayCorrection(input: unknown):
-  | { ok: true; displayQuote: string | null; displayAttribution: string | null }
+  | {
+      ok: true;
+      displayQuote: string | null;
+      displayAttribution: string | null;
+      highlight: { start: number; end: number } | null;
+    }
   | { ok: false; error: string } {
   if (!input || typeof input !== "object") return { ok: false, error: "Enter the display text." };
   const body = input as Record<string, unknown>;
-  const displayQuote = typeof body.displayQuote === "string" ? body.displayQuote.trim() : "";
-  const displayAttribution = typeof body.displayAttribution === "string" ? body.displayAttribution.trim() : "";
-  if (displayQuote.length > QUOTE_MAX || displayAttribution.length > ATTRIBUTION_MAX) {
+  const rawQuote = typeof body.displayQuote === "string" ? body.displayQuote : "";
+  const rawAttribution = typeof body.displayAttribution === "string" ? body.displayAttribution : "";
+  if (rawQuote.length > QUOTE_MAX || rawAttribution.length > ATTRIBUTION_MAX) {
     return { ok: false, error: "That display text is too long." };
   }
-  if ((displayQuote && !displayAttribution) || (!displayQuote && displayAttribution)) {
+  const quoteEmpty = rawQuote.trim() === "";
+  const attributionEmpty = rawAttribution.trim() === "";
+  if ((quoteEmpty && !attributionEmpty) || (!quoteEmpty && attributionEmpty)) {
     return { ok: false, error: "Enter both the display quote and the display name, or clear both to use the original." };
   }
+  const quote = quoteEmpty ? null : rawQuote;
+  const highlight = parseDisplayHighlight(body, quote);
+  if (!highlight.ok) return highlight;
   return {
     ok: true,
-    displayQuote: displayQuote || null,
-    displayAttribution: displayAttribution || null,
+    displayQuote: quote,
+    displayAttribution: attributionEmpty ? null : rawAttribution.trim(),
+    highlight: highlight.highlight,
   };
 }
 
