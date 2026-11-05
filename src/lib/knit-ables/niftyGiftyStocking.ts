@@ -89,7 +89,7 @@ export const NIFTY_GIFTY_STOCKING_GRAPH_PAPER_LABEL =
 export const NIFTY_GIFTY_STOCKING_TREE_HEADING = "Christmas Tree Inspiration";
 
 export const NIFTY_GIFTY_STOCKING_TREE_INTRO =
-  "These trees are inspiration. Click any swatch to open its Knit It Now Stitch Library entry. If you’d like to use one of these trees, check its stitch and row counts against the space available on your stocking at your gauge.";
+  "Choose a Christmas tree for your stocking. Click a design to visit its Stitch Library page. Members can download the DesignaKnit file and a full-size punch card template.";
 
 const SWATCH_DIR = "/stitch-patterns/swatches/15";
 

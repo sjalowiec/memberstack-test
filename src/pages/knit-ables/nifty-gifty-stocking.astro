@@ -76,7 +76,7 @@ const knitAblePublishDate = knitAbleAccess.visible ? knitAbleAccess.publishDate 
       <div class="page-wrap knit-able-page">
         <article>
           <section class="knit-able-hero" aria-labelledby="knit-able-hero-heading">
-            <div class="knit-able-hero__copy">
+            <div class="knit-able-hero__intro">
               <KnitAblePageHeader
                 title={NIFTY_GIFTY_STOCKING_TITLE}
                 headingId="knit-able-hero-heading"
@@ -96,10 +96,13 @@ const knitAblePublishDate = knitAbleAccess.visible ? knitAbleAccess.publishDate 
                 loading="eager"
                 decoding="async"
               />
-              <figcaption>
-                <p class="knit-able-affiliate" role="note">
-                  {NIFTY_GIFTY_STOCKING_AFFILIATE_DISCLOSURE}
-                </p>
+            </figure>
+            <div class="knit-able-hero__offers">
+              <p class="knit-able-affiliate" role="note">
+                {NIFTY_GIFTY_STOCKING_AFFILIATE_DISCLOSURE}
+              </p>
+              <div class="knit-able-pattern">
+                <h2 id="knit-able-pattern-heading">Knit Picks pattern</h2>
                 <p>{NIFTY_GIFTY_STOCKING_PATTERN_NOTE}</p>
                 <p>
                   <a
@@ -111,23 +114,20 @@ const knitAblePublishDate = knitAbleAccess.visible ? knitAbleAccess.publishDate 
                     {NIFTY_GIFTY_STOCKING_PATTERN_LINK_LABEL}
                   </a>
                 </p>
-              </figcaption>
-            </figure>
-          </section>
-
-          <section class="knit-able-yarn" aria-labelledby="knit-able-yarn-heading">
-            <h2 id="knit-able-yarn-heading">{NIFTY_GIFTY_STOCKING_YARN_HEADING}</h2>
-            <div class="knit-able-yarn-grid">
-              <KnitAbleYarnCard
-                heading={NIFTY_GIFTY_STOCKING_YARN.heading}
-                buttonLabel={NIFTY_GIFTY_STOCKING_YARN.buttonLabel}
-                href={NIFTY_GIFTY_STOCKING_YARN.href}
-                rel={NIFTY_GIFTY_STOCKING_AFFILIATE_REL}
-              >
-                {NIFTY_GIFTY_STOCKING_YARN.paragraphs.map((paragraph) => (
-                  <p>{paragraph}</p>
-                ))}
-              </KnitAbleYarnCard>
+              </div>
+              <section class="knit-able-yarn" aria-labelledby="knit-able-yarn-heading">
+                <h2 id="knit-able-yarn-heading">{NIFTY_GIFTY_STOCKING_YARN_HEADING}</h2>
+                <KnitAbleYarnCard
+                  heading={NIFTY_GIFTY_STOCKING_YARN.heading}
+                  buttonLabel={NIFTY_GIFTY_STOCKING_YARN.buttonLabel}
+                  href={NIFTY_GIFTY_STOCKING_YARN.href}
+                  rel={NIFTY_GIFTY_STOCKING_AFFILIATE_REL}
+                >
+                  {NIFTY_GIFTY_STOCKING_YARN.paragraphs.map((paragraph) => (
+                    <p>{paragraph}</p>
+                  ))}
+                </KnitAbleYarnCard>
+              </section>
             </div>
           </section>
 
@@ -205,9 +205,14 @@ const knitAblePublishDate = knitAbleAccess.visible ? knitAbleAccess.publishDate 
     min-width: 0;
   }
 
-  .knit-able-hero__copy {
+  .knit-able-hero__intro,
+  .knit-able-hero__offers {
     min-width: 0;
     max-width: 40rem;
+  }
+
+  .knit-able-hero__intro p:last-child {
+    margin-bottom: 0;
   }
 
   .knit-able-lead {
@@ -232,7 +237,13 @@ const knitAblePublishDate = knitAbleAccess.visible ? knitAbleAccess.publishDate 
     background: #f7f8f5;
   }
 
-  .knit-able-hero__figure figcaption p:last-child {
+  .knit-able-hero__offers {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+
+  .knit-able-pattern p:last-child {
     margin-bottom: 0;
   }
 
@@ -251,21 +262,13 @@ const knitAblePublishDate = knitAbleAccess.visible ? knitAbleAccess.publishDate 
     text-underline-offset: 2px;
   }
 
-  .knit-able-yarn,
-  .knit-able-yarn-grid {
+  .knit-able-yarn {
     min-width: 0;
-  }
-
-  .knit-able-yarn-grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 0;
-    margin: 0;
-    max-width: 36rem;
+    margin-top: 0.35rem;
   }
 
   .knit-able-affiliate {
-    margin: 0 0 0.9rem;
+    margin: 0 0 0.35rem;
     font-size: 0.92rem;
     line-height: 1.5;
     color: #5a6350;
@@ -336,19 +339,28 @@ const knitAblePublishDate = knitAbleAccess.visible ? knitAbleAccess.publishDate 
     .knit-able-hero {
       display: grid;
       grid-template-columns: 20rem minmax(0, 1fr);
-      gap: 1.35rem 1.5rem;
+      grid-template-areas:
+        "photo intro"
+        "photo offers";
+      column-gap: 1.75rem;
+      row-gap: 0.85rem;
       align-items: start;
     }
 
-    .knit-able-hero__copy {
-      order: 2;
+    .knit-able-hero__figure {
+      grid-area: photo;
+      width: 20rem;
       max-width: none;
     }
 
-    .knit-able-hero__figure {
-      order: 1;
-      flex: none;
-      width: 20rem;
+    .knit-able-hero__intro {
+      grid-area: intro;
+      max-width: 38rem;
+    }
+
+    .knit-able-hero__offers {
+      grid-area: offers;
+      max-width: 36rem;
     }
   }
 </style>
