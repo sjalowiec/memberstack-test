@@ -13,6 +13,7 @@ vi.mock("../../../lib/admin/requireAdminRequest", async (importOriginal) => {
 import { isAdminProtectedPath } from "../../../lib/admin/adminPageGate";
 import { GET, POST } from "./videos";
 import { POST as saveAccessLevels } from "./videos/access-levels";
+import { GET as planning } from "./videos/planning";
 import { POST as saveVideo } from "./videos/save";
 import { GET as videoStatus } from "./videos/status";
 import { GET as vimeoThumbnail } from "./videos/vimeo-thumbnail";
@@ -39,6 +40,7 @@ describe("video admin authorization", () => {
       "/admin/videos-edit",
       "/admin/videos-preview/5003",
       "/api/admin/videos",
+      "/api/admin/videos/planning",
       "/api/admin/videos/save",
       "/api/admin/videos/status",
     ]) {
@@ -60,6 +62,19 @@ describe("video admin authorization", () => {
     const body = await response.json();
     expect(body.ok).toBe(false);
     expect(body.videos).toBeUndefined();
+  });
+
+  it("rejects an unsigned planning read and does not return counts", async () => {
+    requireAdminForRequest.mockResolvedValue({ ok: false, status: 401, error: "Sign in required." });
+    const response = await planning({
+      request: jsonRequest("https://kin-dev.netlify.app/api/admin/videos/planning", "GET"),
+      cookies,
+    } as never);
+    expect(response.status).toBe(401);
+    const body = await response.json();
+    expect(body.ok).toBe(false);
+    expect(body.favorites).toBeUndefined();
+    expect(body.tips).toBeUndefined();
   });
 
   it("rejects unsigned catalog writes", async () => {
