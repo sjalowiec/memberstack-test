@@ -1,8 +1,12 @@
 import { describe, expect, it } from "vitest";
 import {
   KIN_TAITEXMA_160_COURSE_SLUG,
+  BROTHER_930_940_COURSE_PRICE_ID,
+  BROTHER_930_940_COURSE_SLUG,
   BROTHER_KH260_COURSE_SLUG,
   LEGACY_BROTHER_260_COURSE_PLAN_ID,
+  LEGACY_BROTHER_930_940_COURSE_PLAN_ID,
+  PAID_BROTHER_930_940_COURSE_PLAN_ID,
   LK150_FUN_COURSE_PLAN_ID,
   LK150_FUN_COURSE_SLUG,
   LEGACY_KIN_LK150_PATTERNING_PLAN_ID,
@@ -382,6 +386,47 @@ describe("canAccessCourse", () => {
       canAccessCourse("purchase", sk840Paid, { courseSlug: KIN_TAITEXMA_160_COURSE_SLUG }),
     ).toBe(false);
     expect(PAID_SK840_COURSE_PLAN_ID).toBe("pln_course-sk840--xy1u30uqt");
+  });
+
+  it("Legacy and Paid Brother 930/940 plans grant access only to Course 103", () => {
+    const legacy = payloadWithPlan(LEGACY_BROTHER_930_940_COURSE_PLAN_ID);
+    const paid = payloadWithPlan(PAID_BROTHER_930_940_COURSE_PLAN_ID);
+
+    expect(canAccessCourse("purchase", legacy, { courseSlug: BROTHER_930_940_COURSE_SLUG })).toBe(
+      true,
+    );
+    expect(canAccessCourse("purchase", legacy, { courseSlug: "103" })).toBe(true);
+    expect(canAccessCourse("purchase", paid, { courseSlug: BROTHER_930_940_COURSE_SLUG })).toBe(
+      true,
+    );
+    expect(canAccessCourse("purchase", paid, { courseSlug: "103" })).toBe(true);
+    expect(hasIndividualCoursePurchase(BROTHER_930_940_COURSE_SLUG, legacy)).toBe(true);
+    expect(hasIndividualCoursePurchase(BROTHER_930_940_COURSE_SLUG, paid)).toBe(true);
+    expect(canAccessCourse("purchase", paid, { courseSlug: KIN_TAITEXMA_160_COURSE_SLUG })).toBe(
+      false,
+    );
+    expect(canAccessCourse("purchase", paid, { courseSlug: LEGACY_SK840_COURSE_SLUG })).toBe(false);
+    expect(canAccessCourse("purchase", legacy, { courseSlug: BROTHER_KH260_COURSE_SLUG })).toBe(
+      false,
+    );
+    expect(MEMBER_PLAN_IDS).not.toContain(PAID_BROTHER_930_940_COURSE_PLAN_ID);
+    expect(MEMBER_PLAN_IDS).not.toContain(LEGACY_BROTHER_930_940_COURSE_PLAN_ID);
+    expect(COURSE_ACCESS_PLAN_IDS).not.toContain(PAID_BROTHER_930_940_COURSE_PLAN_ID);
+    expect(COURSE_ACCESS_PLAN_IDS).not.toContain(LEGACY_BROTHER_930_940_COURSE_PLAN_ID);
+    expect(
+      canAccessCourse("purchase", payloadWithPlan(BROTHER_930_940_COURSE_PRICE_ID), {
+        courseSlug: BROTHER_930_940_COURSE_SLUG,
+      }),
+    ).toBe(false);
+    const canceled = {
+      data: {
+        id: "ms_member",
+        planConnections: [{ planId: LEGACY_BROTHER_930_940_COURSE_PLAN_ID, status: "CANCELED" }],
+      },
+    };
+    expect(canAccessCourse("purchase", canceled, { courseSlug: BROTHER_930_940_COURSE_SLUG })).toBe(
+      false,
+    );
   });
 
   it("Legacy KIN_LK150 Patterning tag unlocks only Course 34", () => {

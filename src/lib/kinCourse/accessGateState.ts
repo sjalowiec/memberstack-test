@@ -6,6 +6,7 @@
  */
 import {
   BEGINNER_WORKSHOP_COURSE_SLUG,
+  BROTHER_930_940_COURSE_SLUG,
   BROTHER_KH260_COURSE_SLUG,
   KIN_TAITEXMA_160_COURSE_SLUG,
   LEGACY_SK840_COURSE_SLUG,
@@ -41,6 +42,9 @@ export function kinCourseNoAccessPlanPhrase(courseSlug: string): string {
   if (slug === BROTHER_KH260_COURSE_SLUG || slug === "87") {
     return "the Brother KH/KR-260 legacy course plan";
   }
+  if (slug === BROTHER_930_940_COURSE_SLUG || slug === "103") {
+    return "the Brother 930/940 course plan";
+  }
   if (slug === LK150_PATTERNING_COURSE_SLUG || slug === "34") {
     return "the LK150 Patterning course plan";
   }
@@ -65,7 +69,9 @@ function offersStandalonePurchase(courseSlug: string): boolean {
     slug === KIN_TAITEXMA_160_COURSE_SLUG ||
     slug === "86" ||
     slug === LEGACY_SK840_COURSE_SLUG ||
-    slug === "111"
+    slug === "111" ||
+    slug === BROTHER_930_940_COURSE_SLUG ||
+    slug === "103"
   );
 }
 

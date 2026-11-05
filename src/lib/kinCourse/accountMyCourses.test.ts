@@ -88,6 +88,16 @@ describe("account ownable catalog cards", () => {
         planIds: [COURSE_INDIVIDUAL_SALES.brother260.legacyPlanId],
       },
       {
+        courseId: 103,
+        slug: COURSE_INDIVIDUAL_SALES.brother930940.slug,
+        title: "Ultimate Brother 930/940 Workshop",
+        href: "/courses/103",
+        planIds: [
+          COURSE_INDIVIDUAL_SALES.brother930940.legacyPlanId,
+          COURSE_INDIVIDUAL_SALES.brother930940.paidPlanId,
+        ],
+      },
+      {
         courseId: 34,
         slug: LK150_PATTERNING_COURSE_SLUG,
         title: "Master LK-150 Patterning",
@@ -187,6 +197,27 @@ describe("ownedCoursesForAccount", () => {
     expect(courses).toEqual([course87]);
     expect(COURSE_INDIVIDUAL_SALES.brother260.paidPlanId).toBeUndefined();
     expect(COURSE_INDIVIDUAL_SALES.brother260.priceId).toBeUndefined();
+  });
+
+  it("Brother 930/940 legacy and paid plans display Course 103 only", () => {
+    const course103 = catalogCards.find(
+      (card) => card.slug === COURSE_INDIVIDUAL_SALES.brother930940.slug,
+    );
+    const legacy = ownedCoursesForAccount(
+      payloadWithPlan(COURSE_INDIVIDUAL_SALES.brother930940.legacyPlanId),
+      catalogCards,
+    );
+    const paid = ownedCoursesForAccount(
+      payloadWithPlan(COURSE_INDIVIDUAL_SALES.brother930940.paidPlanId!),
+      catalogCards,
+    );
+    expect(legacy).toEqual([course103]);
+    expect(paid).toEqual([course103]);
+    expect(course103).toEqual({
+      slug: COURSE_INDIVIDUAL_SALES.brother930940.slug,
+      title: "Ultimate Brother 930/940 Workshop",
+      href: "/courses/103",
+    });
   });
 
   it("Legacy KIN_LK150 Patterning tag displays Course 34 with the other LK150 courses", () => {

@@ -50,6 +50,10 @@ describe("KIN course gate copy", () => {
     expect(kinCourseNoAccessMessage("brother-kh-kr-260-quick-start")).toContain(
       "Brother KH/KR-260 legacy course plan",
     );
+    expect(kinCourseNoAccessMessage("ultimate-brother-930-940-workshop")).toContain(
+      "Brother 930/940 course plan",
+    );
+    expect(kinCourseNoAccessMessage("103")).toContain("purchase this course on its own");
     expect(kinCourseNoAccessMessage("87")).not.toContain("purchase this course on its own");
     expect(kinCourseNoAccessMessage("87")).not.toContain("SK840");
     expect(kinCourseNoAccessMessage("master-lk-patterning")).toContain(
