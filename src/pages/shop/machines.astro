@@ -9,7 +9,7 @@ import {
   machineTitle,
   formatPitch,
 } from "../../lib/machines/referenceCatalog";
-import { availabilityLabel } from "../../lib/machines/machineAdminFields";
+import { shopAvailabilityBadge } from "../../lib/machines/machineAdminFields";
 import { MACHINE_SALES_HOLD } from "../../lib/machines/machineSalesHold";
 import {
   displayPriceLabel,
@@ -273,7 +273,7 @@ function formatPrice(value: number | null): string | null {
               const name = machineTitle(machine);
               const pitch = formatPitch(machine);
               const priceLabel = formatPrice(sale.price);
-              const availLabel = availabilityLabel(sale);
+              const availLabel = shopAvailabilityBadge(sale, machine.model);
               // Short blurb for the card.
               const shortHtml = sale.shortDescriptionHtml || null;
               return (

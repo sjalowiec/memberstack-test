@@ -20,9 +20,9 @@ import {
   type Machine,
 } from "../../../lib/machines/referenceCatalog";
 import {
-  availabilityLabel,
   canCheckout,
   formatExpectedDate,
+  shopAvailabilityBadge,
 } from "../../../lib/machines/machineAdminFields";
 import { MACHINE_SALES_HOLD } from "../../../lib/machines/machineSalesHold";
 
@@ -67,7 +67,7 @@ const gallery = resolved.images
 const extraImages = gallery.filter((url) => url !== heroImage);
 
 const pitch = formatPitch(resolved);
-const availLabel = availabilityLabel(sale);
+const availLabel = shopAvailabilityBadge(sale, resolved.model);
 const canBuy = canCheckout(sale);
 // Taitexma backorders with a ship date use "Reserve"; otherwise keep "Buy Now".
 const purchaseLabel =
@@ -259,7 +259,18 @@ const catalogBack = shopCatalogBackLink(resolved.productType);
       </section>
     )}
 
-    {resolved.brand === "Taitexma" && (
+    {resolved.brand === "Taitexma" &&
+      sale.availabilityStatus === "available" &&
+      !sale.expectedDate &&
+      sale.shippingNotes && (
+      <section class="machine-section machine-ordering" aria-label="Ordering Information">
+        <h2 class="section-title">Ordering Information</h2>
+        <div class="machine-ordering-copy" set:html={sale.shippingNotes} />
+      </section>
+    )}
+
+    {resolved.brand === "Taitexma" &&
+      !(sale.availabilityStatus === "available" && !sale.expectedDate && sale.shippingNotes) && (
       <section class="machine-section machine-ordering" aria-label="Ordering Information">
         <h2 class="section-title">Ordering Information</h2>
         <p class="machine-intro-text">
@@ -601,6 +612,17 @@ const catalogBack = shopCatalogBackLink(resolved.productType);
   }
 
   .machine-ordering .machine-intro-text + .machine-intro-text {
+    margin-top: 0.75rem;
+  }
+
+  .machine-ordering-copy :global(p) {
+    font-size: 1rem;
+    color: #5a6b47;
+    line-height: 1.7;
+    margin: 0;
+  }
+
+  .machine-ordering-copy :global(p + p) {
     margin-top: 0.75rem;
   }
 

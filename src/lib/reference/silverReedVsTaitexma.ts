@@ -6,7 +6,7 @@ import {
   machineTitle,
   type Machine,
 } from "../machines/referenceCatalog";
-import { availabilityLabel } from "../machines/machineAdminFields";
+import { shopAvailabilityBadge } from "../machines/machineAdminFields";
 import { serializeJsonLd } from "../helpHubFaqSchema";
 
 export const PAGE_PATH = "/reference/machines/silver-reed-vs-taitexma";
@@ -194,7 +194,7 @@ function orderingSummary(machines: Machine[]): string {
   if (machines.length === 0) return ORDERING_NEUTRAL;
   const labels = machines.map((m) => {
     if (!m.sale) return null;
-    return `${m.model}: ${availabilityLabel(m.sale)}`;
+    return `${m.model}: ${shopAvailabilityBadge(m.sale, m.model)}`;
   }).filter((value): value is string => !!value);
   return labels.length > 0
     ? `${labels.join("; ")}. ${ORDERING_NEUTRAL}`
