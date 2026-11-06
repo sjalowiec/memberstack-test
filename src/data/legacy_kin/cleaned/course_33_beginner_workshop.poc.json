@@ -5,9 +5,9 @@
     "legacyChallengeId": 33,
     "title": "Beginner Workshop",
     "slug": "beginner-workshop",
-    "contentStatus": "in_progress",
-    "status": "draft",
-    "published": false,
+    "contentStatus": "cleaned",
+    "status": "published",
+    "published": true,
     "legacy": {
       "sourceExport": "course_33_beginner_workshop.csv",
       "sourceCsv": "src/data/legacy_kin/exports/kin-all-legacy-courses-content.csv",
@@ -43,7 +43,7 @@
         ]
       }
     },
-    "active": false,
+    "active": true,
     "thumbnail": "/images/courses/beginner.webp"
   },
   "lessons": [
@@ -85,7 +85,7 @@
           "components": [
             {
               "type": "richText",
-              "html": "No matter what machine you have, the secret to stitch patterning (and other techniques) is to understand needle positions.<br><ul><li><span style=\"font-size: 0.85rem;\"><a href=\"/glossary/out-of-work-position\" class=\"glossary-link\">Out of Work Position</a></span></li><li><span style=\"font-size: 0.85rem;\"><a href=\"/glossary/working-position\" class=\"glossary-link\">Working Position</a></span></li><li><span style=\"font-size: 0.85rem;\"><a href=\"/glossary/middle-position\" class=\"glossary-link\">Middle Position</a></span></li><li><span style=\"font-size: 0.85rem;\"><a href=\"/glossary/holding-position\" class=\"glossary-link\">Holding Position</a></span></li></ul><ul class=\"lightlist\" style=\"list-style:none;\">\n</ul>",
+              "html": "\n<p>\n  No matter what machine you have, the secret to stitch\n  patterning (and other techniques) is to understand\n  needle positions.\n</p>\n\n<ul style=\"font-size:1rem; line-height:1.9; padding-left:24px;\">\n  <li>\n    <a href=\"/glossary/out-of-work-position\" class=\"glossary-link\">\n      Out of Work Position\n    </a>\n  </li>\n  <li>\n    <a href=\"/glossary/working-position\" class=\"glossary-link\">\n      Working Position\n    </a>\n  </li>\n  <li>\n    <a href=\"/glossary/middle-position\" class=\"glossary-link\">\n      Middle Position\n    </a>\n  </li>\n  <li>\n    <a href=\"/glossary/holding-position\" class=\"glossary-link\">\n      Holding Position\n    </a>\n  </li>\n</ul>\n",
               "legacyComponentId": 4443,
               "order": 1,
               "layoutRole": "textVideoLeft"
@@ -253,7 +253,7 @@
           "components": [
             {
               "type": "richText",
-              "html": "\n\nWith a closed cast on, the starting stitches are secure. Here are a few methods for you to try.<br><b>Video 1: Fast 'n Easy<br><ul><li><span style=\"font-size: 0.85rem;\">Super Fast Closed Cast On</span></li><li><span style=\"font-size: 0.85rem;\">Weaving Cast On</span></li><li><span style=\"font-size: 0.85rem;\">E-Wrap Cast On</span></li></ul></b><ul class=\"lightlist\" style=\"list-style:none;\">\n</ul><br><b>Video 2: Scrap on (Scrap and Ravel)</b>\nThe technique of scrapping on is essential for you to learn.<br>\n<ul>\n<li>Protect delicate fibers and edges from a cast on comb</li>\n<li>Use as an open cast on for hems</li>\n<li>Make it easier to cast on using more complicated methods</li>\n</ul><br><b>Video 3: Better for Garment Edges<br><ul><li><span style=\"font-size: 0.85rem;\">Double E-wrap</span></li><li><span style=\"font-size: 0.85rem;\">Long Tail Cast On</span></li><li><span style=\"font-size: 0.85rem;\">Chain Cast On</span></li></ul></b><ul class=\"lightlist\" style=\"list-style:none;\">\n</ul>\n\n<img src=\"/images/course-content/33/Dont_skip.gif\">\n\n",
+              "html": "\n<p>\n  With a closed cast on, the starting stitches are secure.\n  Here are a few methods for you to try.\n</p>\n\n<h3>Video 1: Fast 'n Easy</h3>\n\n<ul>\n  <li>Super Fast Closed Cast On</li>\n  <li>Weaving Cast On</li>\n  <li>E-Wrap Cast On</li>\n</ul>\n\n<h3>Video 2: Scrap On (Scrap and Ravel)</h3>\n\n<p>\n  The technique of scrapping on is essential for you to learn.\n</p>\n\n<ul>\n  <li>Protect delicate fibers and edges from a cast on comb</li>\n  <li>Use as an open cast on for hems</li>\n  <li>Make it easier to cast on using more complicated methods</li>\n</ul>\n\n<h3>Video 3: Better for Garment Edges</h3>\n\n<ul>\n  <li>Double E-Wrap</li>\n  <li>Long Tail Cast On</li>\n  <li>Chain Cast On</li>\n</ul>\n\n<img\n  src=\"/images/course-content/33/Dont_skip.gif\"\n  alt=\"Don't skip this practice\"\n  style=\"display:block; max-width:100%; height:auto; margin:24px 0;\"\n>\n",
               "legacyComponentId": 4449,
               "order": 1,
               "layoutRole": "threeVideosIntro"
@@ -572,7 +572,7 @@
           "components": [
             {
               "type": "richText",
-              "html": "<div class=\"course-whats-next\" style=\"max-width:40rem;\">\n  <p class=\"course-whats-next__intro\">You've practiced the basics. Now knit your first hat.</p>\n  <article class=\"course-whats-next__card\">\n    <img src=\"/images/patterns/hat.webp\" alt=\"A machine-knit hat\" width=\"640\" height=\"480\" style=\"width:100%;max-width:16rem;height:auto;border-radius:8px;margin:0 0 1rem;\">\n    <p class=\"course-whats-next__card-name\">Hat Pattern Builder</p>\n    <p class=\"course-whats-next__card-text\">The Hat Pattern Builder creates the instructions using your own gauge, so the hat matches the way you knit.</p>\n    <p class=\"course-whats-next__card-action\"><a class=\"kbm-btn kbm-btn-primary\" href=\"/patterns/hat/builder?new=1\" target=\"_blank\" rel=\"noopener noreferrer\">Create Your Hat Pattern</a></p>\n    <p class=\"course-whats-next__card-text\">The builder opens in a new tab. When your pattern is ready, come back to Beginner Workshop and continue with the next lesson.</p>\n  </article>\n</div>",
+              "html": "<div class=\"course-whats-next\" style=\"max-width:56rem;margin:0 auto;\">\n  <article style=\"background:#faf7f3;border:1px solid #e8dfd5;border-radius:14px;padding:clamp(1.25rem,4vw,2rem);\">\n\n    <div style=\"display:flex;flex-wrap:wrap;align-items:center;gap:1.5rem;\">\n\n      <div style=\"flex:2 1 17rem;min-width:0;\">\n        <p style=\"font-size:0.85rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#765744;margin:0 0 0.5rem;\">\n          Your first project\n        </p>\n\n        <h2 style=\"font-size:1.75rem;line-height:1.2;margin:0 0 1rem;\">\n          Let’s knit a hat!\n        </h2>\n\n        <p style=\"margin:0 0 1rem;line-height:1.6;\">\n          You've practiced the basics. Now put them to work.\n        </p>\n\n        <p style=\"margin:0 0 1.5rem;line-height:1.6;\">\n          The Hat Pattern Builder uses your gauge to create\n          instructions just for you.\n        </p>\n\n        <a class=\"kbm-btn kbm-btn-primary\"\n           href=\"/patterns/hat/builder?new=1\"\n           target=\"_blank\"\n           rel=\"noopener noreferrer\"\n           style=\"display:inline-block;max-width:100%;box-sizing:border-box;white-space:normal;text-align:center;\">\n          Create Your Hat Pattern\n        </a>\n      </div>\n\n      <div style=\"flex:1 1 12rem;max-width:18rem;margin:0 auto;\">\n        <img\n          src=\"/images/course-content/33/hat-builder.png\"\n          alt=\"A machine-knit hat\"\n          width=\"640\"\n          height=\"480\"\n          style=\"display:block;width:100%;height:auto;border-radius:10px;\">\n      </div>\n\n    </div>\n\n    <p style=\"margin:1.5rem 0 0;padding-top:1rem;border-top:1px solid #e8dfd5;font-size:0.95rem;line-height:1.6;color:#555;\">\n      The builder opens in a new tab. Once your pattern is ready,\n      return to Beginner Workshop for the next lesson.\n    </p>\n\n  </article>\n</div>",
               "legacyComponentId": 46210,
               "order": 1
             }

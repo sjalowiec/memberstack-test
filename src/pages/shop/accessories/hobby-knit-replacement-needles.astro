@@ -1,0 +1,348 @@
+---
+/**
+ * Sales page for Hobby Knit Replacement Needles.
+ * Production returns 404 until `published` is true.
+ */
+export const prerender = false;
+
+import Layout from "../../../layouts/Layout.astro";
+import { HOBBY_KNIT_NEEDLES } from "../../../data/shop/hobbyKnitNeedles";
+import {
+  hobbyKnitNeedlesCheckoutHref,
+  isHobbyKnitNeedlesProductionBlocked,
+} from "../../../lib/shop/hobbyKnitNeedles";
+
+const product = HOBBY_KNIT_NEEDLES;
+
+if (
+  isHobbyKnitNeedlesProductionBlocked(Astro.url.hostname, {
+    isViteDev: import.meta.env.DEV,
+    publicSiteEnv: import.meta.env.PUBLIC_SITE_ENV,
+  })
+) {
+  return new Response("Not found", { status: 404 });
+}
+
+if (!product.published) {
+  Astro.response.headers.set("X-Robots-Tag", "noindex, nofollow");
+}
+
+const checkoutHref = hobbyKnitNeedlesCheckoutHref(product);
+const title = product.pageTitle;
+const description = product.metaDescription;
+---
+
+<Layout {title} {description} skipAnalytics={!product.published}>
+  {
+    !product.published && (
+      <Fragment slot="head">
+        <meta name="robots" content="noindex, nofollow" />
+      </Fragment>
+    )
+  }
+
+  <div
+    class="needle-page"
+    {...(product.published ? {} : { "data-pagefind-ignore": true })}
+  >
+    {
+      !product.published && (
+        <p class="needle-draft" role="status">
+          Draft preview. This page is not on the live shop.
+        </p>
+      )
+    }
+
+    <nav class="needle-breadcrumb" aria-label="Breadcrumb">
+      <a href="/shop" class="back-link">← Back to Shop</a>
+    </nav>
+
+    <div class="needle-product">
+      <h1 class="needle-name">{product.name}</h1>
+
+      <a
+        href={product.imageSrc}
+        class="needle-photo-link"
+        data-hobby-knit-enlarge
+      >
+        <img
+          src={product.imageSrc}
+          alt={product.imageAlt}
+          class="needle-photo"
+          width={product.imageWidth}
+          height={product.imageHeight}
+        />
+        <span class="needle-enlarge-label">Enlarge</span>
+      </a>
+
+      <div class="needle-details">
+        <p>Set of 3 replacement needles for the Hobby Knit cord knitter.</p>
+        <p>
+          These are unused vintage needles from the remaining original inventory.
+          The Hobby Knit cord knitter is no longer manufactured, and only a limited
+          number remain.
+        </p>
+        <p>
+          Please confirm that you have the Hobby Knit cord knitter before ordering.
+          If you're unsure,{" "}
+          <a
+            href="/contact/"
+            class="contact-modal-trigger"
+            data-contact-source="hobby-knit-replacement-needles"
+          >
+            contact us
+          </a>{" "}
+          with a photo of your machine before purchasing.
+        </p>
+
+        <section class="needle-purchase" aria-label="Purchase">
+          <p class="needle-price">{product.priceLabel}</p>
+          <p class="needle-checkout-note">{product.checkoutNote}</p>
+          <a
+            href={checkoutHref}
+            class="needle-buy"
+            rel="noopener noreferrer"
+          >
+            Buy a Set of 3
+          </a>
+          <p class="needle-stock">Limited remaining stock. U.S. orders only.</p>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <dialog class="needle-dialog" data-hobby-knit-dialog>
+    <button type="button" class="needle-dialog-close" data-hobby-knit-dialog-close>
+      Close
+    </button>
+    <img
+      src={product.imageSrc}
+      alt={product.imageAlt}
+      class="needle-dialog-photo"
+      width={product.imageWidth}
+      height={product.imageHeight}
+    />
+  </dialog>
+
+  <script>
+    const opener = document.querySelector("[data-hobby-knit-enlarge]");
+    const dialog = document.querySelector("[data-hobby-knit-dialog]");
+    if (opener instanceof HTMLAnchorElement && dialog instanceof HTMLDialogElement) {
+      opener.addEventListener("click", (event) => {
+        event.preventDefault();
+        dialog.showModal();
+      });
+      dialog.addEventListener("click", (event) => {
+        if (event.target === dialog) dialog.close();
+      });
+      dialog.querySelector("[data-hobby-knit-dialog-close]")?.addEventListener("click", () => {
+        dialog.close();
+      });
+    }
+  </script>
+</Layout>
+
+<style>
+  .needle-page {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0.5rem 1rem 4rem;
+  }
+
+  .needle-draft {
+    margin: 0 0 1rem;
+    padding: 0.55rem 0.75rem;
+    border-radius: 8px;
+    background: #fff7ed;
+    border: 1px solid #fdba74;
+    color: #9a3412;
+    font-size: 0.92rem;
+    font-weight: 600;
+  }
+
+  .needle-breadcrumb {
+    font-size: 0.95rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .back-link {
+    font-weight: 600;
+    color: var(--kbm-green);
+    text-decoration: underline;
+  }
+
+  .back-link:hover {
+    color: var(--kbm-green-hover, #445626);
+  }
+
+  .needle-product {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.75rem 1.5rem;
+    align-items: start;
+  }
+
+  .needle-name {
+    font-size: var(--text-xxl);
+    line-height: 1.2;
+    font-weight: 600;
+    color: var(--kbm-green);
+    margin: 0;
+  }
+
+  .needle-photo-link {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.4rem;
+    width: min(100%, 22rem);
+    text-decoration: none;
+  }
+
+  .needle-photo {
+    display: block;
+    width: 100%;
+    height: auto;
+    border: 1px solid #dbe6c5;
+    background: #f7faf0;
+  }
+
+  .needle-enlarge-label {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--kbm-green);
+    text-decoration: underline;
+  }
+
+  .needle-details p {
+    font-size: 1.05rem;
+    color: #5a6b47;
+    line-height: 1.6;
+    margin: 0 0 1rem;
+  }
+
+  .needle-details a {
+    color: var(--kbm-green);
+    font-weight: 600;
+  }
+
+  .needle-purchase {
+    width: 100%;
+    max-width: 40rem;
+    padding: 0.85rem 1.15rem;
+    margin: 0.25rem 0 0;
+    background: #f7faf0;
+    border: 1px solid #dbe6c5;
+    border-radius: 12px;
+  }
+
+  .needle-price {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--kbm-green);
+    margin: 0 0 0.35rem;
+  }
+
+  .needle-checkout-note,
+  .needle-stock {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #3d4e21;
+    line-height: 1.5;
+    margin: 0 0 0.85rem;
+  }
+
+  .needle-stock {
+    margin: 0.85rem 0 0;
+  }
+
+  /*
+   * Global `a`, `a:hover`, and `a:visited` are dark green and can outrank a
+   * single class. These states keep the label white on the green button.
+   */
+  a.needle-buy:link,
+  a.needle-buy:visited,
+  a.needle-buy:hover,
+  a.needle-buy:focus,
+  a.needle-buy:focus-visible,
+  a.needle-buy:active {
+    display: inline-block;
+    padding: 0.7rem 1.75rem;
+    background: var(--kbm-green);
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 1rem;
+    border-radius: 8px;
+    text-decoration: none;
+  }
+
+  a.needle-buy:hover,
+  a.needle-buy:focus,
+  a.needle-buy:focus-visible,
+  a.needle-buy:active {
+    background: var(--kbm-green-hover, #445626);
+    color: #ffffff;
+    text-decoration: none;
+  }
+
+  a.needle-buy:focus-visible {
+    outline: 2px solid #ffffff;
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px var(--kbm-green);
+  }
+
+  .needle-dialog {
+    width: min(92vw, 48rem);
+    max-height: 92vh;
+    border: 0;
+    padding: 0.75rem;
+    background: #ffffff;
+  }
+
+  .needle-dialog::backdrop {
+    background: rgba(20, 28, 12, 0.72);
+  }
+
+  .needle-dialog-close {
+    display: inline-block;
+    margin: 0 0 0.5rem;
+    padding: 0.35rem 0.75rem;
+    border: 1px solid #dbe6c5;
+    border-radius: 8px;
+    background: #f7faf0;
+    color: var(--kbm-green);
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .needle-dialog-photo {
+    display: block;
+    width: auto;
+    max-width: 100%;
+    height: auto;
+    max-height: 80vh;
+    object-fit: contain;
+    margin: 0 auto;
+  }
+
+  @media (min-width: 720px) {
+    .needle-product {
+      grid-template-columns: minmax(200px, 22rem) minmax(0, 1fr);
+      grid-template-areas:
+        "photo name"
+        "photo details";
+    }
+
+    .needle-photo-link {
+      grid-area: photo;
+    }
+
+    .needle-name {
+      grid-area: name;
+    }
+
+    .needle-details {
+      grid-area: details;
+    }
+  }
+</style>

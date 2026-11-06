@@ -1,0 +1,113 @@
+---
+/**
+ * Shop card for Hobby Knit Replacement Needles.
+ * Hidden on the live site while the product is unpublished.
+ */
+import { HOBBY_KNIT_NEEDLES } from "../../data/shop/hobbyKnitNeedles";
+import { isHobbyKnitNeedlesProductionBlocked } from "../../lib/shop/hobbyKnitNeedles";
+
+const product = HOBBY_KNIT_NEEDLES;
+const showListing = !isHobbyKnitNeedlesProductionBlocked(Astro.url.hostname, {
+  isViteDev: import.meta.env.DEV,
+  publicSiteEnv: import.meta.env.PUBLIC_SITE_ENV,
+});
+---
+
+{
+  showListing && (
+    <article class="needle-shop-card">
+      <a href={product.path} class="needle-shop-photo-link">
+        <img
+          src={product.imageSrc}
+          alt={product.imageAlt}
+          class="needle-shop-photo"
+          width={product.imageWidth}
+          height={product.imageHeight}
+        />
+      </a>
+      <div class="needle-shop-body">
+        <h2 class="needle-shop-name">
+          <a href={product.path}>{product.name}</a>
+        </h2>
+        <p class="needle-shop-price">{product.cardPriceLabel}</p>
+        <p class="needle-shop-note">{product.cardNote}</p>
+        <a href={product.path} class="needle-shop-details">View Details</a>
+      </div>
+    </article>
+  )
+}
+
+<style>
+  .needle-shop-card {
+    background: #fafbf9;
+    border: 1px solid #e8ebe4;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .needle-shop-photo-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f7faf0;
+    padding: 0.75rem;
+  }
+
+  .needle-shop-photo {
+    display: block;
+    width: auto;
+    max-width: 100%;
+    height: auto;
+    max-height: 220px;
+  }
+
+  .needle-shop-body {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    padding: 1.25rem;
+  }
+
+  .needle-shop-name {
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin: 0;
+  }
+
+  .needle-shop-name a {
+    color: var(--kbm-green);
+    text-decoration: none;
+  }
+
+  .needle-shop-name a:hover {
+    text-decoration: underline;
+  }
+
+  .needle-shop-price {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--kbm-green);
+    margin: 0.75rem 0 0;
+  }
+
+  .needle-shop-note {
+    font-size: 0.95rem;
+    color: #5a6b47;
+    line-height: 1.5;
+    margin: 0.4rem 0 0;
+  }
+
+  .needle-shop-details {
+    display: inline-block;
+    margin-top: 1rem;
+    font-weight: 600;
+    color: var(--kbm-green);
+    text-decoration: underline;
+  }
+
+  .needle-shop-details:hover {
+    color: var(--kbm-green-hover, #445626);
+  }
+</style>

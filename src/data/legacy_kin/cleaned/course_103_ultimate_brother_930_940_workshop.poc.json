@@ -6,8 +6,8 @@
     "title": "Ultimate Brother 930/940 Workshop",
     "slug": "ultimate-brother-930-940-workshop",
     "description": "One of the more popular Brother Electronic machines, this workhorse has it all! With this course you will set up and put your Brother 940 to work. Do you have a Brother 930? The 940 just has more memory in the electronics. The operation of the machine is the same. This machine was also sold as a Knit King Compuknit. Over 3 hours of video, plus cheatsheets and tips and tricks for success with your machine.",
-    "status": "draft",
-    "published": false,
+    "status": "published",
+    "published": true,
     "legacy": {
       "sourceExport": "course_103_ultimate_brother_930_940_workshop.csv",
       "sourceCsv": "src/data/legacy_kin/exports/kin-all-legacy-courses-content.csv",
@@ -15,7 +15,7 @@
       "preparedForReviewAt": "2026-11-04",
       "contentRevision": 1,
       "draftReview": {
-        "note": "Unpublished review copy for Watson editing. Lesson ids and member access were not changed. Not for customers.",
+        "note": "Published from the kin-dev Watson draft. The KH930/KH940 compatibility reference was not included. The Daisy Knits archive link stays in KCC Color Changer.",
         "examples": [
           "Course 33 Beginner Workshop review",
           "Course 64 Your 2nd Sweater conversion"
@@ -188,8 +188,8 @@
       }
     },
     "thumbnail": "/images/courses/940_course_thumb.webp",
-    "contentStatus": "in_progress",
-    "active": false
+    "contentStatus": "cleaned",
+    "active": true
   },
   "lessons": [
     {
@@ -222,7 +222,7 @@
           "components": [
             {
               "type": "richText",
-              "html": "<style>\r\nhr.style13 {\r\nheight: 10px;\r\nborder: 0;\r\nbox-shadow: 0 10px 10px -10px #8c8b8b inset;\r\n}\r\n\r\n</style>\r\n\r\n\r\nAs you learn about the different techniques available with your machine, create your own reference cards to easily remember the carriage settings.<br>\r\nUse highlighters, markers, colored pencils and make notes. <br><div class=\"text-center\"></div>\r\n\r\n<a href=\"/downloads/940_reference_card.pdf\"><img src=\"/tools/technique_card_gif1.gif\"></a>\r\n\r\n<hr class=\"style13\">\r\n\r\n\r\n\r\nSupplied with the machines was a printed pad of \"Design Sheets\". These were graph paper to use for sketching out and recording stitch designs.  <br>Follow the sketch when inputting your own custom stitch patterns in the 940 electronics.<br>\r\n\r\n<a class=\"imagepopup\" data-imagetitle=\"Design Sheets\" data-image=\"/images/course-content/103/design_sheets_kin.jpg\">\r\n\r\n<figure>\r\n\r\n<img class=\"center-block\" src=\"/images/course-content/103/design_sheet_cover.jpg\"></a>\r\n<figcaption align=\"center\"><br>\r\n<a target=\"_blank\" href=\"/downloads/design_sheet.pdf\" download> \r\n\r\n<i class=\"fa fa-download\" aria-hidden=\"true\"></i> Download a printable design sheet </a></figcaption>\r\n</figure>\r\n\r\n",
+              "html": "<h2>Printable Reference Cards</h2>\n\n<p>As you try different techniques on your machine, make a reference card for each one so you can quickly look up the carriage settings. Use highlighters, markers, or colored pencils to mark the settings, and add your own notes.</p>\n\n<p>\n  <a href=\"/downloads/940_reference_card.pdf\">\n    <img src=\"https://knititnow.com/images/shop/downloads/machine-technique-reference-cards.webp\" alt=\"Machine technique reference cards\">\n  </a>\n</p>\n\n<p><a href=\"/downloads/940_reference_card.pdf\" download>Download the printable reference card (PDF)</a></p>\n\n<h2>Printable Design Sheets</h2>\n\n<p>Brother supplied a pad of design sheets with the machine. Use this graph paper to sketch and record your stitch patterns, then follow your sketch when entering a custom pattern on the Brother 940.</p>\n\n<figure>\n  <a href=\"/images/course-content/103/design_sheets_kin.jpg\">\n    <img src=\"/images/course-content/103/design_sheet_cover.jpg\" alt=\"Brother Design Sheets cover\">\n  </a>\n  <figcaption><a href=\"/downloads/design_sheet.pdf\" download>Download a printable design sheet (PDF)</a></figcaption>\n</figure>",
               "legacyComponentId": 8814,
               "order": 1
             }
@@ -239,7 +239,7 @@
           "components": [
             {
               "type": "richText",
-              "html": "\r\n\r\nAt first glance, any knitting machine seems complicated.  Think about the dashboard in a car.  There are lots of dials and buttons and levers, but once you learn the names of things you'll quickly discover what you need to make the car go.<br>Examine the hotspots below and learn the names of the elements that make up your knitting machine.  As you work through this course, these terms will be come second-nature and you will associate the terms with the functions of the machine.<br>\r\n<img src=\"/images/course-content/103/needle1.jpg\">\r\n\r\n",
+              "html": "\n\nAt first glance, any knitting machine seems complicated.  Think about the dashboard in a car.  There are lots of dials and buttons and levers, but once you learn the names of things you'll quickly discover what you need to make the car go.<br>Examine the hotspots below and learn the names of the elements that make up your knitting machine.  As you work through this course, these terms will be come second-nature and you will associate the terms with the functions of the machine.<br><br><p data-pm-slice=\"1 1 </p>\n<img src=\"/images/course-content/103/needle1.jpg\">\n\n",
               "legacyComponentId": 8547,
               "order": 1
             },
@@ -255,7 +255,6 @@
                 "HOTSPOTCOUNT": "17",
                 "IMAGE_HEIGHT": "377",
                 "IMAGE_WIDTH": "1000",
-                "SECONDDIV": "padding-bottom: 37.7%",
                 "SPOTT_IMAGE": "/images/course-content/103/940_machine_spott.jpg",
                 "SPOT_ACTIONID_1": "62",
                 "SPOT_ACTIONID_16": "62",
@@ -339,7 +338,6 @@
                 "HOTSPOTCOUNT": "17",
                 "IMAGE_HEIGHT": "677",
                 "IMAGE_WIDTH": "1000",
-                "SECONDDIV": "padding-bottom: 67.7%",
                 "SPOTT_IMAGE": "/images/course-content/103/940_carriage_spott.jpg",
                 "SPOT_ACTIONID_17": "62",
                 "SPOT_CORD_1": "top: 9.010339734121123%;  left: 7.3%;  width: 2%;  height: 2.954209748892171%;",
@@ -619,7 +617,7 @@
           "components": [
             {
               "type": "richText",
-              "html": "\r\n\r\n\t\r\n\t\t\r\n\t\t\t<img src=\"/images/tools/yarn_standards/2.png\">\r\n\t\t\r\n\t\t\t <img src=\"/images/tools/yarn_standards/3.png\"><br>\r\n\r\n\t\t<br>\r\n\t\tThe 4.5 mm gauge of this machine (standard gauge) uses lighter weight yarns. Consider lace weight or sock weight yarn.  In some parts of the world a yarn for this machine is named 4-Ply. <br>You can choose a lighter weight yarn and knit it at a very loose tension for a lightweight fabric. You can knit the same yarn at a tighter tension for a very different look. The fiber, color and texture of the yarn is up to you.<br>The only limit is the size of the needles. If the yarn is too thick and doesn't fit in the hooks of the needles, it can split and/or jam the machine.<br>\r\n\t\r\n\t\t \r\n\t\r\n\r\n\r\n<span style=\"font-size:1.5em\">Compare Yarn Weights by Machine Pitch </span><a data-GlossaryId=\"363\" class=\"glossaryhelp\">Needle Pitch <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a>\r\n\r\n\t\t\t\t\t\t<table style=\"width:50%\" class=\"table table-responsive\">\r\n\t\t\t\t\t\t\t\t<tr id=\"YYP0\" class=\"yardrow\">\r\n\t\t\t\t\t\t\t\t\t<td><img src=\"/images/tools/yarn_standards/0.png\" width=\"42\" height=\"42\" alt=\"\"></td>\r\n\t\t\t\t\t\t\t\t\t<td>Lace</td>\r\n\t\t\t\t\t\t\t\t\t<td>4000 - 10,000 ypp</td>\r\n\t\t\t\t\t\t\t\t\t<td>33-40 sts</td>\r\n\t\t\t\t\t\t\t\t\t<td>Standard (stranded)</td>\r\n\t\t\t\t\t\t\t\t</tr>\r\n\t\t\t\t\t\t\t\t<tr id=\"YYP1\" class=\"yardrow\">\r\n\t\t\t\t\t\t\t\t\t<td><img src=\"/images/tools/yarn_standards/1.png\" width=\"42\" height=\"42\" alt=\"\"></td>\r\n\t\t\t\t\t\t\t\t\t<td>Super fine</td>\r\n\t\t\t\t\t\t\t\t\t<td>3000-4000 ypp</td>\r\n\t\t\t\t\t\t\t\t\t<td>27-32 sts</td>\r\n\t\t\t\t\t\t\t\t\t<td><span class=\"yellow_highlight\">Standard (stranded)</span></td>\r\n\t\t\t\t\t\t\t\t</tr>\r\n\t\t\t\t\t\t\t\t<tr id=\"YYP2\" class=\"yardrow\">\r\n\t\t\t\t\t\t\t\t\t<td><img src=\"/images/tools/yarn_standards/2.png\" width=\"42\" height=\"42\" alt=\"\"></td>\r\n\t\t\t\t\t\t\t\t\t<td>Fine</td>\r\n\t\t\t\t\t\t\t\t\t<td>2000-3000</td>\r\n\t\t\t\t\t\t\t\t\t<td>23-26</td>\r\n\t\t\t\t\t\t\t\t\t<td><span class=\"yellow_highlight\">Standard / Double Bed</span></td>\r\n\t\t\t\t\t\t\t\t</tr>\r\n\t\t\t\t\t\t\t\t<tr id=\"YYP3\" class=\"yardrow\">\r\n\t\t\t\t\t\t\t\t\t<td><img src=\"/images/tools/yarn_standards/3.png\" width=\"42\" height=\"42\" alt=\"\"></td>\r\n\t\t\t\t\t\t\t\t\t<td>Light</td>\r\n\t\t\t\t\t\t\t\t\t<td>1000-2000</td>\r\n\t\t\t\t\t\t\t\t\t<td>21-24</td>\r\n\t\t\t\t\t\t\t\t\t<td><span class=\"yellow_highlight\">Mid-Gauge/Standard</span></td>\r\n\t\t\t\t\t\t\t\t</tr>\r\n\t\t\t\t\t\t\t\t<tr id=\"YYP4\" class=\"yardrow\">\r\n\t\t\t\t\t\t\t\t\t<td><img src=\"/images/tools/yarn_standards/4.png\" width=\"42\" height=\"42\" alt=\"\"></td>\r\n\t\t\t\t\t\t\t\t\t<td>Medium</td>\r\n\t\t\t\t\t\t\t\t\t<td>800-1000</td>\r\n\t\t\t\t\t\t\t\t\t<td>16-20</td>\r\n\t\t\t\t\t\t\t\t\t<td>Mid-Gauge/Bulky</td>\r\n\t\t\t\t\t\t\t\t</tr>\r\n\t\t\t\t\t\t\t\t<tr id=\"YYP5\" class=\"yardrow\">\r\n\t\t\t\t\t\t\t\t\t<td><img src=\"/images/tools/yarn_standards/5.png\" width=\"42\" height=\"42\" alt=\"\"></td>\r\n\t\t\t\t\t\t\t\t\t<td>Bulky</td>\r\n\t\t\t\t\t\t\t\t\t<td>500-800</td>\r\n\t\t\t\t\t\t\t\t\t<td>12-15</td>\r\n\t\t\t\t\t\t\t\t\t<td>Bulky</td>\r\n\t\t\t\t\t\t\t\t</tr>\r\n\t\t\t\t\t\t\t\t<tr id=\"YYP6\" class=\"yardrow\">\r\n\t\t\t\t\t\t\t\t\t<td><img src=\"/images/tools/yarn_standards/6.png\" width=\"42\" height=\"42\" alt=\"\"></td>\r\n\t\t\t\t\t\t\t\t\t<td>Super Bulky</td>\r\n\t\t\t\t\t\t\t\t\t<td>100-500</td>\r\n\t\t\t\t\t\t\t\t\t<td>6-11</td>\r\n\t\t\t\t\t\t\t\t\t<td>May not be appropriate.</td>\r\n\t\t\t\t\t\t\t</table>\r\n",
+              "html": "<p>\n  The 4.5 mm gauge of this machine (standard gauge) uses lighter weight yarns.\n  Consider lace weight or sock weight yarn. In some parts of the world a yarn\n  for this machine is named 4-Ply.\n</p>\n<p>\n  You can choose a lighter weight yarn and knit it at a very loose tension for\n  a lightweight fabric. You can knit the same yarn at a tighter tension for a\n  very different look. The fiber, color and texture of the yarn is up to you.\n</p>\n<p>\n  The only limit is the size of the needles. If the yarn is too thick and\n  doesn't fit in the hooks of the needles, it can split and/or jam the machine.\n</p>\n\n<span style=\"font-size: 1.5em\">Compare Yarn Weights by Machine Pitch</span>\n<a data-GlossaryId=\"363\" class=\"glossaryhelp\">Needle Pitch <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a>\n\n<table style=\"width: 50%\">\n  <tbody>\n    <tr id=\"YYP0\" class=\"yardrow\">\n      <td><img src=\"https://knititnow.com/images/yarn/0.png\" width=\"42\" height=\"42\" alt=\"\"></td>\n      <td>Lace</td>\n      <td>4000 - 10,000 ypp</td>\n      <td>33-40 sts</td>\n      <td><span style=\"background-color: #fff59d\">Standard (stranded)</span></td>\n    </tr>\n    <tr id=\"YYP1\" class=\"yardrow\">\n      <td><img src=\"https://knititnow.com/images/yarn/1.png\" width=\"42\" height=\"42\" alt=\"\"></td>\n      <td>Super fine</td>\n      <td>3000-4000 ypp</td>\n      <td>27-32 sts</td>\n      <td><span style=\"background-color: #fff59d\">Standard (stranded)</span></td>\n    </tr>\n    <tr id=\"YYP2\" class=\"yardrow\">\n      <td><img src=\"https://knititnow.com/images/yarn/2.png\" width=\"42\" height=\"42\" alt=\"\"></td>\n      <td>Fine</td>\n      <td>2000-3000</td>\n      <td>23-26</td>\n      <td><span style=\"background-color: #fff59d\">Standard / Double Bed</span></td>\n    </tr>\n    <tr id=\"YYP3\" class=\"yardrow\">\n      <td><img src=\"https://knititnow.com/images/yarn/3.png\" width=\"42\" height=\"42\" alt=\"\"></td>\n      <td>Light</td>\n      <td>1000-2000</td>\n      <td>21-24</td>\n      <td>Mid-Gauge/Standard</td>\n    </tr>\n    <tr id=\"YYP4\" class=\"yardrow\">\n      <td><img src=\"https://knititnow.com/images/yarn/4.png\" width=\"42\" height=\"42\" alt=\"\"></td>\n      <td>Medium</td>\n      <td>800-1000</td>\n      <td>16-20</td>\n      <td>Mid-Gauge/Bulky</td>\n    </tr>\n    <tr id=\"YYP5\" class=\"yardrow\">\n      <td><img src=\"https://knititnow.com/images/yarn/5.png\" width=\"42\" height=\"42\" alt=\"\"></td>\n      <td>Bulky</td>\n      <td>500-800</td>\n      <td>12-15</td>\n      <td>Bulky</td>\n    </tr>\n    <tr id=\"YYP6\" class=\"yardrow\">\n      <td><img src=\"https://knititnow.com/images/yarn/6.png\" width=\"42\" height=\"42\" alt=\"\"></td>\n      <td>Super Bulky</td>\n      <td>100-500</td>\n      <td>6-11</td>\n      <td>May not be appropriate.</td>\n    </tr>\n  </tbody>\n</table>",
               "legacyComponentId": 8553,
               "order": 1
             },
@@ -659,7 +657,6 @@
                 "HOTSPOTCOUNT": "17",
                 "IMAGE_HEIGHT": "677",
                 "IMAGE_WIDTH": "1000",
-                "SECONDDIV": "padding-bottom: 67.7%",
                 "SPOTT_IMAGE": "/images/course-content/103/940_carriage_spott.jpg",
                 "SPOT_CORD_1": "top: 9.010339734121123%;  left: 7.3%;  width: 2%;  height: 2.954209748892171%;",
                 "SPOT_CORD_10": "top: 77.5480059084195%;  left: 29.9%;  width: 2%;  height: 2.954209748892171%;",
@@ -798,7 +795,7 @@
             {
               "type": "video",
               "vimeoId": "569614718",
-              "title": "Taitexma TH160 Replace Needle",
+              "title": "Replace a Needle",
               "legacyComponentId": 8560,
               "order": 2
             }
@@ -815,7 +812,7 @@
           "components": [
             {
               "type": "richText",
-              "html": "<span class=\"handwriting\" style=\"font-size:1.5 em\">The Automatic Patterning Device</span> <span style=\"font-size:.5 em\">(Electronics / Operation Panel)</span> <br><span class=\"handwriting\" style=\"font-size:1.5 em\">is the brains behind automatic stitch patterning on your machine.</span><br>No mystery here. The digital instructions (on/off, black/white, 1/2) determine which needles are selected to be used for stitch patterning based on the carriage settings.<br>",
+              "html": "<span class=\"handwriting\" style=\"font-size:1.5 em\">The Automatic Patterning Device</span> <span style=\"font-size:.5 em\">(Electronics / Operation Panel)</span> <br><span class=\"handwriting\" style=\"font-size:1.5 em\">is the brains behind automatic stitch patterning on your machine.</span><br>No mystery here. The digital instructions (on/off, black/white, 0:1) determine which needles are selected to be used for stitch patterning based on the carriage settings.<br>",
               "legacyComponentId": 8862,
               "order": 1
             },
@@ -837,9 +834,8 @@
                 "HOTSPOTCOUNT": "4",
                 "IMAGE_HEIGHT": "391",
                 "IMAGE_WIDTH": "999",
-                "SECONDDIV": "padding-bottom: 39.13913913913914%",
                 "SPOTT_IMAGE": "/images/course-content/103/panel1.jpg",
-                "SPOT_CORD_1": "top: 28.388746803069054%;  left: 11.31131131131131%;  width: 2.002002002002002%;  height: 5.115089514066496%;",
+                "SPOT_CORD_1": "top: 28.900255754475703%;  left: 7.007007007007007%;  width: 2.002002002002002%;  height: 5.115089514066496%;",
                 "SPOT_CORD_2": "top: 23.017902813299234%;  left: 39.33933933933934%;  width: 2.002002002002002%;  height: 5.115089514066496%;",
                 "SPOT_CORD_3": "top: 19.18158567774936%;  left: 84.18418418418419%;  width: 2.002002002002002%;  height: 5.115089514066496%;",
                 "SPOT_CORD_4": "top: 45.012787723785166%;  left: 94.49449449449449%;  width: 2.002002002002002%;  height: 5.115089514066496%;",
@@ -858,7 +854,7 @@
             },
             {
               "type": "richText",
-              "html": "<style>\r\n    .circle {\r\n        width: 25px;\r\n        height: 25px;\r\n        border-radius: 50%;\r\n        box-sizing: border-box;\r\n        text-align: center;\r\n        display: inline-block;\r\n        line-height: 25px;\r\n        background-color: #9E2065;\r\n    }\r\n\r\n    .circle a {\r\n        text-decoration: none;\r\n        color: #fff;\r\n        font-size: 16px;\r\n    }\r\n\r\n</style>\r\n<h3><span class=\"yellow_highlight\">There are 2 ways to use Stitch Patterns on this machine:</span></h3>\r\n\r\n\r\n    \r\n        <div class=\"circle\"><a href=\"#\">1</a></div>\r\n        <h3> Use Internal Stitch patterns</h3>\r\n        <br>Depending on the memory in your machine, you could have as many as 550 stitch patterns available to use.<br>\r\n        They are identified numerically and you can reference them by number using the Stitch World 1 Book.<br>\r\n\r\n        Unlike with punchcards, electronic stitch patterns can be manipulated in a number of ways (Variations)<br>\r\n\r\n        If you are just getting started, use the internal stitch patterns until you have a good understanding of how they work.\r\n    \r\n    \r\n        <div class=\"circle\"><a href=\"#\">2</a></div>\r\n        <h3>Create your own stitch patterns</h3>\r\n        Once you have mastered the stitch patterns that are in memory, you can investigate creating your own.\r\n        <ul>\r\n            <li>Beep-beep-beep method: Input a single repeat of your stitch pattern row by row, stitch by stitch</li>\r\n            <li>Use DesignaKnit or Cochenille Stitch Designer (Stitch Design software that allows you to design on a screen and then download the stitch pattern to your machine)</li>\r\n        </ul>\r\n        <br>\r\n        <em>Because there are \"rules\" relating to what can and can't be done with a knitting machine, it is important to UNDERSTAND the basics BEFORE creating your own stitch patterns</em>\r\n    \r\n\r\n",
+              "html": "<h2>Two Ways to Use Stitch Patterns</h2>\n\n<h3>1. Use Built-In Stitch Patterns</h3>\n\n<p>Depending on your machine’s memory, you may have up to 550 built-in stitch patterns. Each pattern has a number you can look up in the <em>Stitch World 1</em> book.</p>\n\n<p>Use the variation keys to change how an electronic stitch pattern knits. If you’re just getting started, practice with the built-in patterns first so you can see how they work.</p>\n\n<h3>2. Create Your Own Stitch Patterns</h3>\n\n<p>Once you’re comfortable knitting the built-in patterns, try designing your own. You can enter a design in two ways:</p>\n\n<ul>\n  <li><strong>Enter it on the machine.</strong> Use the “beep-beep-beep” method to enter one repeat, stitch by stitch and row by row.</li>\n  <li><strong>Use stitch design software.</strong> Create the pattern on your computer with DesignaKnit or Cochenille Stitch Designer, then download it to your machine.</li>\n</ul>\n\n<p><strong>Before you design your own patterns,</strong> learn how each stitch technique works and what your machine can do. That will help you create a pattern your machine can knit.</p>",
               "legacyComponentId": 8875,
               "order": 4
             }
@@ -913,7 +909,7 @@
           "components": [
             {
               "type": "richText",
-              "html": "<style>\r\nhr.style13 {\r\nheight: 10px;\r\nborder: 0;\r\nbox-shadow: 0 10px 10px -10px #8c8b8b inset;\r\n}\r\n.yellow_highlight {\r\n\r\nbackground: linear-gradient(rgba(255,255,255,0) 55%,#ffff00 45%,#ffff00);\r\n}\r\n</style>\r\n\r\n\r\n\r\n<div class=\"lead\"><b>Open  Cast on</b></div>\r\nBy definition, <span class=\"yellow_highlight\">an open cast on will have stitches that will unravel if given the chance.</span><br>Some machine manuals will give instruction for this type of cast on<br> The Cast on demonstrated in the previous video is an open cast on.<br>Here are some variations:\r\n<ul>\r\n<li>Open Cast on with a cast on Comb (shown in the video)</li>\r\n<li>Open Cast on with a wire</li>\r\n<li>Open Cast on with Ravel cord</li>\r\n</ul>\r\n<b>Most knitters graduate beyond these methods pretty quickly.</b><br>The following cast on methods leave open stitches to be worked later. For example, leave open stitches, then pick them up and hand knit some ribbing. Or turn the knitting, pick up open stitches and knit reverse stockinette.\r\n<ul>\r\n<li>Scrap and Ravel</li>\r\n<li>Using a Cast on Rag</li>\r\n</ul>\r\n<b>You will use these again and again</b>\r\n\r\n\r\n\r\n\r\n\r\n\r\n<div class='embed-responsive embed-responsive-16by9'>\n\n</div>\r\n\r\n\r\n<br><hr class=\"style13\">\r\n\r\n<div class=\"lead\"><b>Closed Cast on</b></div>\r\n<span class=\"yellow_highlight\">With a closed cast on, the starting stitches are secure. </span><br>These techniques can be categorized:\r\n<ul>\r\n<li> <b>Closed but temporary.</b><br> These cast on methods are quick and have their place ... they just wouldn't be appropriate for the finished edge of your next sweater.<br>\r\nUses:\r\n<ul>\r\n<li>Cast on for swatching</li>\r\n<li>Scrap 'n Ravel Cast on</li>\r\n<li>Cut 'n Sew</li>\r\n</ul>\r\n\r\n</li>\r\n<li><b>Closed and Functional</b><br> These techniques can be used for the edges of your knitting, without any additional finishing.\r\n<ul><li>E-wrap cast on (lots of variations)</li>\r\n<li>Chain Cast on</li>\r\n\r\n</ul>\r\n</li>\r\n</ul>\r\n\r\n",
+              "html": "<h2>Open Cast On</h2>\n\n<p><strong>An open cast on leaves stitches that can unravel.</strong> Some machine manuals include instructions for this type of cast on. The previous video shows an open cast on with a cast-on comb.</p>\n\n<p>Here are three variations:</p>\n\n<ul>\n  <li>Open cast on with a cast-on comb (shown in the video)</li>\n  <li>Open cast on with a wire</li>\n  <li>Open cast on with ravel cord</li>\n</ul>\n\n<p>Most knitters move beyond those methods pretty quickly. Here are two methods you’ll use again and again to leave stitches open for later:</p>\n\n<ul>\n  <li>Scrap and ravel</li>\n  <li>Using a cast-on rag</li>\n</ul>\n\n<p>You can pick up the open stitches and hand knit ribbing. Or turn the knitting, pick up the open stitches, and knit reverse stockinette.</p>\n\n<h2>Closed Cast On</h2>\n\n<p><strong>A closed cast on secures the starting stitches.</strong></p>\n\n<h3>Closed but Temporary</h3>\n\n<p>These methods are handy for swatching or when the cast-on edge won’t be the finished edge of your project.</p>\n\n<ul>\n  <li>Cast on for swatching</li>\n  <li>Scrap ’n Ravel cast on</li>\n  <li>Cut ’n Sew</li>\n</ul>\n\n<h3>Closed and Functional</h3>\n\n<p>Use these methods when you want a finished edge that needs no additional finishing.</p>\n\n<ul>\n  <li>E-wrap cast on (many variations)</li>\n  <li>Chain cast on</li>\n</ul>",
               "legacyComponentId": 8567,
               "order": 1
             },
@@ -936,17 +932,11 @@
         {
           "components": [
             {
-              "type": "richText",
-              "html": "<style>\r\n\t.container-border {\r\n\t\tborder: 1px solid #ccc;\r\n\t\tborder-radius: 15px;\r\n\t\tpadding-top: 20px;\r\n\t\tpadding-right: 20px;\r\n\t\tpadding-bottom: 20px;\r\n\t\tpadding-left: 20px;\r\n\t}\r\n</style>\r\n\r\n\t<div class=\"container-border text-center\">\r\n\t\t<center><img src=\"/images/course-content/86/lightbulb_icon_40x40.png\"></center> For many more cast-on tips and techniques, visit:<br>\r\n\t\tthe <a href=\"/classrooms/44/cast-on-methods\"><b>Knit it Now Classroom: Cast on Methods</b></a>\r\n\t</div>\r\n\r\n",
-              "legacyComponentId": 8562,
-              "order": 1
-            },
-            {
               "type": "video",
               "vimeoId": "725405631",
               "title": null,
               "legacyComponentId": 8563,
-              "order": 2
+              "order": 1
             },
             {
               "type": "vimeoJumpLinks",
@@ -983,7 +973,7 @@
                 }
               ],
               "legacyComponentId": 8564,
-              "order": 3,
+              "order": 2,
               "legacyFields": {
                 "CHALLENGE_ASSIGNID": "4222",
                 "CHALLENGE_COMPONENTID": "6417",
@@ -1063,17 +1053,11 @@
         {
           "components": [
             {
-              "type": "richText",
-              "html": "<style>\r\n\t.container-border {\r\n\t\tborder: 1px solid #ccc;\r\n\t\tborder-radius: 15px;\r\n\t\tpadding-top: 20px;\r\n\t\tpadding-right: 20px;\r\n\t\tpadding-bottom: 20px;\r\n\t\tpadding-left: 20px;\r\n\t}\r\n</style>\r\n\r\n\t<div class=\"container-border text-center\">\r\n\t\t<center><img src=\"/images/course-content/86/lightbulb_icon_40x40.png\"></center> For with many more bind-off techniques, visit:<br>\r\n\t\t<a href=\"/classrooms/81/bind-off-methods\"> the Knit it Now Classroom: Bind off Methods</a>\r\n\t</div>\r\n\r\n",
-              "legacyComponentId": 8867,
-              "order": 1
-            },
-            {
               "type": "video",
               "vimeoId": "527303259",
               "title": null,
               "legacyComponentId": 8868,
-              "order": 2
+              "order": 1
             },
             {
               "type": "vimeoJumpLinks",
@@ -1098,7 +1082,7 @@
                 }
               ],
               "legacyComponentId": 8869,
-              "order": 3,
+              "order": 2,
               "legacyFields": {
                 "CHALLENGE_ASSIGNID": "4223",
                 "CHALLENGE_COMPONENTID": "6414",
@@ -1136,7 +1120,7 @@
           "components": [
             {
               "type": "richText",
-              "html": "<style>\r\n.handwriting1 {'Handlee', cursive;\r\n    color: #9e2065;\r\n    font-size: 2em;\r\n    font-weight: 600;\r\ntransform: rotate(15deg);\r\n\r\n}\r\nhr.style13 {\r\nheight: 10px;\r\nborder: 0;\r\nbox-shadow: 0 10px 10px -10px #8c8b8b inset;\r\n}\r\n.handwriting2 {'Handlee', cursive;\r\n    color: #9e2065;\r\n    font-size: 2em;\r\n    font-weight: 600;\r\ntransform: rotate(-15deg);\r\ntext-align:center;\r\n}\r\n</style>\r\n<span class=\"handwriting\">SWATCHING IS NOT OPTIONAL</span><br>\r\n<span class=\"yellow_highlight\">Swatching is ESSENTIAL for your success with machine knitting.</span><br>Swatches have many uses:\r\n<ul>\r\n<li>Establish stitch and row gauge</li>\r\n\r\n<li>Test stitch patterns</li>\r\n<li>Practice techniques</li>\r\n\r\n<li>Determine how much yarn is needed</li>\r\n</ul><br>\r\n<div class=\"text-center\"></div>\r\n<hr class=\"style13\">\r\n\r\n\r\n<ol>\r\n<li>Set your row counter to 000</li>\r\n<li>Thread the mast with your working yarn.  Make sure it flows smoothly through the mast</li>\r\n<li>Thread your carriage with the yarn in the \"A\" feeder\r\n<li>Use the cast on method of your choice: Cast on 60 stitches</li>\r\n<li>Knit for 80 rows</li>\r\n<li>Bind off</li>\r\n</ol><br><div class=\"handwriting1\" style=\"1.5 em\">Knit at an even speed</div>\r\n<div class=\"handwriting2\" style=\"1.5 em\">Not too far past the edge of the knitting</div>\r\n\r\n\r\n<div class=\"handwriting\" style=\"1.5em text-align:center\"><a href=\"/downloads/940_reference_card.pdf\"><i class=\"fa fa-download\" aria-hidden=\"true\"></i>Make yourself a cheat sheet </a></div>\r\n<img src=\"/images/course-content/103/plain_knitting.jpg\">\r\n<br>",
+              "html": "<h2>Swatching Is Essential</h2>\n\n<p>A swatch gives you a chance to test your yarn and settings before you start a project. Use swatches to:</p>\n\n<ul>\n  <li>Establish stitch and row gauge</li>\n  <li>Test stitch patterns</li>\n  <li>Practice techniques</li>\n  <li>Estimate how much yarn you’ll need</li>\n</ul>\n\n<h2>Knit a Practice Swatch</h2>\n\n<ol>\n  <li>Set your row counter to 000.</li>\n  <li>Thread the mast with your working yarn. Check that the yarn flows smoothly through the mast.</li>\n  <li>Thread the carriage using the A feeder.</li>\n  <li>Cast on 60 stitches using your preferred cast-on method.</li>\n  <li>Knit to RC:080.</li>\n  <li>Bind off.</li>\n</ol>\n\n<p><strong>As you knit:</strong> Move the carriage at an even speed and avoid taking it too far past either edge of the knitting.</p>\n\n<p><button type=\"button\" class=\"videopopup lesson-watch-video\" data-vimeoid=\"1046394794\" data-videotitle=\"How to Knit a Proper Swatch: The Secret to Machine Knitting Success\">Watch the video</button></p>\n\n<p><a href=\"/downloads/940_reference_card.pdf\">Make yourself a cheat sheet with the printable reference card (PDF)</a></p>\n\n<p><img src=\"/images/course-content/103/plain_knitting.jpg\" alt=\"Plain knitting on the machine\"></p>",
               "legacyComponentId": 8870,
               "order": 1
             },
@@ -1252,7 +1236,6 @@
                 "HOTSPOTCOUNT": "34",
                 "IMAGE_HEIGHT": "227",
                 "IMAGE_WIDTH": "984",
-                "SECONDDIV": "padding-bottom: 23.069105691056908%",
                 "SPOTT_IMAGE": "/images/course-content/103/940%20electronics_spot.jpg",
                 "SPOT_ACTIONID_10": "11",
                 "SPOT_ACTIONID_21": "34",
@@ -1377,7 +1360,7 @@
             },
             {
               "type": "richText",
-              "html": "<style>\r\n    .container-border1 {\r\n        border: 2px solid #ccc;\r\n        border-radius: 15px 50px;\r\n        padding-top: 20px;\r\n        padding-right: 20px;\r\n        padding-bottom: 20px;\r\n        padding-left: 20px;\r\n        background-color: white;}\r\nhr.style13 {\r\nheight: 10px;\r\nborder: 0;\r\nbox-shadow: 0 10px 10px -10px #8c8b8b inset;\r\n}\r\n \r\n\r\n</style>\r\n<hr class=\"style13\">\r\n\r\n    \r\n        <h3>Overview:</h3>\r\n        Programming your own stitch patterns is a matter of using the control panel to enter the data stitch-by-stitch and row-by-row.<br>You will be copying a grid using the buttons in the control panel.<br>\r\n   <ul style=\"list-style-type:none;\">\r\n            <li><input type=\"checkbox\" style=\"transform: scale(1.5);margin-right:10px;background-color:#9E2065;\"> The computer assigns stitch numbers 901 - 998 for custom stitches</li>\r\n    <li><input type=\"checkbox\" style=\"transform: scale(1.5);margin-right:10px;background-color:#9E2065;\"> The pattern can be from 1 to 200 stitches (the number of needles available)</li>\r\n            <li><input type=\"checkbox\" style=\"transform: scale(1.5);margin-right:10px;background-color:#9E2065;\"> The size of the stitch pattern is \"unlimited\" (or limited to your patience level)</li>\r\n        \r\n            <li><input type=\"checkbox\" style=\"transform: scale(1.5);margin-right:10px;background-color:#9E2065;\"> Custom stitch patterns can be edited and deleted</li>\r\n            <li><input type=\"checkbox\" style=\"transform: scale(1.5);margin-right:10px;background-color:#9E2065;\"> This is 80's technology, be patient,  there may be a delay in responding with large stitch patterns</li>\r\n<li><input type=\"checkbox\" style=\"transform: scale(1.5);margin-right:10px;background-color:#9E2065;\"> Although you can't view it, you are  \"electronically\"  reproducing a black and white motif.</li>\r\n        </ul>\r\n\r\n        \r\n    \r\n    <div class=\"container-border1\">Supplied with the machines was a printed pad of \"Design Sheets\". These were graph paper to use for sketching out and recording stitch designs. <br>Follow the sketch when inputting your own custom stitch patterns in the 940 electronics.<br><a class=\"imagepopup\" data-imagetitle=\"Design Sheets\" data-image=\"/images/course-content/103/design_sheets_kin.jpg\">\r\n\r\n            <figure>\r\n\r\n                <img class=\"center-block\" src=\"/images/course-content/103/design_sheet_cover.jpg\">\r\n        </a>\r\n        <figcaption align=\"center\"><br><i class=\"fa fa-download\" aria-hidden=\"true\"></i> Download a printable design sheet</figcaption>\r\n        </figure>\r\n    </div>\r\n\r\n",
+              "html": "<h3>Overview</h3>\n\n<p>To program your own stitch pattern, use the control panel to copy your design from a grid, one stitch and one row at a time.</p>\n\n<ul>\n  <li>The machine assigns pattern numbers 901 through 998 to custom stitch patterns.</li>\n  <li>A pattern can be 1 to 200 stitches wide, up to the number of needles on the machine.</li>\n  <li>Plan the number of rows before you start. Larger designs take longer to enter.</li>\n  <li>You can edit or delete custom stitch patterns.</li>\n  <li>Give the machine a moment to respond when working with a large pattern.</li>\n  <li>You’re entering a black-and-white motif, one square at a time. Keep your design sheet handy because the control panel doesn’t display the full motif.</li>\n</ul>\n\n<h3>Printable Design Sheets</h3>\n\n<p>Brother supplied a pad of design sheets with the machine. Use this graph paper to sketch and record your stitch patterns, then follow your sketch as you enter the pattern on the Brother 940.</p>\n\n<figure>\n  <a href=\"/downloads/design_sheet.pdf\" download>\n    <img src=\"/images/course-content/103/design_sheet_cover.jpg\" alt=\"Download the printable Brother design sheet (PDF)\">\n  </a>\n  <figcaption>\n    <a href=\"/downloads/design_sheet.pdf\" download>Download a printable design sheet (PDF)</a>\n  </figcaption>\n</figure>",
               "legacyComponentId": 8949,
               "order": 3
             }
@@ -1400,7 +1383,7 @@
             },
             {
               "type": "richText",
-              "html": "<div class=\"circle\"><a href=\"#\">1</a></div><span class=\"def\"> Needle position</span><br>Letters marked on the side of the needlebed <b>A-B-D-E</b> represent:<br>\r\n\t\r\n\r\n\t\t<div class=\"table-responsive table-sm table-bordered\">\r\n\t\t\t<table class=\"table\">\r\n\t\t\t\t<tbody>\r\n\t\t\t\t\t<tr>\r\n\t\t\t\t\t\t<td><span class=\"abc\">A</span></td>\r\n\t\t\t\t\t\t<td>Out of Work Position (Non-working Position |NWP)</td>\r\n\t\t\t\t\t\t<td><em>Unused Needles</em></td>\r\n\t\t\t\t\t</tr>\r\n\t\t\t\t\t<tr>\r\n\t\t\t\t\t\t<td><span class=\"abc\">B</span></td>\r\n\t\t\t\t\t\t<td>Working Position (WP)</td>\r\n\t\t\t\t\t\t<td><em>Needles lined up to knit in stockinette and most stitch patterns</em></td>\r\n\t\t\t\t\t</tr>\r\n\t\t\t\t\t<tr>\r\n\t\t\t\t\t\t<td><span class=\"abc\">D </span></td>\r\n\t\t\t\t\t\t<td>Middle Position(MP) (Pattern Position)</td>\r\n\t\t\t\t\t\t<td><em>Bring the needles from holding position into working and pattern work positions</em></td>\r\n\t\t\t\t\t</tr>\r\n\t\t\t\t\t<tr>\r\n\t\t\t\t\t\t<td><span class=\"abc\">E</span></td>\r\n\t\t\t\t\t\t<td>Holding Position (HP)</td>\r\n\t\t\t\t\t\t<td><em>The farthest position from \"A\" on the needlebed</em></td>\r\n\t\t\t\t\t</tr>\r\n\t\t\t\t</tbody>\r\n\t\t\t</table>\r\n\r\n\r\n\t\t</div><br>\r\nBecause this is a Brother machine, the needles are automatically pre-selected when working in pattern. On the previous row we can preview what needles will be involved in the stitch pattern. (Unlike Singer/Silver/Studio machines)\r\n\t\r\n\t\r\n\t\t<center><img class=\"img-thumbnail\" src=\"/path/images/1480/needle_position.jpg\" width=\"150\"></center>\r\n\t\r\n\r\n<hr class=\"style13\">\r\n",
+              "html": "<div class=\"circle\"><a href=\"#\">1</a></div><span class=\"def\"> Needle position</span><br>Letters marked on the side of the needlebed <b>A-B-D-E</b> represent:<br>\n\t\n\n\t\t<div class=\"table-responsive table-sm table-bordered\">\n\t\t\t<table class=\"table\">\n\t\t\t\t<tbody>\n\t\t\t\t\t<tr>\n\t\t\t\t\t\t<td><span class=\"abc\">A</span></td>\n\t\t\t\t\t\t<td>Out of Work Position (Non-working Position |NWP)</td>\n\t\t\t\t\t\t<td><em>Unused Needles</em></td>\n\t\t\t\t\t</tr>\n\t\t\t\t\t<tr>\n\t\t\t\t\t\t<td><span class=\"abc\">B</span></td>\n\t\t\t\t\t\t<td>Working Position (WP)</td>\n\t\t\t\t\t\t<td><em>Needles lined up to knit in stockinette and most stitch patterns</em></td>\n\t\t\t\t\t</tr>\n\t\t\t\t\t<tr>\n\t\t\t\t\t\t<td><span class=\"abc\">D </span></td>\n\t\t\t\t\t\t<td>Middle Position(MP) (Pattern Position)</td>\n\t\t\t\t\t\t<td><em>Bring the needles from holding position into working and pattern work positions</em></td>\n\t\t\t\t\t</tr>\n\t\t\t\t\t<tr>\n\t\t\t\t\t\t<td><span class=\"abc\">E</span></td>\n\t\t\t\t\t\t<td>Holding Position (HP)</td>\n\t\t\t\t\t\t<td><em>The farthest position from \"A\" on the needlebed</em></td>\n\t\t\t\t\t</tr>\n\t\t\t\t</tbody>\n\t\t\t</table>\n\n\n\t\t</div><br>\nBecause this is a Brother machine, the needles are automatically pre-selected when working in pattern. On the previous row we can preview what needles will be involved in the stitch pattern. (Unlike Singer/Silver/Studio machines)\n\t\n\t\n\t\t<center><img class=\"img-thumbnail\" src=\"/images/course-content/103/needle_position.jpg\" width=\"150\"></center>\n\t\n\n<hr class=\"style13\">\n",
               "legacyComponentId": 8572,
               "order": 2
             },
@@ -1436,7 +1419,7 @@
           "components": [
             {
               "type": "richText",
-              "html": "Unlike with punchcards, this is an electronic machine and stitch patterns can be manipulated in various ways.<br><span class=\"yellow_highlight\"><i class=\"fa fa-exclamation-triangle\" aria-hidden=\"true\"></i> NOTE: Not all variations are appropriate for all stitch types. <a href=\"/downloads/variations_chart.pdf\" target=\"_blank\"><i class=\"fa fa-download\" aria-hidden=\"true\"></i> See chart</a></span><br><em><small>Click/Tap the icons below for examples</small></em>\r\n<br>\r\n    <div class=\"showimage\" data-desc=\"Reverse Key\" data-buttoninfo=\"/images/course-content/103/1a.png\" data-show=\"image1\" data-buttonid=\"button1\"><img id=\"button1\" src=\"/images/course-content/103/1.png\"></div>\r\n    <div class=\"showimage\" data-desc=\"Mirror Image Key\" data-buttoninfo=\"/images/course-content/103/2a.png\" data-show=\"image2\" data-buttonid=\"button2\"><img id=\"button2\" src=\"/images/course-content/103/2.png\"></div>\r\n    <div class=\"showimage\" data-desc=\"Double Width Key\" data-buttoninfo=\"/images/course-content/103/3a.png\" data-show=\"image3\" data-buttonid=\"button3\"><img id=\"button3\" src=\"/images/course-content/103/3.png\"></div>\r\n    <div class=\"showimage\" data-desc=\"Double Length Key\" data-buttoninfo=\"/images/course-content/103/4a.png\" data-show=\"image4\" data-buttonid=\"button4\"><img id=\"button4\" src=\"/images/course-content/103/4.png\"></div>\r\n    <div class=\"showimage\" data-desc=\"Upside Down Key\" data-buttoninfo=\"/images/course-content/103/5a.png\" data-show=\"image5\" data-buttonid=\"button5\"><img id=\"button5\" src=\"/images/course-content/103/5.png\"></div>\r\n    <div class=\"showimage\" data-desc=\"KHC Key\" data-buttoninfo=\"/images/course-content/103/6a.png\" data-show=\"image6\" data-buttonid=\"button6\"><img id=\"button6\" src=\"/images/course-content/103/6.png\"></div>\r\n    <div class=\"KRCKey\" data-desc=\"KRC Key\" data-buttoninfo=\"/images/course-content/103/7a.png\" data-show=\"image7\" data-buttonid=\"button7\"><img id=\"button7\" src=\"/images/course-content/103/7.png\"></div>\r\n\r\n<br>\r\n<div>\r\n    \r\n        <h3 id=\"buttondescrption\" class=\"text-center\"></h3>\r\n        <br>\r\n\r\n        <img id=\"image1\" class=\"optionimage\" style=\"display:none;\" src=\"/images/course-content/103/1_reverse.jpg\" width=\"300\">\r\n        <img id=\"image2\" class=\"optionimage\" style=\"display:none;\" src=\"/images/course-content/103/2.jpg\" width=\"300\">\r\n\r\n        <img id=\"image3\" class=\"optionimage\" style=\"display:none;\" src=\"/images/course-content/103/3.jpg\" width=\"300\">\r\n        <img id=\"image4\" class=\"optionimage\" style=\"display:none;\" src=\"/images/course-content/103/4.jpg\" width=\"300\">\r\n        <img id=\"image5\" class=\"optionimage\" style=\"display:none;\" src=\"/images/course-content/103/5.jpg\" width=\"300\">\r\n        <img id=\"image6\" class=\"optionimage\" style=\"display:none;\" src=\"/images/course-content/103/6.jpg\" width=\"300\">\r\n        <img id=\"image7\" class=\"optionimage\" style=\"display:none;\" src=\"/images/course-content/103/7.jpg\" width=\"300\">\r\n\r\n<div id=\"KRCKey_div\" style=\"display:none;\">\r\nThe KRC button will \"separate\" a fairisle stitch pattern for use with double bed jacquard. Double Bed Jacquard is multi-color slip with colors changing every 2 rows. In the following example, the 6 row (even number of rows) fairisle design is \"separated\" to a 6 color design. Notice the color memo numbers on the separated stitch pattern.\r\n\r\n        \r\n            <img src=\"/images/course-content/103/krc1.jpg\">\r\n            \r\n                <img src=\"/images/course-content/103/krc21.jpg\">\r\n            \r\n        \r\n\r\n        <br>  If you are new to Double Bed Jacquard, <span class=\"yellow_highlight\">it is highly recommended you use the built-in stitch patterns in the Stitch World book that are already separated.</span>  Patterns 368-394.  Once you get more familiar with this technique you can experiment with your own separations.\r\n        <br>\r\n\r\n    </div>\r\n\r\n\r\n<script language=\"JavaScript\">\r\n    $(\".showimage\").click(function() {\r\n        $(\".optionimage\").hide();\r\n        $(\"#\" + $(this).attr('data-show')).show();\r\n        $(\"#button1\").attr('src', '/images/course-content/103/1.png');\r\n        $(\"#button2\").attr('src', '/images/course-content/103/2.png');\r\n        $(\"#button3\").attr('src', '/images/course-content/103/3.png');\r\n        $(\"#button4\").attr('src', '/images/course-content/103/4.png');\r\n        $(\"#button5\").attr('src', '/images/course-content/103/5.png');\r\n        $(\"#button6\").attr('src', '/images/course-content/103/6.png');\r\n        $(\"#button7\").attr('src', '/images/course-content/103/7.png');\r\n        $(\"#button7\").attr('src', '/images/course-content/103/7.png');\r\n        $(\"#\" + $(this).attr('data-buttonid')).attr('src', $(this).attr('data-buttoninfo'));\r\n        $(\"#buttondescrption\").html($(this).attr('data-desc'));\r\n        $(\"#KRCKey_div\").hide();\r\n    });\r\n\r\n\r\n$( \".KRCKey\" ).click(function() {\r\n$(\".optionimage\").hide();\r\n  $('#KRCKey_div').toggle();\r\n});\r\n</script>\r\n",
+              "html": "<p>On the Brother 930/940, you can use the variation keys to change how an electronic stitch pattern knits.</p>\n\n<p><strong>Some variations work only with certain stitch types.</strong> Check the <a href=\"/downloads/variations_chart.pdf\">pattern variations chart (PDF)</a> before choosing a variation.</p>\n\n<p>Select a key below to see an example.</p>\n\n<details>\n  <summary><img src=\"/images/course-content/103/1.png\" alt=\"\"> Reverse Key</summary>\n  <p><img src=\"/images/course-content/103/1_reverse.jpg\" alt=\"Stitch pattern example using the Reverse Key\" width=\"300\"></p>\n</details>\n\n<details>\n  <summary><img src=\"/images/course-content/103/2.png\" alt=\"\"> Mirror Image Key</summary>\n  <p><img src=\"/images/course-content/103/2.jpg\" alt=\"Stitch pattern example using the Mirror Image Key\" width=\"300\"></p>\n</details>\n\n<details>\n  <summary><img src=\"/images/course-content/103/3.png\" alt=\"\"> Double Width Key</summary>\n  <p><img src=\"/images/course-content/103/3.jpg\" alt=\"Stitch pattern example using the Double Width Key\" width=\"300\"></p>\n</details>\n\n<details>\n  <summary><img src=\"/images/course-content/103/4.png\" alt=\"\"> Double Length Key</summary>\n  <p><img src=\"/images/course-content/103/4.jpg\" alt=\"Stitch pattern example using the Double Length Key\" width=\"300\"></p>\n</details>\n\n<details>\n  <summary><img src=\"/images/course-content/103/5.png\" alt=\"\"> Upside Down Key</summary>\n  <p><img src=\"/images/course-content/103/5.jpg\" alt=\"Stitch pattern example using the Upside Down Key\" width=\"300\"></p>\n</details>\n\n<details>\n  <summary><img src=\"/images/course-content/103/6.png\" alt=\"\"> KHC Key</summary>\n  <p><img src=\"/images/course-content/103/6.jpg\" alt=\"Stitch pattern example using the KHC Key\" width=\"300\"></p>\n</details>\n\n<details>\n  <summary><img src=\"/images/course-content/103/7.png\" alt=\"\"> KRC Key</summary>\n  <p>The KRC Key separates a Fair Isle stitch pattern for double-bed jacquard. In this technique, you use multicolor slip and change colors every two rows. Compare the original six-row design with the separated pattern and look for the color memo numbers.</p>\n\n  <p><img src=\"/images/course-content/103/krc1.jpg\" alt=\"Original Fair Isle design before separation\"></p>\n  <p><img src=\"/images/course-content/103/krc21.jpg\" alt=\"Separated stitch pattern with color memo numbers\"></p>\n\n  <p><strong>New to double-bed jacquard?</strong> Start with patterns 368–394 in the <em>Stitch World</em> book. They’re already separated. Once you’re comfortable with the technique, try separating a design yourself.</p>\n</details>",
               "legacyComponentId": 8578,
               "order": 1
             }
@@ -1969,22 +1952,16 @@
           "components": [
             {
               "type": "richText",
-              "html": "<style>\r\n/* styling paper */\r\n#paper {\r\nwidth: 800px;\r\n\r\nposition: relative;\r\nmargin: 20px auto;\r\npadding-top: 40px;\r\npadding-bottom: 40px;\r\nbackground-color: white;\r\nbox-shadow: 0px 0px 5px 0px #888;\r\n}\r\n\r\n/* styling red vertical line */\r\n#paper::before {\r\ncontent: '';\r\nwidth: 2px;\r\nheight: 100%;\r\nposition: absolute;\r\ntop: 0;\r\nleft: 40px;\r\nbackground-color: #9E2065;\r\n}\r\n\r\n/* styling blue horizontal lines */\r\n#pattern {\r\nheight: 100%;\r\nbackground-image: repeating-linear-gradient(white 0px, white 24px, teal 25px);\r\n}\r\n\r\n/* styling text content */\r\n#content {\r\npadding-top: 6px;\r\npadding-left: 56px;\r\npadding-right: 16px;\r\nline-height: 25px;\r\nfont-size: 16px;\r\nletter-spacing: 1px;\r\nword-spacing: 5px;\r\n}\r\n.indent {\r\n  text-indent: 40px;\r\n}\r\n\t.circle {\r\n\t\twidth: 25px;\r\n\t\theight: 25px;\r\n\t\tborder-radius: 50%;\r\n\t\tbox-sizing: border-box;\r\n\t\ttext-align: center;\r\n\t\tdisplay: inline-block;\r\n\t\tline-height: 25px;\r\n\t\tbackground-color: #9E2065;\r\n\t}\r\n\r\n\t.circle a {\r\n\t\ttext-decoration: none;\r\n\t\tcolor: #fff;\r\n\t\tfont-size: 16px;\r\n\t}\r\n\r\n\t.container-border {\r\n\t\tborder: 1px solid #ccc;\r\n\t\tborder-radius: 15px;\r\n\t\tpadding-top: 20px;\r\n\t\tpadding-right: 20px;\r\n\t\tpadding-bottom: 20px;\r\n\t\tpadding-left: 50px;\r\n\t}\r\n\r\n\t.abc {\r\n\t\tfont-size: 175%;\r\n\t\tfont-weight: bold;\r\ntext-align: right;\r\n     \t}\r\n\r\n\t.def {\r\n\t\tfont-size: 100%;\r\n\t\t\r\n\t}\r\n\r\n\thr.style13 {\r\n\t\theight: 10px;\r\n\t\tborder: 0;\r\n\t\tbox-shadow: 0 10px 10px -10px #8c8b8b inset;\r\n\t}\r\n\r\n</style>\r\n\r\n",
-              "legacyComponentId": 8884,
-              "order": 1
-            },
-            {
-              "type": "richText",
-              "html": "\r\n    <div class=\"no-print\">\r\n      \r\n        <div class=\"container-border\">\r\n <h3>OVERVIEW</h3> Use the <a data-GlossaryId=\"355\" class=\"glossaryhelp\">Free Pass <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a> technique to pause your stitch patterning on one side of a neckline.<br><div class=\"circle\"><a href=\"#\">1</a></div><span class=\"def\"> Divide the knitting, scrapping off stitches as instructed by your pattern</span><br><div class=\"circle\"><a href=\"#\">2</a></div> <span class=\"def\">Knit 1 side of the neckline </span><br><div class=\"circle\"><a href=\"#\">3</a></div> <span class=\"def\">Rehang the scrapped off stitches</span><br><div class=\"circle\"><a href=\"#\">4</a></div> <span class=\"def\">Re-start the stitch pattern</span><br><div class=\"circle\"><a href=\"#\">5</a></div> <span class=\"def\">Knit and shape the 2nd side of the neckline</span>\r\n<br><em>Watch the video below for a demo of the steps</em>\r\n        </div>\r\n\r\n    </div>\r\n            \r\n                \r\n<br><div id=\"paper\">\r\n    <div id=\"pattern\">\r\n        <div id=\"content\">\r\n            <b>The steps:</b>\r\n            <br><i class=\"fa fa-check\" aria-hidden=\"true\" style=\"color: #9E2065\"></i> <span class=\"yellow_highlight\"><b>Record the stitch pattern row number <em>(example Row 5)</em> </b></span><br><i class=\"fa fa-check\" aria-hidden=\"true\" style=\"color: #9E2065\"></i>Record position of these needles ie: L65, R65 (to rehang-later)<br><i class=\"fa fa-check\" aria-hidden=\"true\" style=\"color: #9E2065\"></i> Mark your needlebed recording the needle positions (or take a clear, close up photo to compare later)<br><i class=\"fa fa-check\" aria-hidden=\"true\" style=\"color: #9E2065\"></i> Following your pattern, scrap off stitches (1/2 neckline)\r\n\r\n                    <a href=\"#tip\" data-toggle=\"collapse\">TIP <i class=\"fa fa-caret-down\" aria-hidden=\"true\"></i> </a>\r\n                    <div id=\"tip\" class=\"collapse hidden-print\">\r\n                        <em>To keep from interrupting your stitch pattern, manually knit a few rows by hand in waste yarn to scrap off.</em>\r\n                    </div>\r\n\r\n                    <br><i class=\"fa fa-check\" aria-hidden=\"true\" style=\"color: #9E2065\"></i>\r\n                    Continue knitting and shaping one side of the neckline\r\n                    <br><i class=\"fa fa-check\" aria-hidden=\"true\" style=\"color: #9E2065\"></i>\r\n                    Wrong side facing, re-hang the scrapped off stitches on the EXACT same needles they originally used - carriage on the left<br><i class=\"fa fa-check\" aria-hidden=\"true\" style=\"color: #9E2065\"></i>\r\n                    Set the display number to the stitch pattern row number <em>(Example Row 5)</em>\r\n\r\n                    <a href=\"#tip1\" data-toggle=\"collapse\">TIP <i class=\"fa fa-caret-down\" aria-hidden=\"true\"></i> </a>\r\n                    <div id=\"tip1\" class=\"collapse hidden-print\">\r\n                        <em>Use the arrows to display the desired row number </em>\r\n                    </div>\r\n                    <br><i class=\"fa fa-check\" aria-hidden=\"true\" style=\"color: #9E2065\"></i>\r\n                    Free pass to the right <b>(all needles in \"B\" and both part buttons in)</b>\r\n                    <br><i class=\"fa fa-check\" aria-hidden=\"true\" style=\"color: #9E2065\"></i>With  the needlebed marks or your photo, <b>Confirm that the correct needles are selected </b><br><i class=\"fa fa-check\" aria-hidden=\"true\" style=\"color: #9E2065\"></i>\r\n                    Cancel part buttons and set the Cam button(s) as needed for your stitch pattern <a href=\"#tip2\" data-toggle=\"collapse\">TIP <i class=\"fa fa-caret-down\" aria-hidden=\"true\"></i> </a>\r\n                    <div id=\"tip2\" class=\"collapse hidden-print\">\r\n                        <em>MC button for Fairisle, Tuck Buttons for Tuck, Part Buttons for Slip </em>\r\n                    </div>\r\n                    <br><i class=\"fa fa-check\" aria-hidden=\"true\" style=\"color: #9E2065\"></i>\r\n                    Thread the carriage (carriage on the right)<br><i class=\"fa fa-check\" aria-hidden=\"true\" style=\"color: #9E2065\"></i>\r\n                    Knit and shape the other side of the neckline according to the knitting pattern <br></div>\r\n\r\n    </div>\r\n</div>\r\n\r\n\r\n\r\n\r\n",
+              "html": "<h3>Overview</h3>\n\n<p>Use the <a data-GlossaryId=\"355\" class=\"glossaryhelp\">Free Pass</a> technique to pause stitch patterning while you shape one side of the neckline, then resume the pattern on the other side.</p>\n\n<ol>\n  <li>Divide the knitting and scrap off the stitches as directed by your knitting pattern.</li>\n  <li>Knit and shape the first side of the neckline.</li>\n  <li>Rehang the scrapped-off stitches.</li>\n  <li>Restart the stitch pattern.</li>\n  <li>Knit and shape the second side of the neckline.</li>\n</ol>\n\n<p><em>Watch the video below for a demonstration.</em></p>\n\n<h3>Step-by-Step Checklist</h3>\n\n<ol>\n  <li><strong>Record the stitch pattern row number.</strong> For example, write down Row 5.</li>\n  <li>Record the needle positions for the stitches you’ll scrap off, such as L65 and R65. Mark those positions on the needle bed or take a clear close-up photo so you can check them later.</li>\n  <li>\n    Follow your knitting pattern to scrap off the stitches for one half of the neckline.\n    <p><strong>Tip.</strong> To avoid interrupting the stitch pattern, knit a few rows by hand in waste yarn before scrapping off.</p>\n  </li>\n  <li>Knit and shape the first side of the neckline.</li>\n  <li>With the wrong side facing you and the carriage on the left, rehang the scrapped-off stitches on the <strong>same needles they came from</strong>.</li>\n  <li>Use the arrow keys to set the display to the stitch pattern row number you recorded.</li>\n  <li>With <strong>all needles in B position</strong> and <strong>both PART buttons engaged</strong>, make a free pass to the right.</li>\n  <li>Use your needle bed marks or photo to confirm that the correct needles are selected.</li>\n  <li>\n    Release the PART buttons, then set the cam buttons for your stitch pattern.\n    <p><strong>Tip.</strong> Use the MC button for Fair Isle, the TUCK buttons for tuck, or the PART buttons for slip.</p>\n  </li>\n  <li>With the carriage on the right, thread the carriage.</li>\n  <li>Knit and shape the second side of the neckline according to your knitting pattern.</li>\n</ol>",
               "legacyComponentId": 8887,
-              "order": 2
+              "order": 1
             },
             {
               "type": "video",
               "vimeoId": "735414894",
               "title": null,
               "legacyComponentId": 8980,
-              "order": 3
+              "order": 2
             }
           ],
           "title": "Necklines: The Steps",
@@ -2010,7 +1987,7 @@
           "components": [
             {
               "type": "richText",
-              "html": "<style>\r\n\t.container-border {\r\n\t\tborder: 1px solid #ccc;\r\n\t\tborder-radius: 15px;\r\n\t\tpadding-top: 20px;\r\n\t\tpadding-right: 20px;\r\n\t\tpadding-bottom: 20px;\r\n\t\tpadding-left: 20px;\r\n\t\ttext-align: center;\r\n\t}\r\n\r\n\t.lightbulb {\r\n\t\tdisplay: block;\r\n\t\tmargin-left: auto;\r\n\t\tmargin-right: auto;\r\n\t}\r\n\r\n</style>\r\n\r\n\t\r\n\r\n\t\t\r\n\t\t\t<img class=\"lightbulb\" src=\"/images/course-content/103/anatomy_thumbnail.jpg\">\r\n\t\t\t<img src=\"/images/course-content/103/tuck.png\">\r\n\t\t\r\n\r\n\t\t<span class=\"handwriting\">Tuck is a great way<br>to add texture and interest to your knitting.</span><br>\r\n\t\tWhen knitting tuck, certain needles do not knit and the working yarn travels OVER the needles out of work.\r\n\t\t<br>Once you understand how tuck stitch is created on your machine, the sky's the limit!<br><ul>\r\n\t\t\t<li>Change the number of rows tucked</li>\r\n\t\t\t<li>Change the needles selected</li>\r\n\t\t\t<li>Change the number of rows between tucks</li>\r\n\t\t\t<li>Put some needles out of work</li>\r\n\t\t\t<li>Add color</li>\r\n\t\t\t<li>Mix 'n match stitch patterns</li>\r\n\t\t</ul>\r\n\t\r\n\r\n\t<div class=\"container-border\"><img class=\"lightbulb\" src=\"/images/course-content/86/lightbulb_icon_40x40.png\"><br> For more about Tuck, visit:<br>\r\n\t\tthe <a href=\"/classrooms/91/tuck-talk\"><b>Knit it Now Classroom: Tuck Talk</b></a></div>\r\n\r\n",
+              "html": "<h3>About Tuck Stitch</h3>\n\n<p><strong>Tuck stitch is a great way to add texture and interest to your knitting.</strong></p>\n\n<p>A needle that tucks holds its existing stitch and catches the working yarn without knitting it off. When that needle knits again, it works the held stitch and the tuck loops together.</p>\n\n<p>\n  <img src=\"/images/course-content/103/anatomy_thumbnail.jpg\" alt=\"\">\n  <img src=\"/images/course-content/103/tuck.png\" alt=\"Tuck stitch illustration\">\n</p>\n\n<p>Once you understand how your machine makes tuck stitches, try these variations.</p>\n\n<ul>\n  <li>Change how many rows a needle tucks.</li>\n  <li>Change which needles are selected.</li>\n  <li>Change how many rows you knit between tucks.</li>\n  <li>Put some needles out of work to change the texture.</li>\n  <li>Add color.</li>\n  <li>Combine tuck with other stitch patterns.</li>\n</ul>",
               "legacyComponentId": 8582,
               "order": 1
             },
@@ -2144,26 +2121,6 @@
               "html": "<h3>Step 4:</h3>",
               "legacyComponentId": 8590,
               "order": 5
-            },
-            {
-              "type": "migrationPending",
-              "legacyType": "DataEntrytextarea",
-              "notes": [
-                "Unmapped legacy component type: DataEntrytextarea"
-              ],
-              "legacyFields": {
-                "CHALLENGE_ASSIGNID": "4425",
-                "CHALLENGE_COMPONENTID": "6782",
-                "DATAMODEL_ELEMENT": "tuck_notes",
-                "DATAMODEL_ICON": "fa fa-pencil",
-                "DATAMODEL_MANDITORY": "0",
-                "DATAMODEL_REQEST_TEXT": "Your notes about TUCK STITCH",
-                "DATAMODEL_TEXTAREAROWS": "4",
-                "DATAMODEL_VALIDATION_CHARS": "500",
-                "REMOVEALERT": "0"
-              },
-              "legacyComponentId": 8591,
-              "order": 6
             }
           ],
           "title": "Tuck Checklist",
@@ -2189,7 +2146,7 @@
           "components": [
             {
               "type": "richText",
-              "html": "<style>\r\n\t.container-border {\r\n\t\tborder: 1px solid #ccc;\r\n\t\tborder-radius: 15px;\r\n\t\tpadding-top: 20px;\r\n\t\tpadding-right: 20px;\r\n\t\tpadding-bottom: 20px;\r\n\t\tpadding-left: 20px;\r\ntext-align:center;\r\n\t}\r\n.ctr {\r\ntext-align:center; }\r\n.lightbulb\r\n{ display: block;\r\n  margin-left: auto;\r\n  margin-right: auto; }\r\n\r\n</style>\r\n\r\n\r\n<img class=\"lightbulb\" src=\"/path/images/118/slip_stitch.jpg\">\r\n\r\n<div class=\"container-border\"><img class=\"lightbulb\" src=\"/images/course-content/86/lightbulb_icon_40x40.png\"><br> For more about Slip Stitch, visit:<br>\r\n\t\tthe <a href=\"/classrooms/118/slip-stitch\"><b>Knit it Now Classroom: Slip Stitch</b></a>\r\n<br><img class=\"lightbulb\" src=\"/images/course-content/103/slip.png\">\r\n\t</div>\r\n\r\n\r\n\r\n<br><span class=\"handwriting\">Slip Stitch is a great way <br>to add texture and interest to your knitting.</span><br>\r\n\t\tWhen knitting slip, certain needles do not knit and the working yarn travels UNDER the needles.<br>Once you understand how slip stitch is created on your machine, the sky's the limit!<br><ul>\r\n\t\t\t<li>Change the number of rows slipped</li>\r\n\t\t\t<li>Change the needles selected</li>\r\n\t\t\t<li>Change the number of rows between slipped stitches</li>\r\n\t\t\t<li>Put some needles out of work</li>\r\n\t\t\t<li>Add color</li>\r\n\t\t\t<li>Mix 'n match stitch patterns</li>\r\n\t\t</ul>\r\n\t\t<br>\r\n\t\r\n",
+              "html": "<p>\n  <img src=\"/images/course-content/87/slip_stitch.jpg\" alt=\"Slip stitch knitting example\">\n</p>\n\n<p><strong>Slip stitch is a great way to add texture and interest to your knitting.</strong></p>\n\n<p>When a needle slips, it holds its existing stitch without knitting. The working yarn passes under the needle, leaving a float across the slipped stitch.</p>\n\n<p>Once you understand how your machine makes slip stitches, try these variations.</p>\n\n<ul>\n  <li>Change how many rows a needle slips in a row.</li>\n  <li>Change which needles are selected.</li>\n  <li>Change how many rows you knit between slip rows.</li>\n  <li>Put some needles out of work to change the texture.</li>\n  <li>Add color.</li>\n  <li>Combine slip stitch with other stitch patterns.</li>\n</ul>",
               "legacyComponentId": 8592,
               "order": 1
             },
@@ -2202,7 +2159,7 @@
             },
             {
               "type": "richText",
-              "html": "<br>\r\nCheck out the Knit it Now Stitch Library for <a href=\"/knit/stitchlibrary/7/slip-stitch\">Slip</a> and <a href=\"/knit/stitchlibrary/8/multi-color-slip\">Multi-Color Slip Stitch</a> inspiration!<br>\r\n\t <img class=\"img-thumbnail\" src=\"/path/images/118/kin405_slip_3.jpg\">\r\n\t<img class=\"img-thumbnail\" src=\"/path/images/118/kin0319_4BW.jpg\">\r\n\r\n",
+              "html": "<p>Check out the <a href=\"https://knititnow.com/stitch/\">Knit It Now Stitch Library</a> for slip stitch and multicolor slip stitch inspiration!</p>\n\n<div style=\"display: flex; gap: 12px; align-items: flex-start;\">\n  <img src=\"https://knititnow.com/stitch-patterns/swatches/7/KIN009_slip1.jpg\"\n       alt=\"Slip stitch swatch\"\n       style=\"width: 45%; max-width: 160px; height: auto; border-radius: 8px;\">\n  <img src=\"https://knititnow.com/stitch-patterns/swatches/8/kin038_1.jpg\"\n       alt=\"Multicolor slip stitch swatch\"\n       style=\"width: 45%; max-width: 160px; height: auto; border-radius: 8px;\">\n</div>",
               "legacyComponentId": 8594,
               "order": 3
             }
@@ -2296,26 +2253,6 @@
               "html": "<h3>Step 4:</h3>",
               "legacyComponentId": 8599,
               "order": 5
-            },
-            {
-              "type": "migrationPending",
-              "legacyType": "DataEntrytextarea",
-              "notes": [
-                "Unmapped legacy component type: DataEntrytextarea"
-              ],
-              "legacyFields": {
-                "CHALLENGE_ASSIGNID": "4428",
-                "CHALLENGE_COMPONENTID": "6785",
-                "DATAMODEL_ELEMENT": "slip_notes",
-                "DATAMODEL_ICON": "fa fa-pencil",
-                "DATAMODEL_MANDITORY": "0",
-                "DATAMODEL_REQEST_TEXT": "Your notes about SLIP STITCH",
-                "DATAMODEL_TEXTAREAROWS": "4",
-                "DATAMODEL_VALIDATION_CHARS": "500",
-                "REMOVEALERT": "0"
-              },
-              "legacyComponentId": 8600,
-              "order": 6
             }
           ],
           "title": "Slip Stitch Checklist",
@@ -2341,13 +2278,13 @@
           "components": [
             {
               "type": "richText",
-              "html": "<style>\r\n\t.container-border {\r\n\t\tborder: 1px solid #ccc;\r\n\t\tborder-radius: 15px;\r\n\t\tpadding-top: 20px;\r\n\t\tpadding-right: 20px;\r\n\t\tpadding-bottom: 20px;\r\n\t\tpadding-left: 20px;\r\n\t\ttext-align: center;\r\n\t}\r\nhr.style13 {\r\nheight: 10px;\r\nborder: 0;\r\nbox-shadow: 0 10px 10px -10px #8c8b8b inset;\r\n}\r\n\t.ctr {\r\n\t\ttext-align: center;\r\n\t}\r\n\r\n\t.lightbulb {\r\n\t\tdisplay: block;\r\n\t\tmargin-left: auto;\r\n\t\tmargin-right: auto;\r\n\t}\r\n\r\n</style>\r\n\r\n\r\n\r\n\t\r\n\t\t<img class=\"img-thumbnail\" src=\"/path/images/34/a_example_weave.jpg\">\r\n\r\n\t\tThe often over-looked technique of <b>Knitweave</b> creates beautiful knitted fabrics with lots of possibilities.<br>Unlike traditional weaving, think of weaving on the machine as \"laying-in\" a second yarn on top of the knitting. <br>It is a decorative technique that can be used to create interesting textures and incorporate yarn that may not be suitable for your machine.\r\n\r\n\t\t<br><span class=\"handwriting\">Have a small amount thick, fancy (possibly expensive) yarn? Use it in your machine knitting with Knitweave!<br></span><br>\r\n\t\t\r\n\t\t\t<div class=\"zoom\"><img class=\"img-thumbnail\" src=\"/path/images/34/a_weave3.jpg\"></div>\r\n\t\t\t<div class=\"zoom\"><img class=\"img-thumbnail\" src=\"/path/images/34/a_weave.jpg\"></div>\r\n\t\t\r\n\r\n\t\r\n\t<div class=\"container-border\"><img class=\"lightbulb\" src=\"/images/course-content/86/lightbulb_icon_40x40.png\"><br> For more about Knit Weave, visit:<br>\r\n\t\tthe <a href=\"/classrooms/34/knitweave\"><b>Knit it Now Classroom: Knit Weave</b></a><br>\r\n<img src=\"/images/course-content/103/weaving.png\">\r\n\t</div>\r\n\r\n\r\n<hr class=\"style13\">\r\n\r\n",
+              "html": "<div style=\"display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 220px); gap: 20px; align-items: start;\">\n  <div>\n    <p><strong>Knitweave</strong> adds texture to machine knitting by laying a second yarn over the knitted fabric. It’s a way to use decorative yarns that may be too thick or textured to knit through the needles.</p>\n\n    <p><strong>Have a little thick, fancy yarn left over?</strong> Try it as your weaving yarn.</p>\n  </div>\n\n  <div style=\"display: grid; gap: 12px;\">\n    <img src=\"/images/course-content/103/knitweave.jpg\"\n         alt=\"Knitweave fabric sample\"\n         style=\"width: 100%; height: auto; border-radius: 8px;\">\n\n    <img src=\"/images/course-content/103/weaving.png\"\n         alt=\"Illustration of machine knitweave\"\n         style=\"width: 100%; height: auto; border-radius: 8px;\">\n  </div>\n</div>",
               "legacyComponentId": 8601,
               "order": 1
             },
             {
               "type": "richText",
-              "html": "\r\n<div class=\"container-border\">\r\n<img class=\"lightbulb\" src=\"/images/course-content/86/lightbulb_icon_40x40.png\"><br>\r\n\r\n\r\n\r\n<b>NOTE:</b> The video below offers a different technique than what is suggested in your manual.<br>In the video we lay the weaving yarn ACROSS the selected needles.<br>The manual suggests threading the weaving yarn in the yarn mast and positioning it in the weaving yarn guide with each pass of the carriage.<br><span class=\"handwriting\" style=\"font-size:1.5em\">Try it both ways and see which you prefer.</span>\r\n</div>\r\n\r\n<hr class=\"style13\">",
+              "html": "<style>\n\t.container-border {\n\t\tborder: 1px solid #ccc;\n\t\tborder-radius: 15px;\n\t\tpadding-top: 20px;\n\t\tpadding-right: 20px;\n\t\tpadding-bottom: 20px;\n\t\tpadding-left: 20px;\n\t\ttext-align: center;\n\t}</style>\n<div class=\"container-border\"><b>NOTE:</b> The video below offers a different technique than what is suggested in your manual.<br>In the video we lay the weaving yarn ACROSS the selected needles.<br>The manual suggests threading the weaving yarn in the yarn mast and positioning it in the weaving yarn guide with each pass of the carriage.<br><span class=\"handwriting\" style=\"font-size:1.5em\">Try it both ways and see which you prefer.</span>\n</div>\n\n<hr class=\"style13\">",
               "legacyComponentId": 8896,
               "order": 2
             },
@@ -2360,7 +2297,7 @@
             },
             {
               "type": "richText",
-              "html": "<br>\r\nCheck out the Knit it Now Stitch Library for <a href=\"/knit/stitchlibrary/6/knitweave\">Knit Weave inspiration!<br>\r\n\t <img class=\"img-thumbnail\" src=\"/swatches/6/thumb_1017Swatch.jpg\">\r\n\t<img class=\"img-thumbnail\" src=\"/swatches/6/thumb_knitweave_thumb1.jpg\">\r\n",
+              "html": "<p>Check out the <a href=\"/stitch/\">Knit It Now Stitch Library</a> for knit weave inspiration!</p>\n\n<div style=\"display: flex; gap: 12px; align-items: flex-start;\">\n  <img src=\"/images/course-content/1017Swatch.jpg\"\n       alt=\"Knit weave swatch\"\n       style=\"width: 45%; max-width: 160px; height: auto; border-radius: 8px;\">\n  <img src=\"/images/course-content/103/929bBW.jpg\"\n       alt=\"Black-and-white knit weave swatch\"\n       style=\"width: 45%; max-width: 160px; height: auto; border-radius: 8px;\">\n</div>",
               "legacyComponentId": 8603,
               "order": 4
             }
@@ -2415,26 +2352,6 @@
               "html": "<h3>Step 3:</h3>The manual suggests threading the weaving yarn in the tension mast. Consider laying the yarn across the needles instead\r\n(as shown in the video)<br>",
               "legacyComponentId": 8607,
               "order": 4
-            },
-            {
-              "type": "migrationPending",
-              "legacyType": "DataEntrytextarea",
-              "notes": [
-                "Unmapped legacy component type: DataEntrytextarea"
-              ],
-              "legacyFields": {
-                "CHALLENGE_ASSIGNID": "4446",
-                "CHALLENGE_COMPONENTID": "6858",
-                "DATAMODEL_ELEMENT": "weaving_notes",
-                "DATAMODEL_ICON": "fa fa-pencil",
-                "DATAMODEL_MANDITORY": "0",
-                "DATAMODEL_REQEST_TEXT": "Your notes about KNIT WEAVE",
-                "DATAMODEL_TEXTAREAROWS": "4",
-                "DATAMODEL_VALIDATION_CHARS": "500",
-                "REMOVEALERT": "0"
-              },
-              "legacyComponentId": 8608,
-              "order": 5
             }
           ],
           "title": "Knit Weave Checklist",
@@ -2460,7 +2377,7 @@
           "components": [
             {
               "type": "richText",
-              "html": "<style>\r\n    .container-border {\r\n        border: 1px solid #ccc;\r\n        border-radius: 15px;\r\n        padding-top: 20px;\r\n        padding-right: 20px;\r\n        padding-bottom: 20px;\r\n        padding-left: 20px;\r\n        text-align: center;\r\n    }\r\n\r\n    hr.style13 {\r\n        height: 10px;\r\n        border: 0;\r\n        box-shadow: 0 10px 10px -10px #8c8b8b inset;\r\n    }\r\n\r\n    .ctr {\r\n        text-align: center;\r\n    }\r\n\r\n    .lightbulb {\r\n        display: block;\r\n        margin-left: auto;\r\n        margin-right: auto;\r\n    }\r\n\r\n</style>\r\n\r\n\r\n\r\n    \r\n        <img class=\"img-thumbnail center-block\" src=\"https://www.knititnow.com/contentlibrary/previewimages/thumb_693.jpg\"><br>\r\n   \r\n\r\n    <div class=\"container-border\"><img class=\"lightbulb\" src=\"/images/course-content/86/lightbulb_icon_40x40.png\"><br> For more about Fairisle, visit:<br>\r\n        the <a href=\"/classrooms/169/fairisle-stranded-knitting\"><b>Knit it Now Classroom: Fairisle (Stranded Knitting)</b></a>\r\n    </div>\r\n\r\n\r\n\r\n     Knitting in fairisle or two colors across each row is a staple technique for machine knitters.<br>By Placing yarn in each yarn feeder of the carriage and setting the machine correctly, you can knit stranded knitting in a fraction of the time of knitting it by hand<br>Because you are knitting multiple colors across the row, the yarns are carried across the purl side of the knitting. These are called <a data-GlossaryId=\"269\" class=\"glossaryhelp\">Floats <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a>.<br>When choosing a stitch pattern, keep in mind the length of the floats. It's recommended that the floats be no more than 5 stitches .. many knitters try to keep floats to 3 stitches.<br>The memo numbers of your stitch pattern alert you when to change colors.<br>Take time to master fairisle knitting with so many stitch patterns available, adding fairisle will make your knitting special.<br>\r\n<div class=\"ctr\"><span class=\"handwriting\" style=\"font-size:2em\">Tell a hand knitter that you can knit a fairisle hat in an afternoon and they will be amazed.</span><br> (PLUS your fairisle will look sooooo much better than hand knitting. <i class=\"fa fa-smile-o\" aria-hidden=\"true\"></i> )</div>\r\n\r\n    \r\n        <img src=\"/images/course-content/103/ab_feeder.png\">\r\n    \r\n    \r\n        <img src=\"/images/course-content/103/fairisle.png\">\r\n    \r\n\r\n\r\n\r\n<hr class=\"style13\">\r\n",
+              "html": "<style>\n    .container-border {\n        border: 1px solid #ccc;\n        border-radius: 15px;\n        padding-top: 20px;\n        padding-right: 20px;\n        padding-bottom: 20px;\n        padding-left: 20px;\n        text-align: center;\n    }\n\n    hr.style13 {\n        height: 10px;\n        border: 0;\n        box-shadow: 0 10px 10px -10px #8c8b8b inset;\n    }\n\n    .ctr {\n        text-align: center;\n    }\n\n    .lightbulb {\n        display: block;\n        margin-left: auto;\n        margin-right: auto;\n    }\n\n</style>\n\n\n\n    \n        <img class=\"img-thumbnail center-block\" src=\"https://www.knititnow.com/contentlibrary/previewimages/thumb_693.jpg\"><br>\n   \n\n\n     Knitting in fairisle or two colors across each row is a staple technique for machine knitters.<br>By Placing yarn in each yarn feeder of the carriage and setting the machine correctly, you can knit stranded knitting in a fraction of the time of knitting it by hand<br>Because you are knitting multiple colors across the row, the yarns are carried across the purl side of the knitting. These are called <a data-GlossaryId=\"269\" class=\"glossaryhelp\">Floats <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a>.<br>When choosing a stitch pattern, keep in mind the length of the floats. It's recommended that the floats be no more than 5 stitches .. many knitters try to keep floats to 3 stitches.<br>The memo numbers of your stitch pattern alert you when to change colors.<br>Take time to master fairisle knitting with so many stitch patterns available, adding fairisle will make your knitting special.<br>\n<div class=\"ctr\"><span class=\"handwriting\" style=\"font-size:2em\">Tell a hand knitter that you can knit a fairisle hat in an afternoon and they will be amazed.</span><br> (PLUS your fairisle will look sooooo much better than hand knitting. <i class=\"fa fa-smile-o\" aria-hidden=\"true\"></i> )</div>\n\n    \n        <img src=\"/images/course-content/103/ab_feeder.png\">\n    \n    \n        <img src=\"/images/course-content/103/fairisle.png\">\n    \n\n\n\n<hr class=\"style13\">\n",
               "legacyComponentId": 8609,
               "order": 1
             },
@@ -2551,26 +2468,6 @@
               "html": "<h3>Step 4:</h3>",
               "legacyComponentId": 8616,
               "order": 5
-            },
-            {
-              "type": "migrationPending",
-              "legacyType": "DataEntrytextarea",
-              "notes": [
-                "Unmapped legacy component type: DataEntrytextarea"
-              ],
-              "legacyFields": {
-                "CHALLENGE_ASSIGNID": "4448",
-                "CHALLENGE_COMPONENTID": "6868",
-                "DATAMODEL_ELEMENT": "Fairisle_notes",
-                "DATAMODEL_ICON": "fa fa-pencil",
-                "DATAMODEL_MANDITORY": "0",
-                "DATAMODEL_REQEST_TEXT": "Your notes about FAIRISLE",
-                "DATAMODEL_TEXTAREAROWS": "4",
-                "DATAMODEL_VALIDATION_CHARS": "500",
-                "REMOVEALERT": "0"
-              },
-              "legacyComponentId": 8617,
-              "order": 6
             }
           ],
           "title": "Fairisle Checklist",
@@ -2664,26 +2561,6 @@
               "html": "<h3>Step 4:</h3>",
               "legacyComponentId": 8624,
               "order": 5
-            },
-            {
-              "type": "migrationPending",
-              "legacyType": "DataEntrytextarea",
-              "notes": [
-                "Unmapped legacy component type: DataEntrytextarea"
-              ],
-              "legacyFields": {
-                "CHALLENGE_ASSIGNID": "4449",
-                "CHALLENGE_COMPONENTID": "6874",
-                "DATAMODEL_ELEMENT": "Thread_lace_notes",
-                "DATAMODEL_ICON": "fa fa-pencil",
-                "DATAMODEL_MANDITORY": "0",
-                "DATAMODEL_REQEST_TEXT": "Your notes about THREAD LACE",
-                "DATAMODEL_TEXTAREAROWS": "4",
-                "DATAMODEL_VALIDATION_CHARS": "500",
-                "REMOVEALERT": "0"
-              },
-              "legacyComponentId": 8625,
-              "order": 6
             }
           ],
           "title": "Thread Lace Checklist",
@@ -2785,26 +2662,6 @@
               "html": "<h3>Step 5:</h3>",
               "legacyComponentId": 8633,
               "order": 6
-            },
-            {
-              "type": "migrationPending",
-              "legacyType": "DataEntrytextarea",
-              "notes": [
-                "Unmapped legacy component type: DataEntrytextarea"
-              ],
-              "legacyFields": {
-                "CHALLENGE_ASSIGNID": "4450",
-                "CHALLENGE_COMPONENTID": "6880",
-                "DATAMODEL_ELEMENT": "plaiting_notes",
-                "DATAMODEL_ICON": "fa fa-pencil",
-                "DATAMODEL_MANDITORY": "0",
-                "DATAMODEL_REQEST_TEXT": "Your notes about PLAITING",
-                "DATAMODEL_TEXTAREAROWS": "4",
-                "DATAMODEL_VALIDATION_CHARS": "500",
-                "REMOVEALERT": "0"
-              },
-              "legacyComponentId": 8634,
-              "order": 7
             }
           ],
           "title": "Plaiting Checklist",
@@ -2974,29 +2831,9 @@
             },
             {
               "type": "richText",
-              "html": "<H3>Step 3</h3>",
+              "html": "<h3>Step 3:</h3>",
               "legacyComponentId": 8909,
               "order": 4
-            },
-            {
-              "type": "migrationPending",
-              "legacyType": "DataEntrytextarea",
-              "notes": [
-                "Unmapped legacy component type: DataEntrytextarea"
-              ],
-              "legacyFields": {
-                "CHALLENGE_ASSIGNID": "5886",
-                "DATAMODEL_ELEMENT": "Intarsia_notes",
-                "DATAMODEL_ICON": "fa fa-pencil",
-                "DATAMODEL_MANDITORY": "0",
-                "DATAMODEL_REQEST_TEXT": "Your notes about INTARSIA",
-                "DATAMODEL_TEXTAREAROWS": "4",
-                "DATAMODEL_VALIDATION_CHARS": "500",
-                "REMOVEALERT": "0",
-                "TYPEOF": "DataEntrytextarea"
-              },
-              "legacyComponentId": 8908,
-              "order": 5
             }
           ],
           "title": "Intarsia Checklist",
@@ -3150,64 +2987,9 @@
           "components": [
             {
               "type": "richText",
-              "html": "<h3>Challenge:</h3><br>\r\nTake a simple lace pattern and \"read\" it exploring each line of the pattern.<br>Confirm your understanding by programming that pattern into your machine and <a data-GlossaryId=\"699\" class=\"glossaryhelp\">Dry Knitting <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a>. Watch the needle positions on each row.<br>Notice that the memo rows DO NOT have a rows in the diagram.<br>This exercise uses Stitch World #107.<br><em>Click the checkbox next to each row of the pattern (letters) compare the diagram (black and white boxes) and the written instructions</em>",
+              "html": "<h3>Challenge:</h3><br>\nTake a simple lace pattern and \"read\" it exploring each line of the pattern.<br>Confirm your understanding by programming that pattern into your machine and <a data-glossaryid=\"699\" class=\"glossaryhelp\">Dry Knitting <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a>. Watch the needle positions on each row.<br>Notice that the memo rows DO NOT have a rows in the diagram.<br>This exercise uses Stitch World #107.<br><br>",
               "legacyComponentId": 8953,
               "order": 1
-            },
-            {
-              "type": "migrationPending",
-              "legacyType": "Check_Box_List_with_interactive",
-              "notes": [
-                "Unmapped legacy component type: Check_Box_List_with_interactive"
-              ],
-              "legacyFields": {
-                "CHALLENGE_ASSIGNID": "5900",
-                "CHALLENGE_COMPONENTID": "8952",
-                "LEFTIMAGE": "/images/course-content/103/lace_exercise1.jpg",
-                "LISTITEMS": "10",
-                "OPTION_1": "Lace carriage: On the left<br>Pass to the right <em>(needles select)</em>",
-                "OPTION_10": "Lace carriage: On the right<br>Pass to the left <em>(nothing happens)</em><br>\r\n<div class='text-center'>~AND~<br></div>\r\n“K” carriage: Knit 8 rows",
-                "OPTION_2": "Lace carriage: On the right<br>Pass to the left <em>(stitches transfer)</em><br>\r\n<div class='text-center'>~AND~<br></div>\r\n“K” carriage: Knit 2 rows <em>(memo)</em>",
-                "OPTION_3": "Lace carriage: On the left<br>Pass to the right <em>(needles select)</em>",
-                "OPTION_4": "Lace carriage: on the right<br>Pass to the left <em> (needles select)</em>",
-                "OPTION_5": "Lace carriage: on the left<br>Pass to the right <em>(stitches transfer)</em>",
-                "OPTION_6": "Lace carriage: on the right <br>Pass to the left (em>(nothing happens)</em><br>\r\n<div class=\"text-center\">~AND~<br></div>\r\n“K” carriage knit 2 rows <em>(memo)</em>",
-                "OPTION_7": "Lace carriage: On the left<br>Pass to the right <em>(needles select)</em>",
-                "OPTION_8": " Lace carriage: On the right<br>Pass to the left <em>(needles select)</em>",
-                "OPTION_9": "Lace carriage: On the left<br>Pass to the right <em>(stitches transfer)</em>",
-                "OPTION_IMAGE_1": "/images/course-content/103/lace_exercise_a.jpg",
-                "OPTION_IMAGE_10": "/images/course-content/103/lace_exercise_j.jpg",
-                "OPTION_IMAGE_2": "/images/course-content/103/lace_exercise_b.jpg",
-                "OPTION_IMAGE_3": "/images/course-content/103/lace_exercise_c.jpg",
-                "OPTION_IMAGE_4": "/images/course-content/103/lace_exercise_d.jpg",
-                "OPTION_IMAGE_5": "/images/course-content/103/lace_exercise_e.jpg",
-                "OPTION_IMAGE_6": "/images/course-content/103/lace_exercise_f.jpg",
-                "OPTION_IMAGE_7": "/images/course-content/103/lace_exercise_g.jpg",
-                "OPTION_IMAGE_8": "/images/course-content/103/lace_exercise_h.jpg",
-                "OPTION_IMAGE_9": "/images/course-content/103/lace_exercise_i.jpg",
-                "OPTION_LABLE_1": "a",
-                "OPTION_LABLE_10": "j",
-                "OPTION_LABLE_2": "b",
-                "OPTION_LABLE_3": "c",
-                "OPTION_LABLE_4": "d",
-                "OPTION_LABLE_5": "e",
-                "OPTION_LABLE_6": "f",
-                "OPTION_LABLE_7": "g",
-                "OPTION_LABLE_8": "h",
-                "OPTION_LABLE_9": "i",
-                "OPTION_TRUEFALSE_1": "1",
-                "OPTION_TRUEFALSE_10": "1",
-                "OPTION_TRUEFALSE_2": "1",
-                "OPTION_TRUEFALSE_3": "1",
-                "OPTION_TRUEFALSE_4": "1",
-                "OPTION_TRUEFALSE_5": "1",
-                "OPTION_TRUEFALSE_6": "1",
-                "OPTION_TRUEFALSE_7": "1",
-                "OPTION_TRUEFALSE_8": "1",
-                "OPTION_TRUEFALSE_9": "1"
-              },
-              "legacyComponentId": 8952,
-              "order": 2
             }
           ],
           "title": "Test your understanding",
@@ -3249,26 +3031,6 @@
               "html": "<h3>Step 4:</h3>",
               "legacyComponentId": 8924,
               "order": 5
-            },
-            {
-              "type": "migrationPending",
-              "legacyType": "DataEntrytextarea",
-              "notes": [
-                "Unmapped legacy component type: DataEntrytextarea"
-              ],
-              "legacyFields": {
-                "CHALLENGE_ASSIGNID": "5890",
-                "CHALLENGE_COMPONENTID": "8919",
-                "DATAMODEL_ELEMENT": "Lace_notes",
-                "DATAMODEL_ICON": "fa fa-pencil",
-                "DATAMODEL_MANDITORY": "0",
-                "DATAMODEL_REQEST_TEXT": "Your notes about LACE",
-                "DATAMODEL_TEXTAREAROWS": "4",
-                "DATAMODEL_VALIDATION_CHARS": "500",
-                "REMOVEALERT": "0"
-              },
-              "legacyComponentId": 8919,
-              "order": 6
             }
           ],
           "title": "Lace Checklist",
@@ -3294,7 +3056,7 @@
           "components": [
             {
               "type": "richText",
-              "html": "\r\n\r\n\r\nDesignaKnit (DAK) is a third party computer software program that can be used with your machine.<br>Dealers around the world sell DesignaKnit. <a href=\"https://www.softbyte.co.uk/orders.htm\">Click here</a> for a list\r\n<br>Using a specialized cable, DAK can communicate directly with the electronics in your machine<br>\r\n<ul>\r\n<li>Create stitch patterns onscreen and download to your machine</li>\r\n<li>Create garment designs and optionally integrate stitch patterns</li>\r\n<li>Use \"interactive knitting\" to visually follow garment shapes (similar to using a <a data-GlossaryId=\"360\" class=\"glossaryhelp\">Knit Leader | Charting Device <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a>)</li>\r\n</ul>\r\n\r\nThe software is not required to use the machine, but many knitters find it very useful.\r\n\r\n\r\n<div class=\"text-center\"><a href=\"https://learndesignaknit.com/\"><figure><img class=\"img-thumbnail\" src=\"https://www.knititnow.com/images/machines/ads/learn_dak.gif\"><figcaption align=\"center\"><br><b>LearnDesignaKnit.com</b><br> From the knitters at Knit it Now</figcaption>\r\n</figure></a></div>\r\n\r\n\r\n\r\n\r\n\r\n\r\n",
+              "html": "<p>DesignaKnit (DAK) is optional software for designing stitch patterns and garments. With a compatible cable, it can communicate directly with your knitting machine.</p>\n\n<p>DesignaKnit is available from dealers around the world. <a href=\"https://www.softbyte.co.uk/orders.htm\" target=\"_blank\">Find a DesignaKnit dealer</a>.</p>\n\n<p>With DesignaKnit, you can:</p>\n\n<ul>\n  <li>Create stitch patterns on your computer and download them to your machine.</li>\n  <li>Design garments and add stitch patterns to them.</li>\n  <li>Use Interactive Knitting to follow your garment shaping on screen, much like using a <a data-GlossaryId=\"360\" class=\"glossaryhelp\">Knit Leader or charting device</a>.</li>\n</ul>\n\n<figure>\n  <a href=\"https://learndesignaknit.com/\" target=\"_blank\">\n    <img src=\"/images/course-content/103/designaknit.gif\" alt=\"Learn DesignaKnit\">\n    <strong>LearnDesignaKnit.com</strong>\n  </a>\n  <figcaption>From the knitters at Knit It Now</figcaption>\n</figure>",
               "legacyComponentId": 8852,
               "order": 1
             }
@@ -3351,33 +3113,10 @@
               "order": 1
             },
             {
-              "type": "migrationPending",
-              "legacyType": "Check_Box_List",
-              "notes": [
-                "Unmapped legacy component type: Check_Box_List"
-              ],
-              "legacyFields": {
-                "CHALLENGE_ASSIGNID": "5903",
-                "CHALLENGE_COMPONENTID": "8958",
-                "LISTITEMS": "15",
-                "OPTION_1": "<b>In DAK Stitch Designer:</b>\r\nSet up your machine:\r\n<div class=\"row\">\r\n    <div class=\"col-sm-3 col-xs-12\">\r\n        <ul>\r\n            <li>Options</li>\r\n            <li>Method of Knitting</li>\r\n            <li>Choose Brother 930/940</li>\r\n        </ul>\r\n    </div>\r\n    <div class=\"col-sm-3 col-xs-12\">\r\n        <ul>\r\n            <li>Setup</li>\r\n            <li>Find Link</li>\r\n            <li>Search</li>\r\n        </ul>\r\n    </div>\r\n</div>\r\n",
-                "OPTION_10": "Press step",
-                "OPTION_11": "Enter 1",
-                "OPTION_12": "Press Step",
-                "OPTION_13": "Ready light is on",
-                "OPTION_14": "Memorize the first row (selects needles)",
-                "OPTION_15": "Continue knitting",
-                "OPTION_2": "Machine and PC are connected",
-                "OPTION_3": ">Transfer : >Download to Knitting machine",
-                "OPTION_4": "Choose stitch patterns(s) by name",
-                "OPTION_5": "Acknowledge that all Custom (900 series) stitch patterns in the machine memory will be erased.\r\n(Built-in, Stitch World patterns remain intact)",
-                "OPTION_6": "Click >Download (watch progress bar)",
-                "OPTION_7": "<b>****** on the knitting machine ***</b><br><br>\r\nTurn the power on",
-                "OPTION_8": "Press CE (Clear Entry) Button",
-                "OPTION_9": "Enter 551"
-              },
+              "type": "richText",
               "legacyComponentId": 8958,
-              "order": 2
+              "order": 2,
+              "html": "<h3>In DesignaKnit Stitch Designer</h3>\n<ol style=\"list-style:decimal;list-style-position:outside;padding-left:2rem;margin:0 0 1.25rem;\">\n<li>Set the machine to Brother 930/940 under Options → Method of Knitting. Then go to Setup → Find Link → Search.</li>\n<li>Confirm the knitting machine and PC are connected.</li>\n<li>Choose Transfer → Download to Knitting Machine.</li>\n<li>Select the stitch pattern or patterns by name.</li>\n<li><span style=\"display:block;margin-top:0.35rem;padding:0.75rem 0.9rem;border:2px solid #8a1f11;border-left:8px solid #8a1f11;font-weight:700;line-height:1.45;color:#6d1208;-webkit-print-color-adjust:exact;print-color-adjust:exact\">Acknowledge that the transfer erases all custom 900-series patterns in the machine's memory. Built-in Stitch World patterns stay intact.</span></li>\n<li>Click Download and watch the progress bar.</li>\n</ol>\n<h3>On the Brother 930/940</h3>\n<ol start=\"7\" style=\"list-style:decimal;list-style-position:outside;padding-left:2rem;margin:0 0 1.25rem;\">\n<li>Turn the machine on.</li>\n<li>Press CE (Clear Entry).</li>\n<li>Enter 551.</li>\n<li>Press STEP.</li>\n<li>Enter 1.</li>\n<li>Press STEP again.</li>\n<li>Confirm the READY light is on.</li>\n<li>Memorize the first row to select the needles.</li>\n<li>Continue knitting.</li>\n</ol>\n"
             }
           ],
           "title": "DAK Download Checklist",
@@ -3403,7 +3142,7 @@
           "components": [
             {
               "type": "richText",
-              "html": "<style>\r\n\t.container-border {\r\n\t\tborder: 1px solid #ccc;\r\n\t\tborder-radius: 15px;\r\n\t\tpadding-top: 20px;\r\n\t\tpadding-right: 20px;\r\n\t\tpadding-bottom: 20px;\r\n\t\tpadding-left: 20px;\r\n\t\ttext-align: center;\r\n\t}\r\n\r\n\t.container-border2 {\r\n\t\tborder: 1px solid #ccc;\r\n\t\tborder-radius: 15px;\r\n\t\tpadding-top: 20px;\r\n\t\tpadding-right: 20px;\r\n\t\tpadding-bottom: 20px;\r\n\t\tpadding-left: 20px;\r\nbackground-color: #F5F5F5;\r\n\t\r\n\t}\r\n\r\n\t.lightbulb {\r\n\t\tdisplay: block;\r\n\t\tmargin-left: auto;\r\n\t\tmargin-right: auto;\r\n\t}\r\n\r\n\thr.style13 {\r\n\t\theight: 10px;\r\n\t\tborder: 0;\r\n\t\tbox-shadow: 0 10px 10px -10px #8c8b8b inset;\r\n\t}\r\n\r\n\t.img-ctr {\r\n\t\tdisplay: block;\r\n\t\tmargin-left: auto;\r\n\t\tmargin-right: auto;\r\n\r\n\t}\r\n\r\n</style>\r\n\r\n\r\n\t<div class=\"container-border\">\r\n\t\t<img class=\"lightbulb\" src=\"/images/course-content/86/lightbulb_icon_40x40.png\"><br> <b>Are you new to the ribber?</b><br> Check out the Knit it Now Course: <a target=\"_blank\" href=\"/challenge/66/course/ribber-basic-bootcamp\">Ribber Basic Bootcamp</a>\r\n\t</div>\r\n\t<div class=\"container-border\"><img class=\"lightbulb\" src=\"/images/course-content/86/lightbulb_icon_40x40.png\"><br> <b>Are you a Knit it Now Subscriber?</b><br> <a target=\"_blank\" href=\"/path/328/dust-off-that-ribber\">Visit the Ribber classrooms</a></div>\r\n\r\n<hr class=\"style13\">\r\n\r\n\r\n\t<img class=\"img-thumbnail img-ctr\" src=\"/images/course-content/87/what_is_ribber.jpg\">\r\n\t<div class=\"container-border2\"><span class=\"handwriting\">Picture this:</span><br><ul>\r\n\t\t\t<li>You have a knitting machine with 200 needles.</li>\r\n\t\t\t<li>You use a carriage to quickly knit 200 needles with the pass of the carriage</li>\r\n\t\t\t<li>Imagine cloning that needlebed, turning it 180° and positioning the needles facing each other.</li><br>\r\n\t\t</ul>\r\n\t\tNow you have a setup that can not only create purl stitches, but knit stitches as well.\r\n\t\tThat is the basic idea of a knitting machine ribber.<br>\r\n\t\tImagine being able to knit k1, p1 ribbing with the pass of the carriage ... but wait! There's so much more!\r\n\t</div>\r\n\r\n\r\n\t<span class=\"handwriting\">A bit of advice:</span><br><em>If you are just getting started with machine knitting and have a ribber, <b> be kind to yourself and take this advice.</b><br>Put the ribber aside for a while ... <b>master the single bed BEFORE adding the ribber to the equation.</b><br>Learn and understand the settings for your machine. Practice with a few different yarns, learn to read and follow patterns ... get some successes under your belt before adding the ribber. </em><br>Trust me .... been there ... done that <i class=\"fa fa-smile-o fa-2x\" aria-hidden=\"true\"></i>\r\n\r\n<br><em><i class=\"fa fa-hand-o-right\" aria-hidden=\"true\"></i> Mouse over or tap the red spots for the names of the ribber essentials</em>\r\n",
+              "html": "<style>\n\t.container-border {\n\t\tborder: 1px solid #ccc;\n\t\tborder-radius: 15px;\n\t\tpadding-top: 20px;\n\t\tpadding-right: 20px;\n\t\tpadding-bottom: 20px;\n\t\tpadding-left: 20px;\n\t\ttext-align: center;\n\t}\n\n\t.container-border2 {\n\t\tborder: 1px solid #ccc;\n\t\tborder-radius: 15px;\n\t\tpadding-top: 20px;\n\t\tpadding-right: 20px;\n\t\tpadding-bottom: 20px;\n\t\tpadding-left: 20px;\nbackground-color: #F5F5F5;\n\t\n\t}\n\n\t.lightbulb {\n\t\tdisplay: block;\n\t\tmargin-left: auto;\n\t\tmargin-right: auto;\n\t}\n\n\thr.style13 {\n\t\theight: 10px;\n\t\tborder: 0;\n\t\tbox-shadow: 0 10px 10px -10px #8c8b8b inset;\n\t}\n\n\t.img-ctr {\n\t\tdisplay: block;\n\t\tmargin-left: auto;\n\t\tmargin-right: auto;\n\n\t}\n\n</style>\n\n\t\n\n<hr class=\"style13\">\n\n\n\t<img class=\"img-thumbnail img-ctr\" src=\"/images/course-content/87/what_is_ribber.jpg\">\n\t<div class=\"container-border2\"><span class=\"handwriting\">Picture this:</span><br><ul>\n\t\t\t<li>You have a knitting machine with 200 needles.</li>\n\t\t\t<li>You use a carriage to quickly knit 200 needles with the pass of the carriage</li>\n\t\t\t<li>Imagine cloning that needlebed, turning it 180° and positioning the needles facing each other.</li><br>\n\t\t</ul>\n\t\tNow you have a setup that can not only create purl stitches, but knit stitches as well.\n\t\tThat is the basic idea of a knitting machine ribber.<br>\n\t\tImagine being able to knit k1, p1 ribbing with the pass of the carriage ... but wait! There's so much more!\n\t</div>\n\n\n\t<span class=\"handwriting\">A bit of advice:</span><br><em>If you are just getting started with machine knitting and have a ribber, <b> be kind to yourself and take this advice.</b><br>Put the ribber aside for a while ... <b>master the single bed BEFORE adding the ribber to the equation.</b><br>Learn and understand the settings for your machine. Practice with a few different yarns, learn to read and follow patterns ... get some successes under your belt before adding the ribber. </em><br>Trust me .... been there ... done that <i class=\"fa fa-smile-o fa-2x\" aria-hidden=\"true\"></i>\n\n<br><em><i class=\"fa fa-hand-o-right\" aria-hidden=\"true\"></i> Mouse over or tap the red spots for the names of the ribber essentials</em>\n",
               "legacyComponentId": 8635,
               "order": 1
             },
@@ -3501,7 +3240,6 @@
                 "IMAGE_HEIGHT": "458",
                 "IMAGE_WIDTH": "1000",
                 "RETURNTOEDIT": "yes",
-                "SECONDDIV": "padding-bottom: 45.800000000000004%",
                 "SPOTT_IMAGE": "/images/course-content/103/ribber_spott.jpg",
                 "SPOT_CORD_1": "top: 31.004366812227076%;  left: 22.6%;  width: 2%;  height: 4.366812227074235%;",
                 "SPOT_CORD_10": "top: 28.82096069868996%;  left: 93.8%;  width: 2%;  height: 4.366812227074235%;",
@@ -3787,26 +3525,6 @@
               "html": "<h3>Step 7: (Knit ribbing)</h3>",
               "legacyComponentId": 8654,
               "order": 8
-            },
-            {
-              "type": "migrationPending",
-              "legacyType": "DataEntrytextarea",
-              "notes": [
-                "Unmapped legacy component type: DataEntrytextarea"
-              ],
-              "legacyFields": {
-                "CHALLENGE_ASSIGNID": "4443",
-                "CHALLENGE_COMPONENTID": "6833",
-                "DATAMODEL_ELEMENT": "Ribber_CO",
-                "DATAMODEL_ICON": "fa fa-pencil",
-                "DATAMODEL_MANDITORY": "0",
-                "DATAMODEL_REQEST_TEXT": "Your notes about CASTING ON WITH THE RIBBER",
-                "DATAMODEL_TEXTAREAROWS": "4",
-                "DATAMODEL_VALIDATION_CHARS": "500",
-                "REMOVEALERT": "0"
-              },
-              "legacyComponentId": 8655,
-              "order": 9
             }
           ],
           "title": "Basic Cast on Checklist",
@@ -3872,28 +3590,28 @@
               "type": "imageGallery",
               "slides": [
                 {
-                  "src": "/v2/103/long_stitch/5.jpg",
-                  "caption": "A variation of Full Needle Rib, Long Stitch is the basis for a number of interesting ribber stitch pattern techniques."
+                  "src": "/images/course-content/103/long_stitch_thumb.png",
+                  "caption": "Half Milano, also called Long Stitch, is a variation of full needle rib. It’s the basis for several other ribber stitch patterns."
                 },
                 {
-                  "src": "/v2/103/long_stitch/1.jpg",
-                  "caption": "Long Stitch (also known as Half Milano) is a variation of full needle rib.  All needles on both beds are in work.<br>\r\n\r\nCast on and establish for Full needle rib."
+                  "src": "/images/course-content/103/long-stitch1.jpg",
+                  "caption": "Put all needles on both beds in work. Cast on and establish full needle rib."
                 },
                 {
-                  "src": "/v2/103/long_stitch/2.jpg",
-                  "caption": "I've set my ribber carriage to slip in one direction. (one cam lever up) As I knit across,  you'll see that the main bed stitches knit and the ribber stitches do not knit.<br><br>\r\nThe ribber stitches slip.<br>\r\nKnit back and the needles on both beds knit.<br>\r\nContinue knitting, alternating knit on one bed and slip on the other. Slip - Knit - Slip - Knit\r\n\r\n\r\nContinue alternating slip in one direction and knit all needles in the other direction."
+                  "src": "/images/course-content/103/long-stitch2.jpg",
+                  "caption": "Set the ribber carriage to slip in one direction by raising one cam lever. On the first pass, the main bed knits and the ribber slips. On the return pass, both beds knit. Repeat these two passes."
                 },
                 {
-                  "src": "/v2/103/long_stitch/3.jpg",
-                  "caption": "The side of the knitting where the rows were knit looks like stockinette."
+                  "src": "/images/course-content/103/long-stitch3.jpg",
+                  "caption": "Look at the side where the needles knit on every pass. It looks like stockinette."
                 },
                 {
-                  "src": "/v2/103/long_stitch/4.jpg",
-                  "caption": "The side of the knitting that had needles slip for one row, have stitches that are elongated."
+                  "src": "/images/course-content/103/long-stitch4.jpg",
+                  "caption": "Turn the swatch over. The stitches that slipped on alternate passes look longer."
                 },
                 {
-                  "src": "/v2/103/long_stitch/5.jpg",
-                  "caption": "You can slip on either the main bed or the ribber, just keep in mind which side you want to use as the public side of your knitting"
+                  "src": "/images/course-content/103/long-stitch5.jpg",
+                  "caption": "You can set either bed to slip. Choose which side of the fabric you want to show on the outside of your project."
                 }
               ],
               "legacy": {
@@ -4082,7 +3800,7 @@
           ],
           "title": "Fisherman Rib",
           "slug": "fisherman-rib",
-          "order": 8,
+          "order": 7,
           "legacy": {
             "assignId": 5786,
             "blockType": "HTML"
@@ -4106,7 +3824,7 @@
           ],
           "title": "Circular (Tubular) Knitting",
           "slug": "circular-tubular-knitting",
-          "order": 9,
+          "order": 8,
           "legacy": {
             "assignId": 5917,
             "blockType": "HTML"
@@ -4123,7 +3841,7 @@
           ],
           "title": "Circular Knitting Checklist",
           "slug": "circular-knitting-checklist",
-          "order": 10,
+          "order": 9,
           "legacy": {
             "assignId": 5920,
             "blockType": "HTML"
@@ -4147,7 +3865,7 @@
           ],
           "title": "U Knitting",
           "slug": "u-knitting",
-          "order": 11,
+          "order": 10,
           "legacy": {
             "assignId": 5922,
             "blockType": "HTML"
@@ -4164,7 +3882,7 @@
           ],
           "title": "U Knitting Checklist",
           "slug": "u-knitting-checklist",
-          "order": 12,
+          "order": 11,
           "legacy": {
             "assignId": 5923,
             "blockType": "HTML"
@@ -4409,7 +4127,7 @@
                 },
                 {
                   "title": "Understand Multi-color Slip stitch patterns.",
-                  "bodyHtml": "Stitch pattern examples",
+                  "bodyHtml": "Stitch pattern examples<br>\n<div class=\"legacy-vimeo-block\"><div class=\"legacy-vimeo\"><iframe data-vimeo-id=\"742452827\" src=\"https://player.vimeo.com/video/742452827\" title=\"Multi-color slip\" allow=\"autoplay; fullscreen; picture-in-picture\" allowfullscreen></iframe></div></div>",
                   "iconSrc": "/images/course-content/103/arrow6.png"
                 },
                 {
@@ -4444,7 +4162,7 @@
             },
             {
               "type": "richText",
-              "html": "<style>\r\n.circle{\r\ncolor: #ffffff;\r\nwidth:25px;\r\nheight:25px;\r\nborder-radius:50%;\r\nbox-sizing:border-box;\r\ntext-align:center;\r\ndisplay:inline-block;\r\nline-height:25px;\r\nbackground-color:#9E2065;\r\n}\r\n</style>\r\n\r\n\r\n\r\n\r\n<div id=\"practice\">\r\n\r\n    \r\n        <div id=\"paper\">\r\n            <div id=\"pattern\">\r\n                <div id=\"content\">\r\n\r\n\r\n                    <div class=\"circle\">1</div> Cast on the single bed and knit a one-color slip stitch pattern  (stitch patterns 323 - 367)<br><div class=\"circle\">2</div> Practice knitting in 2 color slip (single bed only) (stitch patterns 368 -394)<br><div class=\"circle\">3</div> Engage the ribber and set up for Full Needle Rib\r\n                    <br><div class=\"circle\">4</div> Attach the ribber color changer and  knit 2 row stripes with the color changer (full needle rib)\r\n\r\n                                       <br><div class=\"circle\">5</div>\r\n                    Choose a ribber Jacquard stitch pattern (stitch patterns 512 - 531) and knit in 2 colors (2 colors per row)\r\n                    <br><div class=\"circle\">6</div>\r\n                    Knit a 3 or 4 color color Ribber Jacquard stitch pattern - More than 2 colors per row\r\n                    <br></div>\r\n            </div>\r\n        </div>\r\n    \r\n\r\n</div>\r\n\r\n",
+              "html": "<h3>Practice Double-Bed Jacquard</h3>\n\n<ol>\n  <li>Cast on using the main bed only. Knit a one-color slip stitch pattern using one of patterns 323–367.</li>\n  <li>Still using the main bed only, practice two-color slip stitch using one of patterns 368–394.</li>\n  <li>Engage the ribber and set up for full needle rib.</li>\n  <li>Attach the ribber color changer and knit two-row stripes in full needle rib.</li>\n  <li>Choose a ribber jacquard pattern from patterns 512–531 and knit it with two colors per row.</li>\n  <li>Knit a ribber jacquard pattern with three or four colors per row.</li>\n</ol>",
               "legacyComponentId": 9057,
               "order": 2
             }

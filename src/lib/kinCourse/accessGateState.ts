@@ -5,9 +5,12 @@
  * and do not show the unauthorized card until the SDK has finished loading.
  */
 import {
+  BEGINNER_WORKSHOP_COURSE_SLUG,
+  BROTHER_930_940_COURSE_SLUG,
   BROTHER_KH260_COURSE_SLUG,
   KIN_TAITEXMA_160_COURSE_SLUG,
   LEGACY_SK840_COURSE_SLUG,
+  LK150_FUN_COURSE_SLUG,
   LK150_PATTERNING_COURSE_SLUG,
   LK150_QUICK_START_COURSE_SLUG,
 } from "../../config/legacyCourseEntitlements";
@@ -39,13 +42,25 @@ export function kinCourseNoAccessPlanPhrase(courseSlug: string): string {
   if (slug === BROTHER_KH260_COURSE_SLUG || slug === "87") {
     return "the Brother KH/KR-260 legacy course plan";
   }
+  if (slug === BROTHER_930_940_COURSE_SLUG || slug === "103") {
+    return "the Brother 930/940 course plan";
+  }
   if (slug === LK150_PATTERNING_COURSE_SLUG || slug === "34") {
     return "the LK150 Patterning course plan";
+  }
+  if (slug === LK150_FUN_COURSE_SLUG || slug === "51") {
+    return "the LK-150 Fun course plan";
   }
   if (slug === LK150_QUICK_START_COURSE_SLUG || slug === "50") {
     return "the LK-150 Quick Start course plan";
   }
-  return "the SK840 course plan";
+  if (slug === BEGINNER_WORKSHOP_COURSE_SLUG || slug === "33") {
+    return "the Beginner Workshop course plan";
+  }
+  if (slug === LEGACY_SK840_COURSE_SLUG || slug === "111") {
+    return "the SK840 course plan";
+  }
+  return "access to this course";
 }
 
 function offersStandalonePurchase(courseSlug: string): boolean {
@@ -54,7 +69,9 @@ function offersStandalonePurchase(courseSlug: string): boolean {
     slug === KIN_TAITEXMA_160_COURSE_SLUG ||
     slug === "86" ||
     slug === LEGACY_SK840_COURSE_SLUG ||
-    slug === "111"
+    slug === "111" ||
+    slug === BROTHER_930_940_COURSE_SLUG ||
+    slug === "103"
   );
 }
 

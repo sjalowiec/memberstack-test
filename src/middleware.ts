@@ -20,9 +20,18 @@ import {
   isSidewaysCardiganRoute,
 } from "./lib/patterns/sidewaysCardiganProductionAccess";
 import {
+  christmasStockingTemporarilyUnavailableResponse,
+  isChristmasStockingProductionBlocked,
+  isChristmasStockingRoute,
+} from "./lib/patterns/christmasStockingProductionAccess";
+import {
   isEasyCutYarnCutterProductionBlocked,
   isEasyCutYarnCutterRoute,
 } from "./lib/shop/easyCutYarnCutter";
+import {
+  isHobbyKnitNeedlesProductionBlocked,
+  isHobbyKnitNeedlesRoute,
+} from "./lib/shop/hobbyKnitNeedles";
 import {
   isLk150TensionMastKitRoute,
   isLk150TensionMastProductionBlocked,
@@ -121,6 +130,20 @@ export const onRequest = defineMiddleware(async (context, next) => {
   if (
     isEasyCutYarnCutterRoute(u.pathname) &&
     isEasyCutYarnCutterProductionBlocked(u.hostname, devOnlyRouteEnv)
+  ) {
+    return new Response("Not found", { status: 404 });
+  }
+
+  if (
+    isChristmasStockingRoute(u.pathname) &&
+    isChristmasStockingProductionBlocked(u.hostname, devOnlyRouteEnv)
+  ) {
+    return christmasStockingTemporarilyUnavailableResponse();
+  }
+
+  if (
+    isHobbyKnitNeedlesRoute(u.pathname) &&
+    isHobbyKnitNeedlesProductionBlocked(u.hostname, devOnlyRouteEnv)
   ) {
     return new Response("Not found", { status: 404 });
   }

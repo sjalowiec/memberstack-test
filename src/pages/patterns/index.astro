@@ -1,6 +1,7 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import PatternBuilderMyPatternsLink from '../../components/patterns/PatternBuilderMyPatternsLink.astro';
+import { isChristmasStockingProductionBlocked } from '../../lib/patterns/christmasStockingProductionAccess';
 import { isDropShoulderProductionBlocked } from '../../lib/patterns/dropShoulderProductionAccess';
 import { isSidewaysCardiganProductionBlocked } from '../../lib/patterns/sidewaysCardiganProductionAccess';
 import { PATTERN_BUILDERS_HOME_HREF } from '../../lib/patterns/customPatternProjectNavigation';
@@ -27,6 +28,10 @@ import {
 // This page is the public pattern catalog — pick a builder to start.
 // Membership CTA is informational only; sweater builders enforce their own gates.
 
+const hideChristmasStockingInCatalog = isChristmasStockingProductionBlocked(Astro.url.hostname, {
+  isViteDev: import.meta.env.DEV,
+  publicSiteEnv: import.meta.env.PUBLIC_SITE_ENV,
+});
 const hideDropShoulderInCatalog = isDropShoulderProductionBlocked(Astro.url.hostname, {
   isViteDev: import.meta.env.DEV,
   publicSiteEnv: import.meta.env.PUBLIC_SITE_ENV,
@@ -109,7 +114,7 @@ const sidewaysPattern = {
 const sweaterPatterns = [
   sleevelessPattern,
   socksPattern,
-  christmasStockingPattern,
+  ...(hideChristmasStockingInCatalog ? [] : [christmasStockingPattern]),
   ...(hideDropShoulderInCatalog ? [] : [dropShoulderPattern]),
   ...(showSidewaysAsComingSoon ? [] : [sidewaysPattern]),
 ];
@@ -118,7 +123,7 @@ const availablePatterns = [
   sleevelessPattern,
   hatPattern,
   socksPattern,
-  christmasStockingPattern,
+  ...(hideChristmasStockingInCatalog ? [] : [christmasStockingPattern]),
   ...(hideDropShoulderInCatalog ? [] : [dropShoulderPattern]),
   ...(showSidewaysAsComingSoon ? [] : [sidewaysPattern]),
   // Blanket Pattern Builder — POSTPONED for the August launch. Hidden from the public catalog but the
@@ -144,12 +149,12 @@ const comingSoonPatterns = [
     : []),
   {
     title: 'Raglan Sweater',
-    image: '/images/patterns/raglan.png',
+    image: '/images/patterns/raglan.webp',
     copy: 'A flexible raglan sweater system with custom fit and clear shaping guidance.',
   },
   {
     title: 'Set-In Sleeve Sweater',
-    image: '/images/patterns/set-in.png',
+    image: '/images/patterns/set-in.webp',
     copy: 'A classic sweater system designed for custom fit, sleeve shaping, and polished finishing.',
   },
 ];

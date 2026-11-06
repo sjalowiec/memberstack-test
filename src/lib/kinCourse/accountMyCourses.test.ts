@@ -89,11 +89,24 @@ describe("account ownable catalog cards", () => {
         planIds: [COURSE_INDIVIDUAL_SALES.brother260.legacyPlanId],
       },
       {
+        courseId: 103,
+        slug: COURSE_INDIVIDUAL_SALES.brother930940.slug,
+        title: "Ultimate Brother 930/940 Workshop",
+        href: "/courses/103",
+        planIds: [
+          COURSE_INDIVIDUAL_SALES.brother930940.legacyPlanId,
+          COURSE_INDIVIDUAL_SALES.brother930940.paidPlanId,
+        ],
+      },
+      {
         courseId: 34,
         slug: LK150_PATTERNING_COURSE_SLUG,
         title: "Master LK-150 Patterning",
         href: "/courses/34",
-        planIds: [COURSE_INDIVIDUAL_SALES.lk150Patterning.legacyPlanId],
+        planIds: [
+          ...COURSE_INDIVIDUAL_SALES.lk150Patterning.additionalLegacyPlanIds,
+          COURSE_INDIVIDUAL_SALES.lk150Patterning.legacyPlanId,
+        ],
       },
       {
         courseId: 50,

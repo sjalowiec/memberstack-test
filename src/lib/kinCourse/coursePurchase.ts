@@ -6,6 +6,7 @@
  */
 import {
   BEGINNER_WORKSHOP_COURSE_SLUG,
+  BROTHER_930_940_COURSE_SLUG,
   canonicalCourseCatalogSlug,
   COURSE_INDIVIDUAL_SALES,
   KIN_TAITEXMA_160_COURSE_SLUG,
@@ -62,6 +63,10 @@ export function isBeginnerWorkshopCourseSlug(courseSlug: string | null | undefin
   return canonicalCourseCatalogSlug(courseSlug) === BEGINNER_WORKSHOP_COURSE_SLUG;
 }
 
+export function isBrother930940CourseSlug(courseSlug: string | null | undefined): boolean {
+  return canonicalCourseCatalogSlug(courseSlug) === BROTHER_930_940_COURSE_SLUG;
+}
+
 /**
  * Sales pages replace the generic locked card for visitors without access.
  * Members and owners of that course keep the player.
@@ -74,6 +79,7 @@ export function shouldShowKinCourseSalesPage(args: {
   return (
     isTaitexma160CourseSlug(args.courseSlug) ||
     isSk840CourseSlug(args.courseSlug) ||
+    isBrother930940CourseSlug(args.courseSlug) ||
     isBeginnerWorkshopCourseSlug(args.courseSlug)
   );
 }

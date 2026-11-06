@@ -2,6 +2,7 @@
 import Layout from "../../../layouts/Layout.astro";
 import PageHead from "../../../components/PageHead.astro";
 import EasyCutYarnCutterListing from "../../../components/shop/EasyCutYarnCutterListing.astro";
+import HobbyKnitNeedlesListing from "../../../components/shop/HobbyKnitNeedlesListing.astro";
 import Lk150TensionMastKitListing from "../../../components/shop/Lk150TensionMastKitListing.astro";
 import MachinesShopSubnav from "../../../components/shop/MachinesShopSubnav.astro";
 import {
@@ -13,6 +14,7 @@ import {
 import { shopAvailabilityBadge } from "../../../lib/machines/machineAdminFields";
 import { LK150_SECOND_TENSION_MAST_KIT } from "../../../data/shop/lk150SecondTensionMastKit";
 import { isEasyCutYarnCutterProductionBlocked } from "../../../lib/shop/easyCutYarnCutter";
+import { isHobbyKnitNeedlesProductionBlocked } from "../../../lib/shop/hobbyKnitNeedles";
 
 const title = "Knitting Machine Accessories for Sale | Knit it Now";
 const description =
@@ -21,6 +23,10 @@ const description =
 const accessories = getAccessoriesForSale();
 const showTensionMastKit = LK150_SECOND_TENSION_MAST_KIT.published;
 const showEasyCut = !isEasyCutYarnCutterProductionBlocked(Astro.url.hostname, {
+  isViteDev: import.meta.env.DEV,
+  publicSiteEnv: import.meta.env.PUBLIC_SITE_ENV,
+});
+const showHobbyKnitNeedles = !isHobbyKnitNeedlesProductionBlocked(Astro.url.hostname, {
   isViteDev: import.meta.env.DEV,
   publicSiteEnv: import.meta.env.PUBLIC_SITE_ENV,
 });
@@ -48,13 +54,14 @@ function formatPrice(value: number | null): string | null {
 
     <MachinesShopSubnav current="accessories" />
 
-    {accessories.length === 0 && !showTensionMastKit && !showEasyCut ? (
+    {accessories.length === 0 && !showTensionMastKit && !showHobbyKnitNeedles && !showEasyCut ? (
       <p class="machines-empty">
         No accessories are listed for sale right now. Please check back soon.
       </p>
     ) : (
       <div class="machines-grid">
         {showTensionMastKit && <Lk150TensionMastKitListing />}
+        {showHobbyKnitNeedles && <HobbyKnitNeedlesListing />}
         {showEasyCut && <EasyCutYarnCutterListing />}
         {accessories.map((machine) => {
           const sale = machine.sale!;

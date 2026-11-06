@@ -1,5 +1,6 @@
 {
   "categories": [
+    "Getting Started",
     "Silver Reed",
     "Taitexma",
     "Brother",
@@ -38,6 +39,17 @@
       "href": "/courses/87",
       "buttonLabel": "View Course",
       "thumbnail": "/images/courses/260.webp"
+    },
+    {
+      "slug": "ultimate-brother-930-940-workshop",
+      "title": "Ultimate Brother 930/940 Workshop",
+      "category": "Brother",
+      "catalogStatus": "available",
+      "access": "purchase",
+      "description": "A workshop for the Brother KH930 and KH940, from setup and plain knitting through electronics, stitch patterns, and the ribber.",
+      "href": "/courses/103",
+      "buttonLabel": "View Course",
+      "thumbnail": "/images/courses/940_course_thumb.webp"
     },
     {
       "slug": "master-lk-patterning",
@@ -85,10 +97,14 @@
     },
     {
       "slug": "beginner-workshop",
+      "title": "Beginner Workshop",
       "category": "Getting Started",
-      "catalogStatus": "coming-soon",
+      "catalogStatus": "available",
       "access": "member",
-      "description": "A guided start-to-finish path for new machine knitters."
+      "description": "A guided start-to-finish path for new machine knitters.",
+      "href": "/courses/33",
+      "buttonLabel": "View Course",
+      "thumbnail": "/images/courses/beginner.webp"
     },
     {
       "slug": "not-enough-needles",

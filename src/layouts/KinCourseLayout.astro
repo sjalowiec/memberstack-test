@@ -6,6 +6,7 @@ import CoursePurchaseButton from "../components/courses/CoursePurchaseButton.ast
 import KinCourse86Sales from "../components/courses/KinCourse86Sales.astro";
 import KinCourse111Sales from "../components/courses/KinCourse111Sales.astro";
 import KinCourse33Sales from "../components/courses/KinCourse33Sales.astro";
+import KinCourse103Sales from "../components/courses/KinCourse103Sales.astro";
 import "../styles/kin-course/course-shell.css";
 import "../styles/kin-course/legacy-special.css";
 import "../styles/kin-course/legacy-lesson-compat.css";
@@ -15,6 +16,7 @@ import { kinCourseNoAccessMessage } from "../lib/kinCourse/accessGateState";
 import {
   courseHasIndividualPurchase,
   isBeginnerWorkshopCourseSlug,
+  isBrother930940CourseSlug,
   isSk840CourseSlug,
   isTaitexma160CourseSlug,
 } from "../lib/kinCourse/coursePurchase";
@@ -56,6 +58,7 @@ const canBuy = courseHasIndividualPurchase(courseSlug);
 const showCourse86Sales = isTaitexma160CourseSlug(courseSlug);
 const showCourse111Sales = isSk840CourseSlug(courseSlug);
 const showCourse33Sales = isBeginnerWorkshopCourseSlug(courseSlug);
+const showCourse103Sales = isBrother930940CourseSlug(courseSlug);
 const courseSalesDescription = getKinCourseSalesCopy(courseSlug)?.metaDescription ?? "";
 const purchaseCopy =
   "This course is included with Knit It Now membership. You can also purchase this course on its own.";
@@ -68,7 +71,7 @@ const purchaseCopy =
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
     {
-      showCourse86Sales || showCourse111Sales || showCourse33Sales ? (
+      showCourse86Sales || showCourse111Sales || showCourse33Sales || showCourse103Sales ? (
         <meta name="description" content={courseSalesDescription} />
       ) : null
     }
@@ -150,6 +153,12 @@ const purchaseCopy =
                 />
               ) : showCourse33Sales ? (
                 <KinCourse33Sales
+                  courseSlug={courseSlug}
+                  thumbnailSrc={thumbnailSrc}
+                  thumbnailAlt={thumbnailAlt}
+                />
+              ) : showCourse103Sales ? (
+                <KinCourse103Sales
                   courseSlug={courseSlug}
                   thumbnailSrc={thumbnailSrc}
                   thumbnailAlt={thumbnailAlt}

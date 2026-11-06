@@ -2,11 +2,13 @@
  * Sales-page copy for KIN courses.
  *
  * Course 86 wording is unchanged. Course 111 uses the SK840 sales copy below.
- * Prices are never invented here — the displayed amount comes from
- * `COURSE_INDIVIDUAL_SALES.*.priceLabel`. Course 33 has no checkout price.
+ * Course 103 uses the Brother 930/940 sales copy. Prices are never invented
+ * here — the displayed amount comes from `COURSE_INDIVIDUAL_SALES.*.priceLabel`.
+ * Course 33 has no checkout price.
  */
 import {
   BEGINNER_WORKSHOP_COURSE_SLUG,
+  BROTHER_930_940_COURSE_SLUG,
   canonicalCourseCatalogSlug,
   COURSE_INDIVIDUAL_SALES,
   KIN_TAITEXMA_160_COURSE_SLUG,
@@ -152,6 +154,61 @@ export const KIN_SK840_SALES_COPY: KinCourseSalesCopy = {
   },
 };
 
+export const KIN_BROTHER_930_940_SALES_COPY: KinCourseSalesCopy = {
+  courseTitle: "Ultimate Brother 930/940 Workshop",
+  headline: "Put your Brother 930 or 940 to work",
+  intro: [
+    "This workshop is for the Brother KH930 and KH940. The 940 has more memory in the electronics. The operation of the machine is the same. This machine was also sold as a Knit King Compuknit.",
+    "Set up the machine and work through plain knitting, electronics, stitch patterns, and the ribber. The course includes more than 3 hours of video, plus cheatsheets and tips you can come back to.",
+  ],
+  benefitsHeading: "With this course, you’ll be able to:",
+  benefits: [
+    "Set up your Brother 930 or 940",
+    "Knit plain fabric and use the machine’s electronics",
+    "Work with stitch patterns",
+    "Use the ribber with this machine",
+  ],
+  supportingCopy:
+    "Work through the course at your own pace and return whenever you need a refresher.",
+  ctaHeading: "Ready to use your Brother 930 or 940?",
+  purchaseButtonLabel: "Purchase the Course",
+  ownerBefore: "Already own this course?",
+  ownerAction: "Sign in",
+  ownerAfter: "to continue learning.",
+  fallbackImageAlt: "Brother 930/940 knitting machine",
+  metaDescription:
+    "A workshop for the Brother KH930 and KH940, from setup and plain knitting through electronics, stitch patterns, and the ribber.",
+  purchaseInfo: {
+    heading: "One purchase. Ongoing access.",
+    items: [
+      "{price} one-time payment",
+      "No Knit It Now membership required",
+      "Learn at your own pace",
+      "Return to the course whenever you need a refresher",
+      "A free Knit It Now account is required to access your course",
+    ],
+  },
+  faq: {
+    heading: "Frequently Asked Questions",
+    items: [
+      {
+        question: "Do I need a Knit It Now membership?",
+        answer: "No. Your course purchase is separate from membership.",
+      },
+      {
+        question: "How long can I access the course?",
+        answer:
+          "You’ll have ongoing access through your Knit It Now account, so you can return whenever you need a refresher.",
+      },
+      {
+        question: "How do I access the course after purchasing?",
+        answer:
+          "Sign in to the Knit It Now account used during checkout, then visit the Courses page and select the course.",
+      },
+    ],
+  },
+};
+
 const MEMBERSHIP_HREF = "/membership";
 
 export const KIN_BEGINNER_WORKSHOP_SALES_COPY: KinCourseSalesCopy = {
@@ -198,6 +255,7 @@ export function getKinCourseSalesCopy(
   const slug = canonicalCourseCatalogSlug(courseSlug);
   if (slug === KIN_TAITEXMA_160_COURSE_SLUG) return KIN_TAITEXMA_SALES_COPY;
   if (slug === LEGACY_SK840_COURSE_SLUG) return KIN_SK840_SALES_COPY;
+  if (slug === BROTHER_930_940_COURSE_SLUG) return KIN_BROTHER_930_940_SALES_COPY;
   if (slug === BEGINNER_WORKSHOP_COURSE_SLUG) return KIN_BEGINNER_WORKSHOP_SALES_COPY;
   return null;
 }

@@ -84,6 +84,12 @@ export type AccountMembershipPanelView = {
   billingLabel: string | null;
   /** Formatted local date for Renews, or null when the field should be hidden. */
   renewsLabel: string | null;
+  /**
+   * Legacy-only Watson date row. "Paid through" plus the formatted expiration.
+   * Null when this view does not show that row. Never a Stripe billing date.
+   */
+  membershipDateLabel: string | null;
+  membershipDateValue: string | null;
   /** True when an active paid plan has a valid payment.cancelAtDate. */
   isCanceling: boolean;
   /**
@@ -349,12 +355,15 @@ export function renewsLabelFromActivePaidConnection(
 export const ACCOUNT_MEMBERSHIP_UNCONFIRMED_PLAN_LABEL =
   "Membership status unavailable";
 export const ACCOUNT_MEMBERSHIP_UNCONFIRMED_STATUS_LABEL = "Could not confirm";
+export const ACCOUNT_PAID_THROUGH_LABEL = "Paid through";
 
 function emptyPanelFields(): Pick<
   AccountMembershipPanelView,
   | "billingInterval"
   | "billingLabel"
   | "renewsLabel"
+  | "membershipDateLabel"
+  | "membershipDateValue"
   | "isCanceling"
   | "activeUntilMessage"
   | "autoRenewNote"
@@ -365,12 +374,22 @@ function emptyPanelFields(): Pick<
     billingInterval: null,
     billingLabel: null,
     renewsLabel: null,
+    membershipDateLabel: null,
+    membershipDateValue: null,
     isCanceling: false,
     activeUntilMessage: null,
     autoRenewNote: null,
     manageBillingDescription: null,
     annualSwitchWarning: null,
   };
+}
+
+function paidThroughFields(
+  ymd: string | null | undefined,
+): Pick<AccountMembershipPanelView, "membershipDateLabel" | "membershipDateValue"> {
+  const value = typeof ymd === "string" ? formatMembershipCalendarDateFromYmd(ymd) : null;
+  if (!value) return { membershipDateLabel: null, membershipDateValue: null };
+  return { membershipDateLabel: ACCOUNT_PAID_THROUGH_LABEL, membershipDateValue: value };
 }
 
 function unconfirmedMembershipPanelView(): AccountMembershipPanelView {
@@ -384,15 +403,30 @@ function unconfirmedMembershipPanelView(): AccountMembershipPanelView {
   };
 }
 
-function expiredLegacyMembershipPanelView(): AccountMembershipPanelView {
+function expiredLegacyMembershipPanelView(
+  paidThroughYmd: string | null | undefined,
+): AccountMembershipPanelView {
   return {
     kind: "free",
     planLabel: FREE_MEMBERSHIP_DISPLAY_LABEL,
     planDisplayLabel: FREE_MEMBERSHIP_DISPLAY_LABEL,
     statusLabel: "Expired",
     ...emptyPanelFields(),
+    ...paidThroughFields(paidThroughYmd),
     visibleActions: accountMembershipPanelActions("free"),
   };
+}
+
+export function shouldPreserveConfirmedActivePanel(
+  current: { kind: string | null; statusLabel: string },
+  nextStatusLabel: string,
+): boolean {
+  const status = current.statusLabel.trim();
+  return (
+    current.kind === "member" &&
+    (status === "Active" || status === "Canceling") &&
+    nextStatusLabel === ACCOUNT_MEMBERSHIP_UNCONFIRMED_STATUS_LABEL
+  );
 }
 
 function resolvedLegacyPaidThroughYmd(
@@ -432,6 +466,8 @@ export function resolveAccountMembershipPanelView(
       billingInterval,
       billingLabel,
       renewsLabel,
+      membershipDateLabel: null,
+      membershipDateValue: null,
       isCanceling,
       activeUntilMessage,
       autoRenewNote:
@@ -467,6 +503,8 @@ export function resolveAccountMembershipPanelView(
       billingInterval: portalInterval,
       billingLabel: portalInterval ? BILLING_LABEL[portalInterval] : null,
       renewsLabel: null,
+      membershipDateLabel: null,
+      membershipDateValue: null,
       isCanceling: false,
       activeUntilMessage: null,
       autoRenewNote: null,
@@ -497,6 +535,7 @@ export function resolveAccountMembershipPanelView(
   // is shown as current legacy membership. hasMemberAccess is the same gate as
   // the rest of the site. A date that has passed, or cannot be confirmed, is
   // not displayed as active.
+  const paidThroughYmd = resolvedLegacyPaidThroughYmd(memberOrPayload, accessOptions);
   if (hasMemberAccess(memberOrPayload, accessOptions)) {
     return {
       kind: "member",
@@ -504,16 +543,16 @@ export function resolveAccountMembershipPanelView(
       planDisplayLabel: FREE_MEMBERSHIP_DISPLAY_LABEL,
       statusLabel: "Legacy Access",
       ...emptyPanelFields(),
+      ...paidThroughFields(paidThroughYmd),
       visibleActions: ["renewAnnual", "becomeMonthly"],
     };
   }
 
-  const paidThroughYmd = resolvedLegacyPaidThroughYmd(memberOrPayload, accessOptions);
   if (
     paidThroughYmd &&
     !isLegacyPaidThroughCurrentlyValid(paidThroughYmd, accessOptions)
   ) {
-    return expiredLegacyMembershipPanelView();
+    return expiredLegacyMembershipPanelView(paidThroughYmd);
   }
 
   // Date not loaded yet, or a connected free plan whose Watson date could not

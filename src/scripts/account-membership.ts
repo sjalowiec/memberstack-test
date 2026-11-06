@@ -10,6 +10,7 @@ import { isMemberLoggedIn } from "../lib/memberAccess";
 import { ensureLegacyPaidThroughContext } from "../lib/memberAccessClient";
 import {
   resolveAccountMembershipPanelView,
+  shouldPreserveConfirmedActivePanel,
   type AccountMembershipPanelAction,
   type AccountMembershipPanelView,
 } from "../lib/membership/accountMembershipPanel";
@@ -76,6 +77,18 @@ function applyView(root: Element, view: AccountMembershipPanelView): void {
   } else {
     if (renewsEl) renewsEl.textContent = "";
     setVisible(renewsRow, false);
+  }
+
+  const dateRow = root.querySelector("[data-kbm-account-membership-date-row]");
+  const dateLabelEl = root.querySelector("[data-kbm-account-membership-date-label]");
+  const dateValueEl = root.querySelector("[data-kbm-account-membership-date-value]");
+  if (view.membershipDateLabel && view.membershipDateValue && dateLabelEl && dateValueEl) {
+    dateLabelEl.textContent = view.membershipDateLabel;
+    dateValueEl.textContent = view.membershipDateValue;
+    setVisible(dateRow, true);
+  } else {
+    if (dateValueEl) dateValueEl.textContent = "";
+    setVisible(dateRow, false);
   }
 
   if (view.autoRenewNote && autoRenewEl instanceof HTMLElement) {
@@ -153,7 +166,20 @@ async function populateAccountMembership(): Promise<void> {
   }
 
   await ensureLegacyPaidThroughContext(payload);
-  applyView(root, resolveAccountMembershipPanelView(payload));
+  const view = resolveAccountMembershipPanelView(payload);
+  const statusEl = root.querySelector("[data-kbm-account-membership-status]");
+  const currentStatus = statusEl?.textContent ?? "";
+  if (
+    !shouldPreserveConfirmedActivePanel(
+      {
+        kind: root.getAttribute("data-kbm-account-membership-kind"),
+        statusLabel: currentStatus,
+      },
+      view.statusLabel,
+    )
+  ) {
+    applyView(root, view);
+  }
   setVisible(loadingEl, false);
   setVisible(contentEl, true);
 }

@@ -17,6 +17,12 @@ export type HelpHubFavoriteTip = {
   contentId: string;
 };
 
+/** Permanent Help Hub page for a saved tip. Same path the star stores. */
+export function helpHubFavoriteHref(slug: string): string {
+  const trimmed = slug.trim();
+  return trimmed ? `/help-hub/${encodeURIComponent(trimmed)}` : "";
+}
+
 export function helpHubFavoriteTipCatalog(tips: HelpHubTipRecord[]): HelpHubFavoriteTip[] {
   const seen = new Set<string>();
   const catalog: HelpHubFavoriteTip[] = [];
@@ -55,7 +61,7 @@ export function helpHubFavoriteTipRows(
 
 /** One catalog question row with a filled star. Not a speech bubble. */
 export function helpHubFavoriteRowHtml(tip: HelpHubFavoriteTip): string {
-  const href = `/help-hub/${encodeURIComponent(tip.slug)}`;
+  const href = helpHubFavoriteHref(tip.slug);
   const star = favoriteStarButtonHtml({
     contentType: "reference",
     contentId: tip.contentId,

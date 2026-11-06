@@ -2,11 +2,19 @@
  * Watson Tip of the Week admin UI (create / edit / schedule / archive + reaction totals).
  */
 import {
+  archiveFieldsMatch,
+  buildVideoUsageSummary,
+  isTipAdminStatus,
+  renderTipAdminBoardHtml,
+  renderVideoUsageHtml,
+  type TipAdminListItem,
+} from "../lib/tipOfTheWeek/adminList";
+import {
   clientTipAdminFieldErrors,
   parseTipAdminSaveJson,
-  queueTipAdminFlash,
   readTipAdminFlash,
 } from "../lib/tipOfTheWeek/adminSaveClient";
+import type { TipOfTheWeekRecord } from "../lib/tipOfTheWeek/types";
 import {
   initTipDateFormState,
   onTipAvailableFromChanged,
@@ -15,6 +23,7 @@ import {
   type TipDateFormState,
 } from "../lib/tipOfTheWeek/schedule";
 import { sanitizeBillboardHtml } from "../lib/whatsNew/sanitizeBillboardHtml";
+import { initSortableTable } from "../lib/watson/sortableTable";
 import { initWatsonTipTryItRichText } from "./watsonTipTryItRichText";
 
 type TipStatus = "draft" | "scheduled" | "active" | "archived";
@@ -56,6 +65,18 @@ const RELATED_MAX = 8;
 
 /** Tracks whether Available Through was manually edited in this form session. */
 let tipDateState: TipDateFormState = initTipDateFormState(null);
+let adminItems: TipAdminListItem[] = [];
+let todayLa = "";
+let adminStateReady = false;
+let formSnapshot = "";
+let modalOpener: HTMLElement | null = null;
+
+type SaveSuccess = {
+  tip: TipOfTheWeekRecord;
+  videoTitle: string | null;
+  message: string;
+  kind: "ok" | "warn";
+};
 
 function el<T extends HTMLElement>(sel: string, root: ParentNode = document): T | null {
   return root.querySelector(sel) as T | null;
@@ -77,17 +98,275 @@ function applyTipDateStateToForm(form: HTMLFormElement, state: TipDateFormState)
   if (through) through.value = state.availableThrough;
 }
 
-function showStatus(message: string, kind: "ok" | "error" | "warn" = "ok") {
-  const boxes = document.querySelectorAll<HTMLElement>("[data-totw-status]");
-  boxes.forEach((box) => {
+function setStatusBoxes(
+  selector: string,
+  message: string,
+  kind: "ok" | "error" | "warn",
+) {
+  document.querySelectorAll<HTMLElement>(selector).forEach((box) => {
     box.hidden = !message;
     box.textContent = message;
-    box.dataset.kind = kind;
+    if (message) box.dataset.kind = kind;
+    else delete box.dataset.kind;
   });
-  const nearSave = el<HTMLElement>("[data-totw-form-status]");
+}
+
+function showFormStatus(message: string, kind: "ok" | "error" | "warn" = "ok") {
+  setStatusBoxes("[data-totw-form-status]", message, kind);
   if (message && kind !== "ok") {
-    nearSave?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    const form = el<HTMLFormElement>("[data-totw-form]");
+    const invalid = form?.querySelector<HTMLElement>("[aria-invalid='true']");
+    (invalid ?? el<HTMLElement>("[data-totw-form-status]"))?.scrollIntoView({
+      block: "nearest",
+    });
   }
+}
+
+function showPageStatus(message: string, kind: "ok" | "error" | "warn" = "ok") {
+  setStatusBoxes("[data-totw-page-status]", message, kind);
+}
+
+function showStatus(message: string, kind: "ok" | "error" | "warn" = "ok") {
+  const dialog = el<HTMLDialogElement>("[data-totw-dialog]");
+  if (dialog?.open) showFormStatus(message, kind);
+  else showPageStatus(message, kind);
+}
+
+function loadAdminState(): void {
+  const node = document.getElementById("totw-admin-data");
+  if (!node?.textContent) return;
+  try {
+    const data = JSON.parse(node.textContent) as {
+      todayLa?: unknown;
+      items?: unknown;
+    };
+    todayLa = typeof data.todayLa === "string" ? data.todayLa : "";
+    adminItems = Array.isArray(data.items) ? (data.items as TipAdminListItem[]) : [];
+    adminStateReady = true;
+  } catch {
+    adminStateReady = false;
+  }
+}
+
+function pageToday(): string {
+  if (todayLa) return todayLa;
+  return el<HTMLElement>("[data-totw-today]")?.getAttribute("data-totw-today") || "";
+}
+
+function renderVideoUsage(form: HTMLFormElement): void {
+  const box = el<HTMLElement>("[data-video-usage]", form);
+  if (!box) return;
+  const videoId = namedField(form, "videoContentId")?.value.trim() || "";
+  if (!/^\d+$/.test(videoId)) {
+    box.hidden = true;
+    box.innerHTML = "";
+    return;
+  }
+  box.hidden = false;
+  box.innerHTML = renderVideoUsageHtml(
+    buildVideoUsageSummary(
+      adminItems.map((item) => item.tip),
+      videoId,
+      pageToday(),
+    ),
+  );
+}
+
+function archiveQueryValue(): string {
+  return el<HTMLInputElement>("[data-totw-archive-search]")?.value || "";
+}
+
+function applyArchiveFilter(query: string): void {
+  const rows = document.querySelectorAll<HTMLElement>("[data-totw-row]");
+  let shown = 0;
+  rows.forEach((row) => {
+    const match = archiveFieldsMatch(
+      {
+        title: row.dataset.searchTitle || "",
+        videoTitle: row.dataset.searchVideoTitle || "",
+        videoId: row.dataset.searchVideoId || "",
+      },
+      query,
+    );
+    row.hidden = !match;
+    if (match) shown += 1;
+  });
+  const nomatch = document.querySelector<HTMLElement>("[data-totw-nomatch]");
+  if (nomatch) nomatch.hidden = rows.length === 0 || shown > 0 || !query.trim();
+}
+
+function readTipTableSort(): { key: string; direction: "asc" | "desc" } | null {
+  const header = document.querySelector<HTMLTableCellElement>(
+    ".watson-totw__table thead th[aria-sort]",
+  );
+  const key = header?.dataset.sortKey;
+  const aria = header?.getAttribute("aria-sort");
+  if (!key || (aria !== "ascending" && aria !== "descending")) return null;
+  return { key, direction: aria === "ascending" ? "asc" : "desc" };
+}
+
+function mountTipTableSort(sort: { key: string; direction: "asc" | "desc" } | null): void {
+  const table = document.querySelector<HTMLTableElement>(".watson-totw__table");
+  if (!table) return;
+  if (sort) {
+    const header = table.querySelector<HTMLTableCellElement>(
+      `thead th[data-sort-key="${CSS.escape(sort.key)}"]`,
+    );
+    if (header) {
+      header.dataset.sortDefault = "true";
+      header.dataset.sortDefaultDirection = sort.direction;
+    }
+  }
+  initSortableTable(table);
+}
+
+function renderAdminBoard(archiveQuery: string): void {
+  const board = el<HTMLElement>("[data-totw-board]");
+  if (!board) return;
+  const sort = readTipTableSort();
+  const search = el<HTMLInputElement>("[data-totw-archive-search]");
+  const hadFocus = document.activeElement === search;
+  const cursor = search?.selectionStart ?? null;
+  board.innerHTML = renderTipAdminBoardHtml({
+    todayLa: pageToday(),
+    items: adminItems,
+    archiveQuery,
+  });
+  mountTipTableSort(sort);
+  if (hadFocus) {
+    const next = el<HTMLInputElement>("[data-totw-archive-search]");
+    next?.focus();
+    if (next && cursor != null) next.setSelectionRange(cursor, cursor);
+  }
+}
+
+function asSavedTip(value: unknown): TipOfTheWeekRecord | null {
+  if (!value || typeof value !== "object") return null;
+  const tip = value as TipOfTheWeekRecord;
+  if (typeof tip.id !== "string" || !tip.id.trim()) return null;
+  if (typeof tip.tipId !== "string" || typeof tip.title !== "string") return null;
+  if (!isTipAdminStatus(tip.status)) return null;
+  return tip;
+}
+
+function videoTitleFromSave(data: unknown, tip: TipOfTheWeekRecord): string | null {
+  if (data && typeof data === "object" && "video" in data) {
+    const video = (data as { video?: { catalogTitle?: unknown } | null }).video;
+    if (video && typeof video.catalogTitle === "string" && video.catalogTitle.trim()) {
+      return video.catalogTitle.trim();
+    }
+  }
+  const previous = adminItems.find((item) => item.tip.id === tip.id);
+  if (previous && previous.tip.videoContentId === tip.videoContentId) {
+    return previous.videoTitle;
+  }
+  const sibling = adminItems.find(
+    (item) =>
+      item.tip.id !== tip.id &&
+      item.tip.videoContentId === tip.videoContentId &&
+      item.videoTitle,
+  );
+  return sibling?.videoTitle ?? null;
+}
+
+function upsertAdminItem(tip: TipOfTheWeekRecord, videoTitle: string | null): void {
+  const index = adminItems.findIndex((item) => item.tip.id === tip.id);
+  const previous = index >= 0 ? adminItems[index] : null;
+  const next: TipAdminListItem = {
+    tip,
+    videoTitle,
+    reactionRows: previous?.reactionRows?.length
+      ? previous.reactionRows
+      : [
+          { label: "Helpful", count: 0 },
+          { label: "Not for me", count: 0 },
+        ],
+    topicCount: previous?.topicCount ?? 0,
+  };
+  if (index >= 0) adminItems[index] = next;
+  else adminItems.push(next);
+}
+
+function formFingerprint(form: HTMLFormElement): string {
+  syncAllRteCopy(form);
+  return JSON.stringify({
+    id: namedField(form, "id")?.value ?? "",
+    ...formPayload(form),
+  });
+}
+
+function isFormDirty(form: HTMLFormElement): boolean {
+  return formFingerprint(form) !== formSnapshot;
+}
+
+function isVisibleControl(node: HTMLElement | null): node is HTMLElement {
+  if (!node || !node.isConnected) return false;
+  if (node.closest("[hidden]")) return false;
+  return node.getClientRects().length > 0;
+}
+
+function restoreModalFocus(opener: HTMLElement | null, savedId: string | null): void {
+  if (isVisibleControl(opener)) {
+    opener.focus();
+    return;
+  }
+  if (!savedId || typeof CSS === "undefined" || typeof CSS.escape !== "function") return;
+  const next = document.querySelector<HTMLElement>(
+    `[data-totw-edit="${CSS.escape(savedId)}"]`,
+  );
+  if (isVisibleControl(next)) next.focus();
+}
+
+function closeTipModal(savedId: string | null): void {
+  const opener = modalOpener;
+  const dialog = el<HTMLDialogElement>("[data-totw-dialog]");
+  if (dialog?.open) dialog.close();
+  restoreModalFocus(opener, savedId);
+  modalOpener = null;
+}
+
+function requestCloseTipModal(form: HTMLFormElement): void {
+  if (isFormDirty(form) && !window.confirm("Discard unsaved edits?")) return;
+  formSnapshot = formFingerprint(form);
+  closeTipModal(null);
+}
+
+function openTipModal(
+  form: HTMLFormElement,
+  tip: TipRecord | null,
+  opener: HTMLElement | null,
+): void {
+  const dialog = el<HTMLDialogElement>("[data-totw-dialog]");
+  if (!dialog) return;
+  if (dialog.open && isFormDirty(form) && !window.confirm("Discard unsaved edits?")) {
+    return;
+  }
+  fillForm(form, tip);
+  formSnapshot = formFingerprint(form);
+  showFormStatus("", "ok");
+  modalOpener = opener;
+  if (!dialog.open) dialog.showModal();
+  namedField(form, "tipId")?.focus();
+}
+
+function finishSave(saved: SaveSuccess): void {
+  const form = el<HTMLFormElement>("[data-totw-form]");
+  if (!adminStateReady) {
+    showPageStatus(
+      `${saved.message} Reload the page to see the updated list.`,
+      saved.kind,
+    );
+    if (form) formSnapshot = formFingerprint(form);
+    closeTipModal(saved.tip.id);
+    return;
+  }
+  const query = archiveQueryValue();
+  upsertAdminItem(saved.tip, saved.videoTitle);
+  renderAdminBoard(query);
+  if (form) formSnapshot = formFingerprint(form);
+  showPageStatus(saved.message, saved.kind);
+  showFormStatus("", "ok");
+  closeTipModal(saved.tip.id);
 }
 
 function clearFieldErrors(form: HTMLFormElement) {
@@ -488,6 +767,7 @@ function fillForm(form: HTMLFormElement, tip: TipRecord | null) {
 
   void refreshVideoPreview(form);
   void refreshReactions(tip?.tipId || "");
+  renderVideoUsage(form);
 }
 
 function formPayload(form: HTMLFormElement): Record<string, unknown> {
@@ -603,7 +883,10 @@ async function refreshReactions(tipId: string) {
   }
 }
 
-async function saveTip(form: HTMLFormElement, statusOverride?: TipStatus) {
+async function saveTip(
+  form: HTMLFormElement,
+  statusOverride?: TipStatus,
+): Promise<SaveSuccess | null> {
   // Ensure rich-text editors have synced into their hidden fields.
   syncAllRteCopy(form);
   clearFieldErrors(form);
@@ -642,11 +925,19 @@ async function saveTip(form: HTMLFormElement, statusOverride?: TipStatus) {
       showStatus(parsed.error, "error");
       return null;
     }
+    const tip = asSavedTip(parsed.tip);
+    if (!tip) {
+      showFormStatus("Saved, but the updated tip could not be read.", "error");
+      return null;
+    }
     const message = parsed.warning || "Saved.";
     const kind = parsed.warning ? "warn" : "ok";
-    showStatus(message, kind);
-    queueTipAdminFlash({ message, kind });
-    return parsed.tip as TipRecord;
+    return {
+      tip,
+      videoTitle: videoTitleFromSave(data, tip),
+      message,
+      kind,
+    };
   } catch (error) {
     const message =
       error instanceof Error && error.message.trim()
@@ -660,6 +951,8 @@ async function saveTip(form: HTMLFormElement, statusOverride?: TipStatus) {
 export function initWatsonTipOfTheWeek() {
   const form = el<HTMLFormElement>("[data-totw-form]");
   if (!form) return;
+
+  loadAdminState();
 
   const flash = readTipAdminFlash();
   if (flash) showStatus(flash.message, flash.kind);
@@ -742,6 +1035,11 @@ export function initWatsonTipOfTheWeek() {
 
   el<HTMLButtonElement>("[data-video-resolve]", form)?.addEventListener("click", () => {
     void refreshVideoPreview(form);
+    renderVideoUsage(form);
+  });
+
+  namedField(form, "videoContentId")?.addEventListener("input", () => {
+    renderVideoUsage(form);
   });
 
   const fromInput = form.elements.namedItem("availableFrom") as HTMLInputElement | null;
@@ -776,45 +1074,65 @@ export function initWatsonTipOfTheWeek() {
 
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
-    const tip = await saveTip(form);
-    if (tip) {
-      fillForm(form, tip);
-      window.setTimeout(() => window.location.reload(), 400);
+    const saved = await saveTip(form);
+    if (saved) finishSave(saved);
+  });
+
+  document.addEventListener("click", (event) => {
+    const target = event.target;
+    if (!(target instanceof Element)) return;
+    const edit = target.closest<HTMLButtonElement>("[data-totw-edit]");
+    if (!edit) return;
+    const id = edit.getAttribute("data-totw-edit") || "";
+    const item = adminItems.find((entry) => entry.tip.id === id);
+    if (!item) {
+      showPageStatus("Unable to load tip into the form.", "error");
+      return;
     }
+    openTipModal(form, item.tip as TipRecord, edit);
   });
 
-  document.querySelectorAll<HTMLButtonElement>("[data-totw-edit]").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const raw = btn.getAttribute("data-totw-edit");
-      if (!raw) return;
-      try {
-        const tip = JSON.parse(decodeURIComponent(raw)) as TipRecord;
-        fillForm(form, tip);
-        form.scrollIntoView({ behavior: "smooth", block: "start" });
-      } catch {
-        showStatus("Unable to load tip into the form.", "error");
-      }
-    });
+  el<HTMLButtonElement>("[data-totw-new]")?.addEventListener("click", (event) => {
+    const opener =
+      event.currentTarget instanceof HTMLElement
+        ? event.currentTarget
+        : el<HTMLButtonElement>("[data-totw-new]");
+    openTipModal(form, null, opener);
   });
 
-  el<HTMLButtonElement>("[data-totw-new]")?.addEventListener("click", () => {
-    fillForm(form, null);
-    form.scrollIntoView({ behavior: "smooth", block: "start" });
+  el<HTMLButtonElement>("[data-totw-cancel]", form)?.addEventListener("click", () => {
+    requestCloseTipModal(form);
+  });
+
+  const dialog = el<HTMLDialogElement>("[data-totw-dialog]");
+  dialog?.addEventListener("cancel", (event) => {
+    event.preventDefault();
+    requestCloseTipModal(form);
+  });
+  dialog?.addEventListener("click", (event) => {
+    if (event.target === dialog) requestCloseTipModal(form);
+  });
+
+  document.addEventListener("input", (event) => {
+    const target = event.target;
+    if (!(target instanceof HTMLInputElement)) return;
+    if (!target.matches("[data-totw-archive-search]")) return;
+    applyArchiveFilter(target.value);
   });
 
   el<HTMLButtonElement>("[data-totw-save-draft]")?.addEventListener("click", async () => {
-    const tip = await saveTip(form, "draft");
-    if (tip) window.setTimeout(() => window.location.reload(), 400);
+    const saved = await saveTip(form, "draft");
+    if (saved) finishSave(saved);
   });
 
   el<HTMLButtonElement>("[data-totw-schedule]")?.addEventListener("click", async () => {
-    const tip = await saveTip(form, "scheduled");
-    if (tip) window.setTimeout(() => window.location.reload(), 400);
+    const saved = await saveTip(form, "scheduled");
+    if (saved) finishSave(saved);
   });
 
   el<HTMLButtonElement>("[data-totw-activate]")?.addEventListener("click", async () => {
-    const tip = await saveTip(form, "active");
-    if (tip) window.setTimeout(() => window.location.reload(), 400);
+    const saved = await saveTip(form, "active");
+    if (saved) finishSave(saved);
   });
 
   el<HTMLButtonElement>("[data-totw-archive]")?.addEventListener("click", async () => {
@@ -826,8 +1144,8 @@ export function initWatsonTipOfTheWeek() {
     if (!window.confirm("Archive this tip? It will no longer appear as the featured Tip of the Week.")) {
       return;
     }
-    const tip = await saveTip(form, "archived");
-    if (tip) window.setTimeout(() => window.location.reload(), 400);
+    const saved = await saveTip(form, "archived");
+    if (saved) finishSave(saved);
   });
 
   // Initial empty list rows

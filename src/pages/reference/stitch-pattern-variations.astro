@@ -1,0 +1,632 @@
+---
+export const prerender = true;
+
+import Layout from "../../layouts/Layout.astro";
+import ReferencePageShell from "../../components/ReferencePageShell.astro";
+import GatedVimeoEmbed from "../../components/videos/GatedVimeoEmbed.astro";
+import videosRaw from "../../data/videos-public.json";
+import { vimeoNumericIdFromPublicVideo, type PublicVideoRow } from "../../lib/lessonVideo";
+import { catalogVideoPlaybackAccess } from "../../lib/videos/catalogVideoPlaybackAccess";
+
+const PAGE_H1 = "Stitch Pattern Variations";
+const SEO_TITLE = "Stitch Pattern Variations | Knit it Now";
+const INTRO =
+  "Get more from a stitch pattern by changing its direction, proportions, or needle selection. Use this guide to understand common variations, then check your machine’s manual for the controls available on your model.";
+const META_DESCRIPTION = INTRO;
+const CANONICAL_URL = "https://knititnow.com/reference/stitch-pattern-variations";
+
+type ExampleKind =
+  | "reverse"
+  | "mirror-h"
+  | "upside-down"
+  | "mirror-v"
+  | "double-wide"
+  | "double-high"
+  | "rotate-90"
+  | "negative"
+  | "text";
+
+type VariationRow = {
+  id: string;
+  name: string;
+  does: string;
+  example: ExampleKind;
+  exampleCaption: string;
+  punchcard: string;
+  electronic: string;
+};
+
+/** Exact artwork. Variations transform this file; they do not redraw it. */
+const ELEPHANT_SRC = "/images/reference/elephant.svg";
+const ELEPHANT_W = 491.52;
+const ELEPHANT_H = 367.2;
+
+type ElephantCopy = {
+  transform: string;
+  tone: "dark" | "light";
+  plate: "light" | "dark";
+};
+
+type ElephantScene = {
+  width: number;
+  height: number;
+  /** Display width as a multiple of one untransformed elephant. */
+  units: number;
+  copies: ElephantCopy[];
+};
+
+function elephantScene(kind: ExampleKind | "original"): ElephantScene | null {
+  if (kind === "text") return null;
+  const width = ELEPHANT_W;
+  const height = ELEPHANT_H;
+  const gap = 36;
+  const dark = { tone: "dark" as const, plate: "light" as const };
+  const scene = (
+    viewWidth: number,
+    viewHeight: number,
+    copies: ElephantCopy[],
+    boost = 1,
+  ): ElephantScene => ({
+    width: viewWidth,
+    height: viewHeight,
+    units: (viewWidth / width) * boost,
+    copies,
+  });
+
+  if (kind === "original") {
+    return scene(width, height, [{ transform: "", ...dark }]);
+  }
+  if (kind === "reverse") {
+    return scene(width, height, [{ transform: `translate(${width} 0) scale(-1 1)`, ...dark }]);
+  }
+  if (kind === "mirror-h") {
+    return scene(width * 2 + gap, height, [
+      { transform: "", ...dark },
+      { transform: `translate(${width * 2 + gap} 0) scale(-1 1)`, ...dark },
+    ]);
+  }
+  if (kind === "upside-down") {
+    return scene(width, height, [{ transform: `translate(0 ${height}) scale(1 -1)`, ...dark }]);
+  }
+  if (kind === "mirror-v") {
+    return scene(width, height * 2 + gap, [
+      { transform: "", ...dark },
+      { transform: `translate(0 ${height * 2 + gap}) scale(1 -1)`, ...dark },
+    ]);
+  }
+  if (kind === "double-wide") {
+    return scene(width * 2, height, [{ transform: "scale(2 1)", ...dark }]);
+  }
+  if (kind === "double-high") {
+    return scene(width, height * 2, [{ transform: "scale(1 2)", ...dark }]);
+  }
+  if (kind === "rotate-90") {
+    return scene(height, width, [{ transform: `translate(${height} 0) rotate(90)`, ...dark }]);
+  }
+  return scene(
+    width * 2 + gap,
+    height,
+    [
+      { transform: "", ...dark },
+      {
+        transform: `translate(${width + gap} 0)`,
+        tone: "light",
+        plate: "dark",
+      },
+    ],
+    1.2,
+  );
+}
+
+const originalDrawing = elephantScene("original");
+
+const PUNCHCARD_NOT_BUILTIN = "Not generally a built-in control.";
+
+const variations: VariationRow[] = [
+  {
+    id: "reverse",
+    name: "Reverse",
+    does: "Flips the motif left to right. Useful for directional motifs and lettering.",
+    example: "reverse",
+    exampleCaption: "Flipped left to right.",
+    punchcard: PUNCHCARD_NOT_BUILTIN,
+    electronic: "Where supported",
+  },
+  {
+    id: "horizontal-mirror",
+    name: "Horizontal Mirror Image",
+    does: "Combines the motif with its horizontal reflection to create a mirrored repeat. This is different from simply flipping the original motif.",
+    example: "mirror-h",
+    exampleCaption: "Original beside its horizontal reflection.",
+    punchcard: PUNCHCARD_NOT_BUILTIN,
+    electronic: "Where supported",
+  },
+  {
+    id: "upside-down",
+    name: "Upside Down",
+    does: "Flips the motif top to bottom. Useful when planning turned-up cuffs or top-down knitting.",
+    example: "upside-down",
+    exampleCaption: "Flipped top to bottom.",
+    punchcard: PUNCHCARD_NOT_BUILTIN,
+    electronic: "Where supported",
+  },
+  {
+    id: "vertical-reflection",
+    name: "Vertical Reflection",
+    does: "Combines the motif with its vertical reflection to create a reflected repeat. This is different from simply turning the original motif upside down.",
+    example: "mirror-v",
+    exampleCaption: "Original above its vertical reflection.",
+    punchcard: PUNCHCARD_NOT_BUILTIN,
+    electronic: "Where supported",
+  },
+  {
+    id: "double-wide",
+    name: "Double Wide",
+    does: "Repeats each pattern column twice, doubling the pattern repeat’s width in stitches.",
+    example: "double-wide",
+    exampleCaption: "Stretched to twice the width.",
+    punchcard: PUNCHCARD_NOT_BUILTIN,
+    electronic: "Where supported",
+  },
+  {
+    id: "double-high",
+    name: "Double High / Double Height",
+    does: "Repeats each pattern row twice, doubling the pattern repeat’s height in knitted rows.",
+    example: "double-high",
+    exampleCaption: "Stretched to twice the height.",
+    punchcard: "Available on supported models; check your manual.",
+    electronic: "Where supported",
+  },
+  {
+    id: "rotation",
+    name: "Rotation",
+    does: "Rotates the motif. The available directions and limitations depend on the machine or software.",
+    example: "rotate-90",
+    exampleCaption: "Rotated 90° as an example.",
+    punchcard: PUNCHCARD_NOT_BUILTIN,
+    electronic: "Where supported. Available directions depend on the machine or software.",
+  },
+  {
+    id: "negative",
+    name: "Negative / Reverse Selection",
+    does: "Swaps selected and unselected areas of the stitch pattern. This changes needle selection rather than the motif’s orientation.",
+    example: "negative",
+    exampleCaption: "White elephant on a dark background, beside the original.",
+    punchcard: PUNCHCARD_NOT_BUILTIN,
+    electronic: "Where supported",
+  },
+  {
+    id: "mc-rib",
+    name: "MC Rib / Jacquard Variation",
+    does: "On the Brother 970/CB1, adapts suitable multicolor patterns for double-bed jacquard knitting. Follow the machine and ribber instructions.",
+    example: "text",
+    exampleCaption: "See the description.",
+    punchcard: PUNCHCARD_NOT_BUILTIN,
+    electronic: "Where supported on the Brother 970/CB1",
+  },
+];
+
+type CatalogVideo = PublicVideoRow & { posterUrl?: string };
+
+const variationVideo = (videosRaw as CatalogVideo[]).find(
+  (video) => video.slug === "brother-970-stitch-pattern-variations",
+);
+const variationVimeoId = variationVideo ? vimeoNumericIdFromPublicVideo(variationVideo) : null;
+const variationContentId =
+  variationVideo?.content_id != null ? String(variationVideo.content_id).trim() : "";
+const variationPoster = typeof variationVideo?.posterUrl === "string" ? variationVideo.posterUrl : "";
+const variationTitle = variationVideo?.title?.trim() || "Brother 970 Stitch Pattern Variations";
+const variationAccess = variationVideo ? catalogVideoPlaybackAccess(variationVideo) : "member";
+const canEmbedVariationVideo = Boolean(variationVimeoId && variationContentId);
+---
+
+<Layout title={SEO_TITLE} description={META_DESCRIPTION} bodyClass="page--tight-header">
+  <Fragment slot="head">
+    <link rel="canonical" href={CANONICAL_URL} />
+  </Fragment>
+
+  <ReferencePageShell
+    title={PAGE_H1}
+    subhead={INTRO}
+    backHref="/reference"
+    backLabel="Back to References"
+    wide
+  >
+    <article class="stitch-variations">
+      <p>
+        These concepts apply across many electronic knitting machines. Available functions, names,
+        icons, and controls vary by model. Double High is also available on supported punchcard
+        machines.
+      </p>
+
+      <section class="stitch-variations__section" aria-labelledby="variations-heading">
+        <h2 id="variations-heading">Common variations</h2>
+        <figure class="stitch-variations__original">
+          {originalDrawing ? (
+            <svg
+              class="stitch-variations__svg"
+              viewBox={`0 0 ${originalDrawing.width} ${originalDrawing.height}`}
+              role="img"
+              aria-labelledby="stitch-variation-original"
+            >
+              {originalDrawing.copies.map((copy) => (
+                <g transform={copy.transform || undefined}>
+                  <rect
+                    class:list={["stitch-variations__plate", copy.plate === "dark" && "stitch-variations__plate--dark"]}
+                    width={ELEPHANT_W}
+                    height={ELEPHANT_H}
+                    rx="8"
+                  />
+                  <image
+                    class:list={["stitch-variations__artwork", copy.tone === "light" && "stitch-variations__artwork--light"]}
+                    href={ELEPHANT_SRC}
+                    width={ELEPHANT_W}
+                    height={ELEPHANT_H}
+                  />
+                </g>
+              ))}
+            </svg>
+          ) : null}
+          <figcaption id="stitch-variation-original">Original<span class="stitch-variations__sr"> elephant silhouette</span></figcaption>
+        </figure>
+        <p class="stitch-variations__note">
+          These drawings illustrate the effect. They are not replicas of machine buttons.
+        </p>
+        <div class="stitch-variations__table-wrap">
+          <table class="stitch-variations__table" aria-labelledby="variations-heading">
+            <thead>
+              <tr>
+                <th scope="col">Variation</th>
+                <th scope="col">What it does</th>
+                <th scope="col">Example</th>
+                <th scope="col">Punchcard machines</th>
+                <th scope="col">Electronic machines</th>
+              </tr>
+            </thead>
+            <tbody>
+              {variations.map((row) => {
+                const drawing = elephantScene(row.example);
+                const captionId = `stitch-variation-example-${row.id}`;
+                return (
+                  <tr>
+                    <th scope="row">{row.name}</th>
+                    <td>
+                      <span class="stitch-variations__label">What it does</span>
+                      {row.does}
+                    </td>
+                    <td>
+                      <span class="stitch-variations__label">Example</span>
+                      {drawing ? (
+                        <figure class="stitch-variations__example">
+                          <svg
+                            class="stitch-variations__svg"
+                            style={`--stitch-units: ${drawing.units}`}
+                            viewBox={`0 0 ${drawing.width} ${drawing.height}`}
+                            role="img"
+                            aria-labelledby={captionId}
+                          >
+                            {drawing.copies.map((copy) => (
+                              <g transform={copy.transform || undefined}>
+                                <rect
+                                  class:list={[
+                                    "stitch-variations__plate",
+                                    copy.plate === "dark" && "stitch-variations__plate--dark",
+                                  ]}
+                                  width={ELEPHANT_W}
+                                  height={ELEPHANT_H}
+                                  rx="8"
+                                />
+                                <image
+                                  class:list={[
+                                    "stitch-variations__artwork",
+                                    copy.tone === "light" && "stitch-variations__artwork--light",
+                                  ]}
+                                  href={ELEPHANT_SRC}
+                                  width={ELEPHANT_W}
+                                  height={ELEPHANT_H}
+                                />
+                              </g>
+                            ))}
+                          </svg>
+                          <figcaption id={captionId}>{row.exampleCaption}</figcaption>
+                        </figure>
+                      ) : (
+                        <p class="stitch-variations__example-text" id={captionId}>{row.exampleCaption}</p>
+                      )}
+                    </td>
+                    <td>
+                      <span class="stitch-variations__label">Punchcard machines</span>
+                      {row.punchcard}
+                    </td>
+                    <td>
+                      <span class="stitch-variations__label">Electronic machines</span>
+                      {row.electronic}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+        <p class="stitch-variations__note">
+          Some of these effects can be achieved on a punchcard machine by changing, reversing, or
+          repunching the card, depending on the machine and pattern.
+        </p>
+        <p class="stitch-variations__note">
+          Repeating each column or row twice doubles the pattern repeat in stitches or knitted rows.
+          Stitch structure and gauge affect how that change shows up in the finished fabric.
+        </p>
+      </section>
+
+      <section class="stitch-variations__section" aria-labelledby="watch-heading">
+        <h2 id="watch-heading">Watch: Stitch Pattern Variations on the Brother 970</h2>
+        <p>
+          This video demonstrates Brother 970/CB1 controls, while this guide explains broader
+          concepts that apply across many machines.
+        </p>
+        {canEmbedVariationVideo && variationVimeoId ? (
+          <GatedVimeoEmbed
+            videoId={variationVimeoId}
+            contentId={variationContentId}
+            title={variationTitle}
+            access_level={variationAccess}
+            thumbUrl={variationPoster}
+          />
+        ) : (
+          <p>The Brother 970/CB1 stitch pattern variations video is not in the video catalog.</p>
+        )}
+      </section>
+
+      <section class="stitch-variations__section" aria-labelledby="troubleshooting-heading">
+        <h2 id="troubleshooting-heading">Troubleshooting</h2>
+        <p class="stitch-variations__callout">
+          If your pattern looks different from what you expected, check which variations are active.
+          Turn off unwanted variations, then confirm the settings needed for your project.
+        </p>
+      </section>
+    </article>
+  </ReferencePageShell>
+</Layout>
+
+<style>
+  .stitch-variations {
+    margin-top: 0.5rem;
+    color: #243015;
+    font-size: 1.05rem;
+    line-height: 1.65;
+  }
+
+  .stitch-variations p {
+    margin: 0 0 1rem;
+  }
+
+  .stitch-variations__section {
+    margin: 2rem 0 0;
+  }
+
+  .stitch-variations__section h2 {
+    margin: 0 0 0.75rem;
+    font-size: 1.45rem;
+    line-height: 1.25;
+    color: var(--kbm-green, #52682d);
+  }
+
+  .stitch-variations__table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin: 0 0 1rem;
+  }
+
+  .stitch-variations__table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+  }
+
+  .stitch-variations__table th,
+  .stitch-variations__table td {
+    padding: 0.85rem 0.9rem;
+    text-align: left;
+    vertical-align: top;
+    border-bottom: 1px solid #e5e7df;
+  }
+
+  .stitch-variations__table thead th {
+    background: #f3f4ef;
+    font-weight: 700;
+    color: #374151;
+    border-bottom: 2px solid #d6d9cf;
+  }
+
+  .stitch-variations__table tbody th[scope="row"] {
+    font-weight: 700;
+    color: #1f2937;
+    background: #fcfcfa;
+    width: 14%;
+  }
+
+  .stitch-variations__table th:nth-child(3),
+  .stitch-variations__table td:nth-child(3) {
+    width: 21rem;
+    min-width: 21rem;
+  }
+
+  .stitch-variations__original,
+  .stitch-variations__example {
+    margin: 0;
+  }
+
+  .stitch-variations__original {
+    display: inline-block;
+    margin: 0 0 0.85rem;
+    padding: 0.75rem 0.9rem 0.55rem;
+    border: 1px solid #e5e7df;
+    border-radius: 10px;
+    background: #fff;
+  }
+
+  .stitch-variations__original figcaption,
+  .stitch-variations__example figcaption {
+    margin-top: 0.35rem;
+    font-size: 0.84rem;
+    font-weight: 700;
+    line-height: 1.3;
+    color: #52682d;
+  }
+
+  .stitch-variations__original figcaption {
+    text-align: center;
+  }
+
+  .stitch-variations__svg {
+    display: block;
+    width: calc(7.5rem * var(--stitch-units, 1));
+    max-width: none;
+    height: auto;
+  }
+
+  .stitch-variations__original .stitch-variations__svg {
+    width: 9rem;
+    max-width: 100%;
+    margin: 0 auto;
+  }
+
+  .stitch-variations__plate {
+    fill: #fff;
+    stroke: #d5dcc8;
+    stroke-width: 1.5;
+  }
+
+  .stitch-variations__plate--dark {
+    fill: #243015;
+    stroke: #243015;
+  }
+
+  .stitch-variations__artwork--light {
+    filter: grayscale(1) contrast(12) invert(1);
+  }
+
+  .stitch-variations__sr {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .stitch-variations__example-text {
+    margin: 0;
+    font-size: 0.95rem;
+  }
+
+  .stitch-variations__label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .stitch-variations__note {
+    margin: 0 0 0.75rem;
+    color: #374151;
+  }
+
+  .stitch-variations a {
+    color: var(--kbm-green, #52682d);
+    font-weight: 700;
+  }
+
+  .stitch-variations__callout {
+    margin: 0;
+    padding: 0.9rem 1rem;
+    background: #f6f8f3;
+    border: 1px solid #d8e1c8;
+    border-left: 6px solid #52682d;
+    border-radius: 8px;
+  }
+
+  @media (max-width: 760px) {
+    .stitch-variations__table thead {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    .stitch-variations__table,
+    .stitch-variations__table tbody,
+    .stitch-variations__table tr,
+    .stitch-variations__table th,
+    .stitch-variations__table td {
+      display: block;
+      width: auto;
+    }
+
+    .stitch-variations__table tr {
+      margin: 0 0 0.85rem;
+      padding: 0.85rem 1rem 1rem;
+      border: 1px solid #e5e7df;
+      border-radius: 10px;
+      background: #fff;
+    }
+
+    .stitch-variations__table tbody th[scope="row"] {
+      width: auto;
+      min-width: 0;
+      padding: 0 0 0.55rem;
+      margin-bottom: 0.35rem;
+      background: transparent;
+      border-bottom: 1px solid #e5e7df;
+      font-size: 1.08rem;
+    }
+
+    .stitch-variations__table th:nth-child(3),
+    .stitch-variations__table td:nth-child(3) {
+      width: auto;
+      min-width: 0;
+    }
+
+    .stitch-variations__table td {
+      padding: 0.65rem 0 0;
+      border: 0;
+    }
+
+    .stitch-variations__label {
+      position: static;
+      width: auto;
+      height: auto;
+      margin: 0 0 0.15rem;
+      overflow: visible;
+      clip: auto;
+      white-space: normal;
+      display: block;
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: #52682d;
+    }
+
+    .stitch-variations__original,
+    .stitch-variations__example {
+      display: block;
+      width: 100%;
+      max-width: 100%;
+      overflow-x: auto;
+    }
+  }
+</style>
