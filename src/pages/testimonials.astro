@@ -41,6 +41,22 @@ function yearLabel(reviewDate: string | null): string | null {
   bodyClass="page--tight-header"
 >
   <main class="testimonials-page page-wrap">
+    <div class="testimonials-page__sharebar">
+      <a class="kbm-btn kbm-btn-primary" href="/testimonials/share">Share your experience</a>
+      <button
+        class="kbm-btn kbm-btn-outline"
+        type="button"
+        id="show-more-stories"
+        hidden={!showMore}
+        data-next-offset={loadError ? 0 : batch.nextOffset}
+        data-has-more={batch.hasMore ? "true" : "false"}
+        data-phase={loadError ? "error" : "ready"}
+      >
+        {loadError ? "Retry" : "Show more stories"}
+      </button>
+      <span id="show-more-status" class="testimonials-page__more-status" role="status">{loadError ? "Stories could not be loaded." : ""}</span>
+    </div>
+
     <header class="testimonials-page__header">
       <h1>What Knitters Say</h1>
       <p class="testimonials-page__intro">
@@ -49,10 +65,6 @@ function yearLabel(reviewDate: string | null): string | null {
     </header>
 
     <div class="testimonials-page__stream">
-      <div class="testimonials-page__sharebar">
-        <a class="kbm-btn kbm-btn-outline" href="/testimonials/share">Share your experience</a>
-      </div>
-
       <div class="testimonials-page__list" id="testimonial-list">
         {
           batch.testimonials.map((item) => (
@@ -73,28 +85,7 @@ function yearLabel(reviewDate: string | null): string | null {
         }
       </div>
       <p class="testimonials-page__intro" id="testimonial-empty" hidden={!showEmpty}>No testimonials are published yet.</p>
-      {
-        showMore ? (
-          <p class="testimonials-page__more">
-            <button
-              class="kbm-btn kbm-btn-outline"
-              type="button"
-              id="show-more-stories"
-              data-next-offset={loadError ? 0 : batch.nextOffset}
-              data-has-more={batch.hasMore ? "true" : "false"}
-              data-phase={loadError ? "error" : "ready"}
-            >
-              {loadError ? "Retry" : "Show more stories"}
-            </button>
-            <span id="show-more-status" role="status">{loadError ? "Stories could not be loaded." : ""}</span>
-          </p>
-        ) : null
-      }
     </div>
-
-    <p class="testimonials-page__share testimonials-page__share--bottom">
-      <a class="kbm-btn kbm-btn-outline" href="/testimonials/share">Share your experience</a>
-    </p>
   </main>
 </Layout>
 
@@ -162,6 +153,7 @@ function yearLabel(reviewDate: string | null): string | null {
       const label = publicBrowseButtonLabel(state);
       button.hidden = label == null;
       button.disabled = state.phase === "loading";
+      button.setAttribute("aria-busy", state.phase === "loading" ? "true" : "false");
       if (label) button.textContent = label;
       if (status) status.textContent = publicBrowseStatus(state);
       if (empty) empty.hidden = !(state.phase === "ready" && state.cardCount === 0);

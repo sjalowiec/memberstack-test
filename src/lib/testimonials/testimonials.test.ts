@@ -253,7 +253,12 @@ describe("testimonial publication rules", () => {
     expect(page).toContain("listPublicTestimonials");
     expect(page).toContain("Show more stories");
     expect(page).toContain('id="testimonial-list"');
-    expect(page.indexOf('id="testimonial-list"')).toBeLessThan(page.indexOf("show-more-stories"));
+    const actionBar = page.indexOf("testimonials-page__sharebar");
+    const moreStories = page.indexOf("show-more-stories");
+    const storyList = page.indexOf('id="testimonial-list"');
+    expect(actionBar).toBeGreaterThan(-1);
+    expect(moreStories).toBeGreaterThan(actionBar);
+    expect(storyList).toBeGreaterThan(moreStories);
     expect(page).not.toContain("set:html");
     expect(page).not.toContain("innerHTML");
     expect(page).toContain("testimonials-page__sharebar");
@@ -278,7 +283,10 @@ describe("testimonial publication rules", () => {
       "active DESC, review_date DESC NULLS LAST, created_at DESC",
     );
     expect(testimonialAdminListOrder()).toBe(testimonialAdminListOrder("inactive"));
-    expect(page.match(/Share your experience/g)?.length).toBe(2);
+    expect(page.match(/Share your experience/g)?.length).toBe(1);
+    expect(page).toContain('class="kbm-btn kbm-btn-primary" href="/testimonials/share"');
+    expect(page).toContain('id="show-more-stories"');
+    expect(page).not.toContain("testimonials-page__share--bottom");
     expect(page).not.toContain("set:html");
     expect(readFileSync("src/pages/account.astro", "utf8")).toContain('href="/testimonials/share"');
   });
