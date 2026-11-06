@@ -30,33 +30,35 @@ function yearLabel(reviewDate: string | null): string | null {
       </p>
     </header>
 
-    <p class="testimonials-page__share">
-      <a class="kbm-btn kbm-btn-outline" href="/testimonials/share">Share your experience</a>
-    </p>
+    <div class="testimonials-page__stream">
+      <div class="testimonials-page__sharebar">
+        <a class="kbm-btn kbm-btn-outline" href="/testimonials/share">Share your experience</a>
+      </div>
 
-    {
-      testimonials.length === 0 ? (
-        <p class="testimonials-page__intro">No testimonials are published yet.</p>
-      ) : (
-        <div class="testimonials-page__list">
-          {testimonials.map((item) => (
-            <article class="kbm-card testimonials-page__card">
-              <blockquote>
-                <p class="testimonials-page__quote">
-                  {item.before}
-                  {item.highlight ? <span class="testimonials-page__highlight">{item.highlight}</span> : null}
-                  {item.after}
+      {
+        testimonials.length === 0 ? (
+          <p class="testimonials-page__intro">No testimonials are published yet.</p>
+        ) : (
+          <div class="testimonials-page__list">
+            {testimonials.map((item) => (
+              <article class="kbm-card testimonials-page__card">
+                <blockquote>
+                  <p class="testimonials-page__quote">
+                    {item.before}
+                    {item.highlight ? <span class="testimonials-page__highlight">{item.highlight}</span> : null}
+                    {item.after}
+                  </p>
+                </blockquote>
+                <p class="testimonials-page__name">
+                  {item.attribution}
+                  {yearLabel(item.reviewDate) ? <span> · {yearLabel(item.reviewDate)}</span> : null}
                 </p>
-              </blockquote>
-              <p class="testimonials-page__name">
-                {item.attribution}
-                {yearLabel(item.reviewDate) ? <span> · {yearLabel(item.reviewDate)}</span> : null}
-              </p>
-            </article>
-          ))}
-        </div>
-      )
-    }
+              </article>
+            ))}
+          </div>
+        )
+      }
+    </div>
 
     <p class="testimonials-page__share testimonials-page__share--bottom">
       <a class="kbm-btn kbm-btn-outline" href="/testimonials/share">Share your experience</a>
