@@ -12,6 +12,7 @@ import type { TestimonialRecord } from "../../lib/testimonials/testimonialRules"
 const statusParam = Astro.url.searchParams.get("status");
 const status = statusParam === "active" || statusParam === "inactive" ? statusParam : "all";
 const sort = Astro.url.searchParams.get("sort") === "active" ? "active" : "inactive";
+const includeUnpublished = Astro.url.searchParams.get("includeUnpublished") === "1";
 const q = Astro.url.searchParams.get("q")?.trim() ?? "";
 const page = Math.max(Number(Astro.url.searchParams.get("page") ?? "1") || 1, 1);
 const pageSize = 40;
@@ -27,6 +28,7 @@ try {
     q,
     status,
     sort,
+    includeUnpublishedLegacy: includeUnpublished,
     limit: pageSize,
     offset: (page - 1) * pageSize,
   });
@@ -49,6 +51,7 @@ function listHref(next: { status?: string; page?: number; id?: string; sort?: "i
   if (q) params.set("q", q);
   const nextSort = next.sort ?? sort;
   if (nextSort === "active") params.set("sort", "active");
+  if (includeUnpublished) params.set("includeUnpublished", "1");
   const nextPage = next.page ?? page;
   if (nextPage > 1) params.set("page", String(nextPage));
   const nextId = "id" in next ? next.id : selectedId;
@@ -220,6 +223,10 @@ const previewParts = selected?.displayQuote
                 <option value="inactive" selected={sort === "inactive"}>Inactive first</option>
                 <option value="active" selected={sort === "active"}>Active first</option>
               </select>
+            </label>
+            <label class="testimonial-admin__include">
+              <input type="checkbox" name="includeUnpublished" value="1" checked={includeUnpublished} />
+              Include previously unpublished legacy reviews
             </label>
             <button class="kbm-btn kbm-btn-primary" type="submit">Apply</button>
           </form>
@@ -591,6 +598,13 @@ const previewParts = selected?.displayQuote
     flex-wrap: wrap;
     gap: 0.75rem;
     align-items: end;
+  }
+
+  .testimonial-admin__include {
+    display: flex;
+    gap: 0.4rem;
+    align-items: center;
+    max-width: 16rem;
   }
   .testimonial-admin__list {
     overflow-x: auto;

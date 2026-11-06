@@ -11,7 +11,21 @@ import {
   LEGACY_IMPORT_PRESERVED_COLUMNS,
   legacyImportUpsertSql,
 } from "./testimonialRules";
-import { PUBLIC_TESTIMONIAL_SQL, DELETE_TESTIMONIAL_SQL, testimonialAdminListOrder } from "./testimonialStore";
+import {
+  acceptPublicBrowseBatch,
+  failPublicBrowseLoad,
+  publicBrowseButtonLabel,
+  publicBrowseStatus,
+  startPublicBrowseLoad,
+} from "./publicTestimonialBrowse";
+import {
+  PUBLIC_TESTIMONIAL_SQL,
+  DELETE_TESTIMONIAL_SQL,
+  listPublicTestimonials,
+  listTestimonialsForAdmin,
+  testimonialAdminCollectionClause,
+  testimonialAdminListOrder,
+} from "./testimonialStore";
 
 describe("testimonial publication rules", () => {
   it("removes legacy HTML and links before public display", () => {
@@ -215,10 +229,21 @@ describe("testimonial publication rules", () => {
     expect(page).toContain("What Knitters Say");
     expect(page).toContain("Every knitter has a story.");
     expect(page).toContain("listPublicTestimonials");
+    expect(page).toContain("Show more stories");
+    expect(page).toContain('id="testimonial-list"');
+    expect(page.indexOf('id="testimonial-list"')).toBeLessThan(page.indexOf("show-more-stories"));
+    expect(page).not.toContain("set:html");
+    expect(page).not.toContain("innerHTML");
     expect(page).toContain("testimonials-page__sharebar");
+    const css = readFileSync("src/styles/testimonials-public.css", "utf8");
+    expect(css).toContain(".testimonials-page__list > .testimonials-page__card:nth-child(even)");
     const admin = readFileSync("src/pages/admin/testimonials.astro", "utf8");
     expect(admin).toContain("Inactive first");
     expect(admin).toContain("Active first");
+    expect(admin).toContain("Include previously unpublished legacy reviews");
+    expect(admin).toContain("includeUnpublishedLegacy");
+    expect(admin).toContain("Save &amp; Activate");
+    expect(admin).toContain("Unsaved changes");
     expect(admin).toContain("testimonial-admin__editor");
     expect(admin).toContain("testimonial-admin__list");
     expect(testimonialAdminListOrder("inactive")).toBe(
@@ -231,5 +256,94 @@ describe("testimonial publication rules", () => {
     expect(page.match(/Share your experience/g)?.length).toBe(2);
     expect(page).not.toContain("set:html");
     expect(readFileSync("src/pages/account.astro", "utf8")).toContain('href="/testimonials/share"');
+  });
+
+  it("returns public batches in a stable order without member fields", async () => {
+    const calls: { sql: string; params: unknown[] }[] = [];
+    const query = async (sql: string, params?: unknown[]) => {
+      calls.push({ sql, params: params ?? [] });
+      if (sql.includes("COUNT")) return [{ total: 10 }];
+      const offset = Number(params?.[2] ?? 0);
+      const limit = Number(params?.[1] ?? 8);
+      return Array.from({ length: Math.min(limit, Math.max(10 - offset, 0)) }, (_, index) => ({
+        original_quote: `Story ${offset + index} about learning to knit.`,
+        original_attribution: `Knitter ${offset + index}`,
+        display_quote: offset + index === 8 ? "Saved display quote." : null,
+        display_attribution: null,
+        display_highlight_start: offset + index === 8 ? 6 : null,
+        display_highlight_end: offset + index === 8 ? 13 : null,
+        review_date: "2020-05-02",
+      }));
+    };
+    const seed = "a".repeat(32);
+    const first = await listPublicTestimonials({ seed, offset: 0 }, query);
+    const second = await listPublicTestimonials({ seed, offset: first.nextOffset }, query);
+    expect(first.testimonials).toHaveLength(8);
+    expect(first.hasMore).toBe(true);
+    expect(second.testimonials).toHaveLength(2);
+    expect(second.hasMore).toBe(false);
+    expect(second.testimonials[0]?.highlight).toBe("display");
+    const names = [...first.testimonials, ...second.testimonials].map((item) => item.attribution);
+    expect(new Set(names).size).toBe(names.length);
+    expect(names[0]).toBe("Knitter 0");
+    expect(names[8]).toBe("Knitter 8");
+    expect(Object.keys(first.testimonials[0] ?? {}).sort()).toEqual([
+      "after",
+      "attribution",
+      "before",
+      "highlight",
+      "reviewDate",
+    ]);
+    expect(calls[1]?.sql).toContain("ORDER BY md5($1 || id::text), id");
+    expect(calls[1]?.sql).toContain("LIMIT $2 OFFSET $3");
+    expect(calls[1]?.sql).not.toMatch(/legacy_member_id|memberstack_member_id|email/i);
+    expect(calls[1]?.params).toEqual([seed, 8, 0]);
+    expect(calls[3]?.params).toEqual([seed, 8, 8]);
+    expect(testimonialAdminCollectionClause(false)).toBe("(source <> 'legacy_import' OR legacy_show IS TRUE)");
+    expect(testimonialAdminCollectionClause(false)).not.toContain("active");
+    expect(testimonialAdminCollectionClause(true)).toBe("TRUE");
+  });
+
+  it("applies the legacy Show collection before pagination", async () => {
+    const calls: { sql: string; params: unknown[] }[] = [];
+    const query = async (sql: string, params?: unknown[]) => {
+      calls.push({ sql, params: params ?? [] });
+      if (sql.includes("COUNT")) return [{ total: 90 }];
+      return [];
+    };
+    const hidden = await listTestimonialsForAdmin(
+      { q: "ada", status: "inactive", sort: "active", limit: 40, offset: 80 },
+      query,
+    );
+    expect(hidden.total).toBe(90);
+    expect(calls[0]?.sql).toContain("(source <> 'legacy_import' OR legacy_show IS TRUE)");
+    expect(calls[1]?.sql).toContain("active DESC, review_date DESC NULLS LAST, created_at DESC");
+    expect(calls[1]?.sql).toContain("LIMIT $4 OFFSET $5");
+    expect(calls[0]?.params).toEqual(["%ada%", "ada", false]);
+    expect(calls[1]?.params).toEqual(["%ada%", "ada", false, 40, 80]);
+    await listTestimonialsForAdmin({ includeUnpublishedLegacy: true, status: "active" }, query);
+    expect(calls[2]?.sql).toContain("AND TRUE");
+    expect(calls[2]?.sql).not.toContain("legacy_show IS TRUE");
+    expect(calls[2]?.params?.[2]).toBe(true);
+  });
+
+  it("keeps shown stories when another batch fails and hides the control after the last batch", () => {
+    const shown = { nextOffset: 8, hasMore: true, cardCount: 8, phase: "ready" as const };
+    const loading = startPublicBrowseLoad(shown);
+    expect(loading.cardCount).toBe(8);
+    expect(publicBrowseStatus(loading)).toBe("Loading more stories…");
+    const failed = failPublicBrowseLoad(loading);
+    expect(failed.cardCount).toBe(8);
+    expect(failed.nextOffset).toBe(8);
+    expect(publicBrowseButtonLabel(failed)).toBe("Retry");
+    expect(publicBrowseStatus(failed)).toBe("Stories could not be loaded.");
+    const finished = acceptPublicBrowseBatch(shown, {
+      testimonials: ["a", "b"],
+      nextOffset: 10,
+      hasMore: false,
+    });
+    expect(finished.cardCount).toBe(10);
+    expect(finished.nextOffset).toBe(10);
+    expect(publicBrowseButtonLabel(finished)).toBeNull();
   });
 });

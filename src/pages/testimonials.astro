@@ -2,15 +2,33 @@
 export const prerender = false;
 import "../styles/testimonials-public.css";
 import Layout from "../layouts/Layout.astro";
-import { listPublicTestimonials } from "../lib/testimonials/testimonialStore";
-import type { PublicTestimonial } from "../lib/testimonials/testimonialRules";
+import {
+  ensurePublicTestimonialOrderSeed,
+  listPublicTestimonials,
+} from "../lib/testimonials/testimonialStore";
+import type { PublicTestimonialBatch } from "../lib/testimonials/testimonialStore";
 
-let testimonials: PublicTestimonial[] = [];
+Astro.response.headers.set("Cache-Control", "private, no-store");
+Astro.response.headers.set("Vary", "Cookie");
+
+const seed = ensurePublicTestimonialOrderSeed(Astro.cookies, Astro.url.protocol === "https:");
+let batch: PublicTestimonialBatch = {
+  testimonials: [],
+  total: 0,
+  offset: 0,
+  limit: 8,
+  nextOffset: 0,
+  hasMore: false,
+};
+let loadError = false;
 try {
-  testimonials = await listPublicTestimonials();
+  batch = await listPublicTestimonials({ seed, offset: 0 });
 } catch {
-  testimonials = [];
+  loadError = true;
 }
+
+const showEmpty = !loadError && batch.testimonials.length === 0;
+const showMore = loadError || batch.hasMore;
 
 function yearLabel(reviewDate: string | null): string | null {
   return reviewDate?.slice(0, 4) || null;
@@ -35,28 +53,42 @@ function yearLabel(reviewDate: string | null): string | null {
         <a class="kbm-btn kbm-btn-outline" href="/testimonials/share">Share your experience</a>
       </div>
 
-      {
-        testimonials.length === 0 ? (
-          <p class="testimonials-page__intro">No testimonials are published yet.</p>
-        ) : (
-          <div class="testimonials-page__list">
-            {testimonials.map((item) => (
-              <article class="kbm-card testimonials-page__card">
-                <blockquote>
-                  <p class="testimonials-page__quote">
-                    {item.before}
-                    {item.highlight ? <span class="testimonials-page__highlight">{item.highlight}</span> : null}
-                    {item.after}
-                  </p>
-                </blockquote>
-                <p class="testimonials-page__name">
-                  {item.attribution}
-                  {yearLabel(item.reviewDate) ? <span> · {yearLabel(item.reviewDate)}</span> : null}
+      <div class="testimonials-page__list" id="testimonial-list">
+        {
+          batch.testimonials.map((item) => (
+            <article class="kbm-card testimonials-page__card">
+              <blockquote>
+                <p class="testimonials-page__quote">
+                  {item.before}
+                  {item.highlight ? <span class="testimonials-page__highlight">{item.highlight}</span> : null}
+                  {item.after}
                 </p>
-              </article>
-            ))}
-          </div>
-        )
+              </blockquote>
+              <p class="testimonials-page__name">
+                {item.attribution}
+                {yearLabel(item.reviewDate) ? <span> · {yearLabel(item.reviewDate)}</span> : null}
+              </p>
+            </article>
+          ))
+        }
+      </div>
+      <p class="testimonials-page__intro" id="testimonial-empty" hidden={!showEmpty}>No testimonials are published yet.</p>
+      {
+        showMore ? (
+          <p class="testimonials-page__more">
+            <button
+              class="kbm-btn kbm-btn-outline"
+              type="button"
+              id="show-more-stories"
+              data-next-offset={loadError ? 0 : batch.nextOffset}
+              data-has-more={batch.hasMore ? "true" : "false"}
+              data-phase={loadError ? "error" : "ready"}
+            >
+              {loadError ? "Retry" : "Show more stories"}
+            </button>
+            <span id="show-more-status" role="status">{loadError ? "Stories could not be loaded." : ""}</span>
+          </p>
+        ) : null
       }
     </div>
 
@@ -65,3 +97,99 @@ function yearLabel(reviewDate: string | null): string | null {
     </p>
   </main>
 </Layout>
+
+<script>
+  import {
+    acceptPublicBrowseBatch,
+    failPublicBrowseLoad,
+    publicBrowseButtonLabel,
+    publicBrowseStatus,
+    startPublicBrowseLoad,
+    type PublicBrowseState,
+  } from "../lib/testimonials/publicTestimonialBrowse";
+
+  const list = document.getElementById("testimonial-list");
+  const button = document.getElementById("show-more-stories");
+  const status = document.getElementById("show-more-status");
+  const empty = document.getElementById("testimonial-empty");
+  if (list && button instanceof HTMLButtonElement) {
+    let state: PublicBrowseState = {
+      nextOffset: Number(button.dataset.nextOffset ?? "0") || 0,
+      hasMore: button.dataset.hasMore === "true",
+      cardCount: list.querySelectorAll(".testimonials-page__card").length,
+      phase: button.dataset.phase === "error" ? "error" : "ready",
+    };
+
+    function yearLabel(reviewDate: string | null): string | null {
+      return reviewDate?.slice(0, 4) || null;
+    }
+
+    function appendCard(item: {
+      before: string;
+      highlight: string | null;
+      after: string;
+      attribution: string;
+      reviewDate: string | null;
+    }) {
+      const article = document.createElement("article");
+      article.className = "kbm-card testimonials-page__card";
+      const quote = document.createElement("p");
+      quote.className = "testimonials-page__quote";
+      quote.append(item.before || "");
+      if (item.highlight) {
+        const emphasis = document.createElement("span");
+        emphasis.className = "testimonials-page__highlight";
+        emphasis.textContent = item.highlight;
+        quote.append(emphasis);
+      }
+      quote.append(item.after || "");
+      const block = document.createElement("blockquote");
+      block.append(quote);
+      const name = document.createElement("p");
+      name.className = "testimonials-page__name";
+      name.append(item.attribution || "");
+      const year = yearLabel(item.reviewDate);
+      if (year) {
+        const suffix = document.createElement("span");
+        suffix.textContent = ` · ${year}`;
+        name.append(suffix);
+      }
+      article.append(block, name);
+      list.append(article);
+    }
+
+    function renderControls() {
+      const label = publicBrowseButtonLabel(state);
+      button.hidden = label == null;
+      button.disabled = state.phase === "loading";
+      if (label) button.textContent = label;
+      if (status) status.textContent = publicBrowseStatus(state);
+      if (empty) empty.hidden = !(state.phase === "ready" && state.cardCount === 0);
+    }
+
+    button.addEventListener("click", async () => {
+      if (state.phase === "loading") return;
+      const requestedOffset = state.nextOffset;
+      state = startPublicBrowseLoad(state);
+      renderControls();
+      try {
+        const response = await fetch(`/api/testimonials?offset=${requestedOffset}`, {
+          headers: { Accept: "application/json" },
+        });
+        const data = await response.json().catch(() => null);
+        if (!response.ok || !data?.ok || !Array.isArray(data.testimonials)) {
+          throw new Error("load failed");
+        }
+        for (const item of data.testimonials) appendCard(item);
+        state = acceptPublicBrowseBatch(state, {
+          testimonials: data.testimonials,
+          nextOffset: Number(data.nextOffset),
+          hasMore: data.hasMore === true,
+        });
+      } catch {
+        state = failPublicBrowseLoad(state);
+      }
+      renderControls();
+    });
+  }
+</script>

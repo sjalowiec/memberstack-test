@@ -48,6 +48,30 @@ describe("testimonial admin API", () => {
     expect(listTestimonialsForAdmin).not.toHaveBeenCalled();
   });
 
+  it("passes the legacy collection filter into the admin list", async () => {
+    requireAdminForRequest.mockResolvedValue({
+      ok: true,
+      member: { id: "mem_admin", email: null },
+      mode: "verified",
+    });
+    listTestimonialsForAdmin.mockResolvedValue({ rows: [], total: 0 });
+    const response = await GET({
+      request: new Request(
+        "https://knititnow.test/api/admin/testimonials?q=ada&status=inactive&sort=active&includeUnpublished=1&offset=40",
+      ),
+      cookies,
+    } as never);
+    expect(response.status).toBe(200);
+    expect(listTestimonialsForAdmin).toHaveBeenCalledWith({
+      q: "ada",
+      status: "inactive",
+      sort: "active",
+      includeUnpublishedLegacy: true,
+      limit: 40,
+      offset: 40,
+    });
+  });
+
   it("rejects a non-admin activation", async () => {
     requireAdminForRequest.mockResolvedValue({
       ok: false,
