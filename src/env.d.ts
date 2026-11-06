@@ -63,6 +63,11 @@ interface ImportMetaEnv {
   readonly RESEND_API_KEY?: string;
   /** Server-only: verified sender for Resend (defaults to hello@knititnow.com). */
   readonly CONTACT_FROM_EMAIL?: string;
+  /**
+   * Server-only: optional override for staff notification mail.
+   * When unset, testimonials use the same recipient as the contact form.
+   */
+  readonly STAFF_NOTIFICATION_EMAIL?: string;
   /** Public Cloudflare Turnstile site key (contact forms; inlined at build). */
   readonly PUBLIC_TURNSTILE_SITE_KEY?: string;
   /** Server-only: Cloudflare Turnstile secret for siteverify. */
@@ -160,6 +165,7 @@ declare global {
         successUrl?: string;
         cancelUrl?: string;
         autoRedirect?: boolean;
+        metadataForCheckout?: Record<string, string>;
       }) => Promise<{ data?: { url?: string } }>;
       launchStripeCustomerPortal?: (opts?: { returnUrl?: string }) => Promise<{ data?: { url?: string } }>;
       hideModal?: () => void;

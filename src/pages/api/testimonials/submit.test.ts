@@ -4,6 +4,7 @@ const requireVerifiedMemberForRequest = vi.hoisted(() => vi.fn());
 const verifyTurnstileToken = vi.hoisted(() => vi.fn());
 const countRecentMemberSubmissions = vi.hoisted(() => vi.fn());
 const createMemberTestimonial = vi.hoisted(() => vi.fn());
+const deliverNewTestimonialStaffNotification = vi.hoisted(() => vi.fn());
 
 vi.mock("../../../lib/admin/requireAdminRequest", async (importOriginal) => {
   const actual = await importOriginal<typeof import("../../../lib/admin/requireAdminRequest")>();
@@ -17,6 +18,10 @@ vi.mock("../../../../netlify/functions/lib/turnstile.js", () => ({
 vi.mock("../../../lib/testimonials/testimonialStore", () => ({
   countRecentMemberSubmissions,
   createMemberTestimonial,
+}));
+
+vi.mock("../../../lib/testimonials/testimonialStaffNotification", () => ({
+  deliverNewTestimonialStaffNotification,
 }));
 
 import { POST } from "./submit";
@@ -39,9 +44,11 @@ describe("member testimonial submission", () => {
     verifyTurnstileToken.mockReset();
     countRecentMemberSubmissions.mockReset();
     createMemberTestimonial.mockReset();
+    deliverNewTestimonialStaffNotification.mockReset();
     verifyTurnstileToken.mockResolvedValue({ ok: true });
     countRecentMemberSubmissions.mockResolvedValue(0);
     createMemberTestimonial.mockResolvedValue({ id: "row-1", active: false });
+    deliverNewTestimonialStaffNotification.mockResolvedValue({ ok: true, skipped: false });
     requireVerifiedMemberForRequest.mockResolvedValue({
       ok: true,
       member: { id: "mem_verified", email: "member@example.com" },
@@ -67,6 +74,20 @@ describe("member testimonial submission", () => {
       attribution: "Ada",
       quote,
     });
+    expect(deliverNewTestimonialStaffNotification).toHaveBeenCalledWith({
+      id: "row-1",
+      origin: "https://knititnow.test",
+    });
+  });
+
+  it("keeps the submission when the staff notification fails", async () => {
+    deliverNewTestimonialStaffNotification.mockRejectedValue(new Error("mailbox unavailable"));
+    const response = await POST({
+      request: request({ attribution: "Ada", quote, agreement: true }),
+      cookies,
+    } as never);
+    expect(response.status).toBe(201);
+    expect(createMemberTestimonial).toHaveBeenCalledOnce();
   });
 
   it("does not store a signed-out submission", async () => {
@@ -81,6 +102,7 @@ describe("member testimonial submission", () => {
     } as never);
     expect(response.status).toBe(401);
     expect(createMemberTestimonial).not.toHaveBeenCalled();
+    expect(deliverNewTestimonialStaffNotification).not.toHaveBeenCalled();
   });
 
   it("requires agreement before saving", async () => {
@@ -90,6 +112,7 @@ describe("member testimonial submission", () => {
     } as never);
     expect(response.status).toBe(400);
     expect(createMemberTestimonial).not.toHaveBeenCalled();
+    expect(deliverNewTestimonialStaffNotification).not.toHaveBeenCalled();
   });
 
   it("does not store a honeypot submission", async () => {
@@ -99,6 +122,7 @@ describe("member testimonial submission", () => {
     } as never);
     expect(response.status).toBe(200);
     expect(createMemberTestimonial).not.toHaveBeenCalled();
+    expect(deliverNewTestimonialStaffNotification).not.toHaveBeenCalled();
     expect(requireVerifiedMemberForRequest).not.toHaveBeenCalled();
   });
 });

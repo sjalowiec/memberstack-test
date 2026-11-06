@@ -10,6 +10,8 @@ import { memberSubmissionAllowed, parseDisplayCorrection, parseTestimonialDraft,
 import {
   LEGACY_IMPORT_PRESERVED_COLUMNS,
   legacyImportUpsertSql,
+  testimonialSaveChanges,
+  testimonialUpdateMarksReviewed,
 } from "./testimonialRules";
 import {
   acceptPublicBrowseBatch,
@@ -28,6 +30,7 @@ import {
   listTestimonialsForAdmin,
   testimonialAdminCollectionClause,
   testimonialAdminListOrder,
+  testimonialAdminPublicationClause,
 } from "./testimonialStore";
 
 describe("testimonial publication rules", () => {
@@ -41,6 +44,7 @@ describe("testimonial publication rules", () => {
 
   it("keeps inactive rows off the public query and hides member ids", () => {
     expect(PUBLIC_TESTIMONIAL_SQL).toMatch(/WHERE active = TRUE/);
+    expect(PUBLIC_TESTIMONIAL_SQL).toContain("publication_state = 'active'");
     expect(PUBLIC_TESTIMONIAL_SQL).not.toMatch(/legacy_member_id|memberstack_member_id|email/i);
   });
 
@@ -280,6 +284,22 @@ describe("testimonial publication rules", () => {
     expect(admin).not.toContain("Leave both blank");
     expect(admin).toContain("testimonialEditorFields");
     expect(admin).toContain("Save &amp; Activate");
+    expect(admin).toContain("New submissions:");
+    expect(admin).toContain("Mark reviewed");
+    expect(admin).toContain("Archive");
+    expect(admin).toContain("Restore to inactive");
+    expect(admin).toContain(">Archived</option>");
+    expect(testimonialSaveChanges("save")).toEqual({});
+    expect(testimonialSaveChanges("activate")).toEqual({ publication: "active", reviewed: true });
+    expect(testimonialSaveChanges("inactivate")).toEqual({ publication: "inactive", reviewed: true });
+    expect(testimonialSaveChanges("archive")).toEqual({ publication: "archived", reviewed: true });
+    expect(testimonialSaveChanges("restore")).toEqual({ publication: "inactive" });
+    expect(testimonialSaveChanges("review")).toEqual({ reviewed: true });
+    expect(testimonialUpdateMarksReviewed({ publication: "archived", reviewed: null })).toBe(true);
+    expect(testimonialUpdateMarksReviewed({ publication: "inactive", reviewed: null })).toBe(false);
+    expect(testimonialAdminPublicationClause()).toBe("publication_state <> 'archived'");
+    expect(testimonialAdminPublicationClause("archived")).toBe("publication_state = 'archived'");
+    expect(testimonialAdminPublicationClause("new")).toBe("reviewed = FALSE AND publication_state <> 'archived'");
     expect(admin).toContain("Unsaved changes");
     expect(admin).toContain("testimonial-admin__editor");
     expect(admin).toContain("testimonial-admin__list");
@@ -359,14 +379,17 @@ describe("testimonial publication rules", () => {
     );
     expect(hidden.total).toBe(90);
     expect(calls[0]?.sql).toContain("(source <> 'legacy_import' OR legacy_show IS TRUE)");
+    expect(calls[1]?.sql).toContain("publication_state = 'inactive'");
     expect(calls[1]?.sql).toContain("active DESC, review_date DESC NULLS LAST, created_at DESC");
-    expect(calls[1]?.sql).toContain("LIMIT $4 OFFSET $5");
-    expect(calls[0]?.params).toEqual(["%ada%", "ada", false]);
-    expect(calls[1]?.params).toEqual(["%ada%", "ada", false, 40, 80]);
+    expect(calls[1]?.sql).toContain("LIMIT $3 OFFSET $4");
+    expect(calls[0]?.params).toEqual(["%ada%", "ada"]);
+    expect(calls[1]?.params).toEqual(["%ada%", "ada", 40, 80]);
     await listTestimonialsForAdmin({ includeUnpublishedLegacy: true, status: "active" }, query);
+    expect(calls[2]?.sql).toContain("publication_state = 'active'");
     expect(calls[2]?.sql).toContain("AND TRUE");
     expect(calls[2]?.sql).not.toContain("legacy_show IS TRUE");
-    expect(calls[2]?.params?.[2]).toBe(true);
+    await listTestimonialsForAdmin({ status: "all" }, query);
+    expect(calls[4]?.sql).toContain("publication_state <> 'archived'");
   });
 
   it("replaces one batch at a time and keeps the current cards when the next batch fails", () => {

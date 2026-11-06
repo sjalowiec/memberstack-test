@@ -1,12 +1,18 @@
 import type { APIRoute } from "astro";
 import { adminAuthErrorBody, requireAdminForRequest } from "../../../../lib/admin/requireAdminRequest";
 import { parseTestimonialDraft } from "../../../../lib/testimonials/testimonialDraft";
+import type { TestimonialAdminStatus } from "../../../../lib/testimonials/testimonialStore";
 import {
   createAdminTestimonial,
   listTestimonialsForAdmin,
 } from "../../../../lib/testimonials/testimonialStore";
 
 export const prerender = false;
+
+function adminStatus(value: string | null): TestimonialAdminStatus {
+  if (value === "active" || value === "inactive" || value === "archived" || value === "new") return value;
+  return "all";
+}
 
 function json(data: unknown, status = 200): Response {
   return new Response(JSON.stringify(data), {
@@ -19,12 +25,12 @@ export const GET: APIRoute = async ({ request, cookies }) => {
   const auth = await requireAdminForRequest(request, cookies);
   if (!auth.ok) return json(adminAuthErrorBody(auth), auth.status);
   const url = new URL(request.url);
-  const status = url.searchParams.get("status");
+  const status = adminStatus(url.searchParams.get("status"));
   try {
     const sort = url.searchParams.get("sort");
     const result = await listTestimonialsForAdmin({
       q: url.searchParams.get("q") ?? "",
-      status: status === "active" || status === "inactive" ? status : "all",
+      status,
       sort: sort === "active" ? "active" : "inactive",
       includeUnpublishedLegacy: url.searchParams.get("includeUnpublished") === "1",
       limit: Number(url.searchParams.get("limit") ?? "40"),

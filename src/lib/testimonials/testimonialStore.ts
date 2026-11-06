@@ -2,7 +2,12 @@ import { randomBytes } from "node:crypto";
 import { queryTestimonials } from "./testimonialQuery";
 import type { WatsonQueryFn } from "../watson/memberSearch";
 import { publicTestimonialCopy, quoteWithHighlight } from "./testimonialPlainText";
-import type { PublicTestimonial, TestimonialRecord, TestimonialSource } from "./testimonialRules";
+import type {
+  PublicTestimonial,
+  TestimonialPublicationState,
+  TestimonialRecord,
+  TestimonialSource,
+} from "./testimonialRules";
 
 const ADMIN_COLUMNS = `
   id,
@@ -17,6 +22,10 @@ const ADMIN_COLUMNS = `
   memberstack_member_id,
   source,
   active,
+  publication_state,
+  reviewed,
+  staff_notified_at,
+  staff_notification_error,
   legacy_show,
   legacy_viewed,
   legacy_use_in_email,
@@ -31,6 +40,7 @@ export const PUBLIC_TESTIMONIAL_ORDER_COOKIE = "kin_testimonial_order";
 
 const PUBLIC_TESTIMONIAL_WHERE = `
 active = TRUE
+  AND publication_state = 'active'
   AND btrim(COALESCE(NULLIF(btrim(COALESCE(display_quote, '')), ''), original_quote)) <> ''
   AND btrim(COALESCE(NULLIF(btrim(COALESCE(display_attribution, '')), ''), original_attribution)) <> ''
 `.trim();
@@ -100,6 +110,16 @@ function sourceOf(value: unknown): TestimonialSource {
   return "legacy_import";
 }
 
+function publicationStateOf(value: unknown, active: boolean): TestimonialPublicationState {
+  if (value === "active" || value === "inactive" || value === "archived") return value;
+  return active ? "active" : "inactive";
+}
+
+function reviewedOf(value: unknown): boolean {
+  if (value == null || value === "") return true;
+  return bool(value);
+}
+
 function mapAdmin(row: Record<string, unknown>): TestimonialRecord {
   return {
     id: text(row.id),
@@ -114,6 +134,10 @@ function mapAdmin(row: Record<string, unknown>): TestimonialRecord {
     memberstackMemberId: nullableText(row.memberstack_member_id),
     source: sourceOf(row.source),
     active: bool(row.active),
+    publicationState: publicationStateOf(row.publication_state, bool(row.active)),
+    reviewed: reviewedOf(row.reviewed),
+    staffNotifiedAt: iso(row.staff_notified_at) || null,
+    staffNotificationError: nullableText(row.staff_notification_error),
     legacyShow: nullableBool(row.legacy_show),
     legacyViewed: nullableBool(row.legacy_viewed),
     legacyUseInEmail: nullableBool(row.legacy_use_in_email),
@@ -225,6 +249,16 @@ export async function listPublicTestimonials(
 }
 
 export type TestimonialAdminSort = "inactive" | "active";
+export type TestimonialAdminStatus = "all" | "active" | "inactive" | "archived" | "new";
+
+/** Archived rows stay out of the default list. New is the unreviewed queue. */
+export function testimonialAdminPublicationClause(status: TestimonialAdminStatus = "all"): string {
+  if (status === "active") return "publication_state = 'active'";
+  if (status === "inactive") return "publication_state = 'inactive'";
+  if (status === "archived") return "publication_state = 'archived'";
+  if (status === "new") return "reviewed = FALSE AND publication_state <> 'archived'";
+  return "publication_state <> 'archived'";
+}
 
 /** Inactive or active group first, then the existing newest-first order inside each group. */
 export function testimonialAdminListOrder(sort: TestimonialAdminSort = "inactive"): string {
@@ -241,7 +275,7 @@ export function testimonialAdminCollectionClause(includeUnpublishedLegacy: boole
 export async function listTestimonialsForAdmin(
   input: {
     q?: string;
-    status?: "all" | "active" | "inactive";
+    status?: TestimonialAdminStatus;
     sort?: TestimonialAdminSort;
     includeUnpublishedLegacy?: boolean;
     limit?: number;
@@ -253,7 +287,6 @@ export async function listTestimonialsForAdmin(
   const status = input.status ?? "all";
   const limit = Math.min(Math.max(input.limit ?? 40, 1), 100);
   const offset = Math.max(input.offset ?? 0, 0);
-  const active = status === "active" ? true : status === "inactive" ? false : null;
   const pattern = q ? `%${escapeLike(q)}%` : null;
   const filters = `
     ($1::text IS NULL OR original_quote ILIKE $1 ESCAPE '\\'
@@ -261,10 +294,10 @@ export async function listTestimonialsForAdmin(
       OR COALESCE(display_quote, '') ILIKE $1 ESCAPE '\\'
       OR COALESCE(display_attribution, '') ILIKE $1 ESCAPE '\\'
       OR CAST(legacy_rating_id AS TEXT) = $2)
-    AND ($3::boolean IS NULL OR active = $3)
+    AND ${testimonialAdminPublicationClause(status)}
     AND ${testimonialAdminCollectionClause(input.includeUnpublishedLegacy === true)}
   `;
-  const params = [pattern, q || null, active];
+  const params = [pattern, q || null];
   const totalRows = await query<{ total: number }>(
     `SELECT COUNT(*)::int AS total FROM testimonials WHERE ${filters}`,
     params,
@@ -272,7 +305,7 @@ export async function listTestimonialsForAdmin(
   const rows = await query<Record<string, unknown>>(
     `SELECT ${ADMIN_COLUMNS} FROM testimonials WHERE ${filters}
      ORDER BY ${testimonialAdminListOrder(input.sort)}
-     LIMIT $4 OFFSET $5`,
+     LIMIT $3 OFFSET $4`,
     [...params, limit, offset],
   );
   return {
@@ -290,6 +323,16 @@ export async function getTestimonialForAdmin(
     [id],
   );
   return rows[0] ? mapAdmin(rows[0]) : null;
+}
+
+export async function countUnreviewedTestimonials(query: Query = queryTestimonials): Promise<number> {
+  const rows = await query<{ total: number }>(
+    `SELECT COUNT(*)::int AS total
+     FROM testimonials
+     WHERE reviewed = FALSE
+       AND publication_state <> 'archived'`,
+  );
+  return rows[0]?.total ?? 0;
 }
 
 export async function setTestimonialActive(
@@ -313,8 +356,10 @@ export async function updateTestimonialDisplay(
     displayQuote: string | null;
     displayAttribution: string | null;
     highlight: { start: number; end: number } | null;
-    /** Null leaves the current publication status unchanged. */
-    active?: boolean | null;
+    /** Null leaves the current publication state unchanged. */
+    publication?: TestimonialPublicationState | null;
+    /** True marks the row reviewed. Any other value leaves the current status. */
+    markReviewed?: boolean;
   },
   query: Query = queryTestimonials,
 ): Promise<TestimonialRecord | null> {
@@ -324,7 +369,9 @@ export async function updateTestimonialDisplay(
          display_attribution = $3,
          display_highlight_start = $4,
          display_highlight_end = $5,
-         active = CASE WHEN $6::boolean IS NULL THEN active ELSE $6::boolean END,
+         publication_state = CASE WHEN $6::text IS NULL THEN publication_state ELSE $6 END,
+         active = CASE WHEN $6::text IS NULL THEN active ELSE ($6 = 'active') END,
+         reviewed = CASE WHEN $7::boolean IS TRUE THEN TRUE ELSE reviewed END,
          updated_at = NOW()
      WHERE id = $1
      RETURNING ${ADMIN_COLUMNS}`,
@@ -334,7 +381,8 @@ export async function updateTestimonialDisplay(
       input.displayAttribution,
       input.highlight?.start ?? null,
       input.highlight?.end ?? null,
-      input.active ?? null,
+      input.publication ?? null,
+      input.markReviewed === true,
     ],
   );
   return rows[0] ? mapAdmin(rows[0]) : null;
@@ -346,8 +394,8 @@ export async function createAdminTestimonial(
 ): Promise<TestimonialRecord> {
   const rows = await query<Record<string, unknown>>(
     `INSERT INTO testimonials (
-       original_quote, original_attribution, review_date, rating, source, active
-     ) VALUES ($1, $2, $3, $4, 'admin_entry', FALSE)
+       original_quote, original_attribution, review_date, rating, source, active, publication_state, reviewed
+     ) VALUES ($1, $2, $3, $4, 'admin_entry', FALSE, 'inactive', TRUE)
      RETURNING ${ADMIN_COLUMNS}`,
     [input.quote, input.attribution, input.reviewDate, input.rating],
   );
@@ -405,8 +453,8 @@ export async function createMemberTestimonial(
 ): Promise<TestimonialRecord> {
   const rows = await query<Record<string, unknown>>(
     `INSERT INTO testimonials (
-       original_quote, original_attribution, memberstack_member_id, source, active
-     ) VALUES ($1, $2, $3, 'member_submission', FALSE)
+       original_quote, original_attribution, memberstack_member_id, source, active, publication_state, reviewed
+     ) VALUES ($1, $2, $3, 'member_submission', FALSE, 'inactive', FALSE)
      RETURNING ${ADMIN_COLUMNS}`,
     [input.quote, input.attribution, input.memberstackMemberId],
   );
