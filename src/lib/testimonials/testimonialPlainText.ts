@@ -69,6 +69,25 @@ export function publicTestimonialCopy(input: {
   };
 }
 
+/** Editor starting text. A saved override stays exact so its highlight offsets still match. */
+export function testimonialEditorFields(input: {
+  originalQuote: string;
+  originalAttribution: string;
+  displayQuote: string | null;
+  displayAttribution: string | null;
+}): { name: string; quote: string } {
+  const published = publicTestimonialCopy({
+    originalQuote: input.originalQuote,
+    originalAttribution: input.originalAttribution,
+    displayQuote: null,
+    displayAttribution: null,
+  });
+  return {
+    name: input.displayAttribution?.trim() ? input.displayAttribution : published.attribution,
+    quote: input.displayQuote?.trim() ? input.displayQuote : published.quote,
+  };
+}
+
 /** One-line preview for the admin delete confirmation. */
 export function shortQuotePreview(quote: string, limit = 80): string {
   const plain = testimonialPlainText(quote).replace(/\s+/g, " ").trim();
