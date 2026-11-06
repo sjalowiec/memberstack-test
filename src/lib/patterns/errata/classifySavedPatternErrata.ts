@@ -6,6 +6,7 @@ import {
 } from "../patternConstructionIdentity";
 import { hasAuthoritativeSidewaysCardiganConstruction } from "../sidewaysCardiganConstructionIdentity";
 import { readDropShoulderUserEditedSleeveFieldsFromFit } from "../dropShoulderUserEditedSleeveFields";
+import { hasAuthoritativeSetInSleeveConstruction } from "../setInSleeveConstructionIdentity";
 import type {
   DropShoulderSleeveMatchRules,
   ErrataMatchedMeasurement,
@@ -506,6 +507,13 @@ export function classifySavedPatternForErrata(
   }
 
   if (isSweaterFinishedMeasurementRules(errata.matchRules)) {
+    if (hasAuthoritativeSetInSleeveConstruction(asRecord(pattern.style) ?? {}, customOverrides)) {
+      return match(
+        "out_of_scope",
+        "Set-In Sleeve patterns are not part of this saved-measurement correction.",
+        { builder: builderRead.builder },
+      );
+    }
     const fit = asRecord(pattern.fit) ?? {};
     const audienceRead = readAudience(pattern);
     if (audienceRead.status === "uncertain") {
