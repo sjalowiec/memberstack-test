@@ -1,0 +1,14 @@
+---
+description: Use the one everyday Knit it Now folder and do not create worktrees
+alwaysApply: true
+---
+
+# Everyday folder
+
+Do all Knit it Now work in `E:\!2022Knititnow\knitbymachine\workspace\knititnow-staging`. Do not create another git worktree unless Sue explicitly asks.
+
+`dev` publishes kin-dev. `main` publishes production at knititnow.com. Do not merge into `main` or deploy production unless Sue asks.
+
+Local branch `kin-dev/tip-of-the-week-admin` at `d3fc6819` is a parked snapshot. Do not recover it, push it, or copy its unfinished work unless Sue asks.
+
+The close-out record is `docs/workspace-reconciliation.md`.
