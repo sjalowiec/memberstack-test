@@ -364,6 +364,7 @@ describe("testimonial publication rules", () => {
     const shown = { nextOffset: 8, hasMore: true, cardCount: 8, phase: "ready" as const };
     const loading = startPublicBrowseLoad(shown);
     expect(loading.cardCount).toBe(8);
+    expect(publicBrowseButtonLabel(loading)).toBe("Loading…");
     expect(publicBrowseStatus(loading)).toBe("Loading more stories…");
     const failed = failPublicBrowseLoad(loading);
     expect(failed.cardCount).toBe(8);
