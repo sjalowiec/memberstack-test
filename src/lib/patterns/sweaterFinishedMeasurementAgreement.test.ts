@@ -27,6 +27,7 @@ import {
   savedPatternNoticeText,
   noticesForSavedPattern,
 } from "./errata/errataVisibility";
+import { dropShoulderSleeveErrataRecord } from "./errata/dropShoulderSleeveErrata";
 import {
   SWEATER_FINISHED_MEASUREMENTS_CORRECTED_AT,
   SWEATER_FINISHED_MEASUREMENTS_KNITTER_ACTION,
@@ -260,7 +261,38 @@ describe("correction notice for patterns whose instructions change", () => {
     expect(savedPatternNoticeText(notices[0]!)).toBe(SWEATER_FINISHED_MEASUREMENTS_KNITTER_ACTION);
   });
 
-  it("does not notice an unedited centimeter round-trip, Custom Build, Drop Shoulder shoulder width, or a later pattern", () => {
+  it("does not notice a Set-In Sleeve pattern, because none were saved before this correction", () => {
+    const saved = project(
+      sweater({
+        construction: "set-in",
+        overrides: { ...edited, wrist: "8", upperArm: "17" },
+      }),
+      "2026-10-01T00:00:00.000Z",
+    );
+    const both = [dropShoulderSleeveErrataRecord(), errata];
+    expect(classifySavedPatternForErrata(saved, errata).classification).toBe("out_of_scope");
+    expect(classifySavedPatternForErrata(saved, both[0]!).classification).toBe("out_of_scope");
+    expect(noticesForSavedPattern(both, saved, "set-in-project")).toEqual([]);
+  });
+
+  it("gives an affected Drop Shoulder both correction notices", () => {
+    const saved = project(
+      sweater({
+        construction: "drop-shoulder",
+        overrides: { finishedLength: "28", wrist: "8", upperArm: "17" },
+      }),
+      "2026-10-01T00:00:00.000Z",
+    );
+    expect(
+      noticesForSavedPattern(
+        [dropShoulderSleeveErrataRecord(), errata],
+        saved,
+        "drop-both",
+      ).map((notice) => notice.slug),
+    ).toEqual(["drop-shoulder-sleeve-stitches", "sweater-finished-measurements"]);
+  });
+
+  it("does not notice an unedited centimeter round-trip, Custom Build, or a Drop Shoulder shoulder width", () => {
     const roundTrip = formatCanonicalInchesFromCm(
       centimetersToCanonicalInches(inchesToCmRounded(22)),
     );

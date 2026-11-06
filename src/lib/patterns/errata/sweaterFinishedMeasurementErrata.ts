@@ -24,7 +24,7 @@ export const SWEATER_FINISHED_MEASUREMENTS_CORRECTED_AT = "2026-11-06T05:00:00.0
 export const SWEATER_FINISHED_MEASUREMENTS_ERRATA_TITLE = "Saved finished sweater measurements";
 
 export const SWEATER_FINISHED_MEASUREMENTS_WHAT_CHANGED = [
-  "Sleeveless, Set-In Sleeve, and Drop Shoulder patterns could show a finished measurement in the editor and then calculate stitches or rows from the size chart, or from the standard hem, instead. Custom Build already used the saved measurement. Instructions and print now use the same saved finished measurement the editor shows.",
+  "Sleeveless and Drop Shoulder patterns could show a finished measurement in the editor and then calculate stitches or rows from the size chart, or from the standard hem, instead. Custom Build already used the saved measurement. Set-In Sleeve patterns are not part of this notice. Instructions and print now use the same saved finished measurement the editor shows.",
   "",
   "The measurements this applies to are garment length, hem depth, armhole depth, shoulder width, neck opening, and front neck depth. Saved measurements are not rewritten.",
   "",
