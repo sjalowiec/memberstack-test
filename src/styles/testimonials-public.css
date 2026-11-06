@@ -159,9 +159,13 @@
 
 @media (max-width: 520px) {
   .testimonials-page__sharebar .kbm-btn {
-    flex: 1 1 0;
+    flex: 1 1 calc(50% - 0.45rem);
     min-width: 0;
     padding: 10px 10px;
+  }
+
+  .testimonials-page__sharebar .kbm-btn-primary {
+    flex-basis: 100%;
   }
 }
 
