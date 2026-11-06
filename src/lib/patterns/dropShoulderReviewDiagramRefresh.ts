@@ -13,6 +13,7 @@ import {
   writeOverrideSeedSizingIdentity,
 } from "./customBuildMeasurementOverrideReconcile";
 import {
+  reconcileDropShoulderSleeveOverridesForSizeChange,
   resolveDropShoulderSleeveInches,
   resolveDropShoulderSleeveOverrideStrings,
 } from "./dropShoulderSleeveMeasurementOverrides";
@@ -270,10 +271,18 @@ export function buildDropShoulderReviewMergedInches(args: {
     overrides: reconciled,
     chartRow: args.row,
     fitPreference: args.fitPreference,
+    selectedMeasurements: section(getCurrentPattern().fit).selectedMeasurements as Record<
+      string,
+      unknown
+    >,
     bodyShape: args.bodyShape,
     chartAudience: args.audience,
+    userEdited: readEffectiveDropShoulderUserEditedSleeveFields(getCurrentPattern().fit),
+    authoritativeStoredCuffAndUpperArm: true,
   });
   Object.assign(merged, sleeveResolved);
+  if (!sleeveResolved.upperArm) delete merged.upperArm;
+  if (!sleeveResolved.wrist) delete merged.wrist;
 
   delete merged.shoulderWidth;
   delete merged.armholeDepth;
@@ -388,6 +397,20 @@ function forceRefreshDropShoulderSummaryFromContext(
     return null;
   }
 
+  // Explicit size or fit refresh. Unedited cuff and upper arm are rewritten to this
+  // chart's finished measurements. A plain open does not come through here, so a
+  // saved body measurement is not given ease just by reopening the pattern.
+  const refreshedSleeve = reconcileDropShoulderSleeveOverridesForSizeChange(
+    loadMeasurementOverrides(),
+    row,
+    ctx.fitPreference,
+    readEffectiveDropShoulderUserEditedSleeveFields(getCurrentPattern().fit),
+    { bodyShape: ctx.bodyShape, chartAudience: ctx.audience },
+  );
+  if (!overrideRecordsEqual(refreshedSleeve, loadMeasurementOverrides())) {
+    persistMeasurementOverrides(refreshedSleeve);
+  }
+
   const merged = buildDropShoulderReviewMergedInches({
     row,
     selectedSize: ctx.selectedSize,
@@ -415,6 +438,7 @@ function forceRefreshDropShoulderSummaryFromContext(
     chartAudience: ctx.audience,
     sleeveLengthChoice: section(getCurrentPattern().style).sleeveLength,
     userEdited: readEffectiveDropShoulderUserEditedSleeveFields(getCurrentPattern().fit),
+    authoritativeStoredCuffAndUpperArm: true,
   });
 
   const normalizedSize = normalizeChartRowSize(row) || ctx.selectedSize;

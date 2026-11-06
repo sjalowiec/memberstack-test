@@ -5,7 +5,9 @@ import {
   hasAuthoritativeDropShoulderConstruction,
 } from "../patternConstructionIdentity";
 import { hasAuthoritativeSidewaysCardiganConstruction } from "../sidewaysCardiganConstructionIdentity";
+import { readDropShoulderUserEditedSleeveFieldsFromFit } from "../dropShoulderUserEditedSleeveFields";
 import type {
+  DropShoulderSleeveMatchRules,
   ErrataMatchedMeasurement,
   FinishedLengthMatchRules,
   FinishedLengthSizeRule,
@@ -13,7 +15,11 @@ import type {
   PatternErrataRecord,
   SavedPatternErrataMatch,
 } from "./types";
-import { FINISHED_LENGTH_DEFAULTS_KIND, PATTERN_ERRATA_BUILDERS } from "./types";
+import {
+  DROP_SHOULDER_SLEEVE_MEASUREMENTS_KIND,
+  FINISHED_LENGTH_DEFAULTS_KIND,
+  PATTERN_ERRATA_BUILDERS,
+} from "./types";
 
 /** Lengths on the chart are quarter inches. A wider tolerance would hide a real edit. */
 const LENGTH_EPSILON_INCHES = 0.02;
@@ -59,9 +65,7 @@ function readBuilder(pattern: Record<string, unknown>, customOverrides: Record<s
     patternSystem === "hat" ||
     patternType === "socks" ||
     patternType === "sock" ||
-    patternSystem === "socks" ||
-    patternType === "christmas-stocking" ||
-    patternSystem === "christmas-stocking"
+    patternSystem === "socks"
   ) {
     return { status: "other" };
   }
@@ -345,6 +349,103 @@ function isFinishedLengthRules(value: unknown): value is FinishedLengthMatchRule
   return Array.isArray(rules.sizes);
 }
 
+function isSleeveMeasurementRules(value: unknown): value is DropShoulderSleeveMatchRules {
+  const rules = asRecord(value);
+  return (
+    !!rules &&
+    rules.kind === DROP_SHOULDER_SLEEVE_MEASUREMENTS_KIND &&
+    typeof rules.correctedAt === "string" &&
+    Number.isFinite(Date.parse(rules.correctedAt))
+  );
+}
+
+function quarterInches(n: number): number {
+  return Math.round(n * 4) / 4;
+}
+
+function positiveStoredInches(value: unknown): number | undefined {
+  const inches = positiveMeasurementInches(value);
+  return inches !== undefined && inches > 0 ? inches : undefined;
+}
+
+/**
+ * True when an unedited saved sleeve measurement quarter-snaps to a different inch
+ * value than the body measurement instructions used before this correction.
+ * A missing saved value, or a value that snaps to the same quarter inch, does not change stitches.
+ */
+function uneditedSleeveMeasurementChanged(args: {
+  saved: unknown;
+  body: unknown;
+  userEdited: boolean;
+}): boolean {
+  if (args.userEdited) return false;
+  const saved = positiveStoredInches(args.saved);
+  const body = positiveStoredInches(args.body);
+  if (saved === undefined || body === undefined) return false;
+  return quarterInches(saved) !== quarterInches(body);
+}
+
+function classifyDropShoulderSleeveMeasurements(
+  pattern: Record<string, unknown>,
+  root: Record<string, unknown>,
+  rules: DropShoulderSleeveMatchRules,
+  base: { builder: PatternErrataBuilder; audience: string | null; size: string | null },
+): SavedPatternErrataMatch {
+  const fit = asRecord(pattern.fit) ?? {};
+  const selected = asRecord(fit.selectedMeasurements) ?? {};
+  const overrides = asRecord(fit.cbMeasurementOverrides) ?? {};
+  const edited = readDropShoulderUserEditedSleeveFieldsFromFit(fit);
+  const matched: ErrataMatchedMeasurement[] = [];
+  if (
+    uneditedSleeveMeasurementChanged({
+      saved: overrides.wrist,
+      body: selected.wrist,
+      userEdited: edited.cuffCircumference,
+    })
+  ) {
+    matched.push("cuff");
+  }
+  if (
+    uneditedSleeveMeasurementChanged({
+      saved: overrides.upperArm,
+      body: selected.upper_arm,
+      userEdited: edited.upperArm,
+    })
+  ) {
+    matched.push("upper-arm");
+  }
+
+  if (matched.length === 0) {
+    return match(
+      "current_default",
+      "The saved cuff and upper arm do not change the stitches this correction recalculates.",
+      base,
+    );
+  }
+
+  const createdAt = parseCreatedAt(root) ?? parseCreatedAt(pattern);
+  const correctedAt = Date.parse(rules.correctedAt);
+  if (createdAt === null) {
+    return match(
+      "uncertain",
+      "The saved sleeve measurements differ from the body measurements, but the pattern has no creation date, so it is not marked affected.",
+      { ...base, matchedMeasurements: matched },
+    );
+  }
+  if (createdAt >= correctedAt) {
+    return match(
+      "current_default",
+      "The pattern was created after the sleeve calculation correction and already uses the saved finished cuff and upper arm.",
+      { ...base, matchedMeasurements: matched },
+    );
+  }
+  return match(
+    "old_default",
+    "The saved finished cuff or upper arm was not the measurement the instructions used.",
+    { ...base, matchedMeasurements: matched },
+  );
+}
+
 /**
  * Classify one saved project against one correction.
  * `old_default` is the only class treated as potentially affected.
@@ -371,6 +472,22 @@ export function classifySavedPatternForErrata(
   if (!errata.affectedBuilders.includes(builderRead.builder)) {
     return match("out_of_scope", "This builder is not listed on the correction.", {
       builder: builderRead.builder,
+    });
+  }
+
+  if (isSleeveMeasurementRules(errata.matchRules)) {
+    if (builderRead.builder !== "drop-shoulder") {
+      return match("out_of_scope", "This sleeve correction applies to Drop Shoulder patterns.", {
+        builder: builderRead.builder,
+      });
+    }
+    const audienceRead = readAudience(pattern);
+    const fit = asRecord(pattern.fit) ?? {};
+    const size = text(fit.selectedSize);
+    return classifyDropShoulderSleeveMeasurements(pattern, root, errata.matchRules, {
+      builder: builderRead.builder,
+      audience: audienceRead.status === "audience" ? audienceRead.audience : null,
+      size: size || "saved pattern",
     });
   }
 

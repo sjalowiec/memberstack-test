@@ -256,7 +256,10 @@ describe("pattern errata permissions", () => {
     const response = await publicList({} as never);
     expect(response.status).toBe(200);
     const body = await response.json();
-    expect(body.errata).toHaveLength(1);
+    expect(body.errata.map((row: { slug: string; status: string }) => `${row.status}:${row.slug}`)).toEqual([
+      "published:baby-kids-finished-length",
+      "published:drop-shoulder-sleeve-stitches",
+    ]);
     expect(body.errata[0].status).toBe("published");
     expect(body.errata[0].slug).toBe("baby-kids-finished-length");
     expect(JSON.stringify(body)).not.toContain('"status":"draft"');

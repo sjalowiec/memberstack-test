@@ -256,6 +256,8 @@ export function resolveDropShoulderSleeveInches(args: {
   /** Sizing group identity — enables the finished (allowance-added) Drop Shoulder upper arm. */
   chartAudience?: string;
   userEdited?: DropShoulderUserEditedSleeveFields;
+  /** See {@link resolveDropShoulderSleeveOverrideStrings}. */
+  authoritativeStoredCuffAndUpperArm?: boolean;
   /**
    * Sleeve-length picker choice ("long" | "three-quarter" | "elbow" | "short"). The picker is the
    * single source of truth for sleeve length and cuff circumference: resolved `sleeveLengthIn` is
@@ -296,6 +298,56 @@ export function resolveDropShoulderSleeveInches(args: {
     upperArmIn,
     wristIn,
     sleeveLengthIn,
+  };
+}
+
+/**
+ * Drop-shoulder generation reads stored cuff and upper-arm inches as the finished
+ * measurements. Ease is not applied here.
+ *
+ * A stored value is kept even when it equals the chart body measurement. Saves from
+ * before sleeve ease (upper arm before 2026-07-11, wrist before 2026-07-15), and later
+ * saves that never received a finished rewrite, stored that body number as the
+ * measurement to knit. Equality with the body chart value is not a signal to add ease.
+ *
+ * The shorter-sleeve opening is applied once, from the stored full-length wrist.
+ * A hand-edited field is left to {@link resolveDropShoulderSleeveInches}.
+ */
+export function applyStoredDropShoulderFinishedSleeveInches(args: {
+  resolved: {
+    upperArmIn?: number;
+    wristIn?: number;
+    sleeveLengthIn?: number;
+  };
+  overrides: Record<string, string>;
+  userEdited: DropShoulderUserEditedSleeveFields;
+  sleeveLengthChoice: unknown;
+}): {
+  upperArmIn?: number;
+  wristIn?: number;
+  sleeveLengthIn?: number;
+} {
+  let upperArmIn = args.resolved.upperArmIn;
+  let wristIn = args.resolved.wristIn;
+  if (args.userEdited.upperArm !== true) {
+    const storedUpper = parseOverrideInches(args.overrides.upperArm ?? "");
+    if (storedUpper !== undefined) upperArmIn = storedUpper;
+  }
+  if (args.userEdited.cuffCircumference !== true) {
+    const storedWrist = parseOverrideInches(args.overrides.wrist ?? "");
+    if (storedWrist !== undefined) {
+      const opening = scaleDropShoulderCuffCircumferenceInches(
+        upperArmIn,
+        storedWrist,
+        args.sleeveLengthChoice,
+      );
+      if (opening !== undefined) wristIn = opening;
+    }
+  }
+  return {
+    upperArmIn,
+    wristIn,
+    sleeveLengthIn: args.resolved.sleeveLengthIn,
   };
 }
 
@@ -354,6 +406,13 @@ export function resolveDropShoulderSleeveOverrideStrings(args: {
   bodyShape?: string;
   chartAudience?: string;
   userEdited?: DropShoulderUserEditedSleeveFields;
+  /**
+   * Drop Shoulder editor, instructions, and print. A saved cuff or upper arm is the
+   * finished measurement and is not replaced from the chart. A missing key uses the
+   * saved body measurement, not a new ease calculation. Explicit size and fit changes
+   * still rewrite unedited values through reconcile before this read.
+   */
+  authoritativeStoredCuffAndUpperArm?: boolean;
 }): Partial<Record<DropShoulderSleeveOverrideKey, string>> {
   const userEdited = args.userEdited ?? readDropShoulderUserEditedSleeveFields();
   const chartDefaults = args.chartRow
@@ -364,6 +423,9 @@ export function resolveDropShoulderSleeveOverrideStrings(args: {
     : dropShoulderSleeveDefaultsFromSelectedMeasurements(
         snakeCaseMeasurementsFromUnknown(args.selectedMeasurements),
       );
+  const bodyDefaults = dropShoulderSleeveDefaultsFromSelectedMeasurements(
+    snakeCaseMeasurementsFromUnknown(args.selectedMeasurements),
+  );
 
   const out: Partial<Record<DropShoulderSleeveOverrideKey, string>> = {};
   for (const trackKey of DROP_SHOULDER_USER_EDITED_SLEEVE_FIELD_KEYS) {
@@ -371,10 +433,16 @@ export function resolveDropShoulderSleeveOverrideStrings(args: {
       trackKey
     ] as DropShoulderSleeveOverrideKey;
     const chartVal = chartDefaults[overrideKey];
+    const saved = args.overrides[overrideKey]?.trim();
+    const useSavedMeasurement =
+      args.authoritativeStoredCuffAndUpperArm === true &&
+      (overrideKey === "upperArm" || overrideKey === "wrist");
     if (userEdited[trackKey] === true) {
-      const saved = args.overrides[overrideKey]?.trim();
       if (saved) out[overrideKey] = saved;
       else if (chartVal) out[overrideKey] = chartVal;
+    } else if (useSavedMeasurement) {
+      if (saved) out[overrideKey] = saved;
+      else if (bodyDefaults[overrideKey]) out[overrideKey] = bodyDefaults[overrideKey];
     } else if (chartVal) {
       out[overrideKey] = chartVal;
     }

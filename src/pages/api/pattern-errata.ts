@@ -1,5 +1,5 @@
 import type { APIRoute } from "astro";
-import { publishedPatternErrata } from "../../lib/patterns/errata/errataVisibility";
+import { publishedErrataForMembers } from "../../lib/patterns/errata/errataVisibility";
 import { listPublishedPatternErrata } from "../../lib/patterns/errata/patternErrataStore";
 import type { PatternErrataRecord } from "../../lib/patterns/errata/types";
 
@@ -30,7 +30,7 @@ export function toPublicPatternErrata(row: PatternErrataRecord) {
 
 export const GET: APIRoute = async () => {
   try {
-    const rows = publishedPatternErrata(await listPublishedPatternErrata());
+    const rows = publishedErrataForMembers(await listPublishedPatternErrata());
     return json({ ok: true, errata: rows.map(toPublicPatternErrata) });
   } catch {
     return json({ ok: false, error: "Could not read pattern errata." }, 500);

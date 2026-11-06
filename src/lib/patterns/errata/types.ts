@@ -7,8 +7,9 @@ export const PATTERN_ERRATA_BUILDERS = ["drop-shoulder", "sleeveless"] as const;
 export type PatternErrataBuilder = (typeof PATTERN_ERRATA_BUILDERS)[number];
 
 export const FINISHED_LENGTH_DEFAULTS_KIND = "finished-length-defaults" as const;
+export const DROP_SHOULDER_SLEEVE_MEASUREMENTS_KIND = "drop-shoulder-sleeve-measurements" as const;
 
-export type ErrataMatchedMeasurement = "finished-length" | "upper-arm";
+export type ErrataMatchedMeasurement = "finished-length" | "upper-arm" | "cuff";
 
 export type FinishedLengthSizeRule = {
   audience: "baby" | "kids";
@@ -31,7 +32,20 @@ export type FinishedLengthMatchRules = {
   sizes: FinishedLengthSizeRule[];
 };
 
-export type PatternErrataMatchRules = FinishedLengthMatchRules;
+/**
+ * Saved Drop Shoulder cuff and upper arm that were stored finished, while instructions
+ * used the body measurements. Matching does not change the saved pattern.
+ */
+export type DropShoulderSleeveMatchRules = {
+  kind: typeof DROP_SHOULDER_SLEEVE_MEASUREMENTS_KIND;
+  /**
+   * Instant this calculation correction is treated as available.
+   * Patterns created at or after this time already use the saved finished sleeve.
+   */
+  correctedAt: string;
+};
+
+export type PatternErrataMatchRules = FinishedLengthMatchRules | DropShoulderSleeveMatchRules;
 
 export type PatternErrataRecord = {
   id: string;
