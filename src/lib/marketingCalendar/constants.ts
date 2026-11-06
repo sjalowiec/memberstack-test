@@ -12,11 +12,12 @@ export const IMPORT_TIME_ZONE = "America/Los_Angeles";
 export const EVENT_COLOR = {
   draft: "9",
   scheduled: "7",
+  scheduledFuture: "10",
   sending: "7",
   paused: "8",
   stopped: "8",
   disabled: "8",
-  completed: "10",
+  completed: "8",
 } as const;
 
 export const SYNC_SOURCE = "activecampaign";

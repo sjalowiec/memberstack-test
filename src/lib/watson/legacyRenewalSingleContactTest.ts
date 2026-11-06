@@ -24,16 +24,16 @@ import { queryWatson } from "./db";
 import {
   activeComplimentaryOutlastsLegacyDate,
   addDaysYmd,
+  EXPIRED_REMINDER_DAYS_AFTER,
+  EXPIRED_REMINDER_TAG,
   getLegacyReminderActiveCampaignSettings,
   LEGACY_PAID_THROUGH_FIELD_TITLE,
-  REMINDER_TAG_BY_WINDOW,
 } from "./legacyRenewalReminders";
 import type { WatsonQueryFn } from "./memberSearch";
 
 export const LEGACY_RENEWAL_TEST_EMAIL = "nosub1@knititnow.com";
-export const LEGACY_RENEWAL_TEST_WINDOW_DAYS = 7 as const;
-export const LEGACY_RENEWAL_TEST_TAG = REMINDER_TAG_BY_WINDOW[LEGACY_RENEWAL_TEST_WINDOW_DAYS];
-export const LEGACY_RENEWAL_TEST_AUTOMATION_NAME = "Legacy Annual Renewal - 7 Days";
+export const LEGACY_RENEWAL_TEST_WINDOW_DAYS = EXPIRED_REMINDER_DAYS_AFTER;
+export const LEGACY_RENEWAL_TEST_TAG = EXPIRED_REMINDER_TAG;
 
 const TEST_MEMBER_SQL = `
   SELECT
@@ -68,7 +68,7 @@ const TAGGED_AUDIT_SQL = `
 export type LegacyRenewalTestBlocker =
   | "watson_not_found"
   | "watson_ambiguous"
-  | "outside_seven_day_window"
+  | "outside_expired_day"
   | "monthly_subscriber"
   | "beta"
   | "memberstack_not_found"
@@ -92,7 +92,8 @@ export interface LegacyRenewalTestPreflight {
   blockers: LegacyRenewalTestBlocker[];
   paidThrough: string | null;
   todayLosAngeles: string;
-  sevenDayDate: string;
+  /** Inclusive Watson paid-through date that is eligible today: yesterday in Los Angeles. */
+  targetPaidThroughDate: string;
   listStatus: string | null;
   alreadyTagged: boolean;
   automation: { found: boolean; active: boolean; ambiguous: boolean } | null;
@@ -148,7 +149,7 @@ export async function preflightLegacyRenewalTestContact(
 ): Promise<LegacyRenewalTestPreflight> {
   const now = options.now ?? new Date();
   const today = calendarYmdForNow(now, MEMBERSHIP_STATUS_CALENDAR_TIMEZONE);
-  const sevenDayDate = addDaysYmd(today, LEGACY_RENEWAL_TEST_WINDOW_DAYS);
+  const targetPaidThroughDate = addDaysYmd(today, -LEGACY_RENEWAL_TEST_WINDOW_DAYS);
   const queryFn = options.queryFn ?? queryWatson;
   const blockers: LegacyRenewalTestBlocker[] = [];
   const report = (extra: Partial<LegacyRenewalTestPreflight> = {}): LegacyRenewalTestPreflight => ({
@@ -159,7 +160,7 @@ export async function preflightLegacyRenewalTestContact(
     tagName: LEGACY_RENEWAL_TEST_TAG,
     paidThrough: null,
     todayLosAngeles: today,
-    sevenDayDate,
+    targetPaidThroughDate,
     listStatus: null,
     alreadyTagged: false,
     automation: null,
@@ -202,7 +203,7 @@ export async function preflightLegacyRenewalTestContact(
     if (watson) {
       if (Number(watson.monthlysubscriber) === 1) blockers.push("monthly_subscriber");
       if (Number(watson.betaactive) !== 0) blockers.push("beta");
-      if (paidThrough !== sevenDayDate) blockers.push("outside_seven_day_window");
+      if (paidThrough !== targetPaidThroughDate) blockers.push("outside_expired_day");
     }
 
     const loaded = options.loadMemberstackMembers
@@ -267,15 +268,7 @@ export async function preflightLegacyRenewalTestContact(
         : null);
     if (!fieldId) blockers.push("paid_through_field_missing");
 
-    let automation: LegacyRenewalTestPreflight["automation"] = null;
-    if (ac.findAutomationByExactName) {
-      const found = await ac.findAutomationByExactName(LEGACY_RENEWAL_TEST_AUTOMATION_NAME);
-      automation = found
-        ? { found: true, active: found.active && !found.ambiguous, ambiguous: found.ambiguous }
-        : { found: false, active: false, ambiguous: false };
-    }
-
-    return report({ paidThrough, listStatus, alreadyTagged, automation });
+    return report({ paidThrough, listStatus, alreadyTagged, automation: null });
   } catch (error) {
     return {
       ...report(),

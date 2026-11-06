@@ -159,6 +159,7 @@ function colorFor(status: CampaignStatusName): string {
 export function decideCampaign(
   campaign: CampaignSnapshot,
   accountTimeZone: string | null,
+  now: Date = new Date(),
 ): CampaignDecision {
   const broadcast = isBroadcast(campaign);
   if (!broadcast.ok) return { kind: "skip", campaign, reason: broadcast.reason };
@@ -176,7 +177,8 @@ export function decideCampaign(
     kind: "upsert",
     campaign,
     status,
-    colorId,
+    colorId:
+      status === "scheduled" && instant.getTime() > now.getTime() ? EVENT_COLOR.scheduledFuture : colorId,
     instant,
     timeSource,
   });
@@ -206,9 +208,10 @@ export function decideCampaign(
 
   if (status === "scheduled") {
     if (scheduled.kind === "instant") return upsert(scheduled.instant, "scheduleddate");
-    return preserve(
-      scheduled.kind === "unparsed" ? `scheduled-date-${scheduled.reason}` : "scheduled-date-missing",
-    );
+    if (scheduled.kind === "unparsed") return preserve(`scheduled-date-${scheduled.reason}`);
+    if (sent.kind === "instant") return upsert(sent.instant, "sdate");
+    if (sent.kind === "unparsed") return preserve(`send-date-${sent.reason}`);
+    return preserve("scheduled-date-missing");
   }
 
   if (status === "completed") {

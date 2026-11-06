@@ -134,7 +134,7 @@ describe("marketing calendar dry run", () => {
           action: "create",
           campaignId: "42",
           title: "internal-whats-new",
-          colorId: "7",
+          colorId: "10",
         }),
         expect.objectContaining({ action: "delete", campaignId: "15", googleEventId: "owned-draft" }),
       ]),

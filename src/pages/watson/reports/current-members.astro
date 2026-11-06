@@ -1,0 +1,36 @@
+---
+import WatsonPageShell from "../../../components/watson/WatsonPageShell.astro";
+import WatsonCurrentMembersReport from "../../../components/watson/WatsonCurrentMembersReport.astro";
+import { loadCurrentMembersReport } from "../../../lib/watson/currentMembersReport";
+
+export const prerender = false;
+
+let reportError: string | null = null;
+let report = null;
+
+try {
+  report = await loadCurrentMembersReport();
+} catch (error) {
+  reportError = error instanceof Error ? error.message : "Current Members report failed to load.";
+}
+---
+
+<WatsonPageShell
+  title="Current Members | Watson Reports"
+  description="People who currently have Knit It Now membership access, one person per mailbox."
+  heading="Current Members"
+  intro="The site membership-access census. This is the list ActiveCampaign’s Current membership access field is reconciled against."
+>
+  <p class="watson-report__meta">
+    <a href="/watson/reports">All reports</a>
+  </p>
+  {
+    reportError ? (
+      <p class="watson__status watson__status--error" role="alert">
+        {reportError}
+      </p>
+    ) : report ? (
+      <WatsonCurrentMembersReport report={report} />
+    ) : null
+  }
+</WatsonPageShell>

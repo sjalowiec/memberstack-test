@@ -109,11 +109,7 @@ describe("legacy renewal diagnostic", () => {
   });
 
   it("returns the ActiveCampaign trigger names the reminder job writes", () => {
-    expect(renewalTagNamesInDeployedCode()).toEqual([
-      "legacy-renewal-30-days",
-      "legacy-renewal-7-days",
-      "legacy-renewal-1-day",
-    ]);
+    expect(renewalTagNamesInDeployedCode()).toEqual(["legacy-renewal-expired"]);
   });
 
   it("exposes a Watson-admin GET that does not write", () => {

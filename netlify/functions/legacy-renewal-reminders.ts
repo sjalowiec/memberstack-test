@@ -1,12 +1,12 @@
 /**
  * Scheduled + manual legacy annual renewal reminders.
  *
- * Tags legacy annual members in ActiveCampaign at 30 / 7 / 1 day before their
- * Watson paid-through date so per-tag automations send renewal emails. Before
- * tagging, each member is re-checked in Memberstack (authoritative for whether
- * they already repurchased) and skipped when an active paid plan exists. The
- * authoritative Watson paid-through date is written to the "Legacy Membership
- * Paid Through" ActiveCampaign date field before the tag is applied.
+ * Tags legacy annual members in ActiveCampaign on the America/Los_Angeles day
+ * after the inclusive Watson paid-through date (`legacy-renewal-expired`).
+ * Before tagging, each member is re-checked in Memberstack and skipped when an
+ * active or trialing paid plan exists. The Watson paid-through date is written
+ * to the "Legacy Membership Paid Through" ActiveCampaign date field before the
+ * tag is applied. This job does not send the 7-day or 14-day follow-ups.
  *
  * This job never modifies Watson dates and is completely independent of the
  * legacy annual EXPIRATION reconciliation (`legacy-annual-expiry`).
@@ -19,18 +19,21 @@
  *   ACTIVECAMPAIGN_KIN_LIST_ID
  *   ACTIVECAMPAIGN_PAID_THROUGH_FIELD_ID
  * Optional:
- *   LEGACY_RENEWAL_REMINDER_LIVE_ENABLED  (must be exactly "true" for a SCHEDULED
- *     run to perform live changes; anything else keeps scheduled runs dry-run)
+ *   LEGACY_RENEWAL_REMINDER_LIVE_ENABLED  (production build bakes "true" into
+ *     the scheduled function; a runtime value of exactly "true" also enables it.
+ *     kin-dev stays dry-run.)
  *   LEGACY_RENEWAL_REMINDER_SECRET        (required to authorize a manual live run;
  *     sent as header X-Legacy-Renewal-Secret)
  *
  * Modes (mirrors legacy-annual-expiry):
- *   - Scheduled (cron, see netlify.toml): LIVE only when
- *     LEGACY_RENEWAL_REMINDER_LIVE_ENABLED === "true"; otherwise DRY-RUN.
+ *   - Scheduled (cron, see netlify.toml): LIVE only when the baked production
+ *     flag or LEGACY_RENEWAL_REMINDER_LIVE_ENABLED === "true", and this is the
+ *     production site. Otherwise DRY-RUN.
  *   - Manual HTTP GET/POST: DRY-RUN by default. A live manual run requires BOTH
  *     ?confirm=LIVE AND a correct X-Legacy-Renewal-Secret header.
  */
 import { isProductionActiveCampaignWriteRuntime } from "../../src/lib/watson/complimentaryCampaignSync";
+import { legacyRenewalReminderLiveEnabled } from "../../src/lib/watson/legacyRenewalReminderLiveFlag";
 import {
   runLegacyRenewalReminders,
   type LegacyRenewalReminderResult,
@@ -59,14 +62,14 @@ export function isConfirmedLive(url: URL): boolean {
 }
 
 /**
- * A scheduled run may perform live changes only when the deployment has been
- * explicitly opted in with LEGACY_RENEWAL_REMINDER_LIVE_ENABLED set to exactly
- * "true". Any other value keeps scheduled runs in dry-run mode.
+ * A scheduled run may perform live changes only when production baked
+ * LEGACY_RENEWAL_REMINDER_LIVE_ENABLED into the build, or the function
+ * environment is exactly "true". Any other value keeps scheduled runs dry-run.
  */
 export function isScheduledLiveEnabled(
   env: NodeJS.ProcessEnv = process.env,
 ): boolean {
-  return env.LEGACY_RENEWAL_REMINDER_LIVE_ENABLED === "true";
+  return legacyRenewalReminderLiveEnabled(env);
 }
 
 export interface ReminderExecutionRequest {

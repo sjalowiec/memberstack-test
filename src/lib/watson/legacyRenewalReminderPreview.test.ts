@@ -102,21 +102,19 @@ function sharedFakes() {
       "a@x.com": { id: "ac_1", listStatus: "active", tags: new Set() },
     }),
     queryFn: makeQueryFn({
-      30: [row({ memberid: "m30", email: "a@x.com" })],
-      7: [
+      1: [
+        row({ memberid: "m30", email: "a@x.com", subscriptionexpiring: "2026-07-27" }),
         row({
           memberid: "m7",
           email: "paid@x.com",
-          subscriptionexpiring: "2026-08-04",
+          subscriptionexpiring: "2026-07-27",
           fristname: "Grace",
           lastname: "Hopper",
         }),
-      ],
-      1: [
         row({
           memberid: "m1",
           email: null,
-          subscriptionexpiring: "2026-07-29",
+          subscriptionexpiring: "2026-07-27",
           fristname: "No",
           lastname: "Email",
         }),
@@ -287,8 +285,8 @@ describe("preview view helpers", () => {
   it("carries the reason string produced by the shared logic", () => {
     const rows = buildReminderPreviewRows([
       {
-        windowDays: 30,
-        tag: "legacy-renewal-30-days",
+        windowDays: 1,
+        tag: "legacy-renewal-expired",
         legacyMemberId: "m1",
         fristname: "Ada",
         lastname: "Lovelace",
@@ -305,7 +303,7 @@ describe("preview view helpers", () => {
       },
     ]);
     expect(rows[0].reason).toBe("would_update_field_and_tag");
-    expect(rows[0].daysUntilExpiration).toBe(30);
+    expect(rows[0].daysUntilExpiration).toBe(1);
     expect(rows[0].statusModifier).toBe("eligible");
   });
 });

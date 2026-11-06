@@ -20,13 +20,69 @@ function campaign(overrides: Partial<CampaignSnapshot> = {}): CampaignSnapshot {
 }
 
 describe("campaign decisions", () => {
-  it("schedules a one-off campaign on its scheduled date in peacock", () => {
-    const decision = decideCampaign(campaign(), "America/Los_Angeles");
+  it("colors a future scheduled campaign basil and a past one peacock", () => {
+    const now = new Date("2026-10-13T22:00:00.000Z");
+    const future = decideCampaign(
+      campaign({ sendDate: "2026-10-20T08:00:00-05:00" }),
+      "America/Los_Angeles",
+      now,
+    );
+    expect(future.kind).toBe("upsert");
+    if (future.kind !== "upsert") return;
+    expect(future.colorId).toBe("10");
+    expect(future.colorId).toBe(EVENT_COLOR.scheduledFuture);
+    expect(future.timeSource).toBe("scheduleddate");
+    expect(future.instant.toISOString()).toBe("2026-10-15T16:00:00.000Z");
+
+    const past = decideCampaign(
+      campaign({ scheduledDate: "2026-10-02T09:00:00-07:00", sendDate: null }),
+      "America/Los_Angeles",
+      now,
+    );
+    expect(past.kind).toBe("upsert");
+    if (past.kind !== "upsert") return;
+    expect(past.colorId).toBe(EVENT_COLOR.scheduled);
+    expect(past.colorId).toBe("7");
+  });
+
+  it("uses sdate when a scheduled campaign has an empty scheduleddate", () => {
+    const decision = decideCampaign(
+      campaign({
+        id: "2417",
+        name: "TOW: Bust Darts",
+        scheduledDate: null,
+        sendDate: "2026-10-24T08:00:00-05:00",
+      }),
+      null,
+      new Date("2026-10-13T22:00:00.000Z"),
+    );
     expect(decision.kind).toBe("upsert");
     if (decision.kind !== "upsert") return;
-    expect(decision.colorId).toBe(EVENT_COLOR.scheduled);
-    expect(decision.timeSource).toBe("scheduleddate");
-    expect(decision.instant.toISOString()).toBe("2026-10-15T16:00:00.000Z");
+    expect(decision.timeSource).toBe("sdate");
+    expect(decision.colorId).toBe("10");
+    expect(decision.instant.toISOString()).toBe("2026-10-24T13:00:00.000Z");
+  });
+
+  it("does not invent a date from cdate or mdate when both schedule fields are empty", () => {
+    const normalized = normalizeCampaign({
+      id: "2418",
+      name: "No schedule",
+      type: "single",
+      status: "1",
+      cdate: "2026-10-24T08:00:00-05:00",
+      mdate: "2026-10-24T09:00:00-05:00",
+      scheduleddate: null,
+      sdate: "",
+      ldate: null,
+    });
+    expect(normalized).toMatchObject({ scheduledDate: null, sendDate: null, lastSendDate: null });
+    expect(decideCampaign(normalized!, null)).toMatchObject({
+      kind: "preserve",
+      reason: "scheduled-date-missing",
+    });
+    expect(
+      decideCampaign(campaign({ scheduledDate: "2026-10-24", sendDate: "2026-10-24T08:00:00-05:00" }), null),
+    ).toMatchObject({ kind: "preserve", reason: "scheduled-date-date-without-time" });
   });
 
   it("imports a dated draft in blue and leaves an undated draft without a date", () => {
@@ -55,6 +111,7 @@ describe("campaign decisions", () => {
     );
     expect(sent.kind).toBe("upsert");
     if (sent.kind === "upsert") {
+      expect(sent.colorId).toBe("8");
       expect(sent.colorId).toBe(EVENT_COLOR.completed);
       expect(sent.timeSource).toBe("sdate");
     }

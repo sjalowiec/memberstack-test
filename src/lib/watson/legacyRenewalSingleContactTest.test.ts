@@ -13,7 +13,7 @@ import {
 import type { WatsonQueryFn } from "./memberSearch";
 
 const NOW = new Date("2026-10-05T19:00:00Z");
-const SEVEN_DAY = "2026-10-12";
+const PAID_THROUGH = "2026-10-04";
 
 function member(planIds: string[], id = "mem_test"): MemberstackMember {
   return {
@@ -49,8 +49,8 @@ function acClient(status: "active" | "not_on_list" = "active", hasTag = false): 
     async subscribeToList(contactId) {
       spies.subscribeToList(contactId);
     },
-    async resolveTagId() {
-      return "tag_legacy-renewal-7-days";
+    async resolveTagId(tagName) {
+      return `tag_${tagName}`;
     },
     async contactHasTag() {
       return hasTag;
@@ -63,7 +63,7 @@ function acClient(status: "active" | "not_on_list" = "active", hasTag = false): 
       return "9";
     },
     async findAutomationByExactName() {
-      return { name: "Legacy Annual Renewal - 7 Days", active: false, ambiguous: false };
+      return null;
     },
   };
   if (status === "not_on_list") {
@@ -72,7 +72,7 @@ function acClient(status: "active" | "not_on_list" = "active", hasTag = false): 
   return { client, spies };
 }
 
-function queryFn(paidThrough = SEVEN_DAY): WatsonQueryFn {
+function queryFn(paidThrough = PAID_THROUGH): WatsonQueryFn {
   return (async (sql: string) => {
     if (sql.includes("FROM legacy_members")) {
       return [
@@ -113,14 +113,14 @@ describe("explicit nosub1 legacy renewal test", () => {
       activeCampaign: ac.client,
       hasTaggedRecord: async () => false,
       queryFn: (async (_sql: string, params?: unknown[]) => {
-        return Number(params?.[1]) === 7
+        return Number(params?.[1]) === 1
           ? [
               {
                 memberid: "m_test",
                 fristname: "No",
                 lastname: "Sub",
                 email: LEGACY_RENEWAL_TEST_EMAIL,
-                subscriptionexpiring: SEVEN_DAY,
+                subscriptionexpiring: PAID_THROUGH,
               },
             ]
           : [];
@@ -145,7 +145,9 @@ describe("explicit nosub1 legacy renewal test", () => {
     expect(result.email).toBe("nosub1@knititnow.com");
     expect(result.eligible).toBe(true);
     expect(result.blockers).toEqual([]);
-    expect(result.automation).toEqual({ found: true, active: false, ambiguous: false });
+    expect(result.tagName).toBe("legacy-renewal-expired");
+    expect(result.targetPaidThroughDate).toBe("2026-10-04");
+    expect(result.automation).toBeNull();
     expect(ac.spies.syncContact).not.toHaveBeenCalled();
     expect(ac.spies.addTag).not.toHaveBeenCalled();
     expect(ac.spies.subscribeToList).not.toHaveBeenCalled();
@@ -191,7 +193,7 @@ describe("explicit nosub1 legacy renewal test", () => {
       activeCampaign: acClient().client,
       queryFn: queryFn("2026-12-01"),
     });
-    expect(wrongDate.blockers).toContain("outside_seven_day_window");
+    expect(wrongDate.blockers).toContain("outside_expired_day");
     expect(wrongDate.eligible).toBe(false);
   });
 
@@ -214,7 +216,7 @@ describe("explicit nosub1 legacy renewal test", () => {
       queryFn: queryFn(),
     });
     expect(applied.applied).toBe(true);
-    expect(live.spies.addTag).toHaveBeenCalledWith("ac_test", "tag_legacy-renewal-7-days");
+    expect(live.spies.addTag).toHaveBeenCalledWith("ac_test", "tag_legacy-renewal-expired");
     expect(live.spies.subscribeToList).not.toHaveBeenCalled();
     expect(live.spies.syncContact).toHaveBeenCalledWith(
       expect.objectContaining({ email: "nosub1@knititnow.com" }),

@@ -35,13 +35,15 @@ function owned(overrides: Partial<OwnedCalendarEvent> = {}): OwnedCalendarEvent 
   };
 }
 
+const planNow = new Date("2026-10-13T22:00:00.000Z");
+
 function planFor(
   snapshots: CampaignSnapshot[],
   ownedEvents: OwnedCalendarEvent[] = [],
   subjects: Record<string, string | null> = { "9": "What's New — October" },
 ) {
   return buildSyncPlan({
-    decisions: snapshots.map((snapshot) => decideCampaign(snapshot, "America/Los_Angeles")),
+    decisions: snapshots.map((snapshot) => decideCampaign(snapshot, "America/Los_Angeles", planNow)),
     subjects: new Map(Object.entries(subjects)),
     ownedEvents,
     baseUrl: "https://knitbymachine.activehosted.com",
@@ -56,9 +58,11 @@ describe("sync plan", () => {
     expect(plan.writes[0]).toMatchObject({
       action: "create",
       title: "October What's New",
-      colorId: EVENT_COLOR.scheduled,
+      colorId: "10",
       timeSource: "scheduleddate",
     });
+    expect(plan.writes.map((write) => write.colorId)).not.toContain("5");
+    expect(plan.writes.map((write) => write.colorId)).not.toContain("6");
     expect(plan.writes[0]?.description).toContain("Subject: What's New — October");
     expect(plan.writes[0]?.description).toContain("Campaign ID: 42");
     expect(plan.writes[0]?.description).toContain(
@@ -72,6 +76,73 @@ describe("sync plan", () => {
     });
     expect(plan.writes[0]?.description).toContain("Exact time: 2026-10-15T09:00:00-07:00");
     expect(plan.writes[0]?.description).toContain("Scheduled or sent: 2026-10-15 9:00:00 AM Pacific");
+  });
+
+  it("creates from sdate once and leaves manual events and reminders alone on a repeat", () => {
+    const snapshot = campaign({
+      id: "2417",
+      name: "TOW: Bust Darts",
+      scheduledDate: null,
+      sendDate: "2026-10-24T08:00:00-05:00",
+      messageId: "17",
+    });
+    const first = planFor([snapshot], [], { "17": "A sweater knit sideways?" });
+    expect(first.counts).toMatchObject({ create: 1, update: 0, delete: 0 });
+    expect(first.writes[0]).toMatchObject({
+      action: "create",
+      timeSource: "sdate",
+      allDay: true,
+      start: "2026-10-24",
+      end: "2026-10-25",
+      eventAt: "2026-10-24T06:00:00-07:00",
+    });
+    expect(first.writes[0]?.description).toContain("Exact time: 2026-10-24T06:00:00-07:00");
+    expect(first.writes[0]?.description).not.toContain("cdate");
+    expect(first.writes[0]?.description).not.toContain("mdate");
+
+    const created = first.writes[0];
+    const second = planFor(
+      [snapshot],
+      [
+        owned({
+          id: "bust-darts-event",
+          summary: created?.title,
+          description: created?.description,
+          colorId: created?.colorId,
+          start: new Date("2026-10-24T13:00:00.000Z"),
+          startText: "2026-10-24",
+          campaignId: "2417",
+        }),
+      ],
+      { "17": "A sweater knit sideways?" },
+    );
+    expect(second.counts).toMatchObject({ create: 0, update: 0, delete: 0, unchanged: 1 });
+    expect(second.writes).toEqual([]);
+
+    const conflicts = findPossibleConflicts(first.rows, [
+      {
+        id: "manual-1",
+        summary: "Order yarn",
+        start: null,
+        startText: "2026-10-24",
+        recurringEventId: null,
+        recurring: false,
+        campaignId: null,
+      },
+      {
+        id: "reminder-1",
+        summary: "Weekly social post",
+        start: null,
+        startText: "2026-10-24",
+        recurringEventId: "series-1",
+        recurring: true,
+        campaignId: null,
+      },
+    ]);
+    expect(conflicts).toEqual([]);
+    expect(second.rows.some((row) => row.googleEventId === "manual-1" || row.googleEventId === "reminder-1")).toBe(
+      false,
+    );
   });
 
   it("renames an imported event to the campaign name instead of creating a duplicate", () => {

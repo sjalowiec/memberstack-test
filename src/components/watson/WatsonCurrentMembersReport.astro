@@ -1,0 +1,92 @@
+---
+import type { CurrentMembersReport } from "../../lib/watson/currentMembersReport";
+import { CURRENT_MEMBER_BASIS_LABELS } from "../../lib/watson/currentMembersReport";
+
+interface Props {
+  report: CurrentMembersReport;
+}
+
+const { report } = Astro.props;
+---
+
+<section class="watson__panel watson--report-wide" aria-labelledby="current-members-heading">
+  <h2 id="current-members-heading" class="watson__panel-title">Current Members</h2>
+  <p class="watson-report__note">{report.note}</p>
+  <p class="watson-report__meta">
+    As of {report.asOfDate} (America/Los_Angeles). One person per mailbox.
+    <a href="/watson/reports/current-legacy-members">Current Legacy Members</a> is a separate report.
+  </p>
+
+  {
+    report.blockedReason ? (
+      <p class="watson__status watson__status--error" role="alert">
+        {report.blockedReason}
+      </p>
+    ) : (
+      <div class="watson-report__cards">
+        <article class="watson-report__card">
+          <h3 class="watson-report__card-label">Current members</h3>
+          <p class="watson-report__card-value" data-summary="yes">
+            {report.yesCount.toLocaleString("en-US")}
+          </p>
+        </article>
+        <article class="watson-report__card">
+          <h3 class="watson-report__card-label">{CURRENT_MEMBER_BASIS_LABELS.current_paid}</h3>
+          <p class="watson-report__card-value">{report.yesByBasis.current_paid.toLocaleString("en-US")}</p>
+        </article>
+        <article class="watson-report__card">
+          <h3 class="watson-report__card-label">{CURRENT_MEMBER_BASIS_LABELS.legacy_paid_shell}</h3>
+          <p class="watson-report__card-value">
+            {report.yesByBasis.legacy_paid_shell.toLocaleString("en-US")}
+          </p>
+        </article>
+        <article class="watson-report__card">
+          <h3 class="watson-report__card-label">{CURRENT_MEMBER_BASIS_LABELS.complimentary}</h3>
+          <p class="watson-report__card-value">{report.yesByBasis.complimentary.toLocaleString("en-US")}</p>
+        </article>
+        <article class="watson-report__card">
+          <h3 class="watson-report__card-label">{CURRENT_MEMBER_BASIS_LABELS.legacy_date}</h3>
+          <p class="watson-report__card-value">{report.yesByBasis.legacy_date.toLocaleString("en-US")}</p>
+        </article>
+        <article class="watson-report__card">
+          <h3 class="watson-report__card-label">Unresolved</h3>
+          <p class="watson-report__card-value" data-summary="unresolved">
+            {report.unresolvedCount.toLocaleString("en-US")}
+          </p>
+        </article>
+      </div>
+    )
+  }
+
+  {
+    report.unresolved.length > 0 ? (
+      <>
+        <ul class="watson-report__unresolved">
+          {report.unresolved.map((row) => (
+            <li>
+              <p>{row.explanation}</p>
+              <p>{row.storedEmails.join(", ")}</p>
+            </li>
+          ))}
+        </ul>
+      </>
+    ) : null
+  }
+</section>
+
+<style>
+  .watson-report__unresolved {
+    margin: 0.5rem 0 0;
+    padding-left: 1.2rem;
+    color: #334155;
+    line-height: 1.5;
+  }
+
+  .watson-report__unresolved p {
+    margin: 0;
+  }
+
+  .watson-report__unresolved li + li {
+    margin-top: 0.75rem;
+  }
+</style>

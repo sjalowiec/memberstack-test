@@ -8,10 +8,18 @@ import type {
 } from "../activecampaign/client";
 import { LEGACY_ANNUAL_PLAN_ID } from "./legacyAnnualExpiry";
 import type { WatsonQueryFn } from "./memberSearch";
+import { readFileSync } from "node:fs";
+
 import {
   addDaysYmd,
+  dailyCronIsAfterPacificMidnight,
+  EXPIRED_REMINDER_TAG,
   getLegacyReminderActiveCampaignSettings,
+  isLegacyRenewalStaffOrTestEmail,
+  LEGACY_RENEWAL_REMINDER_CRON,
   REMINDER_TAG_BY_WINDOW,
+  REMINDER_WINDOW_DAYS,
+  REMINDER_WINDOW_MEMBERS_SQL,
   runLegacyRenewalReminders,
   type ReminderAuditRow,
   type ReminderCandidateRow,
@@ -152,10 +160,10 @@ const baseOpts = (extra: Record<string, unknown>) => ({
 });
 
 describe("addDaysYmd", () => {
-  it("adds days across month boundaries", () => {
-    expect(addDaysYmd("2026-07-28", 30)).toBe("2026-08-27");
-    expect(addDaysYmd("2026-07-28", 7)).toBe("2026-08-04");
-    expect(addDaysYmd("2026-07-28", 1)).toBe("2026-07-29");
+  it("steps back one calendar day for the day-after tag", () => {
+    expect(addDaysYmd("2027-12-31", -1)).toBe("2027-12-30");
+    expect(addDaysYmd("2026-07-28", -1)).toBe("2026-07-27");
+    expect(addDaysYmd("2026-03-01", -1)).toBe("2026-02-28");
   });
 });
 
@@ -169,7 +177,7 @@ describe("runLegacyRenewalReminders - dry-run safety", () => {
       baseOpts({
         dryRun: true,
         activeCampaign: ac.client,
-        queryFn: makeQueryFn({ 30: [row({ memberid: "m1" })] }),
+        queryFn: makeQueryFn({ 1: [row({ memberid: "m1" })] }),
         resolveMemberstackMemberByEmail: resolverFor({
           "a@x.com": { status: "unique", member: legacyOnlyMember },
         }),
@@ -185,8 +193,8 @@ describe("runLegacyRenewalReminders - dry-run safety", () => {
     expect(ac.spies.addTag).not.toHaveBeenCalled();
     // Dry-run never persists audit rows.
     expect(recordAttempt).not.toHaveBeenCalled();
-    expect(result.details[0]?.paidThrough).toBe("2026-08-27");
-    expect(result.details[0]?.tag).toBe(REMINDER_TAG_BY_WINDOW[30]);
+    expect(result.details[0]?.paidThrough).toBe("2026-07-27");
+    expect(result.details[0]?.tag).toBe("legacy-renewal-expired");
   });
 
   it("does not preview a tag for a contact who is not on the list", async () => {
@@ -195,7 +203,7 @@ describe("runLegacyRenewalReminders - dry-run safety", () => {
       baseOpts({
         dryRun: true,
         activeCampaign: ac.client,
-        queryFn: makeQueryFn({ 7: [row({ memberid: "m1", subscriptionexpiring: "2026-08-04" })] }),
+        queryFn: makeQueryFn({ 1: [row({ memberid: "m1", subscriptionexpiring: "2026-08-04" })] }),
         resolveMemberstackMemberByEmail: resolverFor({ "a@x.com": { status: "not_found" } }),
       }),
     );
@@ -233,7 +241,7 @@ describe("runLegacyRenewalReminders - live tagging", () => {
       baseOpts({
         dryRun: false,
         activeCampaign: ac.client,
-        queryFn: makeQueryFn({ 30: [row({ memberid: "m1" })] }),
+        queryFn: makeQueryFn({ 1: [row({ memberid: "m1" })] }),
         resolveMemberstackMemberByEmail: resolverFor({
           "a@x.com": { status: "unique", member: legacyOnlyMember },
         }),
@@ -247,10 +255,10 @@ describe("runLegacyRenewalReminders - live tagging", () => {
     expect(ac.spies.syncContact).toHaveBeenCalledWith({
       email: "a@x.com",
       firstName: "Ada",
-      fieldValues: [{ field: FIELD_ID, value: "2026-08-27" }],
+      fieldValues: [{ field: FIELD_ID, value: "2026-07-27" }],
     });
     expect(ac.spies.subscribeToList).not.toHaveBeenCalled();
-    expect(ac.spies.addTag).toHaveBeenCalledWith("ac_1", "tag_legacy-renewal-30-days");
+    expect(ac.spies.addTag).toHaveBeenCalledWith("ac_1", "tag_legacy-renewal-expired");
     expect(recorded).toHaveLength(1);
     expect(recorded[0]?.outcome).toBe("tagged");
   });
@@ -281,7 +289,7 @@ describe("runLegacyRenewalReminders - live tagging", () => {
       baseOpts({
         dryRun: false,
         activeCampaign: ac.client,
-        queryFn: makeQueryFn({ 30: [row({ memberid: "m1" })] }),
+        queryFn: makeQueryFn({ 1: [row({ memberid: "m1" })] }),
         resolveMemberstackMemberByEmail: resolverFor({
           "a@x.com": { status: "unique", member: legacyOnlyMember },
         }),
@@ -300,7 +308,7 @@ describe("runLegacyRenewalReminders - skips and protections", () => {
       baseOpts({
         dryRun: false,
         activeCampaign: ac.client,
-        queryFn: makeQueryFn({ 30: [row({ memberid: "m1" })] }),
+        queryFn: makeQueryFn({ 1: [row({ memberid: "m1" })] }),
         resolveMemberstackMemberByEmail: resolverFor({
           "a@x.com": { status: "unique", member: paidMember },
         }),
@@ -316,7 +324,7 @@ describe("runLegacyRenewalReminders - skips and protections", () => {
       baseOpts({
         dryRun: false,
         activeCampaign: ac.client,
-        queryFn: makeQueryFn({ 30: [row({ memberid: "m1" })] }),
+        queryFn: makeQueryFn({ 1: [row({ memberid: "m1" })] }),
         resolveMemberstackMemberByEmail: resolverFor({
           "a@x.com": { status: "unique", member: trialingPaidMember },
         }),
@@ -332,7 +340,7 @@ describe("runLegacyRenewalReminders - skips and protections", () => {
       baseOpts({
         dryRun: true,
         activeCampaign: ac.client,
-        queryFn: makeQueryFn({ 30: [row({ memberid: "m1" })] }),
+        queryFn: makeQueryFn({ 1: [row({ memberid: "m1" })] }),
         resolveMemberstackMemberByEmail: resolverFor({
           "a@x.com": { status: "unique", member: openComplimentaryMember },
         }),
@@ -346,7 +354,7 @@ describe("runLegacyRenewalReminders - skips and protections", () => {
       baseOpts({
         dryRun: true,
         activeCampaign: ac.client,
-        queryFn: makeQueryFn({ 30: [row({ memberid: "m1" })] }),
+        queryFn: makeQueryFn({ 1: [row({ memberid: "m1" })] }),
         resolveMemberstackMemberByEmail: resolverFor({
           "a@x.com": { status: "unique", member: openComplimentaryMember },
         }),
@@ -359,11 +367,11 @@ describe("runLegacyRenewalReminders - skips and protections", () => {
       baseOpts({
         dryRun: true,
         activeCampaign: ac.client,
-        queryFn: makeQueryFn({ 30: [row({ memberid: "m1" })] }),
+        queryFn: makeQueryFn({ 1: [row({ memberid: "m1" })] }),
         resolveMemberstackMemberByEmail: resolverFor({
           "a@x.com": { status: "unique", member: openComplimentaryMember },
         }),
-        loadComplimentaryAccessYmdByMemberstackId: async () => new Map([["mem_comp", "2026-08-01"]]),
+        loadComplimentaryAccessYmdByMemberstackId: async () => new Map([["mem_comp", "2026-07-01"]]),
       }),
     );
     expect(endingFirst.totals.wouldTag).toBe(1);
@@ -376,7 +384,7 @@ describe("runLegacyRenewalReminders - skips and protections", () => {
       baseOpts({
         dryRun: false,
         activeCampaign: ac.client,
-        queryFn: makeQueryFn({ 30: [row({ memberid: "m1" })] }),
+        queryFn: makeQueryFn({ 1: [row({ memberid: "m1" })] }),
         resolveMemberstackMemberByEmail: resolverFor({
           "a@x.com": { status: "unique", member: legacyOnlyMember },
         }),
@@ -399,7 +407,7 @@ describe("runLegacyRenewalReminders - skips and protections", () => {
         baseOpts({
           dryRun: false,
           activeCampaign: ac.client,
-          queryFn: makeQueryFn({ 30: [row({ memberid: "m1" })] }),
+          queryFn: makeQueryFn({ 1: [row({ memberid: "m1" })] }),
           resolveMemberstackMemberByEmail: resolverFor({
             "a@x.com": { status: "unique", member: legacyOnlyMember },
           }),
@@ -415,14 +423,14 @@ describe("runLegacyRenewalReminders - skips and protections", () => {
       "a@x.com": {
         id: "ac_1",
         listStatus: "active",
-        tags: new Set(["tag_legacy-renewal-30-days"]),
+        tags: new Set(["tag_legacy-renewal-expired"]),
       },
     });
     const result = await runLegacyRenewalReminders(
       baseOpts({
         dryRun: false,
         activeCampaign: ac.client,
-        queryFn: makeQueryFn({ 30: [row({ memberid: "m1" })] }),
+        queryFn: makeQueryFn({ 1: [row({ memberid: "m1" })] }),
         resolveMemberstackMemberByEmail: resolverFor({
           "a@x.com": { status: "unique", member: legacyOnlyMember },
         }),
@@ -444,7 +452,7 @@ describe("runLegacyRenewalReminders - skips and protections", () => {
         throw err;
       }
       const windowDays = Number(params?.[1]);
-      return windowDays === 30 ? [row({ memberid: "m1" })] : [];
+      return windowDays === 1 ? [row({ memberid: "m1" })] : [];
     }) as unknown as WatsonQueryFn;
 
     const result = await runLegacyRenewalReminders({
@@ -473,7 +481,7 @@ describe("runLegacyRenewalReminders - skips and protections", () => {
       baseOpts({
         dryRun: false,
         activeCampaign: ac.client,
-        queryFn: makeQueryFn({ 30: [row({ memberid: "m1" })] }),
+        queryFn: makeQueryFn({ 1: [row({ memberid: "m1" })] }),
         resolveMemberstackMemberByEmail: resolverFor({
           "a@x.com": { status: "unique", member: legacyOnlyMember },
         }),
@@ -491,7 +499,7 @@ describe("runLegacyRenewalReminders - skips and protections", () => {
         dryRun: false,
         activeCampaign: ac.client,
         queryFn: makeQueryFn({
-          30: [
+          1: [
             row({ memberid: "blank", email: null }),
             row({ memberid: "staff", email: "test@knititnow.com" }),
           ],
@@ -504,6 +512,41 @@ describe("runLegacyRenewalReminders - skips and protections", () => {
     expect(ac.spies.addTag).not.toHaveBeenCalled();
   });
 
+  it("lets only abc123@knititnow.com through the staff/test exclusion", async () => {
+    expect(isLegacyRenewalStaffOrTestEmail("abc123@knititnow.com")).toBe(false);
+    expect(isLegacyRenewalStaffOrTestEmail("ABC123@KnitItNow.com")).toBe(false);
+    expect(isLegacyRenewalStaffOrTestEmail("test@knititnow.com")).toBe(true);
+    expect(isLegacyRenewalStaffOrTestEmail("sue@knititnow.com")).toBe(true);
+    expect(isLegacyRenewalStaffOrTestEmail("matt@hozgroup.com")).toBe(true);
+    expect(isLegacyRenewalStaffOrTestEmail("person@membership.io")).toBe(true);
+
+    const ac = makeAc({
+      "abc123@knititnow.com": { id: "ac_abc", listStatus: "active", tags: new Set() },
+    });
+    const result = await runLegacyRenewalReminders(
+      baseOpts({
+        dryRun: true,
+        activeCampaign: ac.client,
+        queryFn: makeQueryFn({
+          1: [
+            row({ memberid: "abc", email: "abc123@knititnow.com" }),
+            row({ memberid: "staff", email: "other@knititnow.com" }),
+          ],
+        }),
+        resolveMemberstackMemberByEmail: resolverFor({
+          "abc123@knititnow.com": { status: "not_found" },
+        }),
+      }),
+    );
+    expect(result.totals.wouldTag).toBe(1);
+    expect(result.totals.skippedStaffOrTest).toBe(1);
+    expect(result.details.find((detail) => detail.legacyMemberId === "abc")?.outcome).toBe(
+      "would_tag",
+    );
+    expect(ac.spies.addTag).not.toHaveBeenCalled();
+    expect(ac.spies.syncContact).not.toHaveBeenCalled();
+  });
+
   it("treats one email on two legacy rows as ambiguous", async () => {
     const ac = makeAc();
     const result = await runLegacyRenewalReminders(
@@ -511,7 +554,7 @@ describe("runLegacyRenewalReminders - skips and protections", () => {
         dryRun: false,
         activeCampaign: ac.client,
         queryFn: makeQueryFn({
-          30: [
+          1: [
             row({ memberid: "dupA", email: "dup@x.com" }),
             row({ memberid: "dupB", email: "dup@x.com" }),
           ],
@@ -529,7 +572,7 @@ describe("runLegacyRenewalReminders - skips and protections", () => {
       baseOpts({
         dryRun: false,
         activeCampaign: ac.client,
-        queryFn: makeQueryFn({ 30: [row({ memberid: "m1" })] }),
+        queryFn: makeQueryFn({ 1: [row({ memberid: "m1" })] }),
         resolveMemberstackMemberByEmail: resolverFor({ "a@x.com": { status: "ambiguous" } }),
       }),
     );
@@ -538,33 +581,50 @@ describe("runLegacyRenewalReminders - skips and protections", () => {
   });
 });
 
-describe("runLegacyRenewalReminders - window tag mapping", () => {
-  it("applies the correct tag per window in one run", async () => {
+describe("expired-day selection", () => {
+  it("tags only legacy-renewal-expired for yesterday and does not query advance windows", async () => {
     const ac = makeAc({
       "a@x.com": { id: "ac_1", listStatus: "active", tags: new Set() },
-      "b@x.com": { id: "ac_2", listStatus: "active", tags: new Set() },
-      "c@x.com": { id: "ac_3", listStatus: "active", tags: new Set() },
     });
+    const calls: unknown[][] = [];
+    const queryFn = (async (_sql: string, params?: unknown[]) => {
+      calls.push(params ?? []);
+      return Number(params?.[1]) === 1 ? [row({ memberid: "m1", email: "a@x.com" })] : [];
+    }) as unknown as WatsonQueryFn;
     const result = await runLegacyRenewalReminders(
       baseOpts({
         dryRun: false,
         activeCampaign: ac.client,
-        queryFn: makeQueryFn({
-          30: [row({ memberid: "m30", email: "a@x.com" })],
-          7: [row({ memberid: "m7", email: "b@x.com", subscriptionexpiring: "2026-08-04" })],
-          1: [row({ memberid: "m1", email: "c@x.com", subscriptionexpiring: "2026-07-29" })],
-        }),
+        queryFn,
+        loadComplimentaryAccessYmdByMemberstackId: async () => new Map(),
         resolveMemberstackMemberByEmail: resolverFor({
           "a@x.com": { status: "not_found" },
-          "b@x.com": { status: "not_found" },
-          "c@x.com": { status: "not_found" },
         }),
       }),
     );
-    expect(result.totals.tagged).toBe(3);
-    expect(ac.spies.addTag).toHaveBeenCalledWith("ac_1", "tag_legacy-renewal-30-days");
-    expect(ac.spies.addTag).toHaveBeenCalledWith("ac_2", "tag_legacy-renewal-7-days");
-    expect(ac.spies.addTag).toHaveBeenCalledWith("ac_3", "tag_legacy-renewal-1-day");
+    expect(REMINDER_WINDOW_DAYS).toEqual([1]);
+    expect(REMINDER_TAG_BY_WINDOW).toEqual({ 1: EXPIRED_REMINDER_TAG });
+    expect(calls).toEqual([["2026-07-28", 1]]);
+    expect(result.totals.tagged).toBe(1);
+    expect(ac.spies.addTag).toHaveBeenCalledTimes(1);
+    expect(ac.spies.addTag).toHaveBeenCalledWith("ac_1", "tag_legacy-renewal-expired");
+    expect(REMINDER_WINDOW_MEMBERS_SQL).toContain(
+      "m.subscriptionexpiring::date = ($1::date - ($2 || ' days')::interval)::date",
+    );
+    expect(REMINDER_WINDOW_MEMBERS_SQL).toContain("COALESCE(m.monthlysubscriber, 0) <> 1");
+    expect(REMINDER_WINDOW_MEMBERS_SQL).toContain("COALESCE(m.betaactive, 0) = 0");
+    expect(REMINDER_WINDOW_MEMBERS_SQL).not.toMatch(/subscriptionexpiring::date\s*</);
+  });
+
+  it("runs after Pacific midnight in both standard time and daylight time", () => {
+    expect(LEGACY_RENEWAL_REMINDER_CRON).toBe("0 9 * * *");
+    expect(dailyCronIsAfterPacificMidnight(LEGACY_RENEWAL_REMINDER_CRON)).toBe(true);
+    expect(dailyCronIsAfterPacificMidnight("0 8 * * *")).toBe(false);
+    expect(dailyCronIsAfterPacificMidnight("30 7 * * *")).toBe(false);
+    const toml = readFileSync("netlify.toml", "utf8");
+    expect(toml).toContain('[functions."legacy-renewal-reminders"]');
+    expect(toml).toContain('schedule = "0 9 * * *"');
+    expect(toml).not.toContain('schedule = "0 8 * * *"');
   });
 });
 
@@ -594,7 +654,7 @@ describe("runLegacyRenewalReminders - configuration guards", () => {
         listId: undefined,
         paidThroughFieldId: undefined,
         activeCampaign: ac.client,
-        queryFn: makeQueryFn({ 30: [row({ memberid: "m1" })] }),
+        queryFn: makeQueryFn({ 1: [row({ memberid: "m1" })] }),
         resolveMemberstackMemberByEmail: resolverFor({
           "a@x.com": { status: "unique", member: legacyOnlyMember },
         }),
