@@ -95,13 +95,12 @@ describe("testimonial admin API", () => {
     });
   });
 
-  it("inactivates one testimonial without changing its words", async () => {
+  it("refuses a status-only change that would ignore unsaved editor text", async () => {
     requireAdminForRequest.mockResolvedValue({
       ok: true,
       member: { id: "mem_admin", email: null },
       mode: "verified",
     });
-    setTestimonialActive.mockResolvedValue({ id: "row-1", active: false });
     const response = await PATCH({
       params: { id: "row-1" },
       request: new Request("https://knititnow.test/api/admin/testimonials/row-1", {
@@ -111,9 +110,77 @@ describe("testimonial admin API", () => {
       }),
       cookies,
     } as never);
-    expect(response.status).toBe(200);
-    expect(setTestimonialActive).toHaveBeenCalledWith("row-1", false);
+    expect(response.status).toBe(400);
+    expect(setTestimonialActive).not.toHaveBeenCalled();
     expect(updateTestimonialDisplay).not.toHaveBeenCalled();
+  });
+
+  it("saves the highlight and activation together", async () => {
+    requireAdminForRequest.mockResolvedValue({
+      ok: true,
+      member: { id: "mem_admin", email: null },
+      mode: "verified",
+    });
+    getTestimonialForAdmin.mockResolvedValue({
+      id: "row-1",
+      displayQuote: null,
+      displayHighlightStart: null,
+      displayHighlightEnd: null,
+    });
+    updateTestimonialDisplay.mockResolvedValue({ id: "row-1", active: true });
+    const response = await PATCH({
+      params: { id: "row-1" },
+      request: new Request("https://knititnow.test/api/admin/testimonials/row-1", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          displayQuote: "I love the lessons.",
+          displayAttribution: "Ada",
+          highlight: { start: 2, end: 6 },
+          active: true,
+        }),
+      }),
+      cookies,
+    } as never);
+    expect(response.status).toBe(200);
+    expect(updateTestimonialDisplay).toHaveBeenCalledWith("row-1", {
+      displayQuote: "I love the lessons.",
+      displayAttribution: "Ada",
+      highlight: { start: 2, end: 6 },
+      active: true,
+    });
+    expect(setTestimonialActive).not.toHaveBeenCalled();
+  });
+
+  it("does not activate when the highlight no longer matches", async () => {
+    requireAdminForRequest.mockResolvedValue({
+      ok: true,
+      member: { id: "mem_admin", email: null },
+      mode: "verified",
+    });
+    getTestimonialForAdmin.mockResolvedValue({
+      id: "row-1",
+      displayQuote: "I love the lessons.",
+      displayHighlightStart: 2,
+      displayHighlightEnd: 6,
+    });
+    const response = await PATCH({
+      params: { id: "row-1" },
+      request: new Request("https://knititnow.test/api/admin/testimonials/row-1", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          displayQuote: "I lost the lessons.",
+          displayAttribution: "Ada",
+          highlight: { start: 2, end: 6 },
+          active: true,
+        }),
+      }),
+      cookies,
+    } as never);
+    expect(response.status).toBe(400);
+    expect(updateTestimonialDisplay).not.toHaveBeenCalled();
+    expect(setTestimonialActive).not.toHaveBeenCalled();
   });
 
   it("rejects a non-admin delete before removing a testimonial", async () => {

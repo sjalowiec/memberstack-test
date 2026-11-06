@@ -173,30 +173,25 @@ const previewParts = selected?.displayQuote
                       )}
                     </p>
                   </div>
-                  <button class="kbm-btn kbm-btn-primary" type="submit">Save display text</button>
+                  <p class="testimonial-admin__unsaved" id="unsaved-changes" hidden>Unsaved changes</p>
+                  <p class="testimonial-admin__save-actions">
+                    <button class="kbm-btn kbm-btn-primary" type="button" id="save-activate">Save &amp; Activate</button>
+                    <button class="kbm-btn kbm-btn-outline" type="button" id="save-edits">Save</button>
+                    <button class="kbm-btn kbm-btn-outline" type="button" id="save-inactivate">Save &amp; Inactivate</button>
+                    <button
+                      class="kbm-btn kbm-btn-outline"
+                      type="button"
+                      data-testimonial-delete={selected.id}
+                      data-delete-confirm={testimonialDeleteConfirmation(
+                        selected.originalAttribution,
+                        selected.originalQuote,
+                      )}
+                    >
+                      Delete
+                    </button>
+                  </p>
+                  <p class="testimonial-admin__status" data-detail-status role="status"></p>
                 </form>
-                <p>
-                  <button
-                    class="kbm-btn kbm-btn-accent"
-                    type="button"
-                    data-testimonial-active={selected.active ? "false" : "true"}
-                    data-testimonial-id={selected.id}
-                  >
-                    {selected.active ? "Inactivate" : "Activate"}
-                  </button>
-                  <button
-                    class="kbm-btn kbm-btn-outline"
-                    type="button"
-                    data-testimonial-delete={selected.id}
-                    data-delete-confirm={testimonialDeleteConfirmation(
-                      selected.originalAttribution,
-                      selected.originalQuote,
-                    )}
-                  >
-                    Delete
-                  </button>
-                </p>
-                <p class="testimonial-admin__status" data-detail-status role="status"></p>
               </article>
             ) : (
               <p class="testimonial-admin__prompt">Select a testimonial to review it.</p>
@@ -255,16 +250,7 @@ const previewParts = selected?.displayQuote
                       <td>{snippet(row)}</td>
                       <td>{row.source.replaceAll("_", " ")}</td>
                       <td>{memberLabel(row)}</td>
-                      <td>
-                        {row.active ? "Active" : "Inactive"}
-                        <button
-                          type="button"
-                          data-testimonial-active={row.active ? "false" : "true"}
-                          data-testimonial-id={row.id}
-                        >
-                          {row.active ? "Inactivate" : "Activate"}
-                        </button>
-                      </td>
+                      <td>{row.active ? "Active" : "Inactive"}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -289,6 +275,8 @@ const previewParts = selected?.displayQuote
   import { fetchAdminJson } from "../../lib/admin/adminAuthClient";
 
   const LIST_POSITION_KEY = "kin-testimonial-admin-scroll";
+  const NOTICE_KEY = "kin-testimonial-admin-notice";
+  let allowLeave = false;
 
   function rememberListPosition() {
     try {
@@ -312,33 +300,84 @@ const previewParts = selected?.displayQuote
 
   restoreListPosition();
 
-  async function patchTestimonial(id: string, body: Record<string, unknown>, status: HTMLElement | null) {
-    const result = await fetchAdminJson<{ ok: boolean; error?: string }>(`/api/admin/testimonials/${encodeURIComponent(id)}`, {
-      method: "PATCH",
-      body,
-    });
+  try {
+    const savedNotice = sessionStorage.getItem(NOTICE_KEY);
+    if (savedNotice) {
+      sessionStorage.removeItem(NOTICE_KEY);
+      const status = document.querySelector<HTMLElement>("[data-detail-status]");
+      if (status) status.textContent = savedNotice;
+    }
+  } catch {
+    /* A missing confirmation still leaves the saved record in place. */
+  }
+
+  function requestLeave(): boolean {
+    const unsaved = document.getElementById("unsaved-changes");
+    if (!unsaved || unsaved.hidden || allowLeave) return true;
+    const ok = window.confirm("You have unsaved changes. Leave without saving?");
+    if (ok) allowLeave = true;
+    return ok;
+  }
+
+  window.addEventListener("beforeunload", (event) => {
+    const unsaved = document.getElementById("unsaved-changes");
+    if (!unsaved || unsaved.hidden || allowLeave) return;
+    event.preventDefault();
+    event.returnValue = "";
+  });
+
+  function editorPayload(): { displayQuote: string; displayAttribution: string; highlight: { start: number; end: number } | null } {
+    const quote = document.getElementById("display-quote");
+    const name = document.getElementById("display-attribution");
+    const preview = document.getElementById("highlight-preview");
+    const quoteText = quote instanceof HTMLTextAreaElement ? quote.value : "";
+    const start = Number(preview?.getAttribute("data-highlight-start"));
+    const end = Number(preview?.getAttribute("data-highlight-end"));
+    const highlight = Number.isInteger(start) && Number.isInteger(end) && quoteText.slice(start, end).trim()
+      ? { start, end }
+      : null;
+    return {
+      displayQuote: quoteText,
+      displayAttribution: name instanceof HTMLInputElement ? name.value : "",
+      highlight,
+    };
+  }
+
+  async function saveEdits(active: boolean | undefined) {
+    const form = document.getElementById("testimonial-display-form");
+    if (!(form instanceof HTMLFormElement)) return;
+    const status = document.querySelector<HTMLElement>("[data-detail-status]");
+    const body: Record<string, unknown> = editorPayload();
+    if (active !== undefined) body.active = active;
+    const result = await fetchAdminJson<{ ok: boolean; error?: string }>(
+      `/api/admin/testimonials/${encodeURIComponent(form.dataset.id || "")}`,
+      { method: "PATCH", body },
+    );
     if (!result.ok || !result.data?.ok) {
       if (status) status.textContent = result.data?.error || result.error || "Could not save.";
       return;
     }
+    const message = active === true ? "Saved and activated." : active === false ? "Saved and inactivated." : "Saved.";
+    try {
+      sessionStorage.setItem(NOTICE_KEY, message);
+    } catch {
+      /* The reload still keeps the address and list position. */
+    }
+    allowLeave = true;
     rememberListPosition();
     window.location.reload();
   }
-
-  document.querySelectorAll<HTMLButtonElement>("[data-testimonial-active]").forEach((button) => {
-    button.addEventListener("click", () => {
-      const id = button.dataset.testimonialId || "";
-      const active = button.dataset.testimonialActive === "true";
-      const status = document.querySelector<HTMLElement>("[data-detail-status]");
-      void patchTestimonial(id, { active }, status);
-    });
-  });
 
   document.querySelectorAll<HTMLButtonElement>("[data-testimonial-delete]").forEach((button) => {
     button.addEventListener("click", async () => {
       const id = button.dataset.testimonialDelete || "";
       const confirmation = button.dataset.deleteConfirm || "Delete this testimonial?";
-      if (!id || !window.confirm(confirmation)) return;
+      const unsaved = document.getElementById("unsaved-changes");
+      const prompt = unsaved && !unsaved.hidden
+        ? `${confirmation}\n\nYou also have unsaved changes.`
+        : confirmation;
+      if (!id || !window.confirm(prompt)) return;
+      allowLeave = true;
       const status = document.querySelector<HTMLElement>("[data-detail-status]");
       const result = await fetchAdminJson<{ ok: boolean; error?: string }>(
         `/api/admin/testimonials/${encodeURIComponent(id)}`,
@@ -357,31 +396,34 @@ const previewParts = selected?.displayQuote
 
   document.querySelector(".testimonial-admin__list")?.addEventListener("click", (event) => {
     const target = event.target;
-    if (target instanceof Element && target.closest("a")) rememberListPosition();
+    const link = target instanceof Element ? target.closest("a") : null;
+    if (!link) return;
+    if (!requestLeave()) {
+      event.preventDefault();
+      return;
+    }
+    rememberListPosition();
   });
-  document.querySelector(".testimonial-admin__filters")?.addEventListener("submit", () => {
+  document.querySelector(".testimonial-admin__filters")?.addEventListener("submit", (event) => {
+    if (!requestLeave()) {
+      event.preventDefault();
+      return;
+    }
     rememberListPosition();
   });
 
   document.getElementById("testimonial-display-form")?.addEventListener("submit", (event) => {
     event.preventDefault();
-    const form = event.currentTarget;
-    if (!(form instanceof HTMLFormElement)) return;
-    const data = new FormData(form);
-    const status = document.querySelector<HTMLElement>("[data-detail-status]");
-    const quote = document.getElementById("display-quote");
-    const preview = document.getElementById("highlight-preview");
-    const quoteText = quote instanceof HTMLTextAreaElement ? quote.value : "";
-    const start = Number(preview?.getAttribute("data-highlight-start"));
-    const end = Number(preview?.getAttribute("data-highlight-end"));
-    const highlight = Number.isInteger(start) && Number.isInteger(end) && quoteText.slice(start, end).trim()
-      ? { start, end }
-      : null;
-    void patchTestimonial(form.dataset.id || "", {
-      displayQuote: String(data.get("displayQuote") ?? ""),
-      displayAttribution: String(data.get("displayAttribution") ?? ""),
-      highlight,
-    }, status);
+    void saveEdits(undefined);
+  });
+  document.getElementById("save-activate")?.addEventListener("click", () => {
+    void saveEdits(true);
+  });
+  document.getElementById("save-edits")?.addEventListener("click", () => {
+    void saveEdits(undefined);
+  });
+  document.getElementById("save-inactivate")?.addEventListener("click", () => {
+    void saveEdits(false);
   });
 
   const quoteField = document.getElementById("display-quote");
@@ -425,12 +467,31 @@ const previewParts = selected?.displayQuote
     previewQuote.append(emphasis, quote.slice(range.end));
   }
 
+  const savedQuote = quoteField instanceof HTMLTextAreaElement ? quoteField.value : "";
+  const savedNameField = document.getElementById("display-attribution");
+  const savedName = savedNameField instanceof HTMLInputElement ? savedNameField.value : "";
+  const savedHighlightStart = previewCard?.getAttribute("data-highlight-start") || "";
+  const savedHighlightEnd = previewCard?.getAttribute("data-highlight-end") || "";
+
+  function refreshUnsaved() {
+    const indicator = document.getElementById("unsaved-changes");
+    if (!indicator) return;
+    const nameField = document.getElementById("display-attribution");
+    const name = nameField instanceof HTMLInputElement ? nameField.value : "";
+    const quote = quoteField instanceof HTMLTextAreaElement ? quoteField.value : "";
+    const start = previewCard?.getAttribute("data-highlight-start") || "";
+    const end = previewCard?.getAttribute("data-highlight-end") || "";
+    const dirty = quote !== savedQuote || name !== savedName || start !== savedHighlightStart || end !== savedHighlightEnd;
+    indicator.hidden = !dirty;
+  }
+
   function clearHighlight(message: string) {
     highlightedPhrase = "";
     previewCard?.setAttribute("data-highlight-start", "");
     previewCard?.setAttribute("data-highlight-end", "");
     if (highlightStatus) highlightStatus.textContent = message;
     renderHighlightPreview();
+    refreshUnsaved();
   }
 
   quoteField?.addEventListener("input", () => {
@@ -441,6 +502,10 @@ const previewParts = selected?.displayQuote
       return;
     }
     renderHighlightPreview();
+    refreshUnsaved();
+  });
+  document.getElementById("display-attribution")?.addEventListener("input", () => {
+    refreshUnsaved();
   });
 
   document.getElementById("highlight-selection")?.addEventListener("click", () => {
@@ -457,6 +522,7 @@ const previewParts = selected?.displayQuote
     previewCard.setAttribute("data-highlight-end", String(end));
     if (highlightStatus) highlightStatus.textContent = "";
     renderHighlightPreview();
+    refreshUnsaved();
   });
 
   document.getElementById("highlight-remove")?.addEventListener("click", () => {
@@ -567,8 +633,30 @@ const previewParts = selected?.displayQuote
     background: #fff;
   }
   .testimonial-admin__detail p .kbm-btn + .kbm-btn,
-  .testimonial-admin__highlight-actions .kbm-btn + .kbm-btn {
+  .testimonial-admin__highlight-actions .kbm-btn + .kbm-btn,
+  .testimonial-admin__save-actions .kbm-btn + .kbm-btn {
     margin-left: 0.75rem;
+  }
+
+  .testimonial-admin__save-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    align-items: center;
+  }
+
+  .testimonial-admin__save-actions .kbm-btn + .kbm-btn {
+    margin-left: 0;
+  }
+
+  .testimonial-admin__unsaved {
+    margin: 0.75rem 0 0;
+    color: var(--kbm-green, #52682d);
+    font-weight: 700;
+  }
+
+  .testimonial-admin__status:not(:empty) {
+    font-weight: 600;
   }
   .testimonial-admin__preview {
     margin-top: 0.5rem;
