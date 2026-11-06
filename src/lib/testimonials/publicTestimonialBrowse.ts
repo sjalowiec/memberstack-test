@@ -26,9 +26,10 @@ export function acceptPublicBrowseBatch(
   };
 }
 
-export function publicBrowseButtonLabel(state: PublicBrowseState): "Show more stories" | "Retry" | null {
+export function publicBrowseButtonLabel(state: PublicBrowseState): "Show more stories" | "Loading…" | "Retry" | null {
   if (state.phase === "error" || (state.phase === "loading" && state.cardCount === 0)) return "Retry";
-  if (state.phase === "loading" || state.hasMore) return "Show more stories";
+  if (state.phase === "loading") return "Loading…";
+  if (state.hasMore) return "Show more stories";
   return null;
 }
 
