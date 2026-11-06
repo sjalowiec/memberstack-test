@@ -4,6 +4,7 @@ import {
   memberSubmissionAllowed,
   parseTestimonialDraft,
 } from "../../../lib/testimonials/testimonialDraft";
+import { deliverNewTestimonialStaffNotification } from "../../../lib/testimonials/testimonialStaffNotification";
 import {
   countRecentMemberSubmissions,
   createMemberTestimonial,
@@ -66,11 +67,22 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     if (!memberSubmissionAllowed(recent)) {
       return json({ ok: false, error: "Please wait a while before sending another testimonial." }, 429);
     }
-    await createMemberTestimonial({
+    const saved = await createMemberTestimonial({
       memberstackMemberId: auth.member.id,
       attribution: parsed.value.attribution,
       quote: parsed.value.quote,
     });
+    try {
+      await deliverNewTestimonialStaffNotification({
+        id: saved.id,
+        origin: new URL(request.url).origin,
+      });
+    } catch (notifyError) {
+      console.error(
+        "[testimonials] Submission saved; staff notification failed",
+        notifyError instanceof Error ? notifyError.message : "unknown",
+      );
+    }
     return json({ ok: true }, 201);
   } catch (error) {
     const message = error instanceof Error ? error.message : "Could not save the testimonial.";

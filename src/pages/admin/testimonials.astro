@@ -4,13 +4,17 @@ import Layout from "../../layouts/Layout.astro";
 import "../../styles/testimonials-public.css";
 import { publicTestimonialCopy, quoteWithHighlight, testimonialDeleteConfirmation, testimonialEditorFields } from "../../lib/testimonials/testimonialPlainText";
 import {
+  countUnreviewedTestimonials,
   getTestimonialForAdmin,
   listTestimonialsForAdmin,
 } from "../../lib/testimonials/testimonialStore";
-import type { TestimonialRecord } from "../../lib/testimonials/testimonialRules";
+import type { TestimonialPublicationState, TestimonialRecord } from "../../lib/testimonials/testimonialRules";
 
 const statusParam = Astro.url.searchParams.get("status");
-const status = statusParam === "active" || statusParam === "inactive" ? statusParam : "all";
+const status =
+  statusParam === "active" || statusParam === "inactive" || statusParam === "archived" || statusParam === "new"
+    ? statusParam
+    : "all";
 const sort = Astro.url.searchParams.get("sort") === "active" ? "active" : "inactive";
 const includeUnpublished = Astro.url.searchParams.get("includeUnpublished") === "1";
 const q = Astro.url.searchParams.get("q")?.trim() ?? "";
@@ -20,10 +24,12 @@ const selectedId = Astro.url.searchParams.get("id")?.trim() ?? "";
 
 let rows: TestimonialRecord[] = [];
 let total = 0;
+let newCount = 0;
 let selected: TestimonialRecord | null = null;
 let loadError = "";
 
 try {
+  newCount = await countUnreviewedTestimonials();
   const listed = await listTestimonialsForAdmin({
     q,
     status,
@@ -43,6 +49,12 @@ try {
 }
 
 const pageCount = Math.max(Math.ceil(total / pageSize), 1);
+
+function publicationLabel(state: TestimonialPublicationState): string {
+  if (state === "active") return "Active";
+  if (state === "archived") return "Archived";
+  return "Inactive";
+}
 
 function listHref(next: { status?: string; page?: number; id?: string; sort?: "inactive" | "active" }) {
   const params = new URLSearchParams();
@@ -85,10 +97,14 @@ const previewParts = editorFields?.quote
       <h1>Testimonials</h1>
       <p>
         Imported and submitted testimonials stay inactive until you activate one.
-        The old site’s Show flag does not publish anything. Inactivating a testimonial
-        removes it from the public testimonials page.
+        New member submissions stay unreviewed until you mark them reviewed.
+        Archived testimonials stay out of the default list and off the public page.
+        The old site’s Show flag does not publish anything.
       </p>
     </header>
+    <p class="testimonial-admin__new">
+      <a href="/admin/testimonials?status=new">New submissions: {newCount}</a>
+    </p>
     <p><a class="kbm-btn kbm-btn-outline" href="/admin">Back to Creator Control Panel</a></p>
     {loadError ? <p role="alert">{loadError}</p> : null}
 
@@ -122,9 +138,19 @@ const previewParts = editorFields?.quote
               <article class="testimonial-admin__detail" aria-labelledby="testimonial-detail-heading">
                 <h2 id="testimonial-detail-heading">{selected.originalAttribution}</h2>
                 <p>
-                  {selected.active ? "Active" : "Inactive"} · {selected.source.replaceAll("_", " ")} ·{" "}
-                  {memberLabel(selected)}
+                  {publicationLabel(selected.publicationState)} · {selected.reviewed ? "Reviewed" : "New"} ·{" "}
+                  {selected.source.replaceAll("_", " ")} · {memberLabel(selected)}
                 </p>
+                {
+                  selected.source === "member_submission" &&
+                  !selected.staffNotifiedAt &&
+                  selected.staffNotificationError ? (
+                    <p class="testimonial-admin__notice" role="status">
+                      The submission is saved. The staff notification was not sent: {selected.staffNotificationError}
+                      <button class="kbm-btn kbm-btn-outline" type="button" id="retry-notification">Retry notification</button>
+                    </p>
+                  ) : null
+                }
                 <p>
                   {selected.reviewDate ?? "No review date"}
                   {selected.rating != null ? ` · rating ${selected.rating}` : ""}
@@ -184,6 +210,18 @@ const previewParts = editorFields?.quote
                     <button class="kbm-btn kbm-btn-primary" type="button" id="save-activate">Save &amp; Activate</button>
                     <button class="kbm-btn kbm-btn-outline" type="button" id="save-edits">Save</button>
                     <button class="kbm-btn kbm-btn-outline" type="button" id="save-inactivate">Save &amp; Inactivate</button>
+                    {
+                      selected.reviewed ? null : (
+                        <button class="kbm-btn kbm-btn-outline" type="button" id="mark-reviewed">Mark reviewed</button>
+                      )
+                    }
+                    {
+                      selected.publicationState === "archived" ? (
+                        <button class="kbm-btn kbm-btn-outline" type="button" id="save-restore">Restore to inactive</button>
+                      ) : (
+                        <button class="kbm-btn kbm-btn-outline" type="button" id="save-archive">Archive</button>
+                      )
+                    }
                     <button
                       class="kbm-btn kbm-btn-outline"
                       type="button"
@@ -216,8 +254,10 @@ const previewParts = editorFields?.quote
               Status
               <select name="status">
                 <option value="all" selected={status === "all"}>All</option>
+                <option value="new" selected={status === "new"}>New</option>
                 <option value="active" selected={status === "active"}>Active</option>
                 <option value="inactive" selected={status === "inactive"}>Inactive</option>
+                <option value="archived" selected={status === "archived"}>Archived</option>
               </select>
             </label>
             <label>
@@ -260,7 +300,7 @@ const previewParts = editorFields?.quote
                       <td>{snippet(row)}</td>
                       <td>{row.source.replaceAll("_", " ")}</td>
                       <td>{memberLabel(row)}</td>
-                      <td>{row.active ? "Active" : "Inactive"}</td>
+                      <td>{publicationLabel(row.publicationState)} · {row.reviewed ? "Reviewed" : "New"}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -283,6 +323,7 @@ const previewParts = editorFields?.quote
 
 <script>
   import { fetchAdminJson } from "../../lib/admin/adminAuthClient";
+  import { testimonialSaveChanges, type TestimonialSaveAction } from "../../lib/testimonials/testimonialRules";
 
   const LIST_POSITION_KEY = "kin-testimonial-admin-scroll";
   const NOTICE_KEY = "kin-testimonial-admin-notice";
@@ -353,12 +394,20 @@ const previewParts = editorFields?.quote
     };
   }
 
-  async function saveEdits(active: boolean | undefined) {
+  function saveMessage(action: TestimonialSaveAction): string {
+    if (action === "activate") return "Saved and activated.";
+    if (action === "inactivate") return "Saved and inactivated.";
+    if (action === "archive") return "Saved and archived.";
+    if (action === "restore") return "Restored to inactive.";
+    if (action === "review") return "Marked reviewed.";
+    return "Saved.";
+  }
+
+  async function saveEdits(action: TestimonialSaveAction) {
     const form = document.getElementById("testimonial-display-form");
     if (!(form instanceof HTMLFormElement)) return;
     const status = document.querySelector<HTMLElement>("[data-detail-status]");
-    const body: Record<string, unknown> = editorPayload();
-    if (active !== undefined) body.active = active;
+    const body: Record<string, unknown> = { ...editorPayload(), ...testimonialSaveChanges(action) };
     const result = await fetchAdminJson<{ ok: boolean; error?: string }>(
       `/api/admin/testimonials/${encodeURIComponent(form.dataset.id || "")}`,
       { method: "PATCH", body },
@@ -367,7 +416,7 @@ const previewParts = editorFields?.quote
       if (status) status.textContent = result.data?.error || result.error || "Could not save.";
       return;
     }
-    const message = active === true ? "Saved and activated." : active === false ? "Saved and inactivated." : "Saved.";
+    const message = saveMessage(action);
     try {
       sessionStorage.setItem(NOTICE_KEY, message);
     } catch {
@@ -424,16 +473,47 @@ const previewParts = editorFields?.quote
 
   document.getElementById("testimonial-display-form")?.addEventListener("submit", (event) => {
     event.preventDefault();
-    void saveEdits(undefined);
+    void saveEdits("save");
   });
   document.getElementById("save-activate")?.addEventListener("click", () => {
-    void saveEdits(true);
+    void saveEdits("activate");
   });
   document.getElementById("save-edits")?.addEventListener("click", () => {
-    void saveEdits(undefined);
+    void saveEdits("save");
   });
   document.getElementById("save-inactivate")?.addEventListener("click", () => {
-    void saveEdits(false);
+    void saveEdits("inactivate");
+  });
+  document.getElementById("mark-reviewed")?.addEventListener("click", () => {
+    void saveEdits("review");
+  });
+  document.getElementById("save-archive")?.addEventListener("click", () => {
+    void saveEdits("archive");
+  });
+  document.getElementById("save-restore")?.addEventListener("click", () => {
+    void saveEdits("restore");
+  });
+  document.getElementById("retry-notification")?.addEventListener("click", async () => {
+    const form = document.getElementById("testimonial-display-form");
+    const id = form instanceof HTMLFormElement ? form.dataset.id || "" : "";
+    const status = document.querySelector<HTMLElement>("[data-detail-status]");
+    if (!id) return;
+    const result = await fetchAdminJson<{ ok: boolean; error?: string }>(
+      `/api/admin/testimonials/${encodeURIComponent(id)}/notify`,
+      { method: "POST", body: {} },
+    );
+    if (!result.ok || !result.data?.ok) {
+      if (status) status.textContent = result.data?.error || result.error || "The staff notification was not sent.";
+      return;
+    }
+    try {
+      sessionStorage.setItem(NOTICE_KEY, "Staff notification sent.");
+    } catch {
+      /* The reload still opens the same submission. */
+    }
+    allowLeave = true;
+    rememberListPosition();
+    window.location.reload();
   });
 
   const quoteField = document.getElementById("display-quote");
@@ -664,6 +744,22 @@ const previewParts = editorFields?.quote
 
   .testimonial-admin__save-actions .kbm-btn + .kbm-btn {
     margin-left: 0;
+  }
+
+  .testimonial-admin__new {
+    margin: 0 0 1rem;
+    font-size: 1.05rem;
+  }
+
+  .testimonial-admin__new a {
+    font-weight: 700;
+  }
+
+  .testimonial-admin__notice {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    align-items: center;
   }
 
   .testimonial-admin__unsaved {

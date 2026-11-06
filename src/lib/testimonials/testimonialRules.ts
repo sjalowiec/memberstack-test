@@ -6,6 +6,38 @@ export const TESTIMONIAL_SOURCES = [
 
 export type TestimonialSource = (typeof TESTIMONIAL_SOURCES)[number];
 
+export const TESTIMONIAL_PUBLICATION_STATES = ["active", "inactive", "archived"] as const;
+
+export type TestimonialPublicationState = (typeof TESTIMONIAL_PUBLICATION_STATES)[number];
+
+export type TestimonialSaveAction =
+  | "save"
+  | "activate"
+  | "inactivate"
+  | "archive"
+  | "restore"
+  | "review";
+
+/** Changes a save action applies. Plain Save returns an empty object so reviewed status stays as it is. */
+export function testimonialSaveChanges(
+  action: TestimonialSaveAction,
+): { publication?: TestimonialPublicationState; reviewed?: true } {
+  if (action === "activate") return { publication: "active", reviewed: true };
+  if (action === "inactivate") return { publication: "inactive", reviewed: true };
+  if (action === "archive") return { publication: "archived", reviewed: true };
+  if (action === "restore") return { publication: "inactive" };
+  if (action === "review") return { reviewed: true };
+  return {};
+}
+
+/** Archive and activation mark a submission reviewed. Restore and plain Save do not. */
+export function testimonialUpdateMarksReviewed(input: {
+  publication: TestimonialPublicationState | null;
+  reviewed: true | null;
+}): boolean {
+  return input.reviewed === true || input.publication === "active" || input.publication === "archived";
+}
+
 export type TestimonialRecord = {
   id: string;
   legacyRatingId: number | null;
@@ -19,6 +51,10 @@ export type TestimonialRecord = {
   memberstackMemberId: string | null;
   source: TestimonialSource;
   active: boolean;
+  publicationState: TestimonialPublicationState;
+  reviewed: boolean;
+  staffNotifiedAt: string | null;
+  staffNotificationError: string | null;
   legacyShow: boolean | null;
   legacyViewed: boolean | null;
   legacyUseInEmail: boolean | null;
@@ -62,6 +98,11 @@ export const LEGACY_IMPORT_PRESERVED_COLUMNS = [
   "display_highlight_end",
   "memberstack_member_id",
   "source",
+  "publication_state",
+  "reviewed",
+  "staff_notified_at",
+  "staff_notification_error",
+  "staff_notification_claimed_at",
   "created_at",
   "updated_at",
 ] as const;

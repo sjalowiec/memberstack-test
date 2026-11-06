@@ -161,7 +161,8 @@ describe("testimonial admin API", () => {
           displayQuote: "I love the lessons.",
           displayAttribution: "Ada",
           highlight: { start: 2, end: 6 },
-          active: true,
+          publication: "active",
+          reviewed: true,
         }),
       }),
       cookies,
@@ -171,7 +172,8 @@ describe("testimonial admin API", () => {
       displayQuote: "I love the lessons.",
       displayAttribution: "Ada",
       highlight: { start: 2, end: 6 },
-      active: true,
+      publication: "active",
+      markReviewed: true,
     });
     expect(setTestimonialActive).not.toHaveBeenCalled();
   });
