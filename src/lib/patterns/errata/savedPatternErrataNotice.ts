@@ -2,7 +2,12 @@ import { readActiveCustomPatternProjectId } from "../customPatternProjectActiveI
 import { getCurrentPattern } from "../patternStorage";
 import { noticesForSavedPattern, savedPatternNoticeText, type SavedPatternErrataNotice } from "./errataVisibility";
 import type { PatternErrataMatchRules, PatternErrataRecord } from "./types";
-import { DROP_SHOULDER_SLEEVE_MEASUREMENTS_KIND, FINISHED_LENGTH_DEFAULTS_KIND } from "./types";
+import {
+  DROP_SHOULDER_SLEEVE_MEASUREMENTS_KIND,
+  FINISHED_LENGTH_DEFAULTS_KIND,
+  SWEATER_FINISHED_MEASUREMENTS_KIND,
+} from "./types";
+import { isProductionReleaseCutoff } from "./productionReleaseCutoff";
 
 const MOUNT_ATTR = "data-pattern-errata-notice";
 
@@ -61,10 +66,16 @@ function ensureMount(): HTMLElement | null {
 function publicMatchRules(value: unknown): PatternErrataMatchRules | null {
   if (!value || typeof value !== "object" || Array.isArray(value)) return null;
   const rules = value as PatternErrataMatchRules;
-  if (rules.kind === DROP_SHOULDER_SLEEVE_MEASUREMENTS_KIND && typeof rules.correctedAt === "string") {
-    return { kind: DROP_SHOULDER_SLEEVE_MEASUREMENTS_KIND, correctedAt: rules.correctedAt };
-  }
   if (rules.kind === FINISHED_LENGTH_DEFAULTS_KIND && Array.isArray(rules.sizes)) return rules;
+  if (
+    (rules.kind === DROP_SHOULDER_SLEEVE_MEASUREMENTS_KIND ||
+      rules.kind === SWEATER_FINISHED_MEASUREMENTS_KIND) &&
+    isProductionReleaseCutoff(rules.correctedAt)
+  ) {
+    return rules.kind === DROP_SHOULDER_SLEEVE_MEASUREMENTS_KIND
+      ? { kind: DROP_SHOULDER_SLEEVE_MEASUREMENTS_KIND, correctedAt: rules.correctedAt }
+      : { kind: SWEATER_FINISHED_MEASUREMENTS_KIND, correctedAt: rules.correctedAt };
+  }
   return null;
 }
 

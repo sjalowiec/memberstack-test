@@ -1,15 +1,12 @@
 /**
- * Custom Build — effective ribbed hem depth for sleeveless pattern generation.
+ * Effective ribbed hem depth for sweater pattern generation.
  *
- * Fallback: audience default from {@link getDefaultHemLengthInches} (2″ adult/kid, 1″ baby).
- * Override: `fit.cbMeasurementOverrides.hemDepth` when `style.patternMode` is `custom-build`.
- * Express and non–custom-build modes always use the audience default.
+ * A saved `fit.cbMeasurementOverrides.hemDepth` is the finished hem the editor shows.
+ * Express and Custom Build both use it. The audience default (2″ adult/kid, 1″ baby)
+ * applies only when that field was not saved. Zero is not a hem depth.
  */
 
-import {
-  isCustomBuildPatternMode,
-  positiveMeasurementInches,
-} from "./customBuildEffectiveArmholeDepth";
+import { positiveMeasurementInches } from "./customBuildEffectiveArmholeDepth";
 import { getDefaultHemLengthInches, type PatternAudience } from "./hemDefaults";
 
 function section(obj: unknown): Record<string, unknown> {
@@ -32,10 +29,6 @@ export function resolveEffectiveHemDepthInches(
   patternData: Record<string, unknown>,
   audience: PatternAudience,
 ): number {
-  const defaultInches = getDefaultHemLengthInches(audience);
-  if (!isCustomBuildPatternMode(patternData)) {
-    return defaultInches;
-  }
   const overrideInches = customBuildHemDepthOverrideInches(patternData);
-  return overrideInches ?? defaultInches;
+  return overrideInches ?? getDefaultHemLengthInches(audience);
 }

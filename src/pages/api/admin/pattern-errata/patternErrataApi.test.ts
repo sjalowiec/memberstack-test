@@ -259,6 +259,7 @@ describe("pattern errata permissions", () => {
     expect(body.errata.map((row: { slug: string; status: string }) => `${row.status}:${row.slug}`)).toEqual([
       "published:baby-kids-finished-length",
       "published:drop-shoulder-sleeve-stitches",
+      "published:sweater-finished-measurements",
     ]);
     expect(body.errata[0].status).toBe("published");
     expect(body.errata[0].slug).toBe("baby-kids-finished-length");

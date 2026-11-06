@@ -30,7 +30,13 @@ export function toPublicPatternErrata(row: PatternErrataRecord) {
 
 export const GET: APIRoute = async () => {
   try {
-    const rows = publishedErrataForMembers(await listPublishedPatternErrata());
+    let stored: PatternErrataRecord[] = [];
+    try {
+      stored = await listPublishedPatternErrata();
+    } catch {
+      stored = [];
+    }
+    const rows = publishedErrataForMembers(stored);
     return json({ ok: true, errata: rows.map(toPublicPatternErrata) });
   } catch {
     return json({ ok: false, error: "Could not read pattern errata." }, 500);

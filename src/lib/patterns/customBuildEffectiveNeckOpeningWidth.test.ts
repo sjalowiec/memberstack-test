@@ -58,12 +58,12 @@ function patternData(
 }
 
 describe("resolveEffectiveNeckOpeningWidthInches", () => {
-  it("uses chart neck_opening for Express (ignores overrides)", () => {
+  it("uses a saved neck opening in Express", () => {
     expect(
       resolveEffectiveNeckOpeningWidthInches(
         patternData({ patternMode: "express", neckOpeningWidthOverride: "5" }),
       ),
-    ).toBe(3);
+    ).toBe(5);
   });
 
   it("prefers chart neck_width over neck_opening when both present", () => {
@@ -157,12 +157,16 @@ describe("generateSleevelessBackPattern custom-build neck opening width override
     expect(result.debug.shoulderWidthInches).toBe(5.5);
   });
 
-  it("Express output unchanged when finishedNeckOpeningWidth override present on data", () => {
+  it("Express output uses the saved neck opening", () => {
     const express = generateSleevelessBackPattern(
-      patternData({ patternMode: "express", neckOpeningWidthOverride: "5" }),
+      patternData({ patternMode: "express", neckline: "round", neckOpeningWidthOverride: "5" }),
     );
-    const expressBaseline = generateSleevelessBackPattern(patternData({ patternMode: "express" }));
-    expect(express.debug).toEqual(expressBaseline.debug);
+    const expressBaseline = generateSleevelessBackPattern(
+      patternData({ patternMode: "express", neckline: "round" }),
+    );
+    expect(express.debug.necklineWidthInches).toBe(5);
+    expect(express.debug.necklineStitches).toBeGreaterThan(expressBaseline.debug.necklineStitches!);
+    expect(express.debug.backStitches).toBe(expressBaseline.debug.backStitches);
   });
 
   it("diagram NECK_WIDTH and NECK_STS reflect wider neck opening", () => {

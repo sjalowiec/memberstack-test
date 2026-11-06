@@ -43,12 +43,12 @@ function patternData(overrides: {
 }
 
 describe("resolveEffectiveFinishedLengthInches", () => {
-  it("uses chart back_neck_to_hem for Express (ignores overrides)", () => {
+  it("uses a saved finished length in Express", () => {
     expect(
       resolveEffectiveFinishedLengthInches(
         patternData({ patternMode: "express", finishedLengthOverride: "26" }),
       ),
-    ).toBe(22);
+    ).toBe(26);
   });
 
   it("uses chart value for custom-build when no override", () => {
@@ -103,12 +103,15 @@ describe("generateSleevelessBackPattern custom-build finished length override", 
     expect(both.debug.armholeDepth).toBe(10);
   });
 
-  it("Express output unchanged when finished length override present on data", () => {
+  it("Express output uses the saved finished length", () => {
     const express = generateSleevelessBackPattern(
       patternData({ patternMode: "express", finishedLengthOverride: "26" }),
     );
     const expressBaseline = generateSleevelessBackPattern(patternData({ patternMode: "express" }));
-    expect(express.debug).toEqual(expressBaseline.debug);
+    expect(express.debug.backNeckToHem).toBe(26);
+    expect(express.debug.expectedGarmentRows! - expressBaseline.debug.expectedGarmentRows!).toBe(28);
+    expect(express.debug.bodyRows! - expressBaseline.debug.bodyRows!).toBe(28);
+    expect(express.debug.armholeRows).toBe(expressBaseline.debug.armholeRows);
   });
 
   it("diagram HEIGHT and SIDE_LENGTH reflect longer finished length", () => {

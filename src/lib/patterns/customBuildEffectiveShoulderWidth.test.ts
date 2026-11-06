@@ -52,12 +52,12 @@ function patternData(overrides: {
 }
 
 describe("resolveEffectiveShoulderWidthInches", () => {
-  it("uses chart shoulder_width for Express (ignores overrides)", () => {
+  it("uses a saved shoulder width in Express", () => {
     expect(
       resolveEffectiveShoulderWidthInches(
         patternData({ patternMode: "express", shoulderWidthOverride: "5.5" }),
       ),
-    ).toBe(4.25);
+    ).toBe(5.5);
   });
 
   it("uses chart value for custom-build when no override", () => {
@@ -82,13 +82,15 @@ describe("resolveEffectiveShoulderWidthInches", () => {
     ).toBe(4.25);
   });
 
-  it("ignores override for drop-shoulder construction", () => {
-    const data = patternData({ patternMode: "custom-build", shoulderWidthOverride: "5.5" });
-    data.style = withDropShoulderConstructionAuthored(
-      { ...(data.style as Record<string, unknown>), patternMode: "custom-build" },
-      "long",
-    );
-    expect(resolveEffectiveShoulderWidthInches(data)).toBe(4.25);
+  it("ignores override for drop-shoulder construction in Express and Custom Build", () => {
+    for (const patternMode of ["express", "custom-build"]) {
+      const data = patternData({ patternMode, shoulderWidthOverride: "5.5" });
+      data.style = withDropShoulderConstructionAuthored(
+        { ...(data.style as Record<string, unknown>), patternMode },
+        "long",
+      );
+      expect(resolveEffectiveShoulderWidthInches(data)).toBe(4.25);
+    }
   });
 });
 
@@ -124,12 +126,14 @@ describe("generateSleevelessBackPattern custom-build shoulder width override", (
     expect(result.debug.armholeDepth).toBe(10);
   });
 
-  it("Express output unchanged when shoulderWidth override present on data", () => {
+  it("Express output uses the saved shoulder width", () => {
     const express = generateSleevelessBackPattern(
       patternData({ patternMode: "express", shoulderWidthOverride: "5.5" }),
     );
     const expressBaseline = generateSleevelessBackPattern(patternData({ patternMode: "express" }));
-    expect(express.debug).toEqual(expressBaseline.debug);
+    expect(express.debug.shoulderWidthInches).toBe(5.5);
+    expect(express.debug.stitchesAfterArmhole).toBeGreaterThan(expressBaseline.debug.stitchesAfterArmhole!);
+    expect(express.debug.backStitches).toBe(expressBaseline.debug.backStitches);
   });
 
   it("diagram SHOULDER_WIDTH and SHOULDER_STS reflect wider shoulder width", () => {

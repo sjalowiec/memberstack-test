@@ -45,7 +45,7 @@ function publishedLabel(value: string | null): string {
     <h1>Pattern Errata</h1>
     <p>
       Published corrections are listed here. A saved pattern keeps the measurements it was saved
-      with. Create a new pattern when you want a corrected default.
+      with.
     </p>
     {loadError ? <p role="alert">{loadError}</p> : null}
     {!loadError && errata.length === 0 ? <p>No published pattern corrections yet.</p> : null}

@@ -4,6 +4,11 @@ import {
   DROP_SHOULDER_SLEEVE_KNITTER_ACTION,
   dropShoulderSleeveErrataRecord,
 } from "./dropShoulderSleeveErrata";
+import {
+  SWEATER_FINISHED_MEASUREMENTS_ERRATA_SLUG,
+  SWEATER_FINISHED_MEASUREMENTS_KNITTER_ACTION,
+  sweaterFinishedMeasurementErrataRecord,
+} from "./sweaterFinishedMeasurementErrata";
 import type { ErrataMatchedMeasurement, PatternErrataRecord } from "./types";
 
 export type SavedPatternErrataNotice = {
@@ -37,14 +42,14 @@ export function publishedPatternErrata(rows: readonly PatternErrataRecord[]): Pa
 
 /**
  * Published corrections a knitter can see.
- * The Drop Shoulder sleeve correction is included with this calculation fix.
- * A database row with the same slug replaces the built-in copy.
+ * Both calculation corrections are included with this release.
+ * A database row with the same slug replaces that built-in copy.
  */
 export function publishedErrataForMembers(rows: readonly PatternErrataRecord[]): PatternErrataRecord[] {
   const published = publishedPatternErrata(rows);
-  const builtin = dropShoulderSleeveErrataRecord();
-  if (published.some((row) => row.slug === builtin.slug)) return published;
-  return [...published, builtin];
+  const builtins = [dropShoulderSleeveErrataRecord(), sweaterFinishedMeasurementErrataRecord()];
+  const missing = builtins.filter((builtin) => !published.some((row) => row.slug === builtin.slug));
+  return missing.length === 0 ? published : [...published, ...missing];
 }
 
 /**
@@ -86,8 +91,11 @@ export function noticesForSavedPattern(
 export const SAVED_PATTERN_ERRATA_NOTICE_TEXT =
   "This saved pattern may contain an older measurement. Saved measurements do not update automatically.";
 
-/** Member-facing notice copy. Length corrections stay on the shared sentence. Sleeve corrections name the stitch changes. */
+/** Member-facing notice copy. Length corrections stay on the shared sentence. Each calculation correction names its own measurements. */
 export function savedPatternNoticeText(notice: SavedPatternErrataNotice): string {
   if (notice.slug === DROP_SHOULDER_SLEEVE_ERRATA_SLUG) return DROP_SHOULDER_SLEEVE_KNITTER_ACTION;
+  if (notice.slug === SWEATER_FINISHED_MEASUREMENTS_ERRATA_SLUG) {
+    return SWEATER_FINISHED_MEASUREMENTS_KNITTER_ACTION;
+  }
   return SAVED_PATTERN_ERRATA_NOTICE_TEXT;
 }
