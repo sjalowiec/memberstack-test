@@ -5,7 +5,7 @@ import { resolveLegacyImportDestination } from "./legacyImportTarget";
 import { resolveTestimonialConnection } from "./testimonialQuery";
 import { summarizeLegacyReviews } from "./legacyReviewImport";
 import { parseReviewsCsv } from "./parseReviewsCsv";
-import { testimonialPlainText, testimonialDeleteConfirmation, quoteWithHighlight } from "./testimonialPlainText";
+import { testimonialPlainText, testimonialDeleteConfirmation, quoteWithHighlight, testimonialEditorFields } from "./testimonialPlainText";
 import { memberSubmissionAllowed, parseDisplayCorrection, parseTestimonialDraft, HIGHLIGHT_RESELECT_MESSAGE, highlightWasInvalidated } from "./testimonialDraft";
 import {
   LEGACY_IMPORT_PRESERVED_COLUMNS,
@@ -170,6 +170,28 @@ describe("testimonial publication rules", () => {
     expect(memberSubmissionAllowed(2)).toBe(true);
   });
 
+  it("starts the editor from the public wording without replacing a saved edit", () => {
+    const original = 'Thanks for the <a href="/lesson">lesson</a>. See https://knititnow.com/v/1 today.';
+    const opened = testimonialEditorFields({
+      originalQuote: original,
+      originalAttribution: "Ada <b>Knitter</b>",
+      displayQuote: null,
+      displayAttribution: null,
+    });
+    expect(opened.quote).toBe("Thanks for the lesson. See today.");
+    expect(opened.name).toBe("Ada Knitter");
+    expect(opened.quote).toBe(testimonialPlainText(original));
+    const saved = testimonialEditorFields({
+      originalQuote: original,
+      originalAttribution: "Ada",
+      displayQuote: "I  love the lessons.",
+      displayAttribution: "Pat",
+    });
+    expect(saved.quote).toBe("I  love the lessons.");
+    expect(saved.name).toBe("Pat");
+    expect(quoteWithHighlight(saved.quote, 3, 7).highlight).toBe("love");
+  });
+
   it("requires both display fields, or neither, so the original text remains available", () => {
     expect(parseDisplayCorrection({ displayQuote: "Edited", displayAttribution: "" }).ok).toBe(false);
     const cleared = parseDisplayCorrection({ displayQuote: "  ", displayAttribution: "" });
@@ -242,6 +264,9 @@ describe("testimonial publication rules", () => {
     expect(admin).toContain("Active first");
     expect(admin).toContain("Include previously unpublished legacy reviews");
     expect(admin).toContain("includeUnpublishedLegacy");
+    expect(admin).toContain("Edit the wording if needed, or select words in the quote and click Highlight.");
+    expect(admin).not.toContain("Leave both blank");
+    expect(admin).toContain("testimonialEditorFields");
     expect(admin).toContain("Save &amp; Activate");
     expect(admin).toContain("Unsaved changes");
     expect(admin).toContain("testimonial-admin__editor");

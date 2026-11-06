@@ -2,7 +2,7 @@
 export const prerender = false;
 import Layout from "../../layouts/Layout.astro";
 import "../../styles/testimonials-public.css";
-import { publicTestimonialCopy, quoteWithHighlight, testimonialDeleteConfirmation } from "../../lib/testimonials/testimonialPlainText";
+import { publicTestimonialCopy, quoteWithHighlight, testimonialDeleteConfirmation, testimonialEditorFields } from "../../lib/testimonials/testimonialPlainText";
 import {
   getTestimonialForAdmin,
   listTestimonialsForAdmin,
@@ -71,8 +71,11 @@ function memberLabel(row: TestimonialRecord): string {
   return "No linked member";
 }
 
-const previewParts = selected?.displayQuote
-  ? quoteWithHighlight(selected.displayQuote, selected.displayHighlightStart, selected.displayHighlightEnd)
+const editorFields = selected ? testimonialEditorFields(selected) : null;
+const editorHighlightStart = selected?.displayQuote ? selected.displayHighlightStart : null;
+const editorHighlightEnd = selected?.displayQuote ? selected.displayHighlightEnd : null;
+const previewParts = editorFields?.quote
+  ? quoteWithHighlight(editorFields.quote, editorHighlightStart, editorHighlightEnd)
   : null;
 ---
 
@@ -142,14 +145,14 @@ const previewParts = selected?.displayQuote
                       id="display-attribution"
                       name="displayAttribution"
                       maxlength="80"
-                      value={selected.displayAttribution ?? ""}
+                      value={editorFields?.name ?? ""}
                     />
                   </div>
                   <div class="contact-form__field">
                     <label for="display-quote">Display quote</label>
-                    <textarea id="display-quote" name="displayQuote" maxlength="4000" rows="6">{selected.displayQuote ?? ""}</textarea>
+                    <textarea id="display-quote" name="displayQuote" maxlength="4000" rows="6">{editorFields?.quote ?? ""}</textarea>
                   </div>
-                  <p>Leave both blank to show the original wording, with legacy HTML and links removed.</p>
+                  <p>Edit the wording if needed, or select words in the quote and click Highlight.</p>
                   <p class="testimonial-admin__highlight-actions">
                     <button class="kbm-btn kbm-btn-outline" type="button" id="highlight-selection">Highlight</button>
                     <button class="kbm-btn kbm-btn-outline" type="button" id="highlight-remove">Remove highlight</button>
@@ -159,8 +162,8 @@ const previewParts = selected?.displayQuote
                   <div
                     class="kbm-card testimonials-page__card testimonial-admin__preview"
                     id="highlight-preview"
-                    data-highlight-start={selected.displayHighlightStart ?? ""}
-                    data-highlight-end={selected.displayHighlightEnd ?? ""}
+                    data-highlight-start={editorHighlightStart ?? ""}
+                    data-highlight-end={editorHighlightEnd ?? ""}
                   >
                     <p class="testimonials-page__quote" id="highlight-preview-quote">
                       {previewParts ? (
