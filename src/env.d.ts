@@ -165,7 +165,6 @@ declare global {
         successUrl?: string;
         cancelUrl?: string;
         autoRedirect?: boolean;
-        metadataForCheckout?: Record<string, string>;
       }) => Promise<{ data?: { url?: string } }>;
       launchStripeCustomerPortal?: (opts?: { returnUrl?: string }) => Promise<{ data?: { url?: string } }>;
       hideModal?: () => void;
