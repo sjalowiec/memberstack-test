@@ -215,6 +215,8 @@ describe("testimonial publication rules", () => {
     expect(page).toContain("What Knitters Say");
     expect(page).toContain("Every knitter has a story.");
     expect(page).toContain("listPublicTestimonials");
+    expect(page).toContain("testimonials-page__sharebar");
+    expect(page.match(/Share your experience/g)?.length).toBe(2);
     expect(page).not.toContain("set:html");
     expect(readFileSync("src/pages/account.astro", "utf8")).toContain('href="/testimonials/share"');
   });
