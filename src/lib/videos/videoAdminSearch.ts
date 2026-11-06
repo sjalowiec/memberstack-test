@@ -12,13 +12,18 @@ export type VideoAdminQuery =
   | { kind: "exact-id"; id: string }
   | { kind: "text"; text: string };
 
-/** "707", "KIN video 707", and "video #707" are exact video-number or Vimeo ID lookups. */
+/**
+ * "707", "249-1", "KIN video 707", and "video #249-1" are exact KIN or Vimeo ID lookups.
+ * A suffixed KIN ID stays a string so "249-1" is not read as 249.
+ */
 export function parseVideoAdminQuery(raw: string): VideoAdminQuery {
   const text = raw.trim().toLowerCase();
   if (!text) return { kind: "empty" };
-  const exact = text.match(/^(?:kin\s+)?(?:video\s+)?#?\s*(\d+)$/i);
-  if (exact) return { kind: "exact-id", id: String(parseInt(exact[1], 10)) };
-  return { kind: "text", text };
+  const exact = text.match(/^(?:kin\s+)?(?:video\s+)?#?\s*(\d+(?:-\d+)?)$/i);
+  if (!exact) return { kind: "text", text };
+  const token = exact[1];
+  if (token.includes("-")) return { kind: "exact-id", id: token };
+  return { kind: "exact-id", id: String(parseInt(token, 10)) };
 }
 
 export function vimeoIdKey(value: unknown): string {

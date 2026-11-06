@@ -23,6 +23,7 @@ import { slugify } from "./slugify";
 import { rankSearchText } from "./searchSynonyms";
 import { filterPublicCatalogVideos, type VideoCatalogRecord } from "./videoPublic";
 import { loadMergedVideoCatalog } from "./videos/videoCatalogStore";
+import { videoContentIdKey } from "./videos/videoPosterOverrides";
 
 export { headerSearchUrlKey, mergeHeaderSearchResults } from "./headerSearchMerge";
 
@@ -33,7 +34,7 @@ export type HeaderSearchHit = {
   title: string;
   excerpt: string;
   cat: HeaderSearchCategory;
-  /** 4 title exact, 3 title synonym, 2 body exact, 1 body synonym. */
+  /** 5 exact KIN video ID, 4 title exact, 3 title synonym, 2 body exact, 1 body synonym. */
   rank: number;
 };
 
@@ -44,7 +45,12 @@ type HeaderSearchRecord = {
   bodyText: string;
   excerpt: string;
   cat: HeaderSearchCategory;
+  /** Published KIN video ID. Empty for glossary and Help Hub rows. */
+  kinId?: string;
 };
+
+/** Exact KIN video ID outranks a title match. */
+const KIN_VIDEO_ID_RANK = 5;
 
 const CATALOG_CACHE_MS = 15_000;
 const SEARCH_LIMIT = 40;
@@ -111,9 +117,9 @@ export function videoHeaderRecords(videos: VideoCatalogRecord[]): HeaderSearchRe
   const seen = new Set<string>();
   for (const video of filterPublicCatalogVideos(videos)) {
     const title = plain(video.title);
-    const contentId = video.content_id != null ? String(video.content_id).trim() : "";
+    const kinId = videoContentIdKey(video.content_id);
     const slug = typeof video.slug === "string" ? video.slug.trim() : "";
-    const url = contentId ? `/videos/${contentId}` : slug ? `/videos/${slug}` : "";
+    const url = kinId ? `/videos/${kinId}` : slug ? `/videos/${slug}` : "";
     const key = headerSearchUrlKey(url);
     if (!title || !key || seen.has(key)) continue;
     seen.add(key);
@@ -124,6 +130,7 @@ export function videoHeaderRecords(videos: VideoCatalogRecord[]): HeaderSearchRe
       bodyText: [plain(video.description), plain(video.summary)].filter(Boolean).join(" "),
       excerpt: excerptFrom([video.description, video.summary]),
       cat: "videos",
+      kinId,
     });
   }
   return records;
@@ -158,10 +165,12 @@ export function helpHubHeaderRecords(
   return records;
 }
 
-function matchRank(titleText: string, bodyText: string, query: string): number {
-  const titleRank = rankSearchText(titleText, query);
+function matchRank(record: HeaderSearchRecord, query: string): number {
+  const kinId = record.kinId?.trim() ?? "";
+  if (kinId && kinId.toLowerCase() === query.toLowerCase()) return KIN_VIDEO_ID_RANK;
+  const titleRank = rankSearchText(record.titleText, query);
   if (titleRank > 0) return titleRank + 2;
-  return rankSearchText(bodyText, query);
+  return rankSearchText(record.bodyText, query);
 }
 
 function byRankThenTitle<T extends { title?: string; rank?: number }>(a: T, b: T): number {
@@ -180,7 +189,7 @@ export function searchHeaderCatalog(
   const hits: HeaderSearchHit[] = [];
   const seen = new Set<string>();
   for (const record of records) {
-    const rank = matchRank(record.titleText, record.bodyText, trimmed);
+    const rank = matchRank(record, trimmed);
     if (rank <= 0) continue;
     const key = headerSearchUrlKey(record.url);
     if (!key || seen.has(key)) continue;

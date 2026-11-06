@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
+import videosPublic from "../data/videos-public.json";
 import {
   glossaryHeaderRecords,
   headerSearchUrlKey,
@@ -236,10 +237,41 @@ describe("header search catalog", () => {
     const records = videoHeaderRecords(merged as VideoCatalogRecord[]);
     expect(records.map((record) => record.url)).toEqual(["/videos/811"]);
     expect(searchHeaderCatalog(records, "shawlette")).toEqual([]);
+    expect(searchHeaderCatalog(records, "806")).toEqual([]);
     expect(searchHeaderCatalog(records, "Short Row Refresher")[0]).toMatchObject({
       url: "/videos/811",
       cat: "videos",
     });
+  });
+
+  it("ranks an exact KIN video ID ahead of title and body matches", () => {
+    const records = videoHeaderRecords(videosPublic as VideoCatalogRecord[]);
+    const byId = searchHeaderCatalog(records, "707");
+    expect(byId[0]).toMatchObject({
+      url: "/videos/707",
+      title: "No Fuss, Upside-Down, Hung Hem",
+      cat: "videos",
+      rank: 5,
+    });
+    expect(byId.slice(1).every((hit) => (hit.rank ?? 0) < 5)).toBe(true);
+
+    const byTitle = searchHeaderCatalog(records, "No Fuss, Upside-Down, Hung Hem");
+    expect(byTitle[0]).toMatchObject({ url: "/videos/707", rank: 4 });
+
+    const suffixed = searchHeaderCatalog(records, "249-1");
+    expect(suffixed[0]).toMatchObject({
+      url: "/videos/249-1",
+      title: "How to Cut and Secure Your Knitting Safely",
+      rank: 5,
+    });
+    expect(suffixed.some((hit) => hit.url === "/videos/249" || hit.url === "/videos/249-2")).toBe(false);
+
+    const parent = searchHeaderCatalog(records, "249");
+    expect(parent[0]).toMatchObject({ url: "/videos/249", rank: 5 });
+    expect(parent.some((hit) => hit.url === "/videos/249-1")).toBe(false);
+
+    expect(searchHeaderCatalog(records, "5001")).toEqual([]);
+    expect(searchHeaderCatalog(records, "151859846").some((hit) => hit.url === "/videos/707")).toBe(false);
   });
 
   it("builds video search from the merged catalog, including archived overrides", () => {

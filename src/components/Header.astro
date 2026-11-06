@@ -2505,8 +2505,9 @@ div[data-ms-modal-overlay] {
     // Pagefind still searches the built index for prerendered pages. Videos,
     // glossary, and Help Hub are rendered on request, so those results come
     // from /api/header-search (the same published catalogs those sections use).
-    // Shared synonyms apply to both. Title matches outrank body matches, the
-    // same URL is shown once, and a tied rank rotates by section. Pagefind assets exist only after
+    // Shared synonyms apply to both. An exact KIN video ID outranks a title match,
+    // and title matches outrank body matches. The same URL is shown once, and a
+    // tied rank rotates by section. Pagefind assets exist only after
     // `pagefind --site dist`, so that half is skipped until the index exists.
     let pagefindRequested = false;
     function loadPagefind() {

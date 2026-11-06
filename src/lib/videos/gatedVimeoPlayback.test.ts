@@ -310,6 +310,11 @@ describe("video page wiring", () => {
     const page = readFileSync(join(process.cwd(), "src", "pages", "videos", "[id].astro"), "utf8");
     expect(page).toContain("contentId={id}");
     expect(page).toContain("catalogVideoPlaybackAccess");
+    expect(page).toContain("access_level={effectiveAccessLevel}");
+    expect(page).toContain("videoContentIdKey");
+    expect(page).toContain("KIN Video ID:");
+    expect(page).toContain('data-testid="kin-video-id"');
+    expect(page).toContain("video-kin-id__value");
     expect(page).toContain("hydrateGatedJumpLinks");
     expect(page).toContain("hydrateGatedTranscript");
     expect(page).toContain("catalogVimeoIframePlayerId(vimeoId, id)");

@@ -12,7 +12,7 @@ import publicCatalogTranscripts from "../../data/transcripts/generated/public.js
 import { paragraphsForVimeoId } from "../../lib/transcripts/catalogTranscriptData";
 import { catalogVideoPlaybackAccess } from "../../lib/videos/catalogVideoPlaybackAccess";
 import { findPublicCatalogVideoByContentId } from "../../lib/videoPublic";
-import { applyVideoPosterOverrides } from "../../lib/videos/videoPosterOverrides";
+import { applyVideoPosterOverrides, videoContentIdKey } from "../../lib/videos/videoPosterOverrides";
 import { loadPublicVideoPosterOverrides } from "../../lib/videos/videoPosterStore";
 export const prerender = false;
 
@@ -33,6 +33,7 @@ const vimeoId = rawVimeoId ? String(rawVimeoId).trim() : "";
 const privacyHash =
   typeof (video as any)?.vimeo_hash === "string" ? String((video as any).vimeo_hash).trim() : "";
 const title = (video as any)?.title ?? "Video";
+const kinVideoId = video ? videoContentIdKey((video as { content_id?: unknown }).content_id) : "";
 const description = (video as any)?.description ?? "";
 const downloadUrlRaw =
   typeof (video as any)?.downloadUrl === "string" ? String((video as any).downloadUrl).trim() : "";
@@ -83,6 +84,18 @@ const hasGatedTranscript = Boolean(video) && !isOpenPlayback && vimeoId.length >
     /* Override global .page-wrap top padding; Layout already supplies header clearance */
     .video-detail-wrap.page-wrap { padding-top: 8px; }
     .back-link { display: inline-block; margin-bottom: 0.75rem; }
+    .video-detail-wrap :global(.page-head) { margin-bottom: 0.35rem; }
+    .video-kin-id {
+      margin: 0 0 1.15rem;
+      color: var(--kbm-text-muted, #3d5244);
+      font-size: 0.875rem;
+      line-height: 1.4;
+      user-select: text;
+    }
+    .video-kin-id__value {
+      cursor: text;
+      user-select: text;
+    }
   </style>
   <div class="page-wrap video-detail-wrap">
     <a class="back-link back-to-videos-link" id="back-to-videos" href="/videos">← Back to Videos</a>
@@ -106,6 +119,11 @@ const hasGatedTranscript = Boolean(video) && !isOpenPlayback && vimeoId.length >
         <p id="video-favorites-status" class="sr-only" aria-live="polite" role="status"></p>
 
         <article class="video-detail">
+          {kinVideoId ? (
+            <p class="video-kin-id" data-testid="kin-video-id">
+              KIN Video ID: <span class="video-kin-id__value">{kinVideoId}</span>
+            </p>
+          ) : null}
           {/* PLAYER AREA */}
           <section>
             {/* Temporarily disabled: page-level locked teaser so GatedVimeoEmbed controls the player

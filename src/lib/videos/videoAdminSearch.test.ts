@@ -33,4 +33,19 @@ describe("video admin search", () => {
     const matches = catalog.filter((video) => videoMatchesAdminSearch(video, "upside-down"));
     expect(matches.map((video) => video.content_id)).toContain(707);
   });
+
+  it("finds a suffixed KIN video ID without matching the parent or the next clip", () => {
+    expect(catalog.filter((video) => videoMatchesAdminSearch(video, "249-1")).map((video) => video.content_id)).toEqual([
+      "249-1",
+    ]);
+    expect(
+      catalog.filter((video) => videoMatchesAdminSearch(video, "KIN video 249-1")).map((video) => video.content_id),
+    ).toEqual(["249-1"]);
+    expect(catalog.filter((video) => videoMatchesAdminSearch(video, "video #249-1")).map((video) => video.content_id)).toEqual([
+      "249-1",
+    ]);
+    expect(catalog.filter((video) => videoMatchesAdminSearch(video, "249")).map((video) => video.content_id)).toEqual([
+      "249",
+    ]);
+  });
 });
