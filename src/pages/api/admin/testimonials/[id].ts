@@ -4,7 +4,6 @@ import { parseDisplayCorrection, HIGHLIGHT_RESELECT_MESSAGE, highlightWasInvalid
 import {
   deleteTestimonial,
   getTestimonialForAdmin,
-  setTestimonialActive,
   updateTestimonialDisplay,
 } from "../../../../lib/testimonials/testimonialStore";
 
@@ -45,14 +44,14 @@ export const PATCH: APIRoute = async ({ params, request, cookies }) => {
   }
   if (!body || typeof body !== "object") return json({ ok: false, error: "Invalid testimonial update." }, 400);
   const record = body as Record<string, unknown>;
+  const hasEditorFields = "displayQuote" in record || "displayAttribution" in record || "highlight" in record;
+  if (!hasEditorFields) {
+    return json({ ok: false, error: "Save the display text together with any status change." }, 400);
+  }
+  const display = parseDisplayCorrection(record);
+  if (!display.ok) return json({ ok: false, error: display.error }, 400);
+  const active = typeof record.active === "boolean" ? record.active : null;
   try {
-    if (typeof record.active === "boolean") {
-      const testimonial = await setTestimonialActive(id, record.active);
-      if (!testimonial) return json({ ok: false, error: "Testimonial not found." }, 404);
-      return json({ ok: true, testimonial });
-    }
-    const display = parseDisplayCorrection(record);
-    if (!display.ok) return json({ ok: false, error: display.error }, 400);
     const existing = await getTestimonialForAdmin(id);
     if (!existing) return json({ ok: false, error: "Testimonial not found." }, 404);
     if (
@@ -67,7 +66,12 @@ export const PATCH: APIRoute = async ({ params, request, cookies }) => {
     ) {
       return json({ ok: false, error: HIGHLIGHT_RESELECT_MESSAGE }, 400);
     }
-    const testimonial = await updateTestimonialDisplay(id, display);
+    const testimonial = await updateTestimonialDisplay(id, {
+      displayQuote: display.displayQuote,
+      displayAttribution: display.displayAttribution,
+      highlight: display.highlight,
+      active,
+    });
     if (!testimonial) return json({ ok: false, error: "Testimonial not found." }, 404);
     return json({ ok: true, testimonial });
   } catch (error) {

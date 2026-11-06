@@ -230,6 +230,8 @@ export async function updateTestimonialDisplay(
     displayQuote: string | null;
     displayAttribution: string | null;
     highlight: { start: number; end: number } | null;
+    /** Null leaves the current publication status unchanged. */
+    active?: boolean | null;
   },
   query: Query = queryTestimonials,
 ): Promise<TestimonialRecord | null> {
@@ -239,6 +241,7 @@ export async function updateTestimonialDisplay(
          display_attribution = $3,
          display_highlight_start = $4,
          display_highlight_end = $5,
+         active = CASE WHEN $6::boolean IS NULL THEN active ELSE $6::boolean END,
          updated_at = NOW()
      WHERE id = $1
      RETURNING ${ADMIN_COLUMNS}`,
@@ -248,6 +251,7 @@ export async function updateTestimonialDisplay(
       input.displayAttribution,
       input.highlight?.start ?? null,
       input.highlight?.end ?? null,
+      input.active ?? null,
     ],
   );
   return rows[0] ? mapAdmin(rows[0]) : null;
