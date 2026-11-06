@@ -29,6 +29,7 @@ import {
   localPatternTestingAccess,
 } from "./localPatternTesting";
 import {
+  isHostedMeasurementCopyDevTesting,
   isHostedSetInSleeveDevTesting,
   setInSleeveDevTestingAccess,
 } from "./setInSleeveDevTesting";
@@ -229,7 +230,7 @@ async function resolveAccessUncached(): Promise<SleevelessUserAccess> {
     return access;
   }
 
-  if (isHostedSetInSleeveDevTesting()) {
+  if (isHostedSetInSleeveDevTesting() || isHostedMeasurementCopyDevTesting()) {
     const access = setInSleeveDevTestingAccess();
     recordAccessDebug({
       source: "set-in-sleeve-dev-testing",

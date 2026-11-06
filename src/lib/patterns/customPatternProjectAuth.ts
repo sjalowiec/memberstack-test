@@ -18,6 +18,7 @@ import { memberIdFromMemberstackPayload } from "./memberstackMember";
 import { DEFAULT_DEV_PATTERN_USER_ID } from "./customPatternProjectStoreKeys";
 import { isLocalPatternTestingEnabled } from "./localPatternTesting";
 import {
+  isHostedMeasurementCopyDevTesting,
   isHostedSetInSleeveDevTesting,
   KIN_DEV_SET_IN_SLEEVE_TEST_USER_ID,
   SET_IN_DEV_TEST_HEADER,
@@ -144,7 +145,7 @@ export async function resolveCustomPatternProjectAuth(): Promise<CustomPatternPr
     return { mode: "dev", devUserId };
   }
 
-  if (isHostedSetInSleeveDevTesting()) {
+  if (isHostedSetInSleeveDevTesting() || isHostedMeasurementCopyDevTesting()) {
     perfEnd("2-member-auth total", authStart, {
       mode: "dev",
       reason: "set-in-sleeve-dev-testing",

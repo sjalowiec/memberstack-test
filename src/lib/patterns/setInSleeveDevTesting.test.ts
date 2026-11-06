@@ -15,7 +15,9 @@ import { resolvePatternMembershipGateDecision } from "./patternMembershipPageGat
 import { invalidateSleevelessUserAccessCache, resolveSleevelessUserAccess } from "./sleevelessPatternSystemAccessClient";
 import {
   hostedSetInSleeveDraftOwnerId,
+  isHostedMeasurementCopyDevTesting,
   isHostedSetInSleeveDevTesting,
+  KIN_DEV_MEASUREMENT_COPY_PROJECT_ID,
   KIN_DEV_SET_IN_SLEEVE_TEST_USER_ID,
   SET_IN_DEV_TEST_HEADER,
 } from "./setInSleeveDevTesting";
@@ -101,6 +103,43 @@ describe("hosted Set-In Sleeve dev testing", () => {
       hasSystemAccess: true,
       memberId: KIN_DEV_SET_IN_SLEEVE_TEST_USER_ID,
     });
+  });
+
+  it("opens only the measurement-copy project on the kin-dev sleeveless pattern page", async () => {
+    const copySearch = `?project=${KIN_DEV_MEASUREMENT_COPY_PROJECT_ID}`;
+    expect(
+      isHostedMeasurementCopyDevTesting({
+        hostname: "kin-dev.netlify.app",
+        pathname: "/patterns/sleeveless/pattern/",
+        search: copySearch,
+      }),
+    ).toBe(true);
+    expect(
+      isHostedMeasurementCopyDevTesting({
+        hostname: "kin-dev.netlify.app",
+        pathname: "/patterns/sleeveless/print",
+        search: copySearch,
+      }),
+    ).toBe(true);
+    expect(
+      isHostedMeasurementCopyDevTesting({
+        hostname: "kin-dev.netlify.app",
+        pathname: "/patterns/sleeveless/pattern/",
+        search: "?project=3cdeae62-1182-4fd8-8e9b-7db0e5424b7a",
+      }),
+    ).toBe(false);
+    expect(
+      isHostedMeasurementCopyDevTesting({
+        hostname: "knititnow.com",
+        pathname: "/patterns/sleeveless/pattern/",
+        search: copySearch,
+      }),
+    ).toBe(false);
+    stubPage("kin-dev.netlify.app", "/patterns/sleeveless/pattern/");
+    window.location.search = copySearch;
+    invalidateSleevelessUserAccessCache();
+    await expect(resolvePatternMembershipGateDecision()).resolves.toMatchObject({ state: "member" });
+    expect(hostedSetInSleeveDraftOwnerId()).toBe(KIN_DEV_SET_IN_SLEEVE_TEST_USER_ID);
   });
 
   it("leaves other builders locked on the same kin-dev host", async () => {

@@ -14,6 +14,9 @@ import { resolvePatternSystemFromProject } from "./pattern-system-id.js";
 /** Isolated blob owner. Not a Memberstack id, so it cannot collide with a member. */
 export const KIN_DEV_SET_IN_SLEEVE_TEST_USER_ID = "kin-dev-set-in-sleeve-testing";
 
+/** Keep in sync with src/lib/patterns/setInSleeveDevTesting.ts */
+export const KIN_DEV_MEASUREMENT_COPY_PROJECT_ID = "e7a41c2d-8b60-4f1a-9c55-3d6b0a91f4e2";
+
 export const SET_IN_DEV_TEST_HEADER = "x-kbm-set-in-dev-test";
 
 const KIN_DEV_HOST = "kin-dev.netlify.app";
@@ -84,8 +87,15 @@ export const SET_IN_DEV_TEST_TYPE_ERROR =
  * @param {unknown} project
  * @returns {string | null}
  */
+export function isKinDevMeasurementCopyProject(project) {
+  if (!project || typeof project !== "object") return false;
+  if (project.id !== KIN_DEV_MEASUREMENT_COPY_PROJECT_ID) return false;
+  return resolvePatternSystemFromProject(project) === "drop-shoulder";
+}
+
 export function setInSleeveDevTestWriteError(access, project) {
   if (access?.devTest !== "set-in-sleeve") return null;
   if (isSetInSleeveProjectRecord(project)) return null;
+  if (isKinDevMeasurementCopyProject(project)) return null;
   return SET_IN_DEV_TEST_TYPE_ERROR;
 }

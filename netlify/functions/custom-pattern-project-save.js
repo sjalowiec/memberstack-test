@@ -15,7 +15,10 @@ import {
   withCors,
 } from "./lib/custom-pattern-projects-store.js";
 import { requirePatternProjectAccess } from "./lib/require-member-access.js";
-import { setInSleeveDevTestWriteError } from "./lib/kin-dev-set-in-sleeve-testing.js";
+import {
+  KIN_DEV_MEASUREMENT_COPY_PROJECT_ID,
+  setInSleeveDevTestWriteError,
+} from "./lib/kin-dev-set-in-sleeve-testing.js";
 
 export default async (req) => {
   if (req.method === "OPTIONS") {
@@ -46,6 +49,18 @@ export default async (req) => {
   }
 
   const project = built.project;
+  if (
+    access.devTest === "set-in-sleeve" &&
+    body.data?.id === KIN_DEV_MEASUREMENT_COPY_PROJECT_ID
+  ) {
+    project.id = KIN_DEV_MEASUREMENT_COPY_PROJECT_ID;
+    if (typeof body.data.createdAt === "string" && body.data.createdAt) {
+      project.createdAt = body.data.createdAt;
+    }
+    if (typeof body.data.version === "number" && Number.isFinite(body.data.version)) {
+      project.version = body.data.version;
+    }
+  }
   const setInDevError = setInSleeveDevTestWriteError(access, project);
   if (setInDevError) {
     return withCors(jsonResponse({ ok: false, error: setInDevError }, 403));

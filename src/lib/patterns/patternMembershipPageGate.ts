@@ -18,6 +18,7 @@ import {
 } from "./localPatternTesting";
 import {
   hostedSetInSleeveDraftOwnerId,
+  isHostedMeasurementCopyDevTesting,
   isHostedSetInSleeveDevTesting,
   setInSleeveDevTestingAccess,
 } from "./setInSleeveDevTesting";
@@ -121,7 +122,7 @@ export async function resolvePatternMembershipGateDecision(
     return decidePatternMembershipGate(localPatternTestingAccess());
   }
 
-  if (isHostedSetInSleeveDevTesting()) {
+  if (isHostedSetInSleeveDevTesting() || isHostedMeasurementCopyDevTesting()) {
     return decidePatternMembershipGate(setInSleeveDevTestingAccess());
   }
 

@@ -140,5 +140,12 @@ describe("kin-dev set-in sleeve test access", () => {
     expect(setInSleeveDevTestWriteError(access, setInProject)).toBeNull();
     expect(setInSleeveDevTestWriteError(access, dropShoulderProject)).toMatch(/Set-In Sleeve/);
     expect(setInSleeveDevTestWriteError({ mode: "member" }, dropShoulderProject)).toBeNull();
+    expect(
+      setInSleeveDevTestWriteError(access, {
+        ...dropShoulderProject,
+        id: "e7a41c2d-8b60-4f1a-9c55-3d6b0a91f4e2",
+        customOverrides: { constructionFamily: "drop-shoulder" },
+      }),
+    ).toBeNull();
   });
 });
