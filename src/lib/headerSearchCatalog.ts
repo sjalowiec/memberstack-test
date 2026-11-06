@@ -3,13 +3,11 @@
  *
  * Videos, glossary entries, and Help Hub tips are rendered on request, so they
  * are not in the Pagefind index. This module reads the same public catalogs
- * those sections already use. A saved glossary or Help Hub edit is included on
- * the next search after a short in-memory cache (no site rebuild). A published
- * video is included when the video catalog file is loaded by the server (a
- * deploy, or a dev-server reload). Pagefind results for prerendered pages
- * still update only after `pagefind --site dist`.
+ * those sections already use. A saved glossary, Help Hub, or video edit is
+ * included on the next search after a short in-memory cache (no site rebuild).
+ * Draft and archived videos are left out, matching the video page. Pagefind
+ * results for prerendered pages still update only after `pagefind --site dist`.
  */
-import videosPublic from "../data/videos-public.json";
 import { stripHtmlToText } from "./helpHubFaqSchema";
 import { loadPublicHelpHubCategories } from "./helpHub/loadCategories";
 import { loadPublicHelpHubTips } from "./helpHub/loadTips";
@@ -24,6 +22,7 @@ import { headerSearchUrlKey } from "./headerSearchMerge";
 import { slugify } from "./slugify";
 import { rankSearchText } from "./searchSynonyms";
 import { filterPublicCatalogVideos, type VideoCatalogRecord } from "./videoPublic";
+import { loadMergedVideoCatalog } from "./videos/videoCatalogStore";
 
 export { headerSearchUrlKey, mergeHeaderSearchResults } from "./headerSearchMerge";
 
@@ -226,8 +225,9 @@ async function loadHelpRecords(): Promise<HeaderSearchRecord[]> {
 export async function loadHeaderSearchRecords(): Promise<HeaderSearchRecord[]> {
   const now = Date.now();
   if (catalogCache && now - catalogCache.at < CATALOG_CACHE_MS) return catalogCache.records;
+  const mergedVideos = await loadMergedVideoCatalog();
   const videos = videoHeaderRecords(
-    (Array.isArray(videosPublic) ? videosPublic : []) as VideoCatalogRecord[],
+    (Array.isArray(mergedVideos) ? mergedVideos : []) as VideoCatalogRecord[],
   );
   const [glossary, help] = await Promise.all([loadGlossaryRecords(), loadHelpRecords()]);
   const records = [...videos, ...glossary, ...help];

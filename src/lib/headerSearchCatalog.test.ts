@@ -11,6 +11,8 @@ import {
 } from "./headerSearchCatalog";
 import { scorePagefindHit } from "./headerSearchMerge";
 import type { HelpHubTipRecord } from "./helpHubPublic";
+import type { VideoCatalogRecord } from "./videoPublic";
+import { mergeVideoCatalog } from "./videos/videoCatalogStore";
 
 const videos = [
   {
@@ -38,6 +40,12 @@ const videos = [
     title: "Secret Cast Off",
     description: "Not published.",
     status: "draft",
+  },
+  {
+    content_id: 806,
+    title: "Asymmetric Swirl Shawlette/Scarf",
+    description: "Archived shawlette.",
+    status: "archived",
   },
 ];
 
@@ -113,6 +121,7 @@ describe("header search catalog", () => {
     expect(urls).toContain("/glossary/cast-off-bind-off/");
     expect(urls).toContain("/help-hub/cut-and-sew-shaping");
     expect(urls.join(" ")).not.toContain("/videos/102");
+    expect(urls.join(" ")).not.toContain("/videos/806");
     expect(urls.join(" ")).not.toContain("hidden-bind-off");
     expect(urls.join(" ")).not.toContain("dak-bind-off");
     expect(urls.join(" ")).not.toContain("draft-cast-off");
@@ -200,6 +209,43 @@ describe("header search catalog", () => {
     expect(scorePagefindHit("latch tool cast off", "Latch Tool Bind Off", "")).toBe(3);
     expect(scorePagefindHit("latch tool cast off", "Machine Knitter's Bookshelf", "A list of knitting books.")).toBe(0);
     expect(scorePagefindHit("gauge calculator", "Gauge Calculator", "")).toBe(4);
+  });
+
+  it("leaves an archived catalog override out and keeps a published video", () => {
+    const fileVideos = [
+      {
+        content_id: 806,
+        title: "Asymmetric Swirl Shawlette/Scarf",
+        description: "Quick knitting shawlette.",
+      },
+      {
+        content_id: 811,
+        title: "Short Row Refresher",
+        description: "A published shaping video.",
+        status: "published",
+      },
+    ];
+    const merged = mergeVideoCatalog(fileVideos, [
+      {
+        contentId: "806",
+        deleted: false,
+        sortOrder: 0,
+        document: { ...fileVideos[0], status: "archived" },
+      },
+    ]);
+    const records = videoHeaderRecords(merged as VideoCatalogRecord[]);
+    expect(records.map((record) => record.url)).toEqual(["/videos/811"]);
+    expect(searchHeaderCatalog(records, "shawlette")).toEqual([]);
+    expect(searchHeaderCatalog(records, "Short Row Refresher")[0]).toMatchObject({
+      url: "/videos/811",
+      cat: "videos",
+    });
+  });
+
+  it("builds video search from the merged catalog, including archived overrides", () => {
+    const source = readFileSync(new URL("./headerSearchCatalog.ts", import.meta.url), "utf8");
+    expect(source).toContain("loadMergedVideoCatalog");
+    expect(source).not.toContain("videos-public.json");
   });
 
   it("wires the header to the live catalog without dropping Pagefind or zero-result tracking", () => {
