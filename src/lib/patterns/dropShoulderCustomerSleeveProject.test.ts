@@ -7,6 +7,7 @@ import { renderPatternDisplayRowsHtml } from "./sleevelessPatternDisplayHtml";
 import { renderSleevelessPrintPieceHtml } from "./sleevelessPatternPrintRender";
 import { noticesForSavedPattern, savedPatternNoticeText } from "./errata/errataVisibility";
 import { dropShoulderSleeveErrataRecord } from "./errata/dropShoulderSleeveErrata";
+import { sweaterFinishedMeasurementErrataRecord } from "./errata/sweaterFinishedMeasurementErrata";
 import type { ChartRow } from "./sleevelessExpressSizeChartTypes";
 
 const MENS_LG: ChartRow = {
@@ -134,6 +135,13 @@ describe("Customer's saved Drop Shoulder project", () => {
     expect(notices).toHaveLength(1);
     expect(notices[0]?.slug).toBe("drop-shoulder-sleeve-stitches");
     expect(notices[0]?.matchedMeasurements).toEqual(["cuff", "upper-arm"]);
+    expect(
+      noticesForSavedPattern(
+        [dropShoulderSleeveErrataRecord(), sweaterFinishedMeasurementErrataRecord()],
+        CUSTOMER_PROJECT,
+        CUSTOMER_PROJECT.id,
+      ).map((notice) => notice.slug),
+    ).toEqual(["drop-shoulder-sleeve-stitches"]);
     const text = savedPatternNoticeText(notices[0]!);
     expect(text).toContain("Cuff stitches, upper-arm stitches, and armhole depth may change");
     expect(text).toContain("already knitting");
@@ -159,9 +167,21 @@ describe("Customer's saved Drop Shoulder project", () => {
     sleeveless.pattern.style.constructionAuthored = "sleeveless";
     expect(noticesForSavedPattern(published, sleeveless, sleeveless.id)).toEqual([]);
 
-    const createdAfter = structuredClone(CUSTOMER_PROJECT);
-    createdAfter.createdAt = "2026-11-06T05:00:00.000Z";
-    createdAfter.pattern.createdAt = "2026-11-06T05:00:00.000Z";
-    expect(noticesForSavedPattern(published, createdAfter, createdAfter.id)).toEqual([]);
+    const createdAfterProvisionalCutoff = structuredClone(CUSTOMER_PROJECT);
+    createdAfterProvisionalCutoff.createdAt = "2026-11-06T05:00:00.000Z";
+    createdAfterProvisionalCutoff.pattern.createdAt = "2026-11-06T05:00:00.000Z";
+    expect(
+      noticesForSavedPattern(published, createdAfterProvisionalCutoff, createdAfterProvisionalCutoff.id),
+    ).toHaveLength(1);
+
+    const released = dropShoulderSleeveErrataRecord();
+    released.matchRules = { ...released.matchRules, correctedAt: "2026-11-06T18:00:00.000Z" };
+    const afterRelease = structuredClone(CUSTOMER_PROJECT);
+    afterRelease.createdAt = "2026-11-06T18:00:00.000Z";
+    afterRelease.pattern.createdAt = "2026-11-06T18:00:00.000Z";
+    expect(noticesForSavedPattern([released], afterRelease, afterRelease.id)).toEqual([]);
+    const beforeRelease = structuredClone(CUSTOMER_PROJECT);
+    beforeRelease.createdAt = "2026-10-17T13:57:41.566Z";
+    expect(noticesForSavedPattern([released], beforeRelease, beforeRelease.id)).toHaveLength(1);
   });
 });

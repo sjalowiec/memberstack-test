@@ -63,12 +63,12 @@ function patternData(
 }
 
 describe("resolveEffectiveFrontNeckDepthInches", () => {
-  it("uses chart front_neck_depth for Express (ignores overrides)", () => {
+  it("uses a saved front neck depth in Express", () => {
     expect(
       resolveEffectiveFrontNeckDepthInches(
         patternData({ patternMode: "express", neckDepthOverride: "6" }),
       ),
-    ).toBe(3);
+    ).toBe(6);
   });
 
   it("uses chart value for custom-build when no override", () => {
@@ -197,12 +197,14 @@ describe("generateSleevelessBackPattern custom-build neck depth override", () =>
     expect(result.debug.shoulderWidthInches).toBe(5.5);
   });
 
-  it("Express output unchanged when neckDepth override present on data", () => {
+  it("Express output uses the saved front neck depth and leaves back neck on the chart", () => {
     const express = generateSleevelessBackPattern(
       patternData({ patternMode: "express", neckDepthOverride: "6" }),
     );
     const expressBaseline = generateSleevelessBackPattern(patternData({ patternMode: "express" }));
-    expect(express.debug).toEqual(expressBaseline.debug);
+    expect(express.debug.frontNeckDepth).toBe(6);
+    expect(express.debug.frontNeckDepthRows).toBeGreaterThan(expressBaseline.debug.frontNeckDepthRows);
+    expect(express.debug.backNeckDepthRows).toBe(expressBaseline.debug.backNeckDepthRows);
   });
 
   it("diagram NECK_DEPTH and NECK_DEPTH_ROWS reflect deeper front neck on front piece", () => {

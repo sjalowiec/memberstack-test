@@ -14,12 +14,16 @@ import type {
   PatternErrataBuilder,
   PatternErrataRecord,
   SavedPatternErrataMatch,
+  SweaterFinishedMeasurementMatchRules,
 } from "./types";
 import {
   DROP_SHOULDER_SLEEVE_MEASUREMENTS_KIND,
   FINISHED_LENGTH_DEFAULTS_KIND,
   PATTERN_ERRATA_BUILDERS,
+  SWEATER_FINISHED_MEASUREMENTS_KIND,
 } from "./types";
+import { classifySweaterFinishedMeasurementErrata } from "./sweaterFinishedMeasurementErrata";
+import { isProductionReleaseCutoff, productionReleaseTiming } from "./productionReleaseCutoff";
 
 /** Lengths on the chart are quarter inches. A wider tolerance would hide a real edit. */
 const LENGTH_EPSILON_INCHES = 0.02;
@@ -354,8 +358,18 @@ function isSleeveMeasurementRules(value: unknown): value is DropShoulderSleeveMa
   return (
     !!rules &&
     rules.kind === DROP_SHOULDER_SLEEVE_MEASUREMENTS_KIND &&
-    typeof rules.correctedAt === "string" &&
-    Number.isFinite(Date.parse(rules.correctedAt))
+    isProductionReleaseCutoff(rules.correctedAt)
+  );
+}
+
+function isSweaterFinishedMeasurementRules(
+  value: unknown,
+): value is SweaterFinishedMeasurementMatchRules {
+  const rules = asRecord(value);
+  return (
+    !!rules &&
+    rules.kind === SWEATER_FINISHED_MEASUREMENTS_KIND &&
+    isProductionReleaseCutoff(rules.correctedAt)
   );
 }
 
@@ -424,18 +438,18 @@ function classifyDropShoulderSleeveMeasurements(
   }
 
   const createdAt = parseCreatedAt(root) ?? parseCreatedAt(pattern);
-  const correctedAt = Date.parse(rules.correctedAt);
-  if (createdAt === null) {
+  const timing = productionReleaseTiming(createdAt, rules.correctedAt);
+  if (timing === "undated") {
     return match(
       "uncertain",
       "The saved sleeve measurements differ from the body measurements, but the pattern has no creation date, so it is not marked affected.",
       { ...base, matchedMeasurements: matched },
     );
   }
-  if (createdAt >= correctedAt) {
+  if (timing === "after-release") {
     return match(
       "current_default",
-      "The pattern was created after the sleeve calculation correction and already uses the saved finished cuff and upper arm.",
+      "The pattern was created after this sleeve correction was released to production and already uses the saved finished cuff and upper arm.",
       { ...base, matchedMeasurements: matched },
     );
   }
@@ -488,6 +502,19 @@ export function classifySavedPatternForErrata(
       builder: builderRead.builder,
       audience: audienceRead.status === "audience" ? audienceRead.audience : null,
       size: size || "saved pattern",
+    });
+  }
+
+  if (isSweaterFinishedMeasurementRules(errata.matchRules)) {
+    const fit = asRecord(pattern.fit) ?? {};
+    const audienceRead = readAudience(pattern);
+    if (audienceRead.status === "uncertain") {
+      return match("uncertain", audienceRead.reason, { builder: builderRead.builder });
+    }
+    return classifySweaterFinishedMeasurementErrata(pattern, root, errata.matchRules, {
+      builder: builderRead.builder,
+      audience: audienceRead.audience,
+      size: text(fit.selectedSize) || "saved pattern",
     });
   }
 

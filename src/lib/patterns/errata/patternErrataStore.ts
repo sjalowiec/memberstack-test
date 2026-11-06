@@ -13,7 +13,9 @@ import {
   FINISHED_LENGTH_DEFAULTS_KIND,
   PATTERN_ERRATA_BUILDERS,
   PATTERN_ERRATA_STATUSES,
+  SWEATER_FINISHED_MEASUREMENTS_KIND,
 } from "./types";
+import { isProductionReleaseCutoff } from "./productionReleaseCutoff";
 
 const COLUMNS = `
   id,
@@ -80,16 +82,25 @@ function readBuilders(value: unknown): PatternErrataBuilder[] {
   );
 }
 
+function readReleaseCutoff(value: unknown): string | null | undefined {
+  if (!isProductionReleaseCutoff(value)) return undefined;
+  return value === null ? null : new Date(value).toISOString();
+}
+
 function readMatchRules(value: unknown): PatternErrataMatchRules | null {
   const rules = asRecord(value);
+  if (!rules) return null;
   if (
-    rules?.kind === DROP_SHOULDER_SLEEVE_MEASUREMENTS_KIND &&
-    typeof rules.correctedAt === "string" &&
-    Number.isFinite(Date.parse(rules.correctedAt))
+    rules.kind === DROP_SHOULDER_SLEEVE_MEASUREMENTS_KIND ||
+    rules.kind === SWEATER_FINISHED_MEASUREMENTS_KIND
   ) {
-    return { kind: DROP_SHOULDER_SLEEVE_MEASUREMENTS_KIND, correctedAt: new Date(rules.correctedAt).toISOString() };
+    const correctedAt = readReleaseCutoff(rules.correctedAt);
+    if (correctedAt === undefined) return null;
+    return rules.kind === DROP_SHOULDER_SLEEVE_MEASUREMENTS_KIND
+      ? { kind: DROP_SHOULDER_SLEEVE_MEASUREMENTS_KIND, correctedAt }
+      : { kind: SWEATER_FINISHED_MEASUREMENTS_KIND, correctedAt };
   }
-  if (!rules || rules.kind !== FINISHED_LENGTH_DEFAULTS_KIND) return null;
+  if (rules.kind !== FINISHED_LENGTH_DEFAULTS_KIND) return null;
   if (typeof rules.correctedAt !== "string") return null;
   if (!Array.isArray(rules.sizes)) return null;
   const sizes = [];

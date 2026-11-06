@@ -7,10 +7,14 @@ export const DROP_SHOULDER_SLEEVE_ERRATA_ID = "a7c3e891-4d2b-4f6a-8e15-0b9c6d3f2
 export const DROP_SHOULDER_SLEEVE_ERRATA_SLUG = "drop-shoulder-sleeve-stitches";
 
 /**
- * Calculation correction prepared for kin-dev review on 2026-11-05 Pacific.
- * Patterns created at or after this instant already calculate from the saved finished sleeve.
+ * Production release instant for this correction.
+ * Null until the production release. Do not set this for a kin-dev deploy.
+ * Patterns created before that release can receive the notice.
  */
-export const DROP_SHOULDER_SLEEVE_CORRECTED_AT = "2026-11-06T04:00:00.000Z";
+export const DROP_SHOULDER_SLEEVE_PRODUCTION_RELEASED_AT: string | null = null;
+
+/** Record metadata only. This is not the production cutoff. */
+const DROP_SHOULDER_SLEEVE_RECORD_AT = "2026-11-06T12:00:00.000Z";
 
 export const DROP_SHOULDER_SLEEVE_ERRATA_TITLE = "Drop Shoulder sleeve stitches";
 
@@ -18,6 +22,8 @@ export const DROP_SHOULDER_SLEEVE_WHAT_CHANGED = [
   "Some saved Drop Shoulder patterns stored a finished cuff and upper arm, but the instructions used the smaller body measurements when those fields had not been edited by hand. Opening an affected pattern now calculates the cuff stitches, upper-arm stitches, and armhole depth from the saved finished measurements.",
   "",
   "The measurement editor still shows the finished cuff and upper arm that were saved. The sleeve diagram shows the width of the rounded stitch count. Saved measurements are not rewritten.",
+  "",
+  "Affected patterns saved before this correction is released to production can show this notice. Patterns saved after that production release already use the saved finished cuff and upper arm.",
 ].join("\n");
 
 export const DROP_SHOULDER_SLEEVE_KNITTER_ACTION =
@@ -25,7 +31,7 @@ export const DROP_SHOULDER_SLEEVE_KNITTER_ACTION =
 
 export const DROP_SHOULDER_SLEEVE_MATCH_RULES: DropShoulderSleeveMatchRules = {
   kind: DROP_SHOULDER_SLEEVE_MEASUREMENTS_KIND,
-  correctedAt: DROP_SHOULDER_SLEEVE_CORRECTED_AT,
+  correctedAt: DROP_SHOULDER_SLEEVE_PRODUCTION_RELEASED_AT,
 };
 
 /** Published correction. Member notices read this even before the dev database has the row. */
@@ -41,8 +47,8 @@ export function dropShoulderSleeveErrataRecord(): PatternErrataRecord {
     affectedBuilders: ["drop-shoulder"],
     affectedSizes: {},
     matchRules: DROP_SHOULDER_SLEEVE_MATCH_RULES,
-    createdAt: DROP_SHOULDER_SLEEVE_CORRECTED_AT,
-    updatedAt: DROP_SHOULDER_SLEEVE_CORRECTED_AT,
+    createdAt: DROP_SHOULDER_SLEEVE_RECORD_AT,
+    updatedAt: DROP_SHOULDER_SLEEVE_RECORD_AT,
     updatedBy: null,
   };
 }

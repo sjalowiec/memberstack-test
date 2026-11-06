@@ -1,9 +1,9 @@
 /**
- * Custom Build — effective armhole depth for sleeveless pattern generation.
+ * Effective armhole depth for sleeveless and set-in pattern generation.
  *
- * First active custom measurement override: armhole depth only (`fit.cbMeasurementOverrides.armholeDepth`).
- * Chart-derived `fit.selectedMeasurements.armhole_depth` is the fallback.
- * Express and non–custom-build modes always use the chart value.
+ * A saved `fit.cbMeasurementOverrides.armholeDepth` is the finished armhole the editor shows.
+ * Express and Custom Build both use it. Chart `fit.selectedMeasurements.armhole_depth` is the fallback.
+ * Drop Shoulder does not use this value: its armhole is half the upper arm.
  */
 
 function section(obj: unknown): Record<string, unknown> {
@@ -44,10 +44,6 @@ function customBuildArmholeDepthOverrideInches(patternData: Record<string, unkno
 export function resolveEffectiveArmholeDepthInches(
   patternData: Record<string, unknown>,
 ): number | undefined {
-  const chartInches = chartArmholeDepthInches(patternData);
-  if (!isCustomBuildPatternMode(patternData)) {
-    return chartInches;
-  }
   const overrideInches = customBuildArmholeDepthOverrideInches(patternData);
-  return overrideInches ?? chartInches;
+  return overrideInches ?? chartArmholeDepthInches(patternData);
 }

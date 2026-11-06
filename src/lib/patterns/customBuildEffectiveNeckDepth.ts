@@ -3,18 +3,15 @@
  *
  * Chart fallback: `fit.selectedMeasurements.front_neck_depth` (front scoop) and
  * `back_neck_depth` (back neckline row budget).
- * Override: `fit.cbMeasurementOverrides.neckDepth` replaces front neck depth only when
- * `style.patternMode` is `custom-build` (matches the Measurements step diagram field).
- * Express and non–custom-build modes always use chart values.
+ * Override: `fit.cbMeasurementOverrides.neckDepth` replaces front neck depth in Express
+ * and Custom Build. It matches the neck-depth field on the measurement editor.
+ * Back neck depth has no editor field.
  *
  * Sweater-wide back neck rule: chart values below 1″ are kept; values above 1″ are
  * capped at 1″. Front neck depth is not capped here.
  */
 
-import {
-  isCustomBuildPatternMode,
-  positiveMeasurementInches,
-} from "./customBuildEffectiveArmholeDepth";
+import { positiveMeasurementInches } from "./customBuildEffectiveArmholeDepth";
 
 /** Maximum back neck depth (inches) for all sweater constructions. */
 export const SWEATER_BACK_NECK_DEPTH_MAX_INCHES = 1;
@@ -50,12 +47,8 @@ function customBuildNeckDepthOverrideInches(patternData: Record<string, unknown>
 export function resolveEffectiveFrontNeckDepthInches(
   patternData: Record<string, unknown>,
 ): number | undefined {
-  const chartInches = chartFrontNeckDepthInches(patternData);
-  if (!isCustomBuildPatternMode(patternData)) {
-    return chartInches;
-  }
   const overrideInches = customBuildNeckDepthOverrideInches(patternData);
-  return overrideInches ?? chartInches;
+  return overrideInches ?? chartFrontNeckDepthInches(patternData);
 }
 
 /**
