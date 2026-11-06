@@ -37,6 +37,7 @@ function isBuilder(value: string): value is PatternErrataBuilder {
 }
 
 export function affectedSizesFromRules(rules: PatternErrataMatchRules): Record<string, string[]> {
+  if (rules.kind !== FINISHED_LENGTH_DEFAULTS_KIND) return {};
   const sizes: Record<string, string[]> = {};
   for (const rule of rules.sizes) {
     const list = sizes[rule.audience] ?? [];

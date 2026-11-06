@@ -3,8 +3,8 @@
  *
  * Chart fallback (first positive match): `neck_width`, `neck_opening`, `neckOpening`,
  * then `neck_opening_width` in `fit.selectedMeasurements`.
- * Override: `fit.cbMeasurementOverrides.finishedNeckOpeningWidth` when `style.patternMode` is `custom-build`.
- * Express and non–custom-build modes always use the chart value.
+ * Override: `fit.cbMeasurementOverrides.finishedNeckOpeningWidth` in Express and Custom Build.
+ * The chart value is the fallback when that field was not saved.
  *
  * `neck_opening_width` is a legacy/alias key used by some saved Drop Shoulder drafts and
  * diagram helpers; it must resolve here so written neckline instructions and stitch math
@@ -15,10 +15,7 @@
  * Legacy keys are left in place for compatibility; new saves must not invent them.
  */
 
-import {
-  isCustomBuildPatternMode,
-  positiveMeasurementInches,
-} from "./customBuildEffectiveArmholeDepth";
+import { positiveMeasurementInches } from "./customBuildEffectiveArmholeDepth";
 import type { SleevelessPatternRecord } from "./patternStorage";
 
 function section(obj: unknown): Record<string, unknown> {
@@ -91,10 +88,6 @@ function customBuildNeckOpeningWidthOverrideInches(
 export function resolveEffectiveNeckOpeningWidthInches(
   patternData: Record<string, unknown>,
 ): number | undefined {
-  const chartInches = chartNeckOpeningWidthInches(patternData);
-  if (!isCustomBuildPatternMode(patternData)) {
-    return chartInches;
-  }
   const overrideInches = customBuildNeckOpeningWidthOverrideInches(patternData);
-  return overrideInches ?? chartInches;
+  return overrideInches ?? chartNeckOpeningWidthInches(patternData);
 }

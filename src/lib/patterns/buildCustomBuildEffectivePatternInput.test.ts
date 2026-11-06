@@ -100,6 +100,6 @@ describe("buildCustomBuildEffectivePatternInput patternMode", () => {
     const genInput = buildCustomBuildEffectivePatternInput();
 
     expect(genInput.style?.patternMode).toBe("express");
-    expect(resolveEffectiveHemDepthInches(genInput, "misses")).toBe(2);
+    expect(resolveEffectiveHemDepthInches(genInput, "misses")).toBe(1.75);
   });
 });

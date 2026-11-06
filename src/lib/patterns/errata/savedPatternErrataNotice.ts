@@ -1,7 +1,8 @@
 import { readActiveCustomPatternProjectId } from "../customPatternProjectActiveId";
 import { getCurrentPattern } from "../patternStorage";
 import { noticesForSavedPattern, savedPatternNoticeText, type SavedPatternErrataNotice } from "./errataVisibility";
-import type { PatternErrataRecord } from "./types";
+import type { PatternErrataMatchRules, PatternErrataRecord } from "./types";
+import { FINISHED_LENGTH_DEFAULTS_KIND, SWEATER_FINISHED_MEASUREMENTS_KIND } from "./types";
 
 const MOUNT_ATTR = "data-pattern-errata-notice";
 
@@ -57,6 +58,19 @@ function ensureMount(): HTMLElement | null {
   return mount;
 }
 
+function publicMatchRules(value: unknown): PatternErrataMatchRules | null {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  const rules = value as PatternErrataMatchRules;
+  if (rules.kind === FINISHED_LENGTH_DEFAULTS_KIND && Array.isArray(rules.sizes)) return rules;
+  if (
+    rules.kind === SWEATER_FINISHED_MEASUREMENTS_KIND &&
+    typeof rules.correctedAt === "string"
+  ) {
+    return { kind: SWEATER_FINISHED_MEASUREMENTS_KIND, correctedAt: rules.correctedAt };
+  }
+  return null;
+}
+
 function recordFromPublic(value: unknown): PatternErrataRecord | null {
   if (!value || typeof value !== "object" || Array.isArray(value)) return null;
   const row = value as Partial<PatternErrataRecord>;
@@ -65,7 +79,8 @@ function recordFromPublic(value: unknown): PatternErrataRecord | null {
     return null;
   }
   if (typeof row.whatChanged !== "string" || typeof row.knitterAction !== "string") return null;
-  if (!row.matchRules || row.matchRules.kind !== "finished-length-defaults") return null;
+  const matchRules = publicMatchRules(row.matchRules);
+  if (!matchRules) return null;
   return {
     id: row.id,
     slug: row.slug,
@@ -76,7 +91,7 @@ function recordFromPublic(value: unknown): PatternErrataRecord | null {
     publishedOn: typeof row.publishedOn === "string" ? row.publishedOn : null,
     affectedBuilders: Array.isArray(row.affectedBuilders) ? row.affectedBuilders : [],
     affectedSizes: row.affectedSizes && typeof row.affectedSizes === "object" ? row.affectedSizes : {},
-    matchRules: row.matchRules,
+    matchRules,
     createdAt: "",
     updatedAt: "",
     updatedBy: null,

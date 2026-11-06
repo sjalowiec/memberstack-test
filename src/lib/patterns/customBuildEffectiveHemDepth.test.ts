@@ -53,13 +53,13 @@ function patternData(
 }
 
 describe("resolveEffectiveHemDepthInches", () => {
-  it("uses audience default for Express (ignores overrides)", () => {
+  it("uses a saved hem depth in Express", () => {
     expect(
       resolveEffectiveHemDepthInches(
         patternData({ patternMode: "express", hemDepthOverride: "4" }),
         "misses",
       ),
-    ).toBe(getDefaultHemLengthInches("misses"));
+    ).toBe(4);
   });
 
   it("uses audience default for custom-build when no override", () => {
@@ -128,14 +128,19 @@ describe("generateSleevelessBackPattern custom-build hem depth override", () => 
     expect(result.debug.finishedBustChest).toBe(44);
   });
 
-  it("Express output unchanged when hemDepth override present on data", () => {
+  it("Express output uses the saved hem depth", () => {
     const express = generateSleevelessBackPattern(
       patternData({ patternMode: "express", audience: "misses", hemDepthOverride: "4" }),
     );
     const expressBaseline = generateSleevelessBackPattern(
       patternData({ patternMode: "express", audience: "misses" }),
     );
-    expect(express.debug).toEqual(expressBaseline.debug);
+    expect(express.debug.hemRows).toBe(calculateHemRowsFromInches(7, 4));
+    expect(express.debug.hemRows).toBeGreaterThan(expressBaseline.debug.hemRows);
+    expect(expressBaseline.debug.bodyRows - express.debug.bodyRows).toBe(
+      express.debug.hemRows - expressBaseline.debug.hemRows,
+    );
+    expect(express.debug.expectedGarmentRows).toBe(expressBaseline.debug.expectedGarmentRows);
   });
 
   it("diagram HEM_INCHES and HEM_ROWS reflect deeper custom-build hem", () => {

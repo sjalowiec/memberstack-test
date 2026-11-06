@@ -38,12 +38,12 @@ function patternData(overrides: {
 }
 
 describe("resolveEffectiveArmholeDepthInches", () => {
-  it("uses chart armhole_depth for Express (ignores overrides)", () => {
+  it("uses a saved armhole depth in Express", () => {
     expect(
       resolveEffectiveArmholeDepthInches(
         patternData({ patternMode: "express", armholeDepthOverride: "10" }),
       ),
-    ).toBe(8);
+    ).toBe(10);
   });
 
   it("uses chart value for custom-build when no override", () => {
@@ -94,11 +94,14 @@ describe("generateSleevelessBackPattern custom-build armhole depth override", ()
     expect(baseline.debug.bodyRows! - deeper.debug.bodyRows!).toBe(14);
   });
 
-  it("Express output unchanged when override present on data", () => {
+  it("Express output uses the saved armhole depth", () => {
     const express = generateSleevelessBackPattern(
       patternData({ patternMode: "express", armholeDepthOverride: "10" }),
     );
     const expressBaseline = generateSleevelessBackPattern(patternData({ patternMode: "express" }));
-    expect(express.debug).toEqual(expressBaseline.debug);
+    expect(express.debug.armholeDepth).toBe(10);
+    expect(express.debug.armholeRows! - expressBaseline.debug.armholeRows!).toBe(14);
+    expect(expressBaseline.debug.bodyRows! - express.debug.bodyRows!).toBe(14);
+    expect(express.debug.expectedGarmentRows).toBe(expressBaseline.debug.expectedGarmentRows);
   });
 });

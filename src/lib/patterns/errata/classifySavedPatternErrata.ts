@@ -12,8 +12,14 @@ import type {
   PatternErrataBuilder,
   PatternErrataRecord,
   SavedPatternErrataMatch,
+  SweaterFinishedMeasurementMatchRules,
 } from "./types";
-import { FINISHED_LENGTH_DEFAULTS_KIND, PATTERN_ERRATA_BUILDERS } from "./types";
+import {
+  FINISHED_LENGTH_DEFAULTS_KIND,
+  PATTERN_ERRATA_BUILDERS,
+  SWEATER_FINISHED_MEASUREMENTS_KIND,
+} from "./types";
+import { classifySweaterFinishedMeasurementErrata } from "./sweaterFinishedMeasurementErrata";
 
 /** Lengths on the chart are quarter inches. A wider tolerance would hide a real edit. */
 const LENGTH_EPSILON_INCHES = 0.02;
@@ -345,6 +351,18 @@ function isFinishedLengthRules(value: unknown): value is FinishedLengthMatchRule
   return Array.isArray(rules.sizes);
 }
 
+function isSweaterFinishedMeasurementRules(
+  value: unknown,
+): value is SweaterFinishedMeasurementMatchRules {
+  const rules = asRecord(value);
+  return (
+    !!rules &&
+    rules.kind === SWEATER_FINISHED_MEASUREMENTS_KIND &&
+    typeof rules.correctedAt === "string" &&
+    Number.isFinite(Date.parse(rules.correctedAt))
+  );
+}
+
 /**
  * Classify one saved project against one correction.
  * `old_default` is the only class treated as potentially affected.
@@ -371,6 +389,19 @@ export function classifySavedPatternForErrata(
   if (!errata.affectedBuilders.includes(builderRead.builder)) {
     return match("out_of_scope", "This builder is not listed on the correction.", {
       builder: builderRead.builder,
+    });
+  }
+
+  if (isSweaterFinishedMeasurementRules(errata.matchRules)) {
+    const fit = asRecord(pattern.fit) ?? {};
+    const audienceRead = readAudience(pattern);
+    if (audienceRead.status === "uncertain") {
+      return match("uncertain", audienceRead.reason, { builder: builderRead.builder });
+    }
+    return classifySweaterFinishedMeasurementErrata(pattern, root, errata.matchRules, {
+      builder: builderRead.builder,
+      audience: audienceRead.audience,
+      size: text(fit.selectedSize) || "saved pattern",
     });
   }
 

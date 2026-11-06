@@ -21,8 +21,10 @@ if (idParam) {
   }
 }
 
-const sizeLines = record
-  ? record.matchRules.sizes
+const lengthRules =
+  record?.matchRules.kind === "finished-length-defaults" ? record.matchRules : null;
+const sizeLines = lengthRules
+  ? lengthRules.sizes
       .map(
         (rule) =>
           rule.oldUpperArmInches != null && rule.newUpperArmInches != null
@@ -31,7 +33,7 @@ const sizeLines = record
       )
       .join("\n")
   : "";
-const correctedAt = record?.matchRules.correctedAt ?? BABY_KIDS_LENGTH_CHART_CORRECTED_AT;
+const correctedAt = lengthRules?.correctedAt ?? BABY_KIDS_LENGTH_CHART_CORRECTED_AT;
 const builders = new Set(record?.affectedBuilders ?? ["drop-shoulder", "sleeveless"]);
 ---
 

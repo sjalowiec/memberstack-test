@@ -7,8 +7,17 @@ export const PATTERN_ERRATA_BUILDERS = ["drop-shoulder", "sleeveless"] as const;
 export type PatternErrataBuilder = (typeof PATTERN_ERRATA_BUILDERS)[number];
 
 export const FINISHED_LENGTH_DEFAULTS_KIND = "finished-length-defaults" as const;
+export const SWEATER_FINISHED_MEASUREMENTS_KIND = "sweater-finished-measurements" as const;
 
-export type ErrataMatchedMeasurement = "finished-length" | "upper-arm";
+export type ErrataMatchedMeasurement =
+  | "finished-length"
+  | "upper-arm"
+  | "garment-length"
+  | "hem-depth"
+  | "armhole-depth"
+  | "shoulder-width"
+  | "neck-opening"
+  | "front-neck-depth";
 
 export type FinishedLengthSizeRule = {
   audience: "baby" | "kids";
@@ -31,7 +40,20 @@ export type FinishedLengthMatchRules = {
   sizes: FinishedLengthSizeRule[];
 };
 
-export type PatternErrataMatchRules = FinishedLengthMatchRules;
+/**
+ * Saved finished measurements the editor already showed, while Express instructions
+ * used the chart or the standard hem. Matching does not change the saved pattern.
+ */
+export type SweaterFinishedMeasurementMatchRules = {
+  kind: typeof SWEATER_FINISHED_MEASUREMENTS_KIND;
+  /**
+   * Instant this calculation correction is treated as available.
+   * Patterns created at or after this time already generate from the saved measurement.
+   */
+  correctedAt: string;
+};
+
+export type PatternErrataMatchRules = FinishedLengthMatchRules | SweaterFinishedMeasurementMatchRules;
 
 export type PatternErrataRecord = {
   id: string;

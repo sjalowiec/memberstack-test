@@ -1,15 +1,12 @@
 /**
- * Custom Build — effective finished length (back neck to hem) for sleeveless pattern generation.
+ * Effective finished length (back neck to hem) for sweater pattern generation.
  *
- * Chart-derived `fit.selectedMeasurements.back_neck_to_hem` is the fallback.
- * Override: `fit.cbMeasurementOverrides.finishedLength` when `style.patternMode` is `custom-build`.
- * Express and non–custom-build modes always use the chart value.
+ * A saved `fit.cbMeasurementOverrides.finishedLength` is the finished measurement
+ * the editor shows. Express and Custom Build both use it. The chart value
+ * `fit.selectedMeasurements.back_neck_to_hem` is the fallback when that field was not saved.
  */
 
-import {
-  isCustomBuildPatternMode,
-  positiveMeasurementInches,
-} from "./customBuildEffectiveArmholeDepth";
+import { positiveMeasurementInches } from "./customBuildEffectiveArmholeDepth";
 
 function section(obj: unknown): Record<string, unknown> {
   if (obj && typeof obj === "object" && !Array.isArray(obj)) {
@@ -38,10 +35,6 @@ function customBuildFinishedLengthOverrideInches(
 export function resolveEffectiveFinishedLengthInches(
   patternData: Record<string, unknown>,
 ): number | undefined {
-  const chartInches = chartFinishedLengthInches(patternData);
-  if (!isCustomBuildPatternMode(patternData)) {
-    return chartInches;
-  }
   const overrideInches = customBuildFinishedLengthOverrideInches(patternData);
-  return overrideInches ?? chartInches;
+  return overrideInches ?? chartFinishedLengthInches(patternData);
 }

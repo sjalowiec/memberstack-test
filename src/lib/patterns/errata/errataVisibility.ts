@@ -1,4 +1,9 @@
 import { classifySavedPatternForErrata } from "./classifySavedPatternErrata";
+import {
+  SWEATER_FINISHED_MEASUREMENTS_ERRATA_SLUG,
+  SWEATER_FINISHED_MEASUREMENTS_KNITTER_ACTION,
+  sweaterFinishedMeasurementErrataRecord,
+} from "./sweaterFinishedMeasurementErrata";
 import type { ErrataMatchedMeasurement, PatternErrataRecord } from "./types";
 
 export type SavedPatternErrataNotice = {
@@ -28,6 +33,18 @@ const AUDIENCE_LABELS: Record<string, string> = {
 /** Public pages and the member notice only receive published corrections. */
 export function publishedPatternErrata(rows: readonly PatternErrataRecord[]): PatternErrataRecord[] {
   return rows.filter((row) => row.status === "published");
+}
+
+/**
+ * Published corrections a knitter can see.
+ * The saved-measurement correction is included with this calculation fix.
+ * A database row with the same slug replaces the built-in copy.
+ */
+export function publishedErrataForMembers(rows: readonly PatternErrataRecord[]): PatternErrataRecord[] {
+  const published = publishedPatternErrata(rows);
+  const builtin = sweaterFinishedMeasurementErrataRecord();
+  if (published.some((row) => row.slug === builtin.slug)) return published;
+  return [...published, builtin];
 }
 
 /**
@@ -69,7 +86,10 @@ export function noticesForSavedPattern(
 export const SAVED_PATTERN_ERRATA_NOTICE_TEXT =
   "This saved pattern may contain an older measurement. Saved measurements do not update automatically.";
 
-/** Member-facing notice copy. It does not repeat the size table or a specific measurement. */
-export function savedPatternNoticeText(_notice: SavedPatternErrataNotice): string {
+/** Member-facing notice copy. Length corrections stay on the shared sentence. This correction names the measurements. */
+export function savedPatternNoticeText(notice: SavedPatternErrataNotice): string {
+  if (notice.slug === SWEATER_FINISHED_MEASUREMENTS_ERRATA_SLUG) {
+    return SWEATER_FINISHED_MEASUREMENTS_KNITTER_ACTION;
+  }
   return SAVED_PATTERN_ERRATA_NOTICE_TEXT;
 }

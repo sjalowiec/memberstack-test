@@ -8,7 +8,7 @@ import type {
   PatternErrataRecord,
   PatternErrataStatus,
 } from "./types";
-import { FINISHED_LENGTH_DEFAULTS_KIND, PATTERN_ERRATA_BUILDERS, PATTERN_ERRATA_STATUSES } from "./types";
+import { FINISHED_LENGTH_DEFAULTS_KIND, PATTERN_ERRATA_BUILDERS, PATTERN_ERRATA_STATUSES, SWEATER_FINISHED_MEASUREMENTS_KIND } from "./types";
 
 const COLUMNS = `
   id,
@@ -77,8 +77,11 @@ function readBuilders(value: unknown): PatternErrataBuilder[] {
 
 function readMatchRules(value: unknown): PatternErrataMatchRules | null {
   const rules = asRecord(value);
-  if (!rules || rules.kind !== FINISHED_LENGTH_DEFAULTS_KIND) return null;
-  if (typeof rules.correctedAt !== "string") return null;
+  if (!rules || typeof rules.correctedAt !== "string") return null;
+  if (rules.kind === SWEATER_FINISHED_MEASUREMENTS_KIND) {
+    return { kind: SWEATER_FINISHED_MEASUREMENTS_KIND, correctedAt: rules.correctedAt };
+  }
+  if (rules.kind !== FINISHED_LENGTH_DEFAULTS_KIND) return null;
   if (!Array.isArray(rules.sizes)) return null;
   const sizes = [];
   for (const entry of rules.sizes) {
