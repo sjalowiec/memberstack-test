@@ -28,7 +28,8 @@ try {
 }
 
 const showEmpty = !loadError && batch.testimonials.length === 0;
-const showMore = loadError || batch.hasMore;
+const previousDisabled = batch.offset <= 0;
+const nextDisabled = !loadError && !batch.hasMore;
 
 function yearLabel(reviewDate: string | null): string | null {
   return reviewDate?.slice(0, 4) || null;
@@ -41,18 +42,23 @@ function yearLabel(reviewDate: string | null): string | null {
   bodyClass="page--tight-header"
 >
   <main class="testimonials-page page-wrap">
-    <div class="testimonials-page__sharebar">
+    <div
+      class="testimonials-page__sharebar"
+      id="testimonial-browse"
+      data-offset={batch.offset}
+      data-next-offset={loadError ? 0 : batch.nextOffset}
+      data-has-more={batch.hasMore ? "true" : "false"}
+      data-limit={batch.limit}
+      data-phase={loadError ? "error" : "ready"}
+      data-failed-direction={loadError ? "next" : ""}
+      data-requested-offset={loadError ? "0" : ""}
+    >
       <a class="kbm-btn kbm-btn-primary" href="/testimonials/share">Share your experience</a>
-      <button
-        class="kbm-btn kbm-btn-outline"
-        type="button"
-        id="show-more-stories"
-        hidden={!showMore}
-        data-next-offset={loadError ? 0 : batch.nextOffset}
-        data-has-more={batch.hasMore ? "true" : "false"}
-        data-phase={loadError ? "error" : "ready"}
-      >
-        {loadError ? "Retry" : "Show more stories"}
+      <button class="kbm-btn kbm-btn-outline" type="button" id="previous-stories" disabled={previousDisabled}>
+        Previous stories
+      </button>
+      <button class="kbm-btn kbm-btn-outline" type="button" id="next-stories" disabled={nextDisabled}>
+        {loadError ? "Retry" : "Next stories"}
       </button>
       <span id="show-more-status" class="testimonials-page__more-status" role="status">{loadError ? "Stories could not be loaded." : ""}</span>
     </div>
@@ -93,29 +99,48 @@ function yearLabel(reviewDate: string | null): string | null {
   import {
     acceptPublicBrowseBatch,
     failPublicBrowseLoad,
-    publicBrowseButtonLabel,
+    publicBrowseControlDisabled,
+    publicBrowseControlLabel,
+    publicBrowseRequestOffset,
+    publicBrowseScrollTop,
     publicBrowseStatus,
     startPublicBrowseLoad,
+    type PublicBrowseDirection,
     type PublicBrowseState,
   } from "../lib/testimonials/publicTestimonialBrowse";
 
   const list = document.getElementById("testimonial-list");
-  const button = document.getElementById("show-more-stories");
+  const browse = document.getElementById("testimonial-browse");
+  const previous = document.getElementById("previous-stories");
+  const next = document.getElementById("next-stories");
   const status = document.getElementById("show-more-status");
   const empty = document.getElementById("testimonial-empty");
-  if (list && button instanceof HTMLButtonElement) {
+  if (
+    list &&
+    browse &&
+    previous instanceof HTMLButtonElement &&
+    next instanceof HTMLButtonElement
+  ) {
+    const requested = browse.dataset.requestedOffset ?? "";
     let state: PublicBrowseState = {
-      nextOffset: Number(button.dataset.nextOffset ?? "0") || 0,
-      hasMore: button.dataset.hasMore === "true",
+      offset: Number(browse.dataset.offset ?? "0") || 0,
+      nextOffset: Number(browse.dataset.nextOffset ?? "0") || 0,
+      hasMore: browse.dataset.hasMore === "true",
       cardCount: list.querySelectorAll(".testimonials-page__card").length,
-      phase: button.dataset.phase === "error" ? "error" : "ready",
+      limit: Number(browse.dataset.limit ?? "8") || 8,
+      phase: browse.dataset.phase === "error" ? "error" : "ready",
+      pendingDirection: null,
+      failedDirection: browse.dataset.failedDirection === "previous" || browse.dataset.failedDirection === "next"
+        ? browse.dataset.failedDirection
+        : null,
+      requestedOffset: requested === "" ? null : Number(requested) || 0,
     };
 
     function yearLabel(reviewDate: string | null): string | null {
       return reviewDate?.slice(0, 4) || null;
     }
 
-    function appendCard(item: {
+    function createCard(item: {
       before: string;
       highlight: string | null;
       after: string;
@@ -146,23 +171,45 @@ function yearLabel(reviewDate: string | null): string | null {
         name.append(suffix);
       }
       article.append(block, name);
-      list.append(article);
+      return article;
+    }
+
+    function replaceCards(items: Parameters<typeof createCard>[0][]) {
+      list.replaceChildren(...items.map(createCard));
+    }
+
+    function renderControl(button: HTMLButtonElement, direction: PublicBrowseDirection) {
+      button.disabled = publicBrowseControlDisabled(state, direction);
+      button.textContent = publicBrowseControlLabel(state, direction);
+      button.setAttribute("aria-busy", state.phase === "loading" && state.pendingDirection === direction ? "true" : "false");
     }
 
     function renderControls() {
-      const label = publicBrowseButtonLabel(state);
-      button.hidden = label == null;
-      button.disabled = state.phase === "loading";
-      button.setAttribute("aria-busy", state.phase === "loading" ? "true" : "false");
-      if (label) button.textContent = label;
+      renderControl(previous, "previous");
+      renderControl(next, "next");
       if (status) status.textContent = publicBrowseStatus(state);
       if (empty) empty.hidden = !(state.phase === "ready" && state.cardCount === 0);
     }
 
-    button.addEventListener("click", async () => {
+    function scrollToCardStart() {
+      const header = document.querySelector(".kbm-header-wrap");
+      const bar = document.querySelector(".testimonials-page__sharebar");
+      const scroller = document.scrollingElement;
+      if (!scroller) return;
+      const top = publicBrowseScrollTop({
+        listTop: list.getBoundingClientRect().top,
+        scrollY: scroller.scrollTop,
+        headerBottom: header?.getBoundingClientRect().bottom ?? 0,
+        barHeight: bar?.getBoundingClientRect().height ?? 0,
+      });
+      scroller.scrollTop = top;
+    }
+
+    async function loadDirection(direction: PublicBrowseDirection) {
       if (state.phase === "loading") return;
-      const requestedOffset = state.nextOffset;
-      state = startPublicBrowseLoad(state);
+      const requestedOffset = publicBrowseRequestOffset(state, direction);
+      if (requestedOffset == null) return;
+      state = startPublicBrowseLoad(state, direction, requestedOffset);
       renderControls();
       try {
         const response = await fetch(`/api/testimonials?offset=${requestedOffset}`, {
@@ -172,16 +219,26 @@ function yearLabel(reviewDate: string | null): string | null {
         if (!response.ok || !data?.ok || !Array.isArray(data.testimonials)) {
           throw new Error("load failed");
         }
-        for (const item of data.testimonials) appendCard(item);
+        replaceCards(data.testimonials);
         state = acceptPublicBrowseBatch(state, {
           testimonials: data.testimonials,
+          offset: Number(data.offset),
           nextOffset: Number(data.nextOffset),
           hasMore: data.hasMore === true,
         });
+        renderControls();
+        scrollToCardStart();
       } catch {
         state = failPublicBrowseLoad(state);
+        renderControls();
       }
-      renderControls();
+    }
+
+    previous.addEventListener("click", () => {
+      void loadDirection("previous");
+    });
+    next.addEventListener("click", () => {
+      void loadDirection("next");
     });
   }
 </script>

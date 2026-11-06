@@ -14,7 +14,10 @@ import {
 import {
   acceptPublicBrowseBatch,
   failPublicBrowseLoad,
-  publicBrowseButtonLabel,
+  publicBrowseControlDisabled,
+  publicBrowseControlLabel,
+  publicBrowseRequestOffset,
+  publicBrowseScrollTop,
   publicBrowseStatus,
   startPublicBrowseLoad,
 } from "./publicTestimonialBrowse";
@@ -251,14 +254,18 @@ describe("testimonial publication rules", () => {
     expect(page).toContain("What Knitters Say");
     expect(page).toContain("Every knitter has a story.");
     expect(page).toContain("listPublicTestimonials");
-    expect(page).toContain("Show more stories");
+    expect(page).toContain("Next stories");
+    expect(page).toContain("Previous stories");
+    expect(page).not.toContain("Show more stories");
     expect(page).toContain('id="testimonial-list"');
     const actionBar = page.indexOf("testimonials-page__sharebar");
-    const moreStories = page.indexOf("show-more-stories");
+    const previousStories = page.indexOf("previous-stories");
+    const nextStories = page.indexOf("next-stories");
     const storyList = page.indexOf('id="testimonial-list"');
     expect(actionBar).toBeGreaterThan(-1);
-    expect(moreStories).toBeGreaterThan(actionBar);
-    expect(storyList).toBeGreaterThan(moreStories);
+    expect(previousStories).toBeGreaterThan(actionBar);
+    expect(nextStories).toBeGreaterThan(previousStories);
+    expect(storyList).toBeGreaterThan(nextStories);
     expect(page).not.toContain("set:html");
     expect(page).not.toContain("innerHTML");
     expect(page).toContain("testimonials-page__sharebar");
@@ -285,7 +292,9 @@ describe("testimonial publication rules", () => {
     expect(testimonialAdminListOrder()).toBe(testimonialAdminListOrder("inactive"));
     expect(page.match(/Share your experience/g)?.length).toBe(1);
     expect(page).toContain('class="kbm-btn kbm-btn-primary" href="/testimonials/share"');
-    expect(page).toContain('id="show-more-stories"');
+    expect(page).toContain('id="previous-stories"');
+    expect(page).toContain('id="next-stories"');
+    expect(page).toContain("replaceChildren");
     expect(page).not.toContain("testimonials-page__share--bottom");
     expect(page).not.toContain("set:html");
     expect(readFileSync("src/pages/account.astro", "utf8")).toContain('href="/testimonials/share"');
@@ -360,24 +369,56 @@ describe("testimonial publication rules", () => {
     expect(calls[2]?.params?.[2]).toBe(true);
   });
 
-  it("keeps shown stories when another batch fails and hides the control after the last batch", () => {
-    const shown = { nextOffset: 8, hasMore: true, cardCount: 8, phase: "ready" as const };
-    const loading = startPublicBrowseLoad(shown);
+  it("replaces one batch at a time and keeps the current cards when the next batch fails", () => {
+    const shown = {
+      offset: 0,
+      nextOffset: 8,
+      hasMore: true,
+      cardCount: 8,
+      limit: 8,
+      phase: "ready" as const,
+      pendingDirection: null,
+      failedDirection: null,
+      requestedOffset: null,
+    };
+    expect(publicBrowseControlDisabled(shown, "previous")).toBe(true);
+    expect(publicBrowseControlDisabled(shown, "next")).toBe(false);
+    expect(publicBrowseControlLabel(shown, "next")).toBe("Next stories");
+    const loading = startPublicBrowseLoad(shown, "next", 8);
     expect(loading.cardCount).toBe(8);
-    expect(publicBrowseButtonLabel(loading)).toBe("Loading…");
-    expect(publicBrowseStatus(loading)).toBe("Loading more stories…");
+    expect(loading.offset).toBe(0);
+    expect(publicBrowseControlLabel(loading, "next")).toBe("Loading…");
+    expect(publicBrowseControlDisabled(loading, "previous")).toBe(true);
+    expect(publicBrowseControlDisabled(loading, "next")).toBe(true);
+    expect(publicBrowseStatus(loading)).toBe("Loading stories…");
     const failed = failPublicBrowseLoad(loading);
     expect(failed.cardCount).toBe(8);
-    expect(failed.nextOffset).toBe(8);
-    expect(publicBrowseButtonLabel(failed)).toBe("Retry");
+    expect(failed.offset).toBe(0);
+    expect(failed.requestedOffset).toBe(8);
+    expect(publicBrowseControlLabel(failed, "next")).toBe("Retry");
+    expect(publicBrowseControlDisabled(failed, "next")).toBe(false);
+    expect(publicBrowseRequestOffset(failed, "next")).toBe(8);
     expect(publicBrowseStatus(failed)).toBe("Stories could not be loaded.");
-    const finished = acceptPublicBrowseBatch(shown, {
-      testimonials: ["a", "b"],
-      nextOffset: 10,
+    const middle = acceptPublicBrowseBatch(shown, {
+      testimonials: ["a", "b", "c", "d", "e", "f", "g", "h"],
+      offset: 8,
+      nextOffset: 16,
+      hasMore: true,
+    });
+    expect(middle.cardCount).toBe(8);
+    expect(middle.offset).toBe(8);
+    expect(publicBrowseRequestOffset(middle, "previous")).toBe(0);
+    expect(publicBrowseRequestOffset(middle, "next")).toBe(16);
+    const finished = acceptPublicBrowseBatch(middle, {
+      testimonials: ["i", "j"],
+      offset: 16,
+      nextOffset: 18,
       hasMore: false,
     });
-    expect(finished.cardCount).toBe(10);
-    expect(finished.nextOffset).toBe(10);
-    expect(publicBrowseButtonLabel(finished)).toBeNull();
+    expect(finished.cardCount).toBe(2);
+    expect(publicBrowseControlDisabled(finished, "next")).toBe(true);
+    expect(publicBrowseControlLabel(finished, "next")).toBe("Next stories");
+    expect(publicBrowseControlDisabled(finished, "previous")).toBe(false);
+    expect(publicBrowseScrollTop({ listTop: 900, scrollY: 400, headerBottom: 123, barHeight: 52 })).toBe(1117);
   });
 });
