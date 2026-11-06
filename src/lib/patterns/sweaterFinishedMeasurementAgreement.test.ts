@@ -9,7 +9,6 @@ import {
   resolveEffectiveFrontNeckDepthInches,
 } from "./customBuildEffectiveNeckDepth";
 import { generateDropShoulderPattern } from "./dropShoulderPatternOutput";
-import { generateSetInSleevePattern } from "./setInSleevePatternOutput";
 import { generateSleevelessBackPattern } from "./sleevelessPatternOutput";
 import { renderPatternDisplayRowsHtml } from "./sleevelessPatternDisplayHtml";
 import { renderSleevelessPrintPieceHtml } from "./sleevelessPatternPrintRender";
@@ -29,7 +28,7 @@ import {
 } from "./errata/errataVisibility";
 import { dropShoulderSleeveErrataRecord } from "./errata/dropShoulderSleeveErrata";
 import {
-  SWEATER_FINISHED_MEASUREMENTS_CORRECTED_AT,
+  SWEATER_FINISHED_MEASUREMENTS_PRODUCTION_RELEASED_AT,
   SWEATER_FINISHED_MEASUREMENTS_KNITTER_ACTION,
   sweaterFinishedMeasurementErrataRecord,
 } from "./errata/sweaterFinishedMeasurementErrata";
@@ -133,19 +132,6 @@ describe("saved finished measurements are used after a direct reopen", () => {
     const baselineText = instructionText(original.displayRows);
     expect(baselineText.screen).not.toContain(hemSentence);
     expect(baselineText.print).not.toContain("Knit to RC 112.");
-  });
-
-  it("uses the same saved measurements for a Set-In Sleeve body", () => {
-    const saved = sweater({ construction: "set-in", overrides: edited });
-    const generated = generateSetInSleevePattern(saved);
-    expect(generated.debug.backNeckToHem).toBe(26);
-    expect(generated.debug.armholeDepth).toBe(10);
-    expect(generated.debug.shoulderWidthInches).toBe(5.5);
-    const overview = instructionText(generated.overviewRows);
-    expect(overview.screen).toContain("Length 26 in");
-    expect(overview.print).toContain("Length 26 in");
-    expect(overview.screen).toContain("Armhole depth 10 in");
-    expect(overview.print).toContain("Armhole depth 10 in");
   });
 
   it("keeps Drop Shoulder armhole and shoulder width on their construction rules", () => {
@@ -332,7 +318,7 @@ describe("correction notice for patterns whose instructions change", () => {
 
     expect(
       classifySavedPatternForErrata(
-        project(sweater({ overrides: edited }), SWEATER_FINISHED_MEASUREMENTS_CORRECTED_AT),
+        project(sweater({ overrides: edited }), SWEATER_FINISHED_MEASUREMENTS_PRODUCTION_RELEASED_AT),
         errata,
       ).classification,
     ).toBe("current_default");

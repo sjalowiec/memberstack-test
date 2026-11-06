@@ -6,7 +6,7 @@ import { inchesToCmRounded } from "./patternMeasurementDisplayUnit";
 import { renderPatternDisplayRowsHtml } from "./sleevelessPatternDisplayHtml";
 import { renderSleevelessPrintPieceHtml } from "./sleevelessPatternPrintRender";
 import { noticesForSavedPattern, savedPatternNoticeText } from "./errata/errataVisibility";
-import { dropShoulderSleeveErrataRecord } from "./errata/dropShoulderSleeveErrata";
+import { dropShoulderSleeveErrataRecord, DROP_SHOULDER_SLEEVE_PRODUCTION_RELEASED_AT } from "./errata/dropShoulderSleeveErrata";
 import type { ChartRow } from "./sleevelessExpressSizeChartTypes";
 
 const MENS_LG: ChartRow = {
@@ -160,8 +160,8 @@ describe("Customer's saved Drop Shoulder project", () => {
     expect(noticesForSavedPattern(published, sleeveless, sleeveless.id)).toEqual([]);
 
     const createdAfter = structuredClone(CUSTOMER_PROJECT);
-    createdAfter.createdAt = "2026-11-06T05:00:00.000Z";
-    createdAfter.pattern.createdAt = "2026-11-06T05:00:00.000Z";
+    createdAfter.createdAt = DROP_SHOULDER_SLEEVE_PRODUCTION_RELEASED_AT;
+    createdAfter.pattern.createdAt = DROP_SHOULDER_SLEEVE_PRODUCTION_RELEASED_AT;
     expect(noticesForSavedPattern(published, createdAfter, createdAfter.id)).toEqual([]);
   });
 });

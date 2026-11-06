@@ -2,11 +2,11 @@ import { positiveMeasurementInches } from "../customBuildEffectiveArmholeDepth";
 import {
   DROP_SHOULDER_CONSTRUCTION,
   CONSTRUCTION_AUTHORED_KEY,
+  CONSTRUCTION_FAMILY_OVERRIDE_KEY,
   hasAuthoritativeDropShoulderConstruction,
 } from "../patternConstructionIdentity";
 import { hasAuthoritativeSidewaysCardiganConstruction } from "../sidewaysCardiganConstructionIdentity";
 import { readDropShoulderUserEditedSleeveFieldsFromFit } from "../dropShoulderUserEditedSleeveFields";
-import { hasAuthoritativeSetInSleeveConstruction } from "../setInSleeveConstructionIdentity";
 import type {
   DropShoulderSleeveMatchRules,
   ErrataMatchedMeasurement,
@@ -48,6 +48,20 @@ function normalizeSize(value: string): string {
 
 function lengthsClose(a: number, b: number): boolean {
   return Math.abs(a - b) <= LENGTH_EPSILON_INCHES;
+}
+
+/**
+ * Same rule as the Set-In Sleeve builder: construction is set-in-sleeve and either
+ * the authored marker or the construction-family override says so. That builder is
+ * not part of this production release, so the check lives here instead of importing it.
+ */
+function hasAuthoritativeSetInSleeveConstruction(
+  style: Record<string, unknown>,
+  customOverrides: Record<string, unknown>,
+): boolean {
+  if (style.construction !== "set-in-sleeve") return false;
+  if (style[CONSTRUCTION_AUTHORED_KEY] === "set-in-sleeve") return true;
+  return customOverrides[CONSTRUCTION_FAMILY_OVERRIDE_KEY] === "set-in-sleeve";
 }
 
 function looksLikeCentimeters(stored: number, rule: FinishedLengthSizeRule): boolean {

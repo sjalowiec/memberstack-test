@@ -9,17 +9,21 @@ import type {
   SweaterFinishedMeasurementMatchRules,
 } from "./types";
 import { SWEATER_FINISHED_MEASUREMENTS_KIND } from "./types";
+import { productionReleaseTiming } from "./productionReleaseCutoff";
 
 export const SWEATER_FINISHED_MEASUREMENTS_ERRATA_ID = "c4e8a1d2-6b47-4f0e-9c31-8a5d2e7b6f10";
 
 export const SWEATER_FINISHED_MEASUREMENTS_ERRATA_SLUG = "sweater-finished-measurements";
 
 /**
- * Patterns created at or after this time are generated from the saved finished
- * measurement. Earlier Express patterns can still be showing the editor value
- * while the instructions use the chart.
+ * Production release instant for this correction.
+ * Patterns created before this instant can receive the notice.
+ * Patterns created at or after it already use the saved finished measurements.
  */
-export const SWEATER_FINISHED_MEASUREMENTS_CORRECTED_AT = "2026-11-06T05:00:00.000Z";
+export const SWEATER_FINISHED_MEASUREMENTS_PRODUCTION_RELEASED_AT: string | null = "2026-11-06T14:45:00.000Z";
+
+/** Record metadata only. This is not the production cutoff. */
+const SWEATER_FINISHED_MEASUREMENTS_RECORD_AT = "2026-11-06T12:00:00.000Z";
 
 export const SWEATER_FINISHED_MEASUREMENTS_ERRATA_TITLE = "Saved finished sweater measurements";
 
@@ -31,6 +35,8 @@ export const SWEATER_FINISHED_MEASUREMENTS_WHAT_CHANGED = [
   "A Drop Shoulder armhole is still half the upper arm. Drop Shoulder does not have an editable shoulder width; the cross-shoulder follows the finished bust. Back neck depth is still the size-chart value, and it stays at 1 inch or less. Bust, hip, and cuff depth were already taken from the saved measurement.",
   "",
   "An unedited centimeter measurement that is the same quarter inch as the chart usually keeps the same stitch and row counts. A measurement you changed will change the instructions.",
+  "",
+  "Affected patterns saved before this correction is released to production can show this notice. Patterns saved after that production release already use the saved finished measurements.",
 ].join("\n");
 
 export const SWEATER_FINISHED_MEASUREMENTS_KNITTER_ACTION =
@@ -38,7 +44,7 @@ export const SWEATER_FINISHED_MEASUREMENTS_KNITTER_ACTION =
 
 export const SWEATER_FINISHED_MEASUREMENTS_MATCH_RULES: SweaterFinishedMeasurementMatchRules = {
   kind: SWEATER_FINISHED_MEASUREMENTS_KIND,
-  correctedAt: SWEATER_FINISHED_MEASUREMENTS_CORRECTED_AT,
+  correctedAt: SWEATER_FINISHED_MEASUREMENTS_PRODUCTION_RELEASED_AT,
 };
 
 export function sweaterFinishedMeasurementErrataRecord(): PatternErrataRecord {
@@ -53,8 +59,8 @@ export function sweaterFinishedMeasurementErrataRecord(): PatternErrataRecord {
     affectedBuilders: ["drop-shoulder", "sleeveless"],
     affectedSizes: {},
     matchRules: SWEATER_FINISHED_MEASUREMENTS_MATCH_RULES,
-    createdAt: SWEATER_FINISHED_MEASUREMENTS_CORRECTED_AT,
-    updatedAt: SWEATER_FINISHED_MEASUREMENTS_CORRECTED_AT,
+    createdAt: SWEATER_FINISHED_MEASUREMENTS_RECORD_AT,
+    updatedAt: SWEATER_FINISHED_MEASUREMENTS_RECORD_AT,
     updatedBy: null,
   };
 }
@@ -233,18 +239,18 @@ export function classifySweaterFinishedMeasurementErrata(
   }
 
   const createdAt = createdAtMs(project, pattern);
-  const correctedAt = Date.parse(rules.correctedAt);
-  if (createdAt === null || !Number.isFinite(correctedAt)) {
+  const timing = productionReleaseTiming(createdAt, rules.correctedAt);
+  if (timing === "undated") {
     return blankMatch(
       "uncertain",
       "The saved finished measurements would change the instructions, but the pattern has no creation date, so it is not marked affected.",
       base,
     );
   }
-  if (createdAt >= correctedAt) {
+  if (timing === "after-release") {
     return blankMatch(
       "current_default",
-      "The pattern was created after this correction and already generates from the saved finished measurements.",
+      "The pattern was created after this correction was released to production and already generates from the saved finished measurements.",
       base,
     );
   }
