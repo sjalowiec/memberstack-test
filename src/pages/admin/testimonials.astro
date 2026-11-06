@@ -11,6 +11,7 @@ import type { TestimonialRecord } from "../../lib/testimonials/testimonialRules"
 
 const statusParam = Astro.url.searchParams.get("status");
 const status = statusParam === "active" || statusParam === "inactive" ? statusParam : "all";
+const sort = Astro.url.searchParams.get("sort") === "active" ? "active" : "inactive";
 const q = Astro.url.searchParams.get("q")?.trim() ?? "";
 const page = Math.max(Number(Astro.url.searchParams.get("page") ?? "1") || 1, 1);
 const pageSize = 40;
@@ -25,6 +26,7 @@ try {
   const listed = await listTestimonialsForAdmin({
     q,
     status,
+    sort,
     limit: pageSize,
     offset: (page - 1) * pageSize,
   });
@@ -40,14 +42,17 @@ try {
 
 const pageCount = Math.max(Math.ceil(total / pageSize), 1);
 
-function listHref(next: { status?: string; page?: number; id?: string }) {
+function listHref(next: { status?: string; page?: number; id?: string; sort?: "inactive" | "active" }) {
   const params = new URLSearchParams();
   const nextStatus = next.status ?? status;
   if (nextStatus !== "all") params.set("status", nextStatus);
   if (q) params.set("q", q);
+  const nextSort = next.sort ?? sort;
+  if (nextSort === "active") params.set("sort", "active");
   const nextPage = next.page ?? page;
   if (nextPage > 1) params.set("page", String(nextPage));
-  if (next.id) params.set("id", next.id);
+  const nextId = "id" in next ? next.id : selectedId;
+  if (nextId) params.set("id", nextId);
   const query = params.toString();
   return query ? `/admin/testimonials?${query}` : "/admin/testimonials";
 }
@@ -68,7 +73,7 @@ const previewParts = selected?.displayQuote
   : null;
 ---
 
-<Layout title="Testimonials | Knit it Now" description="Review, correct, and activate testimonials.">
+<Layout title="Testimonials | Knit it Now" description="Review, correct, and activate testimonials." bodyClass="page--testimonial-admin">
   <main class="page-wrap testimonial-admin">
     <header>
       <h1>Testimonials</h1>
@@ -84,23 +89,8 @@ const previewParts = selected?.displayQuote
     {
       !loadError ? (
         <>
-          <form class="testimonial-admin__filters" method="get" action="/admin/testimonials">
-            <label>
-              Search
-              <input type="search" name="q" value={q} />
-            </label>
-            <label>
-              Status
-              <select name="status">
-                <option value="all" selected={status === "all"}>All</option>
-                <option value="active" selected={status === "active"}>Active</option>
-                <option value="inactive" selected={status === "inactive"}>Inactive</option>
-              </select>
-            </label>
-            <button class="kbm-btn kbm-btn-primary" type="submit">Apply</button>
-          </form>
-          <p>{total} testimonial{total === 1 ? "" : "s"}</p>
-
+          <div class="testimonial-admin__workspace">
+          <div class="testimonial-admin__editor">
           <details class="testimonial-admin__add">
             <summary>Add a testimonial received by email</summary>
             <form id="testimonial-add-form" class="contact-form">
@@ -208,8 +198,37 @@ const previewParts = selected?.displayQuote
                 </p>
                 <p class="testimonial-admin__status" data-detail-status role="status"></p>
               </article>
-            ) : null
+            ) : (
+              <p class="testimonial-admin__prompt">Select a testimonial to review it.</p>
+            )
           }
+          </div>
+
+          <div class="testimonial-admin__list">
+          <form class="testimonial-admin__filters" method="get" action="/admin/testimonials">
+            {selectedId ? <input type="hidden" name="id" value={selectedId} /> : null}
+            <label>
+              Search
+              <input type="search" name="q" value={q} />
+            </label>
+            <label>
+              Status
+              <select name="status">
+                <option value="all" selected={status === "all"}>All</option>
+                <option value="active" selected={status === "active"}>Active</option>
+                <option value="inactive" selected={status === "inactive"}>Inactive</option>
+              </select>
+            </label>
+            <label>
+              Sort
+              <select name="sort">
+                <option value="inactive" selected={sort === "inactive"}>Inactive first</option>
+                <option value="active" selected={sort === "active"}>Active first</option>
+              </select>
+            </label>
+            <button class="kbm-btn kbm-btn-primary" type="submit">Apply</button>
+          </form>
+          <p>{total} testimonial{total === 1 ? "" : "s"}</p>
 
           {
             rows.length === 0 ? (
@@ -227,8 +246,12 @@ const previewParts = selected?.displayQuote
                 </thead>
                 <tbody>
                   {rows.map((row) => (
-                    <tr>
-                      <td><a href={listHref({ id: row.id })}>{row.displayAttribution || row.originalAttribution}</a></td>
+                    <tr class={row.id === selectedId ? "is-selected" : undefined}>
+                      <td>
+                        <a href={listHref({ id: row.id })} aria-current={row.id === selectedId ? "true" : undefined}>
+                          {row.displayAttribution || row.originalAttribution}
+                        </a>
+                      </td>
                       <td>{snippet(row)}</td>
                       <td>{row.source.replaceAll("_", " ")}</td>
                       <td>{memberLabel(row)}</td>
@@ -254,6 +277,8 @@ const previewParts = selected?.displayQuote
             <span>Page {page} of {pageCount}</span>
             {page < pageCount ? <a href={listHref({ page: page + 1 })}>Next</a> : null}
           </p>
+          </div>
+          </div>
         </>
       ) : null
     }
@@ -262,6 +287,30 @@ const previewParts = selected?.displayQuote
 
 <script>
   import { fetchAdminJson } from "../../lib/admin/adminAuthClient";
+
+  const LIST_POSITION_KEY = "kin-testimonial-admin-scroll";
+
+  function rememberListPosition() {
+    try {
+      sessionStorage.setItem(LIST_POSITION_KEY, String(window.scrollY));
+    } catch {
+      /* Storage can be unavailable. The page still reloads with the current address. */
+    }
+  }
+
+  function restoreListPosition() {
+    try {
+      const raw = sessionStorage.getItem(LIST_POSITION_KEY);
+      if (raw == null) return;
+      sessionStorage.removeItem(LIST_POSITION_KEY);
+      const y = Number(raw);
+      if (Number.isFinite(y)) window.scrollTo(0, y);
+    } catch {
+      /* The list opens at the top when storage cannot be read. */
+    }
+  }
+
+  restoreListPosition();
 
   async function patchTestimonial(id: string, body: Record<string, unknown>, status: HTMLElement | null) {
     const result = await fetchAdminJson<{ ok: boolean; error?: string }>(`/api/admin/testimonials/${encodeURIComponent(id)}`, {
@@ -272,6 +321,7 @@ const previewParts = selected?.displayQuote
       if (status) status.textContent = result.data?.error || result.error || "Could not save.";
       return;
     }
+    rememberListPosition();
     window.location.reload();
   }
 
@@ -300,8 +350,17 @@ const previewParts = selected?.displayQuote
       }
       const url = new URL(window.location.href);
       url.searchParams.delete("id");
+      rememberListPosition();
       window.location.href = `${url.pathname}${url.search}`;
     });
+  });
+
+  document.querySelector(".testimonial-admin__list")?.addEventListener("click", (event) => {
+    const target = event.target;
+    if (target instanceof Element && target.closest("a")) rememberListPosition();
+  });
+  document.querySelector(".testimonial-admin__filters")?.addEventListener("submit", () => {
+    rememberListPosition();
   });
 
   document.getElementById("testimonial-display-form")?.addEventListener("submit", (event) => {
@@ -410,7 +469,7 @@ const previewParts = selected?.displayQuote
     if (!(form instanceof HTMLFormElement)) return;
     const data = new FormData(form);
     const status = document.querySelector<HTMLElement>("[data-add-status]");
-    const result = await fetchAdminJson<{ ok: boolean; error?: string }>("/api/admin/testimonials", {
+    const result = await fetchAdminJson<{ ok: boolean; error?: string; testimonial?: { id?: string } }>("/api/admin/testimonials", {
       method: "POST",
       body: {
         attribution: String(data.get("attribution") ?? ""),
@@ -422,11 +481,44 @@ const previewParts = selected?.displayQuote
       if (status) status.textContent = result.data?.error || result.error || "Could not save.";
       return;
     }
-    window.location.href = "/admin/testimonials?status=inactive";
+    const url = new URL(window.location.href);
+    const createdId = result.data.testimonial?.id;
+    if (createdId) url.searchParams.set("id", createdId);
+    rememberListPosition();
+    window.location.href = `${url.pathname}${url.search}`;
   });
 </script>
 
 <style>
+  :global(body.page--testimonial-admin main.site-content) {
+    max-width: none;
+  }
+
+  .testimonial-admin.page-wrap {
+    max-width: none;
+    width: 100%;
+  }
+
+  .testimonial-admin__workspace {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    align-items: stretch;
+  }
+
+  .testimonial-admin__editor,
+  .testimonial-admin__list {
+    min-width: 0;
+  }
+
+  .testimonial-admin__prompt {
+    margin: 0;
+    padding: 1rem;
+    border: 1px solid #d6dbc9;
+    border-radius: 1rem;
+    background: #fff;
+  }
+
   .testimonial-admin__filters,
   .testimonial-admin__pager {
     display: flex;
@@ -434,9 +526,25 @@ const previewParts = selected?.displayQuote
     gap: 0.75rem;
     align-items: end;
   }
+  .testimonial-admin__list {
+    overflow-x: auto;
+  }
+
   .testimonial-admin__table {
     width: 100%;
     border-collapse: collapse;
+  }
+
+  .testimonial-admin__table tr.is-selected td {
+    background: #f4f7ee;
+  }
+
+  .testimonial-admin__table tr.is-selected td:first-child {
+    box-shadow: inset 4px 0 0 var(--kbm-green, #52682d);
+  }
+
+  .testimonial-admin__table tr.is-selected a {
+    font-weight: 700;
   }
   .testimonial-admin__table th,
   .testimonial-admin__table td {
@@ -464,5 +572,21 @@ const previewParts = selected?.displayQuote
   }
   .testimonial-admin__preview {
     margin-top: 0.5rem;
+  }
+
+  @media (min-width: 960px) {
+    .testimonial-admin__workspace {
+      display: grid;
+      grid-template-columns: minmax(22rem, 0.85fr) minmax(0, 1.15fr);
+      gap: 1.5rem;
+      align-items: start;
+    }
+
+    .testimonial-admin__editor {
+      position: sticky;
+      top: calc(var(--kbm-env-banner-h, 0px) + var(--header-offset, 100px));
+      max-height: calc(100vh - var(--kbm-env-banner-h, 0px) - var(--header-offset, 100px) - 12px);
+      overflow: auto;
+    }
   }
 </style>

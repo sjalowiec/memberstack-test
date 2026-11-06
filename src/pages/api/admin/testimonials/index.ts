@@ -21,9 +21,11 @@ export const GET: APIRoute = async ({ request, cookies }) => {
   const url = new URL(request.url);
   const status = url.searchParams.get("status");
   try {
+    const sort = url.searchParams.get("sort");
     const result = await listTestimonialsForAdmin({
       q: url.searchParams.get("q") ?? "",
       status: status === "active" || status === "inactive" ? status : "all",
+      sort: sort === "active" ? "active" : "inactive",
       limit: Number(url.searchParams.get("limit") ?? "40"),
       offset: Number(url.searchParams.get("offset") ?? "0"),
     });

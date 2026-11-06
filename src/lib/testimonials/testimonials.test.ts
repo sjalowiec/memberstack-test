@@ -11,7 +11,7 @@ import {
   LEGACY_IMPORT_PRESERVED_COLUMNS,
   legacyImportUpsertSql,
 } from "./testimonialRules";
-import { PUBLIC_TESTIMONIAL_SQL, DELETE_TESTIMONIAL_SQL } from "./testimonialStore";
+import { PUBLIC_TESTIMONIAL_SQL, DELETE_TESTIMONIAL_SQL, testimonialAdminListOrder } from "./testimonialStore";
 
 describe("testimonial publication rules", () => {
   it("removes legacy HTML and links before public display", () => {
@@ -216,6 +216,18 @@ describe("testimonial publication rules", () => {
     expect(page).toContain("Every knitter has a story.");
     expect(page).toContain("listPublicTestimonials");
     expect(page).toContain("testimonials-page__sharebar");
+    const admin = readFileSync("src/pages/admin/testimonials.astro", "utf8");
+    expect(admin).toContain("Inactive first");
+    expect(admin).toContain("Active first");
+    expect(admin).toContain("testimonial-admin__editor");
+    expect(admin).toContain("testimonial-admin__list");
+    expect(testimonialAdminListOrder("inactive")).toBe(
+      "active ASC, review_date DESC NULLS LAST, created_at DESC",
+    );
+    expect(testimonialAdminListOrder("active")).toBe(
+      "active DESC, review_date DESC NULLS LAST, created_at DESC",
+    );
+    expect(testimonialAdminListOrder()).toBe(testimonialAdminListOrder("inactive"));
     expect(page.match(/Share your experience/g)?.length).toBe(2);
     expect(page).not.toContain("set:html");
     expect(readFileSync("src/pages/account.astro", "utf8")).toContain('href="/testimonials/share"');

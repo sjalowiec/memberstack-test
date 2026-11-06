@@ -149,8 +149,22 @@ export async function listPublicTestimonials(query: Query = queryTestimonials): 
     .filter((row): row is PublicTestimonial => row !== null);
 }
 
+export type TestimonialAdminSort = "inactive" | "active";
+
+/** Inactive or active group first, then the existing newest-first order inside each group. */
+export function testimonialAdminListOrder(sort: TestimonialAdminSort = "inactive"): string {
+  const statusGroup = sort === "active" ? "active DESC" : "active ASC";
+  return `${statusGroup}, review_date DESC NULLS LAST, created_at DESC`;
+}
+
 export async function listTestimonialsForAdmin(
-  input: { q?: string; status?: "all" | "active" | "inactive"; limit?: number; offset?: number },
+  input: {
+    q?: string;
+    status?: "all" | "active" | "inactive";
+    sort?: TestimonialAdminSort;
+    limit?: number;
+    offset?: number;
+  },
   query: Query = queryTestimonials,
 ): Promise<{ rows: TestimonialRecord[]; total: number }> {
   const q = (input.q ?? "").trim();
@@ -174,7 +188,7 @@ export async function listTestimonialsForAdmin(
   );
   const rows = await query<Record<string, unknown>>(
     `SELECT ${ADMIN_COLUMNS} FROM testimonials WHERE ${filters}
-     ORDER BY review_date DESC NULLS LAST, created_at DESC
+     ORDER BY ${testimonialAdminListOrder(input.sort)}
      LIMIT $4 OFFSET $5`,
     [...params, limit, offset],
   );
