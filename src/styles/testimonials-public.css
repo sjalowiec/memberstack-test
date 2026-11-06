@@ -28,30 +28,41 @@
 .testimonials-page__sharebar {
   position: sticky;
   top: calc(var(--kbm-env-banner-h, 0px) + var(--header-offset, 100px) - 12px);
-  z-index: 30;
+  z-index: 40;
   display: flex;
+  flex-wrap: wrap;
   justify-content: center;
-  margin: 0 -20px 1.35rem;
-  padding: 0.4rem 20px 0.5rem;
+  align-items: center;
+  gap: 0.5rem 0.65rem;
+  margin: 0 -20px 1.15rem;
+  padding: 0.45rem 16px;
   background: var(--page-bg, #f7f8f7);
-  box-shadow: 0 1px 0 rgba(82, 104, 45, 0.12);
+  box-shadow: 0 1px 0 rgba(82, 104, 45, 0.16);
 }
 
-.testimonials-page__share--bottom {
-  margin: 2rem 0 0;
+.testimonials-page__sharebar .kbm-btn {
+  margin: 0;
+  padding: 8px 14px;
+  font-size: 0.95rem;
+  line-height: 1.25;
   text-align: center;
 }
 
-.testimonials-page__more {
-  margin: 1.5rem 0 0;
-  text-align: center;
+.testimonials-page__sharebar .kbm-btn[hidden] {
+  display: none !important;
 }
 
-.testimonials-page__more [role="status"]:not(:empty) {
-  display: block;
-  margin: 0.75rem 0 0;
+.testimonials-page__more-status {
+  flex: 1 0 100%;
+  margin: 0;
+  text-align: center;
   color: #3e4a32;
+  font-size: 0.9rem;
   font-weight: 600;
+}
+
+.testimonials-page__more-status:empty {
+  display: none;
 }
 
 .testimonials-page__list {
@@ -141,6 +152,14 @@
   color: var(--kbm-green, #52682d);
   font-weight: 600;
   text-align: left;
+}
+
+@media (max-width: 520px) {
+  .testimonials-page__sharebar .kbm-btn {
+    flex: 1 1 calc(50% - 0.4rem);
+    min-width: 9.25rem;
+    padding: 10px 12px;
+  }
 }
 
 @media (min-width: 800px) {
