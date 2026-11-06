@@ -1452,11 +1452,19 @@ function applyDropShoulderSleeveResolvedToMerged(
   fitPref: string,
   bodyShape?: string,
 ): void {
+  const patternFit = getCurrentPattern().fit;
+  const selected = patternFit?.selectedMeasurements;
   const sleeveResolved = resolveDropShoulderSleeveOverrideStrings({
     overrides: loadMeasurementOverrides(),
     chartRow: row,
     fitPreference: fitPref,
+    selectedMeasurements:
+      selected && typeof selected === "object" && !Array.isArray(selected)
+        ? (selected as Record<string, unknown>)
+        : null,
     bodyShape,
+    userEdited: readEffectiveDropShoulderUserEditedSleeveFields(patternFit),
+    authoritativeStoredCuffAndUpperArm: true,
   });
   for (const [key, val] of Object.entries(sleeveResolved)) {
     if (val) merged[key as DiagramFieldKey] = val;

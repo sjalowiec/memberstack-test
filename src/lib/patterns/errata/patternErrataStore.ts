@@ -8,7 +8,12 @@ import type {
   PatternErrataRecord,
   PatternErrataStatus,
 } from "./types";
-import { FINISHED_LENGTH_DEFAULTS_KIND, PATTERN_ERRATA_BUILDERS, PATTERN_ERRATA_STATUSES } from "./types";
+import {
+  DROP_SHOULDER_SLEEVE_MEASUREMENTS_KIND,
+  FINISHED_LENGTH_DEFAULTS_KIND,
+  PATTERN_ERRATA_BUILDERS,
+  PATTERN_ERRATA_STATUSES,
+} from "./types";
 
 const COLUMNS = `
   id,
@@ -77,6 +82,13 @@ function readBuilders(value: unknown): PatternErrataBuilder[] {
 
 function readMatchRules(value: unknown): PatternErrataMatchRules | null {
   const rules = asRecord(value);
+  if (
+    rules?.kind === DROP_SHOULDER_SLEEVE_MEASUREMENTS_KIND &&
+    typeof rules.correctedAt === "string" &&
+    Number.isFinite(Date.parse(rules.correctedAt))
+  ) {
+    return { kind: DROP_SHOULDER_SLEEVE_MEASUREMENTS_KIND, correctedAt: new Date(rules.correctedAt).toISOString() };
+  }
   if (!rules || rules.kind !== FINISHED_LENGTH_DEFAULTS_KIND) return null;
   if (typeof rules.correctedAt !== "string") return null;
   if (!Array.isArray(rules.sizes)) return null;

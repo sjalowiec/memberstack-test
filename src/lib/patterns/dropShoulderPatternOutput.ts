@@ -45,8 +45,11 @@ import {
   isCustomBuildPatternMode,
   positiveMeasurementInches,
 } from "./customBuildEffectiveArmholeDepth";
-import { isDropShoulderPatternData } from "./dropShoulderSleeveMeasurementOverrides";
-import { resolveDropShoulderSleeveInches } from "./dropShoulderSleeveMeasurementOverrides";
+import {
+  applyStoredDropShoulderFinishedSleeveInches,
+  isDropShoulderPatternData,
+  resolveDropShoulderSleeveInches,
+} from "./dropShoulderSleeveMeasurementOverrides";
 import { resolveCuffUpSweaterSleevePiece } from "./legoBlocks/sweaterSleeveCuff";
 import { readEffectiveDropShoulderUserEditedSleeveFields } from "./dropShoulderUserEditedSleeveFields";
 import { findExpressChartRow } from "./sleevelessExpressSizeChartClient";
@@ -1503,6 +1506,7 @@ export function generateDropShoulderPattern(
   ).trim();
   const chartRow =
     chartAudience && selectedSize ? findExpressChartRow(chartAudience, selectedSize) : null;
+  const sleeveUserEdited = readEffectiveDropShoulderUserEditedSleeveFields(fitSection);
   const sleeveResolved = isDropShoulderPatternData(patternData)
     ? resolveDropShoulderSleeveInches({
         overrides: overrideStrings,
@@ -1512,19 +1516,28 @@ export function generateDropShoulderPattern(
         bodyShape: String(style.bodyShape ?? "straight"),
         chartAudience,
         sleeveLengthChoice: style.sleeveLength,
-        userEdited: readEffectiveDropShoulderUserEditedSleeveFields(fitSection),
+        userEdited: sleeveUserEdited,
+        authoritativeStoredCuffAndUpperArm: true,
       })
     : {};
+  const consumedSleeve = isDropShoulderPatternData(patternData)
+    ? applyStoredDropShoulderFinishedSleeveInches({
+        resolved: sleeveResolved,
+        overrides: overrideStrings,
+        userEdited: sleeveUserEdited,
+        sleeveLengthChoice: style.sleeveLength,
+      })
+    : sleeveResolved;
   const upperArmIn =
-    sleeveResolved.upperArmIn ??
+    consumedSleeve.upperArmIn ??
     sleeveOverrideInches(patternData, "upperArm") ??
     measurementInches(sm, "upper_arm");
   const wristIn =
-    sleeveResolved.wristIn ??
+    consumedSleeve.wristIn ??
     sleeveOverrideInches(patternData, "wrist") ??
     measurementInches(sm, "wrist");
   const sleeveLengthIn =
-    sleeveResolved.sleeveLengthIn ??
+    consumedSleeve.sleeveLengthIn ??
     sleeveOverrideInches(patternData, "sleeveLength") ??
     measurementInches(sm, "sleeve_length");
 
