@@ -2,6 +2,8 @@ import { describe, expect, it, vi } from "vitest";
 import {
   catalogPosterUrlFromThumbnail,
   fetchVimeoCatalogPoster,
+  posterSyncAction,
+  syncSubmittedVideoPosters,
   vimeoOembedPageUrl,
 } from "./vimeoCatalogPoster";
 
@@ -22,6 +24,68 @@ describe("catalogPosterUrlFromThumbnail", () => {
   it("rejects a non-Vimeo picture address", () => {
     expect(catalogPosterUrlFromThumbnail("https://example.com/video/1-d_960")).toBeNull();
   });
+
+  it("keeps underscore Vimeo pictures on an underscore address", () => {
+    expect(
+      catalogPosterUrlFromThumbnail(
+        "https://i.vimeocdn.com/video/1270049673-6ae64a8675053d2b51d2897aabbebf71bc9b3e500fe6419eb_960?region=us",
+      ),
+    ).toBe(
+      "https://i.vimeocdn.com/video/1270049673-6ae64a8675053d2b51d2897aabbebf71bc9b3e500fe6419eb_1280x720?r=pad",
+    );
+    expect(
+      catalogPosterUrlFromThumbnail(
+        "https://i.vimeocdn.com/video/1282582818-d440541bc3049c11104a9010a5e1576da630212a5fdebdeec_1280?region=us",
+      ),
+    ).toBe(
+      "https://i.vimeocdn.com/video/1282582818-d440541bc3049c11104a9010a5e1576da630212a5fdebdeec_1280x720?r=pad",
+    );
+  });
+});
+
+describe("posterSyncAction", () => {
+  const previousPoster = "https://i.vimeocdn.com/video/old-d_1280x720?r=pad";
+
+  it("loads a picture when the save has none", () => {
+    expect(
+      posterSyncAction({
+        previousVimeoId: 151858524,
+        nextVimeoId: 151858524,
+        previousPoster: "",
+        nextPoster: "",
+      }),
+    ).toBe("load");
+  });
+
+  it("loads a picture when the Vimeo ID changed and the old picture was left in place", () => {
+    expect(
+      posterSyncAction({
+        previousVimeoId: 151819909,
+        nextVimeoId: 1175910961,
+        previousPoster,
+        nextPoster: previousPoster,
+      }),
+    ).toBe("load");
+  });
+
+  it("keeps a picture the admin set, including a stale picture for the same Vimeo ID", () => {
+    expect(
+      posterSyncAction({
+        previousVimeoId: 151857510,
+        nextVimeoId: 151857510,
+        previousPoster,
+        nextPoster: previousPoster,
+      }),
+    ).toBe("keep");
+    expect(
+      posterSyncAction({
+        previousVimeoId: 151819909,
+        nextVimeoId: 1175910961,
+        previousPoster,
+        nextPoster: "https://i.vimeocdn.com/video/chosen-d_1280x720?r=pad",
+      }),
+    ).toBe("keep");
+  });
 });
 
 describe("vimeoOembedPageUrl", () => {
@@ -35,6 +99,49 @@ describe("vimeoOembedPageUrl", () => {
     );
     expect(vimeoOembedPageUrl(151859522, "bad hash")).toBeNull();
     expect(vimeoOembedPageUrl(0)).toBeNull();
+  });
+});
+
+describe("syncSubmittedVideoPosters", () => {
+  const oldPoster = "https://i.vimeocdn.com/video/old-d_1280x720?r=pad";
+  const livePoster = "https://i.vimeocdn.com/video/live-d_1280x720?r=pad";
+
+  it("replaces the old picture when the Vimeo ID changed and leaves the chosen picture alone", async () => {
+    const videos = [
+      { content_id: 249, title: "Parent", vimeo_id: 151819909, posterUrl: oldPoster },
+      { content_id: "249-1", title: "Clip", vimeo_id: 1175910961, posterUrl: oldPoster },
+    ];
+    const fetchPoster = async (vimeoId: number) => {
+      if (vimeoId === 1175910961) return { ok: true as const, posterUrl: livePoster };
+      return { ok: false as const, error: "not called" };
+    };
+    const result = await syncSubmittedVideoPosters(
+      videos,
+      [
+        { content_id: 249, vimeo_id: 151819909, posterUrl: oldPoster },
+        { content_id: "249-1", vimeo_id: 151819909, posterUrl: oldPoster },
+      ],
+      new Map(),
+      fetchPoster,
+    );
+    expect(result.ok).toBe(true);
+    expect(videos[0]?.posterUrl).toBe(oldPoster);
+    expect(videos[1]?.posterUrl).toBe(livePoster);
+  });
+
+  it("does not save when the new Vimeo ID has no thumbnail", async () => {
+    const videos = [{ content_id: 522, title: "Gauge Swatch", vimeo_id: 999, posterUrl: oldPoster }];
+    const result = await syncSubmittedVideoPosters(
+      videos,
+      [{ content_id: 522, vimeo_id: 151858429, posterUrl: oldPoster }],
+      new Map(),
+      async () => ({ ok: false, error: "Vimeo could not find that video." }),
+    );
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.error).toContain("Gauge Swatch");
+    expect(result.error).toContain("Nothing was saved");
+    expect(videos[0]?.posterUrl).toBe(oldPoster);
   });
 });
 
