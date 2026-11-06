@@ -318,6 +318,12 @@ describe("testimonial publication rules", () => {
     expect(page).not.toContain("testimonials-page__share--bottom");
     expect(page).not.toContain("set:html");
     expect(readFileSync("src/pages/account.astro", "utf8")).toContain('href="/testimonials/share"');
+    const share = readFileSync("src/pages/testimonials/share.astro", "utf8");
+    expect(share).toContain("Log in to share your experience.");
+    expect(share).toContain('data-ms-modal="login"');
+    expect(share).toContain('href="/contact/"');
+    expect(share).toContain("Contact us");
+    expect(share).not.toContain("Log in to send a testimonial.</p>");
   });
 
   it("returns public batches in a stable order without member fields", async () => {
