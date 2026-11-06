@@ -1,3 +1,4 @@
+import { randomBytes } from "node:crypto";
 import { queryTestimonials } from "./testimonialQuery";
 import type { WatsonQueryFn } from "../watson/memberSearch";
 import { publicTestimonialCopy, quoteWithHighlight } from "./testimonialPlainText";
@@ -25,6 +26,15 @@ const ADMIN_COLUMNS = `
   updated_at
 `;
 
+export const PUBLIC_TESTIMONIAL_BATCH_SIZE = 8;
+export const PUBLIC_TESTIMONIAL_ORDER_COOKIE = "kin_testimonial_order";
+
+const PUBLIC_TESTIMONIAL_WHERE = `
+active = TRUE
+  AND btrim(COALESCE(NULLIF(btrim(COALESCE(display_quote, '')), ''), original_quote)) <> ''
+  AND btrim(COALESCE(NULLIF(btrim(COALESCE(display_attribution, '')), ''), original_attribution)) <> ''
+`.trim();
+
 export const PUBLIC_TESTIMONIAL_SQL = `
 SELECT
   original_quote,
@@ -35,8 +45,7 @@ SELECT
   display_highlight_end,
   review_date
 FROM testimonials
-WHERE active = TRUE
-ORDER BY review_date DESC NULLS LAST, created_at DESC
+WHERE ${PUBLIC_TESTIMONIAL_WHERE}
 `;
 
 type Query = WatsonQueryFn;
@@ -119,34 +128,100 @@ export function escapeLike(value: string): string {
   return value.replace(/[\\%_]/g, "\\$&");
 }
 
-export async function listPublicTestimonials(query: Query = queryTestimonials): Promise<PublicTestimonial[]> {
-  const rows = await query<Record<string, unknown>>(PUBLIC_TESTIMONIAL_SQL);
-  return rows
-    .map((row) => {
-      const copy = publicTestimonialCopy({
-        originalQuote: text(row.original_quote),
-        originalAttribution: text(row.original_attribution),
-        displayQuote: nullableText(row.display_quote),
-        displayAttribution: nullableText(row.display_attribution),
-      });
-      const displayQuote = storedText(row.display_quote);
-      const parts = displayQuote
-        ? quoteWithHighlight(
-            displayQuote,
-            intOrNull(row.display_highlight_start),
-            intOrNull(row.display_highlight_end),
-          )
-        : { before: copy.quote, highlight: null, after: "" };
-      if (!(displayQuote || copy.quote) || !copy.attribution) return null;
-      return {
-        before: parts.before,
-        highlight: parts.highlight,
-        after: parts.after,
-        attribution: copy.attribution,
-        reviewDate: dateOnly(row.review_date),
-      };
-    })
-    .filter((row): row is PublicTestimonial => row !== null);
+export type PublicTestimonialBatch = {
+  testimonials: PublicTestimonial[];
+  total: number;
+  offset: number;
+  limit: number;
+  nextOffset: number;
+  hasMore: boolean;
+};
+
+export function normalizePublicTestimonialSeed(value: string | null | undefined): string | null {
+  if (!value || !/^[a-f0-9]{32}$/.test(value)) return null;
+  return value;
+}
+
+export function createPublicTestimonialSeed(): string {
+  return randomBytes(16).toString("hex");
+}
+
+type OrderCookieStore = {
+  get(name: string): { value: string } | undefined;
+  set(
+    name: string,
+    value: string,
+    options: { httpOnly?: boolean; secure?: boolean; sameSite?: "lax"; path?: string },
+  ): void;
+};
+
+/** Session cookie. The same visit keeps one shuffle; a new visit receives a new one. */
+export function ensurePublicTestimonialOrderSeed(cookies: OrderCookieStore, secure: boolean): string {
+  const existing = normalizePublicTestimonialSeed(cookies.get(PUBLIC_TESTIMONIAL_ORDER_COOKIE)?.value);
+  if (existing) return existing;
+  const seed = createPublicTestimonialSeed();
+  cookies.set(PUBLIC_TESTIMONIAL_ORDER_COOKIE, seed, {
+    httpOnly: true,
+    secure,
+    sameSite: "lax",
+    path: "/",
+  });
+  return seed;
+}
+
+function mapPublicTestimonial(row: Record<string, unknown>): PublicTestimonial | null {
+  const copy = publicTestimonialCopy({
+    originalQuote: text(row.original_quote),
+    originalAttribution: text(row.original_attribution),
+    displayQuote: nullableText(row.display_quote),
+    displayAttribution: nullableText(row.display_attribution),
+  });
+  const displayQuote = storedText(row.display_quote);
+  const parts = displayQuote
+    ? quoteWithHighlight(
+        displayQuote,
+        intOrNull(row.display_highlight_start),
+        intOrNull(row.display_highlight_end),
+      )
+    : { before: copy.quote, highlight: null, after: "" };
+  if (!(displayQuote || copy.quote) || !copy.attribution) return null;
+  return {
+    before: parts.before,
+    highlight: parts.highlight,
+    after: parts.after,
+    attribution: copy.attribution,
+    reviewDate: dateOnly(row.review_date),
+  };
+}
+
+export async function listPublicTestimonials(
+  input: { seed: string; offset?: number },
+  query: Query = queryTestimonials,
+): Promise<PublicTestimonialBatch> {
+  const seed = normalizePublicTestimonialSeed(input.seed) ?? createPublicTestimonialSeed();
+  const limit = PUBLIC_TESTIMONIAL_BATCH_SIZE;
+  const offset = Math.max(Math.floor(input.offset ?? 0) || 0, 0);
+  const totalRows = await query<{ total: number }>(
+    `SELECT COUNT(*)::int AS total FROM testimonials WHERE ${PUBLIC_TESTIMONIAL_WHERE}`,
+  );
+  const rows = await query<Record<string, unknown>>(
+    `${PUBLIC_TESTIMONIAL_SQL}
+     ORDER BY md5($1 || id::text), id
+     LIMIT $2 OFFSET $3`,
+    [seed, limit, offset],
+  );
+  const total = totalRows[0]?.total ?? 0;
+  const nextOffset = offset + rows.length;
+  return {
+    testimonials: rows
+      .map(mapPublicTestimonial)
+      .filter((row): row is PublicTestimonial => row !== null),
+    total,
+    offset,
+    limit,
+    nextOffset,
+    hasMore: nextOffset < total,
+  };
 }
 
 export type TestimonialAdminSort = "inactive" | "active";
@@ -157,11 +232,18 @@ export function testimonialAdminListOrder(sort: TestimonialAdminSort = "inactive
   return `${statusGroup}, review_date DESC NULLS LAST, created_at DESC`;
 }
 
+/** Default collection: legacy Show = 1, plus every member submission and admin entry. */
+export function testimonialAdminCollectionClause(includeUnpublishedLegacy: boolean): string {
+  if (includeUnpublishedLegacy) return "TRUE";
+  return "(source <> 'legacy_import' OR legacy_show IS TRUE)";
+}
+
 export async function listTestimonialsForAdmin(
   input: {
     q?: string;
     status?: "all" | "active" | "inactive";
     sort?: TestimonialAdminSort;
+    includeUnpublishedLegacy?: boolean;
     limit?: number;
     offset?: number;
   },
@@ -180,6 +262,7 @@ export async function listTestimonialsForAdmin(
       OR COALESCE(display_attribution, '') ILIKE $1 ESCAPE '\\'
       OR CAST(legacy_rating_id AS TEXT) = $2)
     AND ($3::boolean IS NULL OR active = $3)
+    AND ${testimonialAdminCollectionClause(input.includeUnpublishedLegacy === true)}
   `;
   const params = [pattern, q || null, active];
   const totalRows = await query<{ total: number }>(

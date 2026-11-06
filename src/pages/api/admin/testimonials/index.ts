@@ -26,6 +26,7 @@ export const GET: APIRoute = async ({ request, cookies }) => {
       q: url.searchParams.get("q") ?? "",
       status: status === "active" || status === "inactive" ? status : "all",
       sort: sort === "active" ? "active" : "inactive",
+      includeUnpublishedLegacy: url.searchParams.get("includeUnpublished") === "1",
       limit: Number(url.searchParams.get("limit") ?? "40"),
       offset: Number(url.searchParams.get("offset") ?? "0"),
     });

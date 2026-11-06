@@ -42,6 +42,18 @@
   text-align: center;
 }
 
+.testimonials-page__more {
+  margin: 1.5rem 0 0;
+  text-align: center;
+}
+
+.testimonials-page__more [role="status"]:not(:empty) {
+  display: block;
+  margin: 0.75rem 0 0;
+  color: #3e4a32;
+  font-weight: 600;
+}
+
 .testimonials-page__list {
   display: flex;
   flex-direction: column;
