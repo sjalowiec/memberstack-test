@@ -28,6 +28,7 @@ import {
   replaceVideoPosterOverrides,
   videoPosterErrorMessage,
 } from "../../../lib/videos/videoPosterStore";
+import { syncSubmittedVideoPosters } from "../../../lib/vimeoCatalogPoster";
 
 export const prerender = false;
 
@@ -153,6 +154,27 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     return jsonResponse({ ok: false, error: message }, 500);
   }
   const source = sourceFile.videos;
+
+  let posterOverrides = new Map<string, string>();
+  try {
+    posterOverrides = await listVideoPosterOverrides();
+  } catch (error) {
+    if (!isMissingVideoPosterTable(error)) {
+      return jsonResponse(
+        { ok: false, error: "Saved thumbnails could not be loaded. Nothing was changed." },
+        500,
+      );
+    }
+  }
+
+  let previousCatalog = source;
+  try {
+    previousCatalog = await loadMergedVideoCatalog();
+  } catch {
+    previousCatalog = source;
+  }
+  const synced = await syncSubmittedVideoPosters(videos, previousCatalog, posterOverrides);
+  if (!synced.ok) return jsonResponse({ ok: false, error: synced.error }, 400);
 
   const plan = planVideoPosterSave(source, videos);
   if (plan.ok) {
