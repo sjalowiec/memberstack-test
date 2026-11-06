@@ -18,6 +18,7 @@ import {
   isHostedMeasurementCopyDevTesting,
   isHostedSetInSleeveDevTesting,
   KIN_DEV_MEASUREMENT_COPY_PROJECT_ID,
+  KIN_DEV_SLEEVELESS_NOTICE_PROJECT_ID,
   KIN_DEV_SET_IN_SLEEVE_TEST_USER_ID,
   SET_IN_DEV_TEST_HEADER,
 } from "./setInSleeveDevTesting";
@@ -128,6 +129,13 @@ describe("hosted Set-In Sleeve dev testing", () => {
         search: "?project=3cdeae62-1182-4fd8-8e9b-7db0e5424b7a",
       }),
     ).toBe(false);
+    expect(
+      isHostedMeasurementCopyDevTesting({
+        hostname: "kin-dev.netlify.app",
+        pathname: "/patterns/sleeveless/pattern/",
+        search: `?project=${KIN_DEV_SLEEVELESS_NOTICE_PROJECT_ID}`,
+      }),
+    ).toBe(true);
     expect(
       isHostedMeasurementCopyDevTesting({
         hostname: "knititnow.com",

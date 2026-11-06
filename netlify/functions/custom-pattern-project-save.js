@@ -17,6 +17,7 @@ import {
 import { requirePatternProjectAccess } from "./lib/require-member-access.js";
 import {
   KIN_DEV_MEASUREMENT_COPY_PROJECT_ID,
+  KIN_DEV_SLEEVELESS_NOTICE_PROJECT_ID,
   setInSleeveDevTestWriteError,
 } from "./lib/kin-dev-set-in-sleeve-testing.js";
 
@@ -51,9 +52,10 @@ export default async (req) => {
   const project = built.project;
   if (
     access.devTest === "set-in-sleeve" &&
-    body.data?.id === KIN_DEV_MEASUREMENT_COPY_PROJECT_ID
+    (body.data?.id === KIN_DEV_MEASUREMENT_COPY_PROJECT_ID ||
+      body.data?.id === KIN_DEV_SLEEVELESS_NOTICE_PROJECT_ID)
   ) {
-    project.id = KIN_DEV_MEASUREMENT_COPY_PROJECT_ID;
+    project.id = body.data.id;
     if (typeof body.data.createdAt === "string" && body.data.createdAt) {
       project.createdAt = body.data.createdAt;
     }

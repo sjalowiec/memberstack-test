@@ -20,6 +20,9 @@ export const KIN_DEV_SET_IN_SLEEVE_TEST_USER_ID = "kin-dev-set-in-sleeve-testing
  */
 export const KIN_DEV_MEASUREMENT_COPY_PROJECT_ID = "e7a41c2d-8b60-4f1a-9c55-3d6b0a91f4e2";
 
+/** Kin-dev sleeveless project used to verify the saved-measurement notice. */
+export const KIN_DEV_SLEEVELESS_NOTICE_PROJECT_ID = "4c8e2b17-9a63-4d0e-8f25-6b1d0c44a7e3";
+
 export const SET_IN_DEV_TEST_HEADER = "X-KBM-Set-In-Dev-Test";
 
 const KIN_DEV_HOST = "kin-dev.netlify.app";
@@ -98,7 +101,10 @@ export function isHostedMeasurementCopyDevTesting(
   if (path !== "/patterns/sleeveless/pattern" && path !== "/patterns/sleeveless/print") return false;
   if (!isKinDevBrowserHost(hostname)) return false;
   const projectId = new URLSearchParams(pageSearch(options)).get("project")?.trim();
-  return projectId === KIN_DEV_MEASUREMENT_COPY_PROJECT_ID;
+  return (
+    projectId === KIN_DEV_MEASUREMENT_COPY_PROJECT_ID ||
+    projectId === KIN_DEV_SLEEVELESS_NOTICE_PROJECT_ID
+  );
 }
 
 /**

@@ -147,5 +147,14 @@ describe("kin-dev set-in sleeve test access", () => {
         customOverrides: { constructionFamily: "drop-shoulder" },
       }),
     ).toBeNull();
+    expect(
+      setInSleeveDevTestWriteError(access, {
+        id: "4c8e2b17-9a63-4d0e-8f25-6b1d0c44a7e3",
+        pattern: {
+          patternType: "sleeveless",
+          style: { construction: "sleeveless", constructionAuthored: "sleeveless" },
+        },
+      }),
+    ).toBeNull();
   });
 });

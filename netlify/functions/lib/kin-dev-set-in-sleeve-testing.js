@@ -17,6 +17,9 @@ export const KIN_DEV_SET_IN_SLEEVE_TEST_USER_ID = "kin-dev-set-in-sleeve-testing
 /** Keep in sync with src/lib/patterns/setInSleeveDevTesting.ts */
 export const KIN_DEV_MEASUREMENT_COPY_PROJECT_ID = "e7a41c2d-8b60-4f1a-9c55-3d6b0a91f4e2";
 
+/** Keep in sync with src/lib/patterns/setInSleeveDevTesting.ts */
+export const KIN_DEV_SLEEVELESS_NOTICE_PROJECT_ID = "4c8e2b17-9a63-4d0e-8f25-6b1d0c44a7e3";
+
 export const SET_IN_DEV_TEST_HEADER = "x-kbm-set-in-dev-test";
 
 const KIN_DEV_HOST = "kin-dev.netlify.app";
@@ -93,9 +96,16 @@ export function isKinDevMeasurementCopyProject(project) {
   return resolvePatternSystemFromProject(project) === "drop-shoulder";
 }
 
+export function isKinDevSleevelessNoticeProject(project) {
+  if (!project || typeof project !== "object") return false;
+  if (project.id !== KIN_DEV_SLEEVELESS_NOTICE_PROJECT_ID) return false;
+  return resolvePatternSystemFromProject(project) === "sleeveless";
+}
+
 export function setInSleeveDevTestWriteError(access, project) {
   if (access?.devTest !== "set-in-sleeve") return null;
   if (isSetInSleeveProjectRecord(project)) return null;
   if (isKinDevMeasurementCopyProject(project)) return null;
+  if (isKinDevSleevelessNoticeProject(project)) return null;
   return SET_IN_DEV_TEST_TYPE_ERROR;
 }
