@@ -57,6 +57,10 @@ export const BEGINNER_WORKSHOP_COURSE_SLUG = "beginner-workshop" as const;
 export const LEGACY_BEGINNER_WORKSHOP_COURSE_PLAN_ID =
   "pln_course-beginner-workshop-legacy-wzr70hsx" as const;
 
+export const RIBBER_BOOTCAMP_COURSE_SLUG = "ribber-basic-bootcamp" as const;
+export const LEGACY_RIBBER_BOOTCAMP_COURSE_PLAN_ID =
+  "pln_course-ribber-bootcamp-legacy-sgc1002r" as const;
+
 export type IndividualCourseSaleKey =
   | "th160"
   | "sk840"
@@ -65,11 +69,12 @@ export type IndividualCourseSaleKey =
   | "lk150Patterning"
   | "lk150QuickStart"
   | "lk150Fun"
-  | "beginnerWorkshop";
+  | "beginnerWorkshop"
+  | "ribberBootcamp";
 
 export type IndividualCourseSale = {
   key: IndividualCourseSaleKey;
-  courseId: 86 | 111 | 87 | 103 | 34 | 50 | 51 | 33;
+  courseId: 86 | 111 | 87 | 103 | 34 | 50 | 51 | 33 | 66;
   slug: string;
   aliases: readonly string[];
   legacyPlanId: string;
@@ -151,6 +156,13 @@ export const COURSE_INDIVIDUAL_SALES = {
     slug: BEGINNER_WORKSHOP_COURSE_SLUG,
     aliases: ["33"],
     legacyPlanId: LEGACY_BEGINNER_WORKSHOP_COURSE_PLAN_ID,
+  },
+  ribberBootcamp: {
+    key: "ribberBootcamp",
+    courseId: 66,
+    slug: RIBBER_BOOTCAMP_COURSE_SLUG,
+    aliases: ["66"],
+    legacyPlanId: LEGACY_RIBBER_BOOTCAMP_COURSE_PLAN_ID,
   },
 } as const satisfies Record<IndividualCourseSaleKey, IndividualCourseSale>;
 
