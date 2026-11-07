@@ -85,13 +85,6 @@
       "thumbnail": "/images/courses/lk-150_fun.webp"
     },
     {
-      "slug": "ribber-basic-bootcamp",
-      "category": "Ribber",
-      "catalogStatus": "available",
-      "access": "member",
-      "description": "Get comfortable with your ribber through hands-on practice: cast on, bind off, needle arrangements, and double-bed fabrics."
-    },
-    {
       "slug": "beginner-workshop",
       "title": "Beginner Workshop",
       "category": "Getting Started",
@@ -100,6 +93,17 @@
       "description": "A guided start-to-finish path for new machine knitters.",
       "href": "/courses/33",
       "buttonLabel": "View Course"
+    },
+    {
+      "slug": "ribber-basic-bootcamp",
+      "title": "Ribber Basic Bootcamp",
+      "category": "Getting Started",
+      "catalogStatus": "available",
+      "access": "member",
+      "description": "Get comfortable with your ribber through hands-on practice: cast on, bind off, needle arrangements, and double-bed fabrics.",
+      "href": "/courses/66",
+      "buttonLabel": "View Course",
+      "thumbnail": "/images/courses/ribber.webp"
     },
     {
       "slug": "not-enough-needles",
