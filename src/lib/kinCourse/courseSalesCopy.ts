@@ -4,7 +4,8 @@
  * Course 86 wording is unchanged. Course 111 uses the SK840 sales copy below.
  * Course 103 uses the Brother 930/940 sales copy. Prices are never invented
  * here — the displayed amount comes from `COURSE_INDIVIDUAL_SALES.*.priceLabel`.
- * Course 33 has no checkout price.
+ * Course 33 and Course 66 have no checkout price. Course 66 keeps the legacy
+ * purchaser plan separate from checkout.
  */
 import {
   BEGINNER_WORKSHOP_COURSE_SLUG,
@@ -13,6 +14,7 @@ import {
   COURSE_INDIVIDUAL_SALES,
   KIN_TAITEXMA_160_COURSE_SLUG,
   LEGACY_SK840_COURSE_SLUG,
+  RIBBER_BOOTCAMP_COURSE_SLUG,
 } from "../../config/legacyCourseEntitlements";
 import { kinCourseHomeHref } from "./hrefs";
 
@@ -211,6 +213,51 @@ export const KIN_BROTHER_930_940_SALES_COPY: KinCourseSalesCopy = {
 
 const MEMBERSHIP_HREF = "/membership";
 
+/**
+ * Published Course 66 outline from the public course page: the catalog
+ * description, the lesson sections, and the standard included list.
+ * A loaded course can replace the section list at render time.
+ */
+export const KIN_RIBBER_BOOTCAMP_LESSON_TOPICS = [
+  "Get Started",
+  "Casting On",
+  "Swatching on the Double Bed",
+  "Binding Off",
+  "Practice Makes Progress",
+  "Troubleshooting Tips",
+  "Knitting in the Round",
+  "Full Needle Rib",
+  "Practice Makes Progress",
+  "Flat Ribs",
+  "Shaping in Ribbing",
+  "Tuck Rib",
+  "Bands, Belts and Straps",
+] as const;
+
+export const KIN_RIBBER_BOOTCAMP_DESCRIPTION =
+  "Get comfortable with your ribber through hands-on practice: cast on, bind off, needle arrangements, and double-bed fabrics.";
+
+const KIN_RIBBER_BOOTCAMP_INCLUDED = [
+  "Video tutorials",
+  "Printable reference material",
+  "Exercises",
+] as const;
+
+export function salesPlainText(value: string | null | undefined): string {
+  return (value ?? "")
+    .replace(/<[^>]*>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function includedSentence(labels: readonly string[]): string {
+  const items = labels.map((label) => label.trim()).filter(Boolean);
+  if (items.length === 0) return "";
+  if (items.length === 1) return `Includes ${items[0]}.`;
+  if (items.length === 2) return `Includes ${items[0]} and ${items[1]}.`;
+  return `Includes ${items.slice(0, -1).join(", ")}, and ${items[items.length - 1]}.`;
+}
+
 export const KIN_BEGINNER_WORKSHOP_SALES_COPY: KinCourseSalesCopy = {
   courseTitle: "Beginner Workshop",
   headline: "Get Comfortable with Your Knitting Machine",
@@ -249,6 +296,60 @@ export const KIN_BEGINNER_WORKSHOP_SALES_COPY: KinCourseSalesCopy = {
   },
 };
 
+export const KIN_RIBBER_BOOTCAMP_SALES_COPY: KinCourseSalesCopy = {
+  courseTitle: "Ribber Basic Bootcamp",
+  headline: "Get comfortable with your ribber",
+  intro: [
+    KIN_RIBBER_BOOTCAMP_DESCRIPTION,
+    "The goal of this course is to get you using your ribber. Practice casting on and binding off, then repeat those skills with other needle arrangements and stitch patterns.",
+  ],
+  benefitsHeading: "What You'll Learn",
+  benefits: KIN_RIBBER_BOOTCAMP_LESSON_TOPICS,
+  supportingCopy: includedSentence(KIN_RIBBER_BOOTCAMP_INCLUDED),
+  ctaHeading: "Ready to get comfortable with your ribber?",
+  accessLine: "Available to Knit It Now members and previous course owners.",
+  purchaseButtonLabel: "",
+  ownerBefore: "Already have access?",
+  ownerAction: "Sign in",
+  ownerAfter: "to continue.",
+  fallbackImageAlt: "Ribber Basic Bootcamp",
+  metaDescription: KIN_RIBBER_BOOTCAMP_DESCRIPTION,
+  accessCta: {
+    startLabel: "Start Ribber Basic Bootcamp",
+    startHref: kinCourseHomeHref(COURSE_INDIVIDUAL_SALES.ribberBootcamp.courseId),
+    joinLabel: "Join Knit It Now",
+    joinHref: MEMBERSHIP_HREF,
+    memberLabel: "Become a member",
+    memberHref: MEMBERSHIP_HREF,
+    signInBefore: "Already have access?",
+    signInLabel: "Sign in",
+    signInAfter: "to continue.",
+  },
+};
+
+export function ribberBootcampSalesCopy(outline?: {
+  description?: string | null;
+  topics?: readonly string[];
+  included?: readonly string[];
+}): KinCourseSalesCopy {
+  const description = salesPlainText(outline?.description);
+  const topics = (outline?.topics ?? []).map((topic) => topic.trim()).filter(Boolean);
+  const included = (outline?.included ?? []).map((label) => label.trim()).filter(Boolean);
+  const intro = description
+    ? [description, KIN_RIBBER_BOOTCAMP_SALES_COPY.intro[1]].filter(
+        (paragraph): paragraph is string => Boolean(paragraph),
+      )
+    : KIN_RIBBER_BOOTCAMP_SALES_COPY.intro;
+  return {
+    ...KIN_RIBBER_BOOTCAMP_SALES_COPY,
+    intro,
+    benefits: topics.length > 0 ? topics : KIN_RIBBER_BOOTCAMP_SALES_COPY.benefits,
+    supportingCopy: included.length
+      ? includedSentence(included)
+      : KIN_RIBBER_BOOTCAMP_SALES_COPY.supportingCopy,
+  };
+}
+
 export function getKinCourseSalesCopy(
   courseSlug: string | null | undefined,
 ): KinCourseSalesCopy | null {
@@ -257,5 +358,6 @@ export function getKinCourseSalesCopy(
   if (slug === LEGACY_SK840_COURSE_SLUG) return KIN_SK840_SALES_COPY;
   if (slug === BROTHER_930_940_COURSE_SLUG) return KIN_BROTHER_930_940_SALES_COPY;
   if (slug === BEGINNER_WORKSHOP_COURSE_SLUG) return KIN_BEGINNER_WORKSHOP_SALES_COPY;
+  if (slug === RIBBER_BOOTCAMP_COURSE_SLUG) return KIN_RIBBER_BOOTCAMP_SALES_COPY;
   return null;
 }

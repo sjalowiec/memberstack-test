@@ -48,6 +48,9 @@ const completion = bundle
       courseSlug={bundle.landing.catalogSlug || bundle.course.slug}
       preview={loadOptions.preview}
       glossary={bundle.glossary}
+      courseDescription={bundle.landing.descriptionHtml}
+      learnTopics={bundle.landing.topics}
+      includedLabels={bundle.landing.included.map((item) => item.label)}
     >
       <KinCourseComplete completion={completion} />
     </KinCourseLayout>

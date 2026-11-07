@@ -7,6 +7,7 @@ import KinCourse86Sales from "../components/courses/KinCourse86Sales.astro";
 import KinCourse111Sales from "../components/courses/KinCourse111Sales.astro";
 import KinCourse103Sales from "../components/courses/KinCourse103Sales.astro";
 import KinCourse33Sales from "../components/courses/KinCourse33Sales.astro";
+import KinCourse66Sales from "../components/courses/KinCourse66Sales.astro";
 import "../styles/kin-course/course-shell.css";
 import "../styles/kin-course/legacy-special.css";
 import "../styles/kin-course/legacy-lesson-compat.css";
@@ -17,6 +18,7 @@ import {
   courseHasIndividualPurchase,
   isBeginnerWorkshopCourseSlug,
   isBrother930940CourseSlug,
+  isRibberBootcampCourseSlug,
   isSk840CourseSlug,
   isTaitexma160CourseSlug,
 } from "../lib/kinCourse/coursePurchase";
@@ -36,6 +38,10 @@ interface Props {
   courseSlug?: string;
   preview?: boolean;
   glossary?: KinCourseGlossaryEntry[];
+  /** Published course outline, used by the Course 66 sales page. */
+  courseDescription?: string | null;
+  learnTopics?: readonly string[];
+  includedLabels?: readonly string[];
 }
 
 const {
@@ -47,6 +53,9 @@ const {
   courseSlug = "",
   preview = false,
   glossary = [],
+  courseDescription = null,
+  learnTopics = [],
+  includedLabels = [],
 } = Astro.props;
 const lockedTitle = courseTitle;
 const accessLabel = "Member Course";
@@ -59,6 +68,7 @@ const showCourse86Sales = isTaitexma160CourseSlug(courseSlug);
 const showCourse111Sales = isSk840CourseSlug(courseSlug);
 const showCourse103Sales = isBrother930940CourseSlug(courseSlug);
 const showCourse33Sales = isBeginnerWorkshopCourseSlug(courseSlug);
+const showCourse66Sales = isRibberBootcampCourseSlug(courseSlug);
 const courseSalesDescription = getKinCourseSalesCopy(courseSlug)?.metaDescription ?? "";
 const purchaseCopy =
   "This course is included with Knit It Now membership. You can also purchase this course on its own.";
@@ -71,7 +81,7 @@ const purchaseCopy =
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
     {
-      showCourse86Sales || showCourse111Sales || showCourse103Sales || showCourse33Sales ? (
+      showCourse86Sales || showCourse111Sales || showCourse103Sales || showCourse33Sales || showCourse66Sales ? (
         <meta name="description" content={courseSalesDescription} />
       ) : null
     }
@@ -162,6 +172,15 @@ const purchaseCopy =
                   courseSlug={courseSlug}
                   thumbnailSrc={thumbnailSrc}
                   thumbnailAlt={thumbnailAlt}
+                />
+              ) : showCourse66Sales ? (
+                <KinCourse66Sales
+                  courseSlug={courseSlug}
+                  thumbnailSrc={thumbnailSrc}
+                  thumbnailAlt={thumbnailAlt}
+                  description={courseDescription}
+                  topics={learnTopics}
+                  included={includedLabels}
                 />
               ) : (
                 <div class="course-111-gate__card">

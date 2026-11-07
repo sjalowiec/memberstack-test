@@ -29,6 +29,9 @@ const kinLanding = bundle.landing;
   courseSlug={kinLanding.catalogSlug || bundle.course.slug}
   preview={preview}
   glossary={bundle.glossary}
+  courseDescription={kinLanding.descriptionHtml}
+  learnTopics={kinLanding.topics}
+  includedLabels={kinLanding.included.map((item) => item.label)}
 >
   <article class="course-home">
     <header class="course-home-identity">

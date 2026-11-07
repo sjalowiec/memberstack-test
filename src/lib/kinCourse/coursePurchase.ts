@@ -11,6 +11,7 @@ import {
   COURSE_INDIVIDUAL_SALES,
   KIN_TAITEXMA_160_COURSE_SLUG,
   LEGACY_SK840_COURSE_SLUG,
+  RIBBER_BOOTCAMP_COURSE_SLUG,
   type IndividualCourseSale,
 } from "../../config/legacyCourseEntitlements";
 import { canAccessCourse, type CourseAccessLevel } from "../courseAccess";
@@ -67,6 +68,10 @@ export function isBrother930940CourseSlug(courseSlug: string | null | undefined)
   return canonicalCourseCatalogSlug(courseSlug) === BROTHER_930_940_COURSE_SLUG;
 }
 
+export function isRibberBootcampCourseSlug(courseSlug: string | null | undefined): boolean {
+  return canonicalCourseCatalogSlug(courseSlug) === RIBBER_BOOTCAMP_COURSE_SLUG;
+}
+
 /**
  * Sales pages replace the generic locked card for visitors without access.
  * Members and owners of that course keep the player.
@@ -80,7 +85,8 @@ export function shouldShowKinCourseSalesPage(args: {
     isTaitexma160CourseSlug(args.courseSlug) ||
     isSk840CourseSlug(args.courseSlug) ||
     isBrother930940CourseSlug(args.courseSlug) ||
-    isBeginnerWorkshopCourseSlug(args.courseSlug)
+    isBeginnerWorkshopCourseSlug(args.courseSlug) ||
+    isRibberBootcampCourseSlug(args.courseSlug)
   );
 }
 
