@@ -1,0 +1,83 @@
+---
+import BaseLayout from "../../../../layouts/BaseLayout.astro";
+import {
+  loadCourseContentDocument,
+  readCourseEditorialState,
+} from "../../../../lib/legacy_kin/courseContentAdmin";
+import { renderCourseDraftPreviewHtml } from "../../../../lib/legacy_kin/courseEditorial";
+
+export const prerender = false;
+
+const courseId = Number.parseInt(Astro.params.courseId ?? "", 10);
+const requestedRevision = Astro.url.searchParams.get("revision");
+const readOptions = {
+  hostname: Astro.url.hostname,
+  env: {
+    isViteDev: import.meta.env.DEV,
+    publicSiteEnv: import.meta.env.PUBLIC_SITE_ENV,
+  },
+};
+
+let title = "Course draft";
+let html = "";
+let mismatch = "";
+let missing = "";
+
+if (!Number.isFinite(courseId) || courseId <= 0) {
+  missing = "This course draft could not be found.";
+} else {
+  try {
+    const state = await readCourseEditorialState(courseId, readOptions);
+    const document = state?.draft?.document ?? (await loadCourseContentDocument(courseId, readOptions));
+    title = document.course.title || title;
+    if (!state?.draft) {
+      missing = "Save a draft before preview. This page is showing the current course, not a saved draft.";
+    } else if (requestedRevision && requestedRevision !== state.draft.revisionId) {
+      mismatch = "This is not the saved draft revision. Preview again before you publish.";
+    }
+    html = renderCourseDraftPreviewHtml(state?.draft?.document ?? document);
+  } catch (error) {
+    missing = error instanceof Error ? error.message : "This course draft could not be opened.";
+  }
+}
+---
+<style>
+  .course-draft-preview {
+    max-width: 880px;
+    margin: 1.5rem auto 4rem;
+    padding: 0 1rem;
+  }
+  .course-draft-preview__banner,
+  .course-draft-preview__warning {
+    padding: 0.75rem 1rem;
+    border-radius: 6px;
+  }
+  .course-draft-preview__banner {
+    background: #eef6f1;
+  }
+  .course-draft-preview__warning {
+    background: #fff4e5;
+    margin-bottom: 1rem;
+  }
+  #course-draft-thumbnail {
+    display: block;
+    width: 240px;
+    height: auto;
+    margin: 1rem 0;
+  }
+  #course-draft-opening-gif {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    margin: 0 0 1.5rem;
+  }
+</style>
+<BaseLayout title={`${title} draft preview | Admin`} description="Staff preview of a course draft">
+  <main class="course-draft-preview">
+    <p><a href={`/admin/course-content?course=${courseId}`}>Back to the editor</a></p>
+    <h1>{title}</h1>
+    {missing ? <p class="course-draft-preview__warning">{missing}</p> : null}
+    {mismatch ? <p class="course-draft-preview__warning">{mismatch}</p> : null}
+    {html ? <div set:html={html} /> : null}
+  </main>
+</BaseLayout>

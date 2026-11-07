@@ -8,7 +8,6 @@ import {
   getAllowedCourseIds,
   isAllowedCourseId,
   listAdminCourseSummaries,
-  publishedBundleReplacesImplicitOverlay,
   readCourseContentFile,
   readCourseContentStatus,
   removeEmptyBlocksFromLesson,
@@ -320,31 +319,25 @@ describe("readCourseContentStatus", () => {
 });
 
 describe("saveCourseMetadata contentStatus", () => {
-  it('writes the exact value "cleaned" to course JSON', async () => {
-    const before = readCourseContentFile(66).course.contentStatus;
-    try {
-      const result = await saveCourseMetadata(66, { contentStatus: "cleaned" });
-      expect(result.contentStatus).toBe("cleaned");
-      expect(result.persistedVia).toBe("filesystem");
-      expect(readCourseContentFile(66).course.contentStatus).toBe("cleaned");
-    } finally {
-      await saveCourseMetadata(66, {
-        contentStatus: before === "cleaned" ? "cleaned" : "in_progress",
-      });
-    }
-  });
-
-  it("writes catalog description to course JSON", async () => {
-    const before = readCourseContentFile(66).course.description;
-    const sample = "Catalog blurb for admin save test.";
-    try {
-      const result = await saveCourseMetadata(66, { description: sample });
-      expect(result.description).toBe(sample);
-      expect(result.persistedVia).toBe("filesystem");
-      expect(readCourseContentFile(66).course.description).toBe(sample);
-    } finally {
-      await saveCourseMetadata(66, { description: before ?? null });
-    }
+  it('keeps "cleaned" on the draft and does not rewrite the bundled course', async () => {
+    const store = new Map<number, import("./courseEditorial").CourseEditorialState>();
+    const options = {
+      persist: "filesystem" as const,
+      readEditorialState: async (courseId: number) => store.get(courseId) ?? null,
+      writeEditorialState: async (
+        courseId: number,
+        state: import("./courseEditorial").CourseEditorialState,
+      ) => {
+        store.set(courseId, state);
+      },
+    };
+    const before = readCourseContentFile(66);
+    const result = await saveCourseMetadata(66, { contentStatus: "cleaned" }, options);
+    expect(result.contentStatus).toBe("cleaned");
+    expect(result.persistedVia).toBe("filesystem");
+    expect(readCourseContentFile(66).course.contentStatus).toBe(before.course.contentStatus);
+    expect(store.get(66)?.draft?.document.course.contentStatus).toBe("cleaned");
+    expect(store.get(66)?.published).toBeNull();
   });
 });
 
@@ -370,69 +363,3 @@ describe("readCourseContentFile discovery", () => {
   });
 });
 
-describe("publishedBundleReplacesImplicitOverlay", () => {
-  it("replaces Course 50's older implicit DEV copy with the published file", () => {
-    const overlay = sampleCourse();
-    delete overlay.course.status;
-    delete overlay.course.published;
-    const bundled = sampleCourse();
-    bundled.course.status = "published";
-    bundled.course.published = true;
-    expect(publishedBundleReplacesImplicitOverlay(overlay, bundled)).toBe(true);
-  });
-
-  it("keeps an explicitly published overlay, including a later editor save", () => {
-    const overlay = sampleCourse();
-    overlay.course.status = "published";
-    overlay.course.published = true;
-    const bundled = sampleCourse();
-    bundled.course.status = "published";
-    bundled.course.published = true;
-    expect(publishedBundleReplacesImplicitOverlay(overlay, bundled)).toBe(false);
-  });
-
-  it("replaces a published Course 50 overlay when the git course has a newer revision", () => {
-    const overlay = sampleCourse();
-    overlay.course.status = "published";
-    overlay.course.published = true;
-    const bundled = sampleCourse();
-    bundled.course.status = "published";
-    bundled.course.published = true;
-    bundled.course.legacy = { ...bundled.course.legacy, contentRevision: 1 };
-    expect(publishedBundleReplacesImplicitOverlay(overlay, bundled)).toBe(true);
-  });
-
-  it("keeps a published overlay that is already at the git revision", () => {
-    const overlay = sampleCourse();
-    overlay.course.status = "published";
-    overlay.course.published = true;
-    overlay.course.legacy = { ...overlay.course.legacy, contentRevision: 1 };
-    const bundled = sampleCourse();
-    bundled.course.status = "published";
-    bundled.course.published = true;
-    bundled.course.legacy = { ...bundled.course.legacy, contentRevision: 1 };
-    expect(publishedBundleReplacesImplicitOverlay(overlay, bundled)).toBe(false);
-  });
-
-  it("does not replace a draft overlay with a newer published revision", () => {
-    const overlay = sampleCourse();
-    overlay.course.status = "draft";
-    overlay.course.published = false;
-    const bundled = sampleCourse();
-    bundled.course.status = "published";
-    bundled.course.published = true;
-    bundled.course.legacy = { ...bundled.course.legacy, contentRevision: 1 };
-    expect(publishedBundleReplacesImplicitOverlay(overlay, bundled)).toBe(false);
-  });
-
-  it("does not replace another course", () => {
-    const overlay = sampleCourse();
-    delete overlay.course.status;
-    delete overlay.course.published;
-    const bundled = sampleCourse();
-    bundled.course.legacyChallengeId = 51;
-    bundled.course.status = "published";
-    bundled.course.published = true;
-    expect(publishedBundleReplacesImplicitOverlay(overlay, bundled)).toBe(false);
-  });
-});

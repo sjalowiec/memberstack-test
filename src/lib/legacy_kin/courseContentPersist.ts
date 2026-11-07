@@ -3,6 +3,7 @@ import {
   type DetectSiteEnvironmentOptions,
 } from "../env/siteEnvironment";
 import { isCoursePreviewProductionBlocked } from "./coursePreviewProductionAccess";
+import type { CourseEditorialState } from "./courseEditorial";
 import type { CourseContentGithubCommitInput, CourseContentGithubCommitResult } from "./courseContentGithub";
 
 export type CourseContentPersistMode = "filesystem" | "blob" | "github";
@@ -12,6 +13,9 @@ export type CourseContentPersistResult = {
   persistedVia: CourseContentPersistMode;
   branch?: string;
   commitSha?: string;
+  revisionId?: string;
+  previewedRevisionId?: string | null;
+  publishedRevisionId?: string | null;
 };
 
 export type CourseContentWriteOptions = {
@@ -28,6 +32,8 @@ export type CourseContentWriteOptions = {
   readCourseContentOverlay?: (
     courseId: number,
   ) => Promise<import("./coursePreviewPoc").CoursePreviewData | null>;
+  readEditorialState?: (courseId: number) => Promise<CourseEditorialState | null>;
+  writeEditorialState?: (courseId: number, state: CourseEditorialState) => Promise<void>;
 };
 
 function defaultPersistEnv(
@@ -49,18 +55,14 @@ export function isCourseContentProductionWriteBlocked(
 }
 
 /**
- * Live editorial persistence:
- * - localhost / missing hostname → filesystem (immediate)
- * - deployed DEV (kin-dev) → Netlify Blobs (immediate Save → Preview)
- * GitHub remains an explicit opt-in, never the default preview path.
+ * Draft persistence:
+ * - localhost / missing hostname → gitignored editorial files
+ * - published kin-dev and published production → the editorial blob store
+ * A bundled POC file is never the draft. GitHub remains an explicit opt-in.
  */
 export function resolveCourseContentPersistMode(
   options: CourseContentWriteOptions = {},
 ): CourseContentPersistMode {
-  const env = defaultPersistEnv(options.env);
-  if (isCourseContentProductionWriteBlocked(options.hostname, env)) {
-    throw new Error("Course content writes are blocked in production.");
-  }
   if (
     options.persist === "filesystem" ||
     options.persist === "blob" ||
@@ -68,7 +70,8 @@ export function resolveCourseContentPersistMode(
   ) {
     return options.persist;
   }
-  const site = detectSiteEnvironment(options.hostname ?? null, env);
+  const site = detectSiteEnvironment(options.hostname ?? null, defaultPersistEnv(options.env));
+  if (site === "production") return "blob";
   if (site === "dev" && options.hostname) return "blob";
   return "filesystem";
 }

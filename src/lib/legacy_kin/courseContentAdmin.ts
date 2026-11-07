@@ -1,19 +1,32 @@
-import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
+import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import type { CoursePreviewData, CourseLesson, CourseContentStatus } from "./coursePreviewPoc";
 import { isCoursePreviewProductionBlocked } from "./coursePreviewProductionAccess";
 import type { DetectSiteEnvironmentOptions } from "../env/siteEnvironment";
 import {
-  courseContentWriteMatches,
-  isCourseContentProductionWriteBlocked,
   resolveCourseContentPersistMode,
   type CourseContentPersistResult,
   type CourseContentWriteOptions,
 } from "./courseContentPersist";
 import {
-  readCourseContentOverlay,
-  writeCourseContentOverlay,
-} from "./courseContentLiveStore";
+  asPrivateDraft,
+  createPrivateCourseDocument,
+  editorCourseDocument,
+  emptyCourseEditorialState,
+  markCourseDraftPreviewed,
+  publishPreviewedCourseDraft,
+  saveCourseDraft,
+  type CourseEditorialState,
+} from "./courseEditorial";
+import { readCourseContentOverlay } from "./courseContentLiveStore";
+import {
+  listEditorialBlobIds,
+  listEditorialFileIds,
+  readEditorialBlob,
+  readEditorialFile,
+  writeEditorialBlob,
+  writeEditorialFile,
+} from "./courseEditorialStore";
 import {
   isLegacyCourseActive,
   isLegacyCourseDraft,
@@ -239,93 +252,105 @@ export function readCourseContentFile(courseId: number): CoursePreviewData {
   return data;
 }
 
-function isExplicitlyPublished(course: LegacyCoursePublicationFields): boolean {
-  return course.status === "published" || course.published === true;
-}
-
-function contentRevision(data: CoursePreviewData): number {
-  const legacy = data.course.legacy as { contentRevision?: unknown };
-  const value = Number(legacy?.contentRevision);
-  return Number.isFinite(value) ? value : 0;
-}
-
-/**
- * Course 50's DEV blob can hide a newer published git course. Replace an
- * implicit public copy, and replace a published copy when the git course
- * has a higher contentRevision. A draft overlay, or a published overlay at
- * the same or newer revision, is left alone so a later editor save sticks.
- */
-export function publishedBundleReplacesImplicitOverlay(
-  overlay: CoursePreviewData,
-  bundled: CoursePreviewData,
-): boolean {
-  if (Number(bundled.course.legacyChallengeId) !== 50) return false;
-  if (!isExplicitlyPublished(bundled.course)) return false;
-  if (overlay.course.status === "draft" || overlay.course.published === false) return false;
-  if (contentRevision(bundled) > contentRevision(overlay)) return true;
-  if (isExplicitlyPublished(overlay.course)) return false;
-  return true;
-}
-
-/**
- * Editorial + player source of truth: live overlay when DEV uses blobs,
- * otherwise the bundled/cleaned POC file on disk.
- */
-async function replaceStaleCourse50Overlay(
+export async function readCourseEditorialState(
   courseId: number,
-  overlay: CoursePreviewData | null,
-  bundled: CoursePreviewData,
-  writeOverlay: NonNullable<CourseContentWriteOptions["writeCourseContentOverlay"]>,
-): Promise<boolean> {
-  if (courseId !== 50) return false;
-  if (overlay && !publishedBundleReplacesImplicitOverlay(overlay, bundled)) return false;
-  try {
-    await writeOverlay(courseId, bundled);
-  } catch {
-    // Still serve the published course if the overlay write fails.
-  }
-  return true;
+  options: CourseContentWriteOptions = {},
+): Promise<CourseEditorialState | null> {
+  if (options.readEditorialState) return options.readEditorialState(courseId);
+  const mode = resolveCourseContentPersistMode(options);
+  if (mode === "filesystem") return readEditorialFile(courseId);
+  if (mode === "blob") return readEditorialBlob(courseId);
+  return null;
 }
 
+async function writeCourseEditorialState(
+  courseId: number,
+  state: CourseEditorialState,
+  options: CourseContentWriteOptions,
+): Promise<void> {
+  if (options.writeEditorialState) {
+    await options.writeEditorialState(courseId, state);
+    return;
+  }
+  const mode = resolveCourseContentPersistMode(options);
+  if (mode === "filesystem") {
+    writeEditorialFile(courseId, state);
+    return;
+  }
+  if (mode === "blob") {
+    await writeEditorialBlob(courseId, state);
+    return;
+  }
+  throw new Error("This save target cannot store a course draft.");
+}
+
+export function courseEditorialClientView(state: CourseEditorialState | null): {
+  draftRevisionId: string | null;
+  previewedRevisionId: string | null;
+  publishedRevisionId: string | null;
+} {
+  return {
+    draftRevisionId: state?.draft?.revisionId ?? null,
+    previewedRevisionId: state?.previewedRevisionId ?? null,
+    publishedRevisionId: state?.published?.revisionId ?? null,
+  };
+}
+
+function persistResultFromState(
+  mode: CourseContentPersistResult["persistedVia"],
+  state: CourseEditorialState,
+): CourseContentPersistResult {
+  return {
+    backupPath: "",
+    persistedVia: mode,
+    revisionId: state.draft?.revisionId,
+    previewedRevisionId: state.previewedRevisionId,
+    publishedRevisionId: state.published?.revisionId ?? null,
+  };
+}
+
+async function listEditorialCourseIds(options: CourseContentWriteOptions): Promise<number[]> {
+  if (options.readEditorialState) return [];
+  const mode = resolveCourseContentPersistMode(options);
+  if (mode === "filesystem") return listEditorialFileIds();
+  if (mode === "blob") return listEditorialBlobIds();
+  return [];
+}
+
+/**
+ * Editor source: the saved draft, then a legacy overlay, then the bundled file.
+ * A bundled file never replaces a draft or a legacy overlay.
+ */
 export async function loadCourseContentDocument(
   courseId: number,
   options: CourseContentWriteOptions = {},
 ): Promise<CoursePreviewData> {
-  const readOverlay = options.readCourseContentOverlay ?? readCourseContentOverlay;
-  const writeOverlay = options.writeCourseContentOverlay ?? writeCourseContentOverlay;
+  const editorial = await readCourseEditorialState(courseId, options);
+  let fallback: CoursePreviewData | null = null;
 
-  try {
-    if (resolveCourseContentPersistMode(options) === "blob") {
-      const overlay = await readOverlay(courseId);
-      if (overlay) {
-        const bundled = readCourseContentFile(courseId);
-        if (await replaceStaleCourse50Overlay(courseId, overlay, bundled, writeOverlay)) {
-          return bundled;
-        }
-        return overlay;
+  if (options.readCourseContentOverlay) {
+    fallback = await options.readCourseContentOverlay(courseId);
+  } else {
+    try {
+      if (resolveCourseContentPersistMode(options) === "blob") {
+        fallback = await readCourseContentOverlay(courseId);
       }
-    }
-  } catch {
-    // Production blocks ordinary course-content writes. Course 50 still copies
-    // the published git course into that site's overlay when the overlay is
-    // missing or older, then serves the published file.
-    if (
-      courseId === 50 &&
-      isCourseContentProductionWriteBlocked(options.hostname, options.env)
-    ) {
-      const bundled = readCourseContentFile(courseId);
-      let overlay: CoursePreviewData | null = null;
-      try {
-        overlay = await readOverlay(courseId);
-      } catch {
-        overlay = null;
-      }
-      await replaceStaleCourse50Overlay(courseId, overlay, bundled, writeOverlay);
-      return bundled;
+    } catch {
+      fallback = null;
     }
   }
 
-  return readCourseContentFile(courseId);
+  if (!fallback) {
+    try {
+      fallback = readCourseContentFile(courseId);
+    } catch {
+      fallback = null;
+    }
+  }
+
+  const document = editorCourseDocument(editorial, fallback);
+  if (!document) throw new Error(`Course file not found for ${courseId}.`);
+  return document;
 }
 
 function backupTimestamp(): string {
@@ -586,25 +611,13 @@ export async function writeCourseContentFile(
   options: CourseContentWriteOptions = {},
 ): Promise<CourseContentPersistResult> {
   const mode = resolveCourseContentPersistMode(options);
-  const filename = getDiscoveredCourseFile(courseId).filename;
-  const serialized = serializeCourseContentFile(data);
-
-  if (mode === "blob") {
-    const writer = options.writeCourseContentOverlay ?? writeCourseContentOverlay;
-    if (!writer) {
-      throw new Error("Live course-content overlay writer was not provided.");
-    }
-    await writer(courseId, data);
-    return {
-      backupPath: "",
-      persistedVia: "blob",
-    };
-  }
 
   if (mode === "github") {
     if (!options.commitCourseContentFile) {
       throw new Error("GitHub course-content writer was not provided.");
     }
+    const filename = getDiscoveredCourseFile(courseId).filename;
+    const serialized = serializeCourseContentFile(data);
     const commit = await options.commitCourseContentFile({
       filename,
       contents: serialized,
@@ -618,17 +631,120 @@ export async function writeCourseContentFile(
     };
   }
 
-  const backupPath = backupCourseContentFile(courseId);
-  const coursePath = getCourseContentPath(courseId);
-  writeFileSync(coursePath, serialized, "utf-8");
-  const readBack = readFileSync(coursePath, "utf-8");
-  if (!courseContentWriteMatches(serialized, readBack)) {
-    throw new Error("Save failed: the course file did not keep this change.");
+  const current = (await readCourseEditorialState(courseId, options)) ?? emptyCourseEditorialState();
+  const next = saveCourseDraft(current, data, new Date().toISOString());
+  await writeCourseEditorialState(courseId, next, options);
+  return persistResultFromState(mode, next);
+}
+
+export async function listEditorCourseSummaries(
+  options: CourseContentWriteOptions = {},
+): Promise<AdminCourseSummary[]> {
+  const byId = new Map(listAdminCourseSummaries().map((entry) => [entry.id, entry]));
+  let editorialIds: number[] = [];
+  try {
+    editorialIds = await listEditorialCourseIds(options);
+  } catch {
+    editorialIds = [];
   }
+  for (const id of editorialIds) {
+    let state: CourseEditorialState | null = null;
+    try {
+      state = await readCourseEditorialState(id, options);
+    } catch {
+      state = null;
+    }
+    if (!state?.draft) continue;
+    const course = state.draft.document.course;
+    const existing = byId.get(id);
+    byId.set(id, {
+      id,
+      title: course.title,
+      slug: course.slug,
+      filename: existing?.filename ?? `editorial/${id}.json`,
+      lessonCount: state.draft.document.lessons.length,
+      status: course.status,
+      published: course.published,
+      active: course.active,
+      isDraft: isLegacyCourseDraft(course),
+      isPublic: isLegacyCoursePublic(course),
+      isActive: isLegacyCourseActive(course),
+      contentStatus: readCourseContentStatus(course),
+    });
+  }
+  return [...byId.values()].sort(
+    (a, b) =>
+      a.title.localeCompare(b.title, undefined, { sensitivity: "base" }) || a.id - b.id,
+  );
+}
+
+function slugFromTitle(title: string): string {
+  return title
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+export async function createPrivateCourse(
+  input: { title: string; slug?: string },
+  options: CourseContentWriteOptions = {},
+): Promise<{ courseId: number; course: CoursePreviewData; persist: CourseContentPersistResult }> {
+  const title = input.title.trim();
+  const slug = (input.slug?.trim() || slugFromTitle(title)).trim();
+  const document = createPrivateCourseDocument({ id: 0, title, slug });
+  const catalog = discoverAdminCourseCatalog();
+  if (catalog.some((entry) => entry.slug.toLowerCase() === slug)) {
+    throw new Error("A course with that slug already exists.");
+  }
+  const editorialIds = await listEditorialCourseIds(options);
+  for (const id of editorialIds) {
+    const state = await readCourseEditorialState(id, options);
+    const existing = state?.draft?.document.course.slug ?? state?.published?.document.course.slug;
+    if (existing && existing.toLowerCase() === slug) {
+      throw new Error("A course with that slug already exists.");
+    }
+  }
+  const courseId = Math.max(0, ...catalog.map((entry) => entry.id), ...editorialIds) + 1;
+  document.course.legacyChallengeId = courseId;
+  const next = saveCourseDraft(emptyCourseEditorialState(), document, new Date().toISOString());
+  await writeCourseEditorialState(courseId, next, options);
   return {
-    backupPath,
-    persistedVia: "filesystem",
+    courseId,
+    course: next.draft!.document,
+    persist: persistResultFromState(resolveCourseContentPersistMode(options), next),
   };
+}
+
+export async function previewCourseDraft(
+  courseId: number,
+  revisionId: string,
+  options: CourseContentWriteOptions = {},
+): Promise<CourseContentPersistResult> {
+  const state = await readCourseEditorialState(courseId, options);
+  if (!state) throw new Error("Save a draft before preview.");
+  const next = markCourseDraftPreviewed(state, revisionId);
+  await writeCourseEditorialState(courseId, next, options);
+  return persistResultFromState(resolveCourseContentPersistMode(options), next);
+}
+
+export async function publishCourseDraft(
+  courseId: number,
+  revisionId: string,
+  options: CourseContentWriteOptions = {},
+): Promise<CourseContentPersistResult> {
+  const state = await readCourseEditorialState(courseId, options);
+  if (!state) throw new Error("Save a draft before publishing.");
+  const next = publishPreviewedCourseDraft(state, revisionId, new Date().toISOString());
+  await writeCourseEditorialState(courseId, next, options);
+  return persistResultFromState(resolveCourseContentPersistMode(options), next);
+}
+
+export function importPrivateCourseDraft(
+  document: CoursePreviewData,
+  savedAt: string,
+): CourseEditorialState {
+  return saveCourseDraft(emptyCourseEditorialState(), asPrivateDraft(document), savedAt);
 }
 
 function normalizeCourseThumbnail(value: unknown): string | null {

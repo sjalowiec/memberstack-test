@@ -9,23 +9,16 @@ describe("POST /api/admin/course-content", () => {
     "utf8",
   );
 
-  it("blocks production hosts before any write", () => {
-    expect(source).toContain("isCourseContentAdminAllowed");
-    expect(source).toContain("adminBlockedResponse");
-  });
-
-  it("requires a Watson session for deployed writes", () => {
-    expect(source).toContain("courseContentWriteRequiresWatsonSession");
-    expect(source).toContain("requireWatsonSessionJson");
-    const postIdx = source.indexOf("export const POST");
-    expect(postIdx).toBeGreaterThan(-1);
-    expect(source.indexOf("requireWatsonSessionJson", postIdx)).toBeGreaterThan(postIdx);
-    expect(source.indexOf("export const GET")).toBeGreaterThan(-1);
-    const getBlock = source.slice(
-      source.indexOf("export const GET"),
-      source.indexOf("export const POST"),
-    );
-    expect(getBlock).not.toContain("requireWatsonSessionJson");
+  it("lets staff save drafts on production admin and publish only a previewed revision", () => {
+    expect(source).not.toContain("isCourseContentAdminAllowed");
+    expect(source).not.toContain("courseContentWriteRequiresWatsonSession");
+    expect(source).not.toContain("requireWatsonSessionJson");
+    expect(source).toContain('action === "createCourse"');
+    expect(source).toContain('action === "previewDraft"');
+    expect(source).toContain('action === "publishDraft"');
+    expect(source).toContain("createPrivateCourse");
+    expect(source).toContain("previewCourseDraft");
+    expect(source).toContain("publishCourseDraft");
   });
 
   it("passes the request hostname into the persist adapter", () => {

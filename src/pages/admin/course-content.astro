@@ -1,20 +1,10 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import GlossaryTermModal from "../../components/glossary/GlossaryTermModal.astro";
-import { isCourseContentAdminAllowed } from "../../lib/legacy_kin/courseContentAdmin";
 import "../../styles/course-preview.css";
 import "../../styles/course-content-editor.css";
 
 export const prerender = false;
-
-if (
-  !isCourseContentAdminAllowed(Astro.url.hostname, {
-    isViteDev: import.meta.env.DEV,
-    publicSiteEnv: import.meta.env.PUBLIC_SITE_ENV,
-  })
-) {
-  return Astro.redirect("/admin/");
-}
 ---
 <style>
   /* Room to scroll add-item buttons above the fixed Memberstack badge */
@@ -38,15 +28,12 @@ if (
       </div>
       <div class="course-editor__header-actions">
         <a href="/admin" class="kbm-btn kbm-btn-outline">Admin</a>
-        <a
-          id="course-editor-preview-link"
-          class="kbm-btn kbm-btn-outline"
-          href="/dev/course-preview"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
+        <button type="button" id="course-editor-preview" class="kbm-btn kbm-btn-outline">
           Preview
-        </a>
+        </button>
+        <button type="button" id="course-editor-publish" class="kbm-btn kbm-btn-accent">
+          Publish
+        </button>
         <button type="button" id="course-editor-reload" class="kbm-btn kbm-btn-outline">
           Reload course
         </button>
@@ -57,7 +44,7 @@ if (
           Revert
         </button>
         <button type="button" id="course-editor-save" class="kbm-btn kbm-btn-accent" disabled>
-          Save lesson
+          Save draft
         </button>
       </div>
     </header>
@@ -100,7 +87,7 @@ if (
               </select>
             </label>
             <p class="course-editor__field-hint course-editor__status-hint">
-              Staging preview still works when inactive. Save after changing visibility.
+              These settings stay in the draft. Students keep the current course until you preview this draft and publish it.
             </p>
             <button
               type="button"
@@ -112,6 +99,25 @@ if (
             </button>
           </div>
           <select id="course-editor-course" class="course-editor__course-select" aria-label="Select course"></select>
+          <details class="course-editor__settings-panel" id="course-editor-new-course">
+            <summary class="course-editor__settings-summary">New course</summary>
+            <div class="course-editor__course-settings">
+              <label class="course-editor__status-field" for="course-editor-new-title">
+                <span class="course-editor__status-label">Title</span>
+                <input id="course-editor-new-title" class="course-editor__input" type="text">
+              </label>
+              <label class="course-editor__status-field" for="course-editor-new-slug">
+                <span class="course-editor__status-label">URL slug</span>
+                <input id="course-editor-new-slug" class="course-editor__input" type="text" placeholder="ribber-basic-bootcamp">
+              </label>
+              <button type="button" id="course-editor-create" class="kbm-btn kbm-btn-outline">
+                Create private course
+              </button>
+              <p class="course-editor__field-hint">
+                A new course starts private. Students cannot see it until you preview and publish.
+              </p>
+            </div>
+          </details>
         </div>
         <details id="course-editor-settings-panel" class="course-editor__settings-panel">
           <summary class="course-editor__settings-summary">Course settings</summary>
@@ -212,20 +218,25 @@ if (
       <main class="course-editor__center">
         <div class="course-editor__center-inner">
           <header class="course-editor__lesson-header">
-            <span class="course-editor__hierarchy-label">Lesson</span>
             <div class="course-editor__lesson-toolbar">
-              <div class="course-editor__lesson-title-wrap">
+              <label class="course-editor__field course-editor__lesson-title-wrap" for="course-editor-lesson-title">
+                <span class="course-editor__field-label">Lesson title</span>
                 <input
                   id="course-editor-lesson-title"
                   class="course-editor__input course-editor__lesson-title-input"
                   type="text"
                   placeholder="Untitled lesson"
                   aria-label="Lesson title"
+                  aria-describedby="course-editor-lesson-title-hint course-editor-lesson-url"
                   autocomplete="off"
                   spellcheck="true"
                   disabled
                 />
-              </div>
+                <span id="course-editor-lesson-title-hint" class="course-editor__field-hint">
+                  Shown to students in the course sidebar and at the top of the lesson.
+                </span>
+                <span id="course-editor-lesson-url" class="course-editor__field-hint" hidden></span>
+              </label>
               <button
                 type="button"
                 id="course-editor-delete-lesson"
@@ -246,6 +257,9 @@ if (
 
           <div class="course-editor__lesson-body">
           <p class="course-editor__outline-label">Sections in this lesson</p>
+          <p class="course-editor__field-hint">
+            Each section title is shown in the student sidebar and as the heading on the lesson page.
+          </p>
           <p id="course-editor-items-empty" class="course-editor__empty-lesson" hidden>
             This lesson has no sections yet. Add a section to start building the outline.
           </p>
@@ -260,6 +274,30 @@ if (
             <p>Select a block from the lesson outline.</p>
           </div>
           <div id="course-editor-edit-form" hidden>
+            <nav id="course-editor-sequence-nav" class="course-editor__sequence-nav" aria-label="Block sequence" hidden>
+              <dl class="course-editor__sequence-place">
+                <div>
+                  <dt>Lesson</dt>
+                  <dd id="course-editor-sequence-lesson"></dd>
+                </div>
+                <div>
+                  <dt>Section</dt>
+                  <dd id="course-editor-sequence-section"></dd>
+                </div>
+                <div>
+                  <dt>Block</dt>
+                  <dd id="course-editor-sequence-block"></dd>
+                </div>
+              </dl>
+              <div class="course-editor__sequence-actions">
+                <button type="button" class="course-editor__sequence-btn" id="course-editor-sequence-prev">
+                  Previous
+                </button>
+                <button type="button" class="course-editor__sequence-btn" id="course-editor-sequence-next">
+                  Next
+                </button>
+              </div>
+            </nav>
             <div id="course-editor-edit-head" class="course-editor__panel-head"></div>
             <div id="course-editor-edit-fields" class="course-editor__panel-body"></div>
           </div>
@@ -284,8 +322,8 @@ if (
         <div>
           <p class="course-editor__sidebar-label">Raw lesson JSON</p>
           <p style="font-size:0.82rem;color:#64748b;margin:0 0 0.5rem">
-            Full lesson structure including blocks and legacy fields. Saves overwrite the selected lesson on disk
-            (with backup).
+            Full lesson structure including blocks and legacy fields. Save draft keeps this lesson in the draft.
+            Students keep the published course until you publish.
           </p>
           <textarea
             id="course-editor-raw-lesson"
@@ -298,7 +336,7 @@ if (
         </div>
         <div class="course-editor__footer" style="border:none;padding:0">
           <button type="button" id="course-editor-advanced-save" class="kbm-btn kbm-btn-accent" disabled>
-            Save lesson from JSON
+            Save draft from JSON
           </button>
         </div>
       </div>
