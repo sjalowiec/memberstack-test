@@ -6,6 +6,7 @@ import {
   WHATS_NEW_CATEGORY_LABELS,
   WHATS_NEW_DEFAULT_BUTTON_TEXT,
   WHATS_NEW_POPUP_AUDIENCES,
+  WHATS_NEW_URL_MAX_LENGTH,
 } from "../../lib/whatsNew/types";
 import {
   WHATS_NEW_COLUMN_ACCENTS,
@@ -95,6 +96,11 @@ const popupExpirationLabel = popupAnnouncement?.expiresAt
   ? formatLosAngelesDateTime(popupAnnouncement.expiresAt)
   : popupAnnouncement
     ? "No expiration"
+    : "—";
+const popupButtonDestinationLabel = popupAnnouncement?.buttonDestinationUrl
+  ? popupAnnouncement.buttonDestinationUrl
+  : popupAnnouncement
+    ? "What's New entry"
     : "—";
 const board = groupWhatsNewCardsByColumn(activeCards);
 const draftCount = activeCards.filter((card) => card.status === "draft").length;
@@ -191,6 +197,10 @@ function cardDataAttr(card: (typeof activeCards)[number]): string {
         <div>
           <dt>Expiration (America/Los_Angeles)</dt>
           <dd>{popupExpirationLabel}</dd>
+        </div>
+        <div>
+          <dt>Button destination</dt>
+          <dd>{popupButtonDestinationLabel}</dd>
         </div>
       </dl>
       {
@@ -296,12 +306,24 @@ function cardDataAttr(card: (typeof activeCards)[number]): string {
               value={popupAnnouncement?.expiresAtLocal ?? ""}
             />
           </label>
+          <label class="watson-wn__field watson-wn__field--full">
+            <span>Button destination URL (optional)</span>
+            <input
+              class="watson__search-input"
+              name="buttonDestinationUrl"
+              type="text"
+              maxlength={WHATS_NEW_URL_MAX_LENGTH}
+              placeholder="/testimonials or https://..."
+              value={popupAnnouncement?.buttonDestinationUrl ?? ""}
+            />
+          </label>
         </div>
         <p class="watson-wn__hint">
           Leave the expiration blank to keep the pop-up up until you disable it. It stops when that
-          Pacific time is reached. Save stores this draft and keeps it enabled or disabled. Enable
-          shows it. Disable hides it. Preview does not publish it and does not change who has already
-          closed it.
+          Pacific time is reached. Leave the button destination blank to keep Read more linked to
+          the What's New entry. A URL here is used in Preview and on the public site. Save stores
+          this draft and keeps it enabled or disabled. Enable shows it. Disable hides it. Preview
+          does not publish it and does not change who has already closed it.
         </p>
         <div class="watson-wn__actions">
           <button type="submit" class="watson__button">Save</button>

@@ -10,6 +10,7 @@ import {
   rememberAnnouncementSeen,
   WHATS_NEW_ANNOUNCEMENT_SEEN_KEY,
 } from "../lib/whatsNew/announcementSeen";
+import { acceptsWhatsNewAnnouncementHref } from "../lib/whatsNew/destinationUrl";
 import { sanitizeCardDescriptionHtml } from "../lib/whatsNew/sanitizeBillboardHtml";
 import { resolveActivitySender } from "../lib/searchActivityClient";
 
@@ -117,7 +118,7 @@ function asAnnouncement(value: unknown): WhatsNewAnnouncement | null {
   if (typeof row.id !== "string" || !row.id.trim()) return null;
   if (typeof row.title !== "string" || !row.title.trim()) return null;
   if (typeof row.introductionHtml !== "string") return null;
-  if (typeof row.href !== "string" || !row.href.startsWith("/") || row.href.startsWith("//")) {
+  if (typeof row.href !== "string" || !acceptsWhatsNewAnnouncementHref(row.href)) {
     return null;
   }
   if (row.audience !== "everyone" && row.audience !== "members") return null;
@@ -238,7 +239,7 @@ function wireAnnouncement(host: HTMLElement): void {
     const safeIntro = sanitizeCardDescriptionHtml(input.introductionHtml || "");
     title.textContent = input.title.trim();
     intro.innerHTML = safeIntro;
-    link.href = input.href.startsWith("/") && !input.href.startsWith("//") ? input.href : "/whats-new";
+    link.href = acceptsWhatsNewAnnouncementHref(input.href) ? input.href : "/whats-new";
     link.dataset.cardId = input.id;
     if (previewNote) previewNote.hidden = mode !== "preview";
     host.dataset.preview = mode === "preview" ? "true" : "false";

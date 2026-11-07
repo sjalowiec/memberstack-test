@@ -1,4 +1,5 @@
-import { whatsNewEntryHref } from "../lib/whatsNew/announcement";
+import { normalizeWhatsNewDestinationUrl } from "../lib/whatsNew/destinationUrl";
+import { popupReadMoreHref } from "../lib/whatsNew/popupAnnouncement";
 import { sanitizeCardDescriptionHtml } from "../lib/whatsNew/sanitizeBillboardHtml";
 import { initCompactRichText } from "./watsonRichTextEditor";
 import { openWhatsNewAnnouncementPreview } from "./whatsNewAnnouncement";
@@ -176,11 +177,17 @@ export function initWatsonPopupAnnouncement(root: ParentNode = document): void {
     }
     const sourceCardId = fieldValue(form, "sourceCardId").trim();
     const savedId = fieldValue(form, "announcementId").trim();
+    const destination = normalizeWhatsNewDestinationUrl(fieldValue(form, "buttonDestinationUrl"));
+    if (!destination.ok) {
+      showForm();
+      setStatus(status, destination.error, true);
+      return;
+    }
     openWhatsNewAnnouncementPreview({
       id: savedId || "preview",
       title,
       introductionHtml: fieldValue(form, "introduction"),
-      href: sourceCardId ? whatsNewEntryHref(sourceCardId) : "/whats-new",
+      href: popupReadMoreHref(sourceCardId, destination.value),
     });
   });
 
@@ -200,6 +207,7 @@ export function initWatsonPopupAnnouncement(root: ParentNode = document): void {
           audience: fieldValue(form, "audience") || "everyone",
           expiresAtLocal: fieldValue(form, "expiresAtLocal"),
           sourceCardId: fieldValue(form, "sourceCardId"),
+          buttonDestinationUrl: fieldValue(form, "buttonDestinationUrl"),
           enabled,
         }),
       });

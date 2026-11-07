@@ -1,5 +1,6 @@
 import { whatsNewEntryHref } from "./announcement";
 import { WHATS_NEW_BILLBOARD_TIME_ZONE } from "./billboard";
+import { normalizeWhatsNewDestinationUrl } from "./destinationUrl";
 import { toIsoTimestamp } from "./public";
 import {
   billboardMessageHasText,
@@ -28,6 +29,8 @@ export type WhatsNewPopupAnnouncementRow = {
   introduction: string;
   audience: string;
   expires_at: Date | string | null;
+  /** Absent until the button destination column is selected. */
+  button_destination_url?: string | null;
   enabled: boolean;
   updated_at: Date | string;
 };
@@ -38,6 +41,8 @@ export type WhatsNewPopupAnnouncement = {
   sourceCardId: string | null;
   title: string;
   introductionHtml: string;
+  /** Optional Read more destination. Blank keeps the What's New entry link. */
+  buttonDestinationUrl: string | null;
   href: string;
   audience: WhatsNewPopupAudience;
   /** UTC instant when the pop-up stops, or null when it stays until disabled. */
@@ -54,8 +59,24 @@ export type ValidatedPopupAnnouncementInput = {
   audience: WhatsNewPopupAudience;
   expiresAt: string | null;
   sourceCardId: string | null;
+  buttonDestinationUrl: string | null;
   enabled: boolean;
 };
+
+/**
+ * Read more opens the button destination when one is saved.
+ * A blank destination keeps the What's New entry, or /whats-new when there is no entry.
+ */
+export function popupReadMoreHref(
+  sourceCardId: string | null | undefined,
+  buttonDestinationUrl: string | null | undefined,
+): string {
+  const source = sourceCardId?.trim() ?? "";
+  const fallback = source ? whatsNewEntryHref(source) : "/whats-new";
+  const destination = normalizeWhatsNewDestinationUrl(buttonDestinationUrl ?? null);
+  if (!destination.ok || !destination.value) return fallback;
+  return destination.value;
+}
 
 const LOCAL_DATE_TIME = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/;
 const SOURCE_ID = /^[A-Za-z0-9_-]+$/;
@@ -165,12 +186,15 @@ export function buildPopupAnnouncement(
   if (!row?.announcement_id?.trim() || !isAudience(row.audience)) return null;
   const expiresAt = row.expires_at == null ? null : toIsoTimestamp(row.expires_at) || null;
   const sourceCardId = row.source_card_id?.trim() || null;
+  const destination = normalizeWhatsNewDestinationUrl(row.button_destination_url ?? null);
+  const buttonDestinationUrl = destination.ok ? destination.value : null;
   return {
     id: row.announcement_id.trim(),
     sourceCardId,
     title: row.title ?? "",
     introductionHtml: sanitizeCardDescriptionHtml(row.introduction ?? ""),
-    href: sourceCardId ? whatsNewEntryHref(sourceCardId) : "/whats-new",
+    buttonDestinationUrl,
+    href: popupReadMoreHref(sourceCardId, buttonDestinationUrl),
     audience: row.audience,
     expiresAt,
     expiresAtLocal: expiresAt ? utcToLosAngelesDateTimeLocal(expiresAt) : "",
@@ -260,6 +284,16 @@ export function validatePopupAnnouncementInput(
     sourceCardId = source;
   }
 
+  const destination = normalizeWhatsNewDestinationUrl(
+    input.buttonDestinationUrl ?? input.button_destination_url ?? null,
+  );
+  if (!destination.ok) {
+    return {
+      ok: false,
+      error: destination.error.replace(/^Destination URL/, "Button destination URL"),
+    };
+  }
+
   return {
     ok: true,
     value: {
@@ -268,6 +302,7 @@ export function validatePopupAnnouncementInput(
       audience,
       expiresAt,
       sourceCardId,
+      buttonDestinationUrl: destination.value,
       enabled: Boolean(input.enabled),
     },
   };

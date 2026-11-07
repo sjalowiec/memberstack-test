@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 
-import { normalizeWhatsNewDestinationUrl } from "./destinationUrl";
+import {
+  acceptsWhatsNewAnnouncementHref,
+  normalizeWhatsNewDestinationUrl,
+} from "./destinationUrl";
 
 describe("normalizeWhatsNewDestinationUrl", () => {
   it("accepts site-relative paths", () => {
@@ -22,6 +25,15 @@ describe("normalizeWhatsNewDestinationUrl", () => {
     expect(normalizeWhatsNewDestinationUrl("")).toEqual({ ok: true, value: null });
     expect(normalizeWhatsNewDestinationUrl("   ")).toEqual({ ok: true, value: null });
     expect(normalizeWhatsNewDestinationUrl(null)).toEqual({ ok: true, value: null });
+  });
+
+  it("accepts a normalized announcement href and rejects an unsafe one", () => {
+    expect(acceptsWhatsNewAnnouncementHref("/testimonials")).toBe(true);
+    expect(acceptsWhatsNewAnnouncementHref("/whats-new#whats-new-entry-card-1")).toBe(true);
+    expect(acceptsWhatsNewAnnouncementHref("https://knititnow.com/testimonials")).toBe(true);
+    expect(acceptsWhatsNewAnnouncementHref("javascript:alert(1)")).toBe(false);
+    expect(acceptsWhatsNewAnnouncementHref("//evil.example/testimonials")).toBe(false);
+    expect(acceptsWhatsNewAnnouncementHref("")).toBe(false);
   });
 
   it("rejects javascript, protocol-relative, html, http, and malformed values", () => {

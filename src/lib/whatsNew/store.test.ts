@@ -1,14 +1,17 @@
 import { describe, expect, it, vi } from "vitest";
 
+import type { WhatsNewPopupAnnouncementRow } from "./popupAnnouncement";
 import {
   archiveWhatsNewCard,
   createWhatsNewCard,
   deleteWhatsNewCard,
   getPublicBillboardSettings,
+  getPublicWhatsNewAnnouncement,
   listAllWhatsNewCards,
   listPublicWhatsNewCards,
   updateWhatsNewCard,
   upsertWhatsNewBillboardSettings,
+  upsertWhatsNewPopupAnnouncement,
   WHATS_NEW_CARDS_ALL_SQL,
   WHATS_NEW_CARDS_PUBLIC_SQL,
   WHATS_NEW_DELETE_ACTIVE_PUBLISHED_ERROR,
@@ -272,5 +275,62 @@ describe("whatsNew store", () => {
       .fn()
       .mockResolvedValueOnce([{ ...settingsRow, enabled: false }]);
     expect(await getPublicBillboardSettings(publicDisabled, now)).toBeNull();
+  });
+
+  it("saves a button destination and keeps the audience, expiration, and announcement id", async () => {
+    const existing: WhatsNewPopupAnnouncementRow = {
+      announcement_id: "announcement-knitters",
+      source_card_id: "card-knitters",
+      title: "What Knitters Say",
+      introduction: "<p>Stories from knitters.</p>",
+      audience: "everyone",
+      expires_at: "2026-12-01T17:00:00.000Z",
+      button_destination_url: null,
+      enabled: true,
+      updated_at: "2026-11-01T00:00:00.000Z",
+    };
+    const savedRow: WhatsNewPopupAnnouncementRow = {
+      ...existing,
+      button_destination_url: "/testimonials",
+    };
+    const queryFn = vi.fn().mockResolvedValueOnce([existing]).mockResolvedValueOnce([savedRow]);
+    const saved = await upsertWhatsNewPopupAnnouncement(
+      {
+        title: existing.title,
+        introductionHtml: existing.introduction,
+        audience: "everyone",
+        expiresAtLocal: "2026-12-01T09:00",
+        sourceCardId: "card-knitters",
+        buttonDestinationUrl: "/testimonials",
+        enabled: true,
+      },
+      queryFn,
+    );
+    expect(saved.ok).toBe(true);
+    if (!saved.ok) return;
+    expect(saved.value.href).toBe("/testimonials");
+    expect(saved.value.audience).toBe("everyone");
+    expect(saved.value.expiresAt).toBe("2026-12-01T17:00:00.000Z");
+    expect(saved.value.id).toBe("announcement-knitters");
+
+    const params = queryFn.mock.calls[1]?.[1] as unknown[];
+    expect(params[1]).toBe("announcement-knitters");
+    expect(params[5]).toBe("everyone");
+    expect(params[6]).toBe("2026-12-01T17:00:00.000Z");
+    expect(params[7]).toBe("/testimonials");
+    expect(String(queryFn.mock.calls[1]?.[0])).toContain("button_destination_url");
+
+    const publicAnnouncement = await getPublicWhatsNewAnnouncement(
+      vi.fn().mockResolvedValueOnce([savedRow]),
+      new Date("2026-11-07T00:00:00.000Z"),
+    );
+    expect(publicAnnouncement?.href).toBe("/testimonials");
+    expect(publicAnnouncement?.audience).toBe("everyone");
+
+    const unchanged = await getPublicWhatsNewAnnouncement(
+      vi.fn().mockResolvedValueOnce([{ ...existing, button_destination_url: null }]),
+      new Date("2026-11-07T00:00:00.000Z"),
+    );
+    expect(unchanged?.href).toBe("/whats-new#whats-new-entry-card-knitters");
   });
 });
