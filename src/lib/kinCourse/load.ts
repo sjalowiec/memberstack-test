@@ -3,8 +3,11 @@ import {
   isAllowedCourseId,
   loadCourseContentDocument,
   readCourseContentFile,
+  readCourseEditorialState,
 } from "../legacy_kin/courseContentAdmin";
-import type { CourseContentWriteOptions } from "../legacy_kin/courseContentPersist";
+import { studentCourseDocument } from "../legacy_kin/courseEditorial";
+import { resolveCourseContentPersistMode, type CourseContentWriteOptions } from "../legacy_kin/courseContentPersist";
+import { readCourseContentOverlay } from "../legacy_kin/courseContentLiveStore";
 import { isLegacyCoursePublic } from "../legacy_kin/legacyCoursePublication";
 import { pocToKinCourse } from "./pocToKinCourse";
 import { flattenLessons } from "./player";
@@ -21,26 +24,49 @@ export type KinCourseBundle = {
   glossary: KinCourseGlossaryEntry[];
 };
 
+async function readPublicFallbackDocument(
+  courseId: number,
+  options: CourseContentWriteOptions,
+): Promise<CoursePreviewData | null> {
+  let overlay: CoursePreviewData | null = null;
+  if (options.readCourseContentOverlay) {
+    overlay = await options.readCourseContentOverlay(courseId);
+  } else {
+    try {
+      if (resolveCourseContentPersistMode(options) === "blob") {
+        overlay = await readCourseContentOverlay(courseId);
+      }
+    } catch {
+      overlay = null;
+    }
+  }
+  if (overlay && isLegacyCoursePublic(overlay.course)) return overlay;
+  try {
+    const bundled = readCourseContentFile(courseId);
+    if (isLegacyCoursePublic(bundled.course)) return bundled;
+  } catch {
+    // No bundled course for an editor-only draft.
+  }
+  return null;
+}
+
 /**
- * On deployed DEV, Watson lesson saves live in a blob overlay. That overlay can
- * still be draft after the git file is published. Public player routes should
- * keep serving the bundled published course instead of 404ing.
+ * Students receive the published editorial revision when one exists.
+ * A private draft leaves the current public course in place. Admin preview
+ * reads the draft. A bundled file never replaces a published revision.
  */
 async function loadPlayerCourseDocument(
   courseId: number,
   options: CourseContentWriteOptions & { includeDrafts?: boolean },
 ): Promise<CoursePreviewData> {
-  const poc = await loadCourseContentDocument(courseId, options);
-  if (options.includeDrafts === true || isLegacyCoursePublic(poc.course)) {
-    return poc;
+  if (options.includeDrafts === true) {
+    return loadCourseContentDocument(courseId, options);
   }
-  try {
-    const bundled = readCourseContentFile(courseId);
-    if (isLegacyCoursePublic(bundled.course)) return bundled;
-  } catch {
-    // Keep the unpublished overlay/document; the caller 404s.
-  }
-  return poc;
+  const editorial = await readCourseEditorialState(courseId, options);
+  const fallback = await readPublicFallbackDocument(courseId, options);
+  const document = studentCourseDocument(editorial, fallback);
+  if (!document) throw new Error(`Course file not found for ${courseId}.`);
+  return document;
 }
 
 /**
@@ -68,8 +94,12 @@ export async function loadKinCourseBundle(
   courseId: number,
   options: CourseContentWriteOptions & { includeDrafts?: boolean } = {},
 ): Promise<KinCourseBundle | null> {
-  if (!Number.isFinite(courseId) || courseId <= 0 || !isAllowedCourseId(courseId)) {
-    return null;
+  if (!Number.isFinite(courseId) || courseId <= 0) return null;
+  if (!isAllowedCourseId(courseId)) {
+    const editorial = await readCourseEditorialState(courseId, options);
+    const published = editorial?.published?.document;
+    const draftPreview = options.includeDrafts === true && editorial?.draft;
+    if (!(published && isLegacyCoursePublic(published.course)) && !draftPreview) return null;
   }
 
   let poc;

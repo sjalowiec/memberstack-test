@@ -77,10 +77,11 @@ import {
   type EditorRichTextTab,
 } from "../lib/legacy_kin/courseContentEditorNavigation";
 import {
-  appendComponentToBlock,
   appendStandaloneComponentBlock,
   findBlockContainingComponent,
+  insertComponentIntoBlockRelative,
   insertStandaloneComponentBlockRelative,
+  reassignAllContentOrders as commitLessonContentOrder,
   isEditorLayoutBlock,
   moveBlockRelativeToTarget as moveBlockRelativeToTargetInLesson,
   movePlainContentComponent,
@@ -102,7 +103,16 @@ import {
   formatSectionBlockCount,
   sectionNavLabel,
 } from "../lib/legacy_kin/courseContentEditorView";
-import type { CourseLesson } from "../lib/legacy_kin/coursePreviewPoc";
+import {
+  editorSequenceStepPlace,
+  getEditorSequencePosition,
+} from "../lib/legacy_kin/courseContentEditorSequence";
+import {
+  contentItemNavTitle,
+  urlLessonSlug,
+  type LessonSlugSource,
+} from "../lib/legacy_kin/courseLessonContentItems";
+import type { CourseLesson, CoursePreviewData } from "../lib/legacy_kin/coursePreviewPoc";
 import {
   isVimeoJumpLinksComponent,
   listAfterDeletingVideoWithJumpLinks,
@@ -111,7 +121,6 @@ import {
   listsAfterMovingVideoWithJumpLinksAcross,
   siblingVimeoFromComponents,
   toNativeVimeoJumpLinksComponent,
-  videoJumpLinksOutlineSummary,
   vimeoJumpLinksSummary,
 } from "../lib/legacy_kin/vimeoJumpLinksEditor";
 import { jumpsFromComponent, type VimeoJump } from "../lib/kinCourse/vimeoJumpLinks";
@@ -173,6 +182,27 @@ function resetOutlineExpandState() {
 const lessonDrafts = new Map<string, LessonRecord>();
 const lessonSavedJson = new Map<string, string>();
 
+type EditorialInfo = {
+  draftRevisionId: string | null;
+  previewedRevisionId: string | null;
+  publishedRevisionId: string | null;
+};
+
+let editorial: EditorialInfo = {
+  draftRevisionId: null,
+  previewedRevisionId: null,
+  publishedRevisionId: null,
+};
+
+function rememberEditorial(info: EditorialInfo | null | undefined) {
+  if (!info) return;
+  editorial = {
+    draftRevisionId: info.draftRevisionId ?? null,
+    previewedRevisionId: info.previewedRevisionId ?? null,
+    publishedRevisionId: info.publishedRevisionId ?? null,
+  };
+}
+
 const dragState = { kind: null as "item" | "lesson" | null, index: null as number | null };
 
 const dom = {
@@ -196,7 +226,11 @@ const dom = {
   courseThumbnailPreviewEmpty: null as HTMLElement | null,
   courseSettingsSaveBtn: null as HTMLButtonElement | null,
   courseSettingsPanel: null as HTMLDetailsElement | null,
-  previewLink: null as HTMLAnchorElement | null,
+  previewBtn: null as HTMLButtonElement | null,
+  publishBtn: null as HTMLButtonElement | null,
+  newTitle: null as HTMLInputElement | null,
+  newSlug: null as HTMLInputElement | null,
+  createCourseBtn: null as HTMLButtonElement | null,
   lessonList: null as HTMLElement | null,
   addLessonBtn: null as HTMLButtonElement | null,
   deleteLessonBtn: null as HTMLButtonElement | null,
@@ -212,6 +246,12 @@ const dom = {
   editForm: null as HTMLElement | null,
   editHead: null as HTMLElement | null,
   editFields: null as HTMLElement | null,
+  sequenceNav: null as HTMLElement | null,
+  sequenceLesson: null as HTMLElement | null,
+  sequenceSection: null as HTMLElement | null,
+  sequenceBlock: null as HTMLElement | null,
+  sequencePrev: null as HTMLButtonElement | null,
+  sequenceNext: null as HTMLButtonElement | null,
   saveBtn: null as HTMLButtonElement | null,
   revertBtn: null as HTMLButtonElement | null,
   reloadBtn: null as HTMLButtonElement | null,
@@ -241,17 +281,36 @@ function formatCourseCatalogLabel(entry: CourseCatalogEntry): string {
   return `${label} (${entry.id})${draftSuffix}${inactiveSuffix}${cleanedSuffix}`;
 }
 
-function updateCoursePreviewLink(course: Record<string, unknown> | undefined, lessonSlug?: string | null) {
-  if (!dom.previewLink || currentCourseId == null) return;
-  const slug = String(course?.slug ?? "").trim();
-  if (slug) {
-    const base = `/courses/legacy/${encodeURIComponent(slug)}?preview=true`;
-    dom.previewLink.href = lessonSlug ? `${base.replace("?preview=true", "")}/${encodeURIComponent(lessonSlug)}?preview=true` : base;
-    return;
-  }
-  dom.previewLink.href = lessonSlug
-    ? `/dev/course-preview/${currentCourseId}/${lessonSlug}`
-    : `/dev/course-preview/${currentCourseId}`;
+const SECTION_TITLE_HINT =
+  "Shown in the student sidebar and as the heading on the lesson page.";
+const VIDEO_TITLE_HINT =
+  "Shown above the video on the lesson page. In a section with more than one block, students also see this in the sidebar. Leave blank and that sidebar link says Video.";
+const LAYOUT_VIDEO_TITLE_HINT =
+  "Shown above this video on the lesson page. The sidebar uses the section title.";
+
+function editorTypeHead(kind: string): string {
+  const meta = typeMeta(kind);
+  return `
+    <span class="course-editor__item-icon" style="background:${meta.color}22;color:${meta.color}">${meta.abbrev}</span>
+    <div>
+      <h3 class="course-editor__panel-title">${escapeHtml(meta.label)}</h3>
+      <p class="course-editor__field-hint" style="margin:0">Block type, used in the editor.</p>
+    </div>`;
+}
+
+function galleryIntroEditorHtml(component: Record<string, unknown>): string {
+  const intro = String(component.introHtml ?? "");
+  if (richTextHasVisibleContent(intro)) return intro;
+  const title = String(component.title ?? "");
+  if (/<[a-z]/i.test(title)) return title;
+  return "";
+}
+
+function updateCoursePreviewLink(
+  _course?: Record<string, unknown>,
+  _lessonSlug?: string | null,
+) {
+  // Preview opens the saved draft from the Preview button.
 }
 
 function updateCourseStatusSelectStyles() {
@@ -655,7 +714,11 @@ function bindDom() {
   dom.courseThumbnailPreviewEmpty = document.getElementById("course-editor-thumbnail-preview-empty");
   dom.courseSettingsSaveBtn = document.getElementById("course-editor-settings-save") as HTMLButtonElement | null;
   dom.courseSettingsPanel = document.getElementById("course-editor-settings-panel") as HTMLDetailsElement | null;
-  dom.previewLink = document.getElementById("course-editor-preview-link") as HTMLAnchorElement | null;
+  dom.previewBtn = document.getElementById("course-editor-preview") as HTMLButtonElement | null;
+  dom.publishBtn = document.getElementById("course-editor-publish") as HTMLButtonElement | null;
+  dom.newTitle = document.getElementById("course-editor-new-title") as HTMLInputElement | null;
+  dom.newSlug = document.getElementById("course-editor-new-slug") as HTMLInputElement | null;
+  dom.createCourseBtn = document.getElementById("course-editor-create") as HTMLButtonElement | null;
   dom.lessonList = document.getElementById("course-editor-lessons");
   dom.addLessonBtn = document.getElementById("course-editor-add-lesson") as HTMLButtonElement | null;
   dom.deleteLessonBtn = document.getElementById("course-editor-delete-lesson") as HTMLButtonElement | null;
@@ -671,6 +734,12 @@ function bindDom() {
   dom.editForm = document.getElementById("course-editor-edit-form");
   dom.editHead = document.getElementById("course-editor-edit-head");
   dom.editFields = document.getElementById("course-editor-edit-fields");
+  dom.sequenceNav = document.getElementById("course-editor-sequence-nav");
+  dom.sequenceLesson = document.getElementById("course-editor-sequence-lesson");
+  dom.sequenceSection = document.getElementById("course-editor-sequence-section");
+  dom.sequenceBlock = document.getElementById("course-editor-sequence-block");
+  dom.sequencePrev = document.getElementById("course-editor-sequence-prev") as HTMLButtonElement | null;
+  dom.sequenceNext = document.getElementById("course-editor-sequence-next") as HTMLButtonElement | null;
   dom.saveBtn = document.getElementById("course-editor-save") as HTMLButtonElement | null;
   dom.revertBtn = document.getElementById("course-editor-revert") as HTMLButtonElement | null;
   dom.reloadBtn = document.getElementById("course-editor-reload") as HTMLButtonElement | null;
@@ -915,6 +984,8 @@ type CourseActionPayload = {
   lesson?: LessonRecord;
   lessonSlug?: string;
   backupPath?: string;
+  editorial?: EditorialInfo;
+  courseId?: number;
 };
 
 function allLessonsForIdScope(): LessonRecord[] {
@@ -937,6 +1008,7 @@ async function postCourseAction(
   if (!res.ok || !payload.ok) {
     throw new Error(payload.error || "Course action failed.");
   }
+  rememberEditorial(payload.editorial);
   return payload;
 }
 
@@ -1132,6 +1204,13 @@ function isLessonDirty(slug: string) {
   const saved = lessonSavedJson.get(slug);
   if (!draft || !saved) return false;
   return JSON.stringify(draft) !== saved;
+}
+
+function courseHasUnsavedEdits(): boolean {
+  for (const slug of lessonDrafts.keys()) {
+    if (isLessonDirty(slug)) return true;
+  }
+  return isCourseSettingsDirty();
 }
 
 function typeMeta(type: string) {
@@ -1688,7 +1767,17 @@ function appendBlockToSection(blockSlug: string, kind: string) {
   if (!block || isEditorLayoutBlock(block)) return;
 
   const component = createComponent(kind);
-  const added = appendComponentToBlock(lesson as CourseLesson, blockSlug, component);
+  const anchor =
+    contentEditingRef && contentEditingRef.blockSlug === blockSlug
+      ? contentEditingRef
+      : null;
+  const added = insertComponentIntoBlockRelative(
+    lesson as CourseLesson,
+    blockSlug,
+    component,
+    anchor?.legacyComponentId ?? null,
+    anchor?.type ?? null,
+  );
   if (!added) return;
 
   setLessonDraft(selectedLessonSlug, lesson);
@@ -2214,12 +2303,7 @@ function createComponent(kind: string): Record<string, unknown> {
 }
 
 function reassignAllContentOrders(lesson: LessonRecord) {
-  let order = 1;
-  for (const block of sortedBlocks(lesson)) {
-    for (const component of sortedComponents(block)) {
-      component.order = order++;
-    }
-  }
+  commitLessonContentOrder(lesson as CourseLesson);
 }
 
 function pruneEmptyBlocks(lesson: LessonRecord) {
@@ -2891,6 +2975,7 @@ function hideEditFormPanel() {
   if (dom.editForm) dom.editForm.hidden = true;
   if (dom.editEmpty) dom.editEmpty.hidden = false;
   refreshSnippetInsertButtons();
+  refreshEditorSequenceNav();
 }
 
 function mountRichTextEditor(
@@ -3106,11 +3191,7 @@ function openContentEdit(ref: ComponentRef) {
   dom.editForm.hidden = false;
   refreshSnippetInsertButtons();
 
-  const meta = typeMeta(imageEditorKind(component));
-  dom.editHead.innerHTML = `
-    <span class="course-editor__item-icon" style="background:${meta.color}22;color:${meta.color}">${meta.abbrev}</span>
-    <h3 class="course-editor__panel-title">Editing ${meta.label.toLowerCase()}</h3>
-  `;
+  dom.editHead.innerHTML = editorTypeHead(imageEditorKind(component));
 
   dom.editFields.innerHTML = "";
 
@@ -3121,7 +3202,7 @@ function openContentEdit(ref: ComponentRef) {
     dom.editFields.innerHTML = `
       <label class="course-editor__field"><span class="course-editor__field-label">Section title</span>
         <input class="course-editor__input" id="ce-rt-section-title" type="text" placeholder="Optional heading shown above this block">
-        <span class="course-editor__field-hint">Shown as the block heading on the lesson page. Leave blank for no heading.</span></label>
+        <span class="course-editor__field-hint">${SECTION_TITLE_HINT} Leave blank for no heading.</span></label>
       <div class="course-editor__field">
         <span class="course-editor__field-label">Text</span>
         <div id="ce-rt-body-editor"></div>
@@ -3138,11 +3219,12 @@ function openContentEdit(ref: ComponentRef) {
     );
   } else if (component.type === "video") {
     dom.editFields.innerHTML = `
-      <label class="course-editor__field"><span class="course-editor__field-label">Title</span>
-        <input class="course-editor__input" id="ce-video-title" type="text" placeholder="What the video shows"></label>
+      <label class="course-editor__field"><span class="course-editor__field-label">Video title</span>
+        <input class="course-editor__input" id="ce-video-title" type="text" placeholder="What the video shows">
+        <span class="course-editor__field-hint">${VIDEO_TITLE_HINT}</span></label>
       <label class="course-editor__field"><span class="course-editor__field-label">Vimeo ID</span>
         <input class="course-editor__input" id="ce-video-id" type="text" placeholder="76979871">
-        <span class="course-editor__field-hint">The number from the video URL</span></label>
+        <span class="course-editor__field-hint">The number from the video URL. Students do not see this number.</span></label>
       <div id="ce-video-preview" class="course-editor__video-preview" hidden></div>
     `;
     const titleEl = dom.editFields.querySelector("#ce-video-title") as HTMLInputElement;
@@ -3226,12 +3308,9 @@ function openContentEdit(ref: ComponentRef) {
         "course-preview__image-img",
       );
       const head = dom.editHead;
-      if (head) {
-        const meta = typeMeta(imageEditorKind(getContentComponent(contentEditingRef)!));
-        head.innerHTML = `
-          <span class="course-editor__item-icon" style="background:${meta.color}22;color:${meta.color}">${meta.abbrev}</span>
-          <h3 class="course-editor__panel-title">Editing ${meta.label.toLowerCase()}</h3>
-        `;
+      if (head && contentEditingRef) {
+        const current = getContentComponent(contentEditingRef);
+        if (current) head.innerHTML = editorTypeHead(imageEditorKind(current));
       }
     };
 
@@ -3241,6 +3320,41 @@ function openContentEdit(ref: ComponentRef) {
     linkEl.addEventListener("input", syncImage);
     syncImage();
   } else if (component.type === "exerciseAccordion") {
+    const block = lesson ? findBlock(lesson, ref.blockSlug) : null;
+    const titleField = document.createElement("label");
+    titleField.className = "course-editor__field";
+    titleField.innerHTML = `
+      <span class="course-editor__field-label">Section title</span>
+      <input class="course-editor__input" id="ce-acc-section-title" type="text" placeholder="Heading for this section">
+      <span class="course-editor__field-hint">${SECTION_TITLE_HINT}</span>
+    `;
+    dom.editFields.appendChild(titleField);
+    const sectionTitleEl = titleField.querySelector("#ce-acc-section-title") as HTMLInputElement;
+    sectionTitleEl.value = block ? blockTitleForEditing(block.title) : "";
+    sectionTitleEl.addEventListener("input", () => {
+      applyBlockSectionTitle(ref.blockSlug, sectionTitleEl.value);
+    });
+
+    const itemTitleField = document.createElement("label");
+    itemTitleField.className = "course-editor__field";
+    itemTitleField.innerHTML = `
+      <span class="course-editor__field-label">Item title</span>
+      <input class="course-editor__input" id="ce-acc-item-title" type="text" placeholder="Bind-off methods">
+      <span class="course-editor__field-hint">Shown in the student sidebar when this section has more than one block. Leave blank and that sidebar link says Accordion, the block type. The headings students click are the item headings below.</span>
+    `;
+    dom.editFields.appendChild(itemTitleField);
+    const itemTitleEl = itemTitleField.querySelector("#ce-acc-item-title") as HTMLInputElement;
+    itemTitleEl.value = String(component.title ?? "");
+    itemTitleEl.addEventListener("input", () => {
+      applyContentPatch({ title: itemTitleEl.value.trim() || null });
+    });
+
+    const itemHeadingHint = document.createElement("p");
+    itemHeadingHint.className = "course-editor__field-hint";
+    itemHeadingHint.textContent =
+      "Item headings are what students click to open each part. They are not the section title.";
+    dom.editFields.appendChild(itemHeadingHint);
+
     const wrap = document.createElement("div");
     dom.editFields.appendChild(wrap);
     const sections = (Array.isArray(component.sections)
@@ -3250,10 +3364,11 @@ function openContentEdit(ref: ComponentRef) {
     const paintAccordion = (list: Record<string, unknown>[]) => {
       renderListEditor(wrap, {
         items: list,
-        addLabel: "Add section",
-        makeNew: () => ({ title: "New section", bodyHtml: "<p></p>", iconSrc: "" }),
+        addLabel: "Add item",
+        makeNew: () => ({ title: "New item", bodyHtml: "<p></p>", iconSrc: "" }),
         renderRow: (section) => `
-          <input class="course-editor__input" style="margin-bottom:0.4rem;font-weight:600" data-acc-title value="${escapeHtml(String(section.title ?? ""))}" placeholder="Section title">
+          <span class="course-editor__field-label">Item heading</span>
+          <input class="course-editor__input" style="margin-bottom:0.4rem;font-weight:600" data-acc-title value="${escapeHtml(String(section.title ?? ""))}" placeholder="Heading students click">
           <textarea class="course-editor__textarea" data-acc-body placeholder="Section body HTML">${escapeHtml(String(section.bodyHtml ?? ""))}</textarea>
         `,
         onChange: (next) => {
@@ -3284,6 +3399,38 @@ function openContentEdit(ref: ComponentRef) {
     };
     paintAccordion([...sections]);
   } else if (component.type === "imageGallery") {
+    const block = lesson ? findBlock(lesson, ref.blockSlug) : null;
+    const sectionTitleField = document.createElement("label");
+    sectionTitleField.className = "course-editor__field";
+    sectionTitleField.innerHTML = `
+      <span class="course-editor__field-label">Section title</span>
+      <input class="course-editor__input" id="ce-gallery-section-title" type="text" placeholder="Heading for this section">
+      <span class="course-editor__field-hint">${SECTION_TITLE_HINT}</span>
+    `;
+    dom.editFields.appendChild(sectionTitleField);
+    const sectionTitleEl = sectionTitleField.querySelector(
+      "#ce-gallery-section-title",
+    ) as HTMLInputElement;
+    sectionTitleEl.value = block ? blockTitleForEditing(block.title) : "";
+    sectionTitleEl.addEventListener("input", () => {
+      applyBlockSectionTitle(ref.blockSlug, sectionTitleEl.value);
+    });
+
+    const titleField = document.createElement("label");
+    titleField.className = "course-editor__field";
+    titleField.innerHTML = `
+      <span class="course-editor__field-label">Gallery title</span>
+      <input class="course-editor__input" id="ce-gallery-title" type="text" placeholder="Garter Stitch: Step by Step.">
+      <span class="course-editor__field-hint">Shown above the images when there is no text above the gallery. In a section with more than one block, students also see this in the sidebar. Leave blank and that sidebar link uses the image count, such as 10 images.</span>
+    `;
+    dom.editFields.appendChild(titleField);
+    const galleryTitleEl = titleField.querySelector("#ce-gallery-title") as HTMLInputElement;
+    const storedGalleryTitle = String(component.title ?? "");
+    galleryTitleEl.value = /<[a-z]/i.test(storedGalleryTitle) ? "" : storedGalleryTitle;
+    galleryTitleEl.addEventListener("input", () => {
+      applyContentPatch({ title: galleryTitleEl.value.trim() || null });
+    });
+
     const introField = document.createElement("div");
     introField.className = "course-editor__field";
     introField.innerHTML = `
@@ -3294,12 +3441,15 @@ function openContentEdit(ref: ComponentRef) {
     dom.editFields.appendChild(introField);
     mountRichTextEditor(
       introField.querySelector("#ce-gallery-intro-editor") as HTMLElement,
-      String(component.introHtml ?? component.title ?? ""),
-      (html) =>
+      galleryIntroEditorHtml(component),
+      (html) => {
+        const current = contentEditingRef ? getContentComponent(contentEditingRef) : null;
+        const title = String(current?.title ?? "");
         applyContentPatch({
           introHtml: richTextHasVisibleContent(html) ? html : null,
-          title: null,
-        }),
+          ...(/<[a-z]/i.test(title) ? { title: null } : {}),
+        });
+      },
       { prosePreview: false },
     );
 
@@ -3371,6 +3521,7 @@ function openContentEdit(ref: ComponentRef) {
     titleField.innerHTML = `
       <span class="course-editor__field-label">Carousel title</span>
       <input class="course-editor__input" id="ce-carousel-title" type="text" placeholder="Optional heading above the slides">
+      <span class="course-editor__field-hint">Shown above the slides. In a section with more than one block, students also see this in the sidebar.</span>
     `;
     dom.editFields.appendChild(titleField);
     const titleEl = titleField.querySelector("#ce-carousel-title") as HTMLInputElement;
@@ -3561,11 +3712,7 @@ function openAccordionLayoutEdit(ref: ComponentRef) {
   dom.editForm.hidden = false;
   refreshSnippetInsertButtons();
 
-  const meta = typeMeta("exerciseAccordion");
-  dom.editHead.innerHTML = `
-    <span class="course-editor__item-icon" style="background:${meta.color}22;color:${meta.color}">${meta.abbrev}</span>
-    <h3 class="course-editor__panel-title">Editing ${meta.label.toLowerCase()}</h3>
-  `;
+  dom.editHead.innerHTML = editorTypeHead("exerciseAccordion");
 
   dom.editFields.innerHTML = `
     <div class="course-editor__field">
@@ -3573,14 +3720,26 @@ function openAccordionLayoutEdit(ref: ComponentRef) {
       <span class="course-editor__field-hint" style="margin-bottom:0.35rem">Leave blank to hide on the lesson page.</span>
       <div id="ce-acc-intro-editor"></div>
     </div>
+    <label class="course-editor__field"><span class="course-editor__field-label">Section title</span>
+      <input class="course-editor__input" id="ce-acc-layout-section-title" type="text" placeholder="Heading for this section">
+      <span class="course-editor__field-hint">${SECTION_TITLE_HINT}</span></label>
     <div class="course-editor__field">
-      <span class="course-editor__field-label">Accordion sections</span>
+      <span class="course-editor__field-label">Item headings</span>
+      <span class="course-editor__field-hint">What students click to open each part. Not the section title.</span>
       <div id="ce-acc-sections-editor"></div>
     </div>
     <button type="button" id="ce-acc-combine-prev" class="course-editor__list-add" hidden>
       Combine with previous text item
     </button>
   `;
+
+  const layoutSectionTitle = dom.editFields.querySelector(
+    "#ce-acc-layout-section-title",
+  ) as HTMLInputElement;
+  layoutSectionTitle.value = block ? blockTitleForEditing(block.title) : "";
+  layoutSectionTitle.addEventListener("input", () => {
+    applyBlockSectionTitle(ref.blockSlug, layoutSectionTitle.value);
+  });
 
   const introWrap = dom.editFields.querySelector("#ce-acc-intro-editor") as HTMLElement;
   mountRichTextEditor(
@@ -3594,10 +3753,11 @@ function openAccordionLayoutEdit(ref: ComponentRef) {
   const paintAccordionSections = (list: Record<string, unknown>[]) => {
     renderListEditor(sectionsWrap, {
       items: list,
-      addLabel: "Add section",
-      makeNew: () => ({ title: "New section", bodyHtml: "<p></p>", iconSrc: "" }),
+      addLabel: "Add item",
+      makeNew: () => ({ title: "New item", bodyHtml: "<p></p>", iconSrc: "" }),
       renderRow: (section) => `
-        <input class="course-editor__input" style="margin-bottom:0.4rem;font-weight:600" data-acc-title value="${escapeHtml(String(section.title ?? ""))}" placeholder="Section title">
+        <span class="course-editor__field-label">Item heading</span>
+        <input class="course-editor__input" style="margin-bottom:0.4rem;font-weight:600" data-acc-title value="${escapeHtml(String(section.title ?? ""))}" placeholder="Heading students click">
         <textarea class="course-editor__textarea" data-acc-body placeholder="Section body HTML">${escapeHtml(String(section.bodyHtml ?? ""))}</textarea>
       `,
       onChange: (next) => {
@@ -3666,17 +3826,13 @@ function openEmbeddedToolLayoutEdit(ref: ComponentRef) {
     )
     .join("");
   const selectedEntry = getEmbeddedToolByKey(currentKey);
-  const meta = typeMeta("embeddedTool");
 
-  dom.editHead.innerHTML = `
-    <span class="course-editor__item-icon" style="background:${meta.color}22;color:${meta.color}">${meta.abbrev}</span>
-    <h3 class="course-editor__panel-title">Editing ${meta.label.toLowerCase()}</h3>
-  `;
+  dom.editHead.innerHTML = editorTypeHead("embeddedTool");
 
   dom.editFields.innerHTML = `
     <label class="course-editor__field"><span class="course-editor__field-label">Section title</span>
       <input class="course-editor__input" id="ce-et-section-title" type="text" placeholder="Optional heading shown above this block">
-      <span class="course-editor__field-hint">Shown as the block heading on the lesson page. Leave blank for no heading.</span></label>
+      <span class="course-editor__field-hint">${SECTION_TITLE_HINT} Leave blank for no heading.</span></label>
     <div class="course-editor__field">
       <span class="course-editor__field-label">Optional intro text</span>
       <span class="course-editor__field-hint" style="margin-bottom:0.35rem">Shown above the tool on the lesson page. Leave blank to hide.</span>
@@ -3735,16 +3891,12 @@ function openTextVideoLayoutEdit(ref: ComponentRef) {
   dom.editForm.hidden = false;
   refreshSnippetInsertButtons();
 
-  const meta = typeMeta(TEXT_VIDEO_LAYOUT_TYPE);
-  dom.editHead.innerHTML = `
-    <span class="course-editor__item-icon" style="background:${meta.color}22;color:${meta.color}">${meta.abbrev}</span>
-    <h3 class="course-editor__panel-title">Editing ${meta.label.toLowerCase()}</h3>
-  `;
+  dom.editHead.innerHTML = editorTypeHead(TEXT_VIDEO_LAYOUT_TYPE);
 
   dom.editFields.innerHTML = `
     <label class="course-editor__field"><span class="course-editor__field-label">Section title</span>
       <input class="course-editor__input" id="ce-tv-section-title" type="text" placeholder="Optional heading shown above this block">
-      <span class="course-editor__field-hint">Shown as the block heading on the lesson page. Leave blank for no heading.</span></label>
+      <span class="course-editor__field-hint">${SECTION_TITLE_HINT} Leave blank for no heading.</span></label>
     <div class="course-editor__field">
       <span class="course-editor__field-label">Left column text</span>
       <div id="ce-tv-left-editor"></div>
@@ -3752,10 +3904,11 @@ function openTextVideoLayoutEdit(ref: ComponentRef) {
     <div class="course-editor__field">
       <span class="course-editor__field-label">Right column video</span>
       <label class="course-editor__field"><span class="course-editor__field-label">Video title</span>
-        <input class="course-editor__input" id="ce-tv-video-title" type="text" placeholder="What the video shows"></label>
+        <input class="course-editor__input" id="ce-tv-video-title" type="text" placeholder="What the video shows">
+        <span class="course-editor__field-hint">${LAYOUT_VIDEO_TITLE_HINT}</span></label>
       <label class="course-editor__field"><span class="course-editor__field-label">Vimeo ID</span>
         <input class="course-editor__input" id="ce-tv-video-id" type="text" placeholder="76979871">
-        <span class="course-editor__field-hint">The number from the video URL</span></label>
+        <span class="course-editor__field-hint">The number from the video URL. Students do not see this number.</span></label>
       <div id="ce-tv-video-preview" class="course-editor__video-preview" hidden></div>
     </div>
     <div class="course-editor__field">
@@ -3839,16 +3992,12 @@ function openTextImageLayoutEdit(ref: ComponentRef) {
 
   const imagePosition = getImagePosition(block);
   const layoutHeader = getLayoutHeader(block);
-  const meta = typeMeta(TEXT_IMAGE_LAYOUT_TYPE);
-  dom.editHead.innerHTML = `
-    <span class="course-editor__item-icon" style="background:${meta.color}22;color:${meta.color}">${meta.abbrev}</span>
-    <h3 class="course-editor__panel-title">Editing ${meta.label.toLowerCase()}</h3>
-  `;
+  dom.editHead.innerHTML = editorTypeHead(TEXT_IMAGE_LAYOUT_TYPE);
 
   dom.editFields.innerHTML = `
     <label class="course-editor__field"><span class="course-editor__field-label">Section title</span>
       <input class="course-editor__input" id="ce-ti-header" type="text" placeholder="Optional heading above this layout">
-      <span class="course-editor__field-hint">Shown as a section heading in the lesson preview when filled in.</span></label>
+      <span class="course-editor__field-hint">${SECTION_TITLE_HINT} Leave blank to use the section title in the outline.</span></label>
     <div class="course-editor__field">
       <span class="course-editor__field-label">Text</span>
       <div id="ce-ti-text-editor"></div>
@@ -3945,11 +4094,7 @@ function openThreeVideosLayoutEdit(ref: ComponentRef) {
   dom.editForm.hidden = false;
   refreshSnippetInsertButtons();
 
-  const meta = typeMeta(THREE_VIDEOS_LAYOUT_TYPE);
-  dom.editHead.innerHTML = `
-    <span class="course-editor__item-icon" style="background:${meta.color}22;color:${meta.color}">${meta.abbrev}</span>
-    <h3 class="course-editor__panel-title">Editing ${meta.label.toLowerCase()}</h3>
-  `;
+  dom.editHead.innerHTML = editorTypeHead(THREE_VIDEOS_LAYOUT_TYPE);
 
   const slotFields = ([1, 2, 3] as const)
     .map(
@@ -3957,10 +4102,11 @@ function openThreeVideosLayoutEdit(ref: ComponentRef) {
     <div class="course-editor__field course-editor__list-card">
       <span class="course-editor__field-label">Video ${slot}</span>
       <label class="course-editor__field"><span class="course-editor__field-label">Video title</span>
-        <input class="course-editor__input" id="ce-3v-title-${slot}" type="text" placeholder="Video Title ${slot}"></label>
+        <input class="course-editor__input" id="ce-3v-title-${slot}" type="text" placeholder="What this video shows">
+        <span class="course-editor__field-hint">${LAYOUT_VIDEO_TITLE_HINT}</span></label>
       <label class="course-editor__field"><span class="course-editor__field-label">Vimeo ID</span>
         <input class="course-editor__input" id="ce-3v-id-${slot}" type="text" placeholder="76979871">
-        <span class="course-editor__field-hint">The number from the video URL</span></label>
+        <span class="course-editor__field-hint">The number from the video URL. Students do not see this number.</span></label>
       <div id="ce-3v-video-preview-${slot}" class="course-editor__video-preview" hidden></div>
       <span class="course-editor__field-label">Caption (optional)</span>
       <div id="ce-3v-caption-editor-${slot}"></div>
@@ -3972,7 +4118,7 @@ function openThreeVideosLayoutEdit(ref: ComponentRef) {
   dom.editFields.innerHTML = `
     <label class="course-editor__field"><span class="course-editor__field-label">Section title</span>
       <input class="course-editor__input" id="ce-3v-section-title" type="text" placeholder="Heading shown above this block">
-      <span class="course-editor__field-hint">Also editable in the Section title field above the item list.</span></label>
+      <span class="course-editor__field-hint">${SECTION_TITLE_HINT} Also editable in the outline.</span></label>
     <div class="course-editor__field">
       <span class="course-editor__field-label">Intro text</span>
       <span class="course-editor__field-hint" style="margin-bottom:0.35rem">Optional text above the videos (not the section heading).</span>
@@ -4082,6 +4228,9 @@ function applyBlockSectionTitle(blockSlug: string, value: string, refreshList = 
     "#ce-rt-section-title",
     "#ce-tv-section-title",
     "#ce-et-section-title",
+    "#ce-acc-section-title",
+    "#ce-acc-layout-section-title",
+    "#ce-gallery-section-title",
   ]) {
     const panelSectionTitle = dom.editFields?.querySelector(selector) as HTMLInputElement | null;
     if (panelSectionTitle && panelSectionTitle.value !== value) {
@@ -4103,6 +4252,31 @@ function syncLessonTitleInput() {
   if (lesson) {
     dom.lessonTitleInput.value = lessonTitleForEditing(lesson.title);
   }
+  syncLessonUrlHint();
+}
+
+function syncLessonUrlHint() {
+  const hint = document.getElementById("course-editor-lesson-url");
+  if (!hint) return;
+  if (!selectedLessonSlug || !courseData) {
+    hint.hidden = true;
+    hint.textContent = "";
+    return;
+  }
+  const draft = getLessonDraft(selectedLessonSlug);
+  const lessons = (Array.isArray(courseData.lessons) ? courseData.lessons : []).map((lesson) => {
+    if (String(lesson.slug ?? "") !== selectedLessonSlug || !draft) return lesson;
+    return { ...lesson, title: draft.title };
+  }) as LessonSlugSource[];
+  const publicSlug = urlLessonSlug(lessons, selectedLessonSlug);
+  const courseSlug = readCourseSlug(courseData.course as Record<string, unknown> | undefined);
+  if (!courseSlug || !publicSlug || publicSlug === selectedLessonSlug) {
+    hint.hidden = true;
+    hint.textContent = "";
+    return;
+  }
+  hint.hidden = false;
+  hint.textContent = `Students open this lesson at /courses/legacy/${courseSlug}/${publicSlug}.`;
 }
 
 function focusLessonTitleIfPending() {
@@ -4133,11 +4307,15 @@ function renderContentList() {
       dom.itemsEmpty.textContent = "Select a lesson to view its outline.";
     }
     syncLessonTitleInput();
+    refreshEditorSequenceNav();
     return;
   }
 
   const lesson = getLessonDraft(selectedLessonSlug);
-  if (!lesson) return;
+  if (!lesson) {
+    refreshEditorSequenceNav();
+    return;
+  }
 
   syncLessonTitleInput();
   const items = flattenLessonContent(lesson);
@@ -4200,14 +4378,12 @@ function renderContentList() {
               : imageEditorKind(item.component),
           );
           const typeLabel = jumpLinksNote ? "Video Jump Links" : contentItemTypeLabel(item);
+          const studentLabel = contentItemNavTitle(
+            lesson as CourseLesson,
+            item,
+            items,
+          );
           const jumpLinks = item.type === "video" ? (entryJumpLinks ?? []) : [];
-          const jumpSummary =
-            item.type === "video"
-              ? videoJumpLinksOutlineSummary(
-                  item.component,
-                  jumpLinks.map((jump) => jump.component),
-                )
-              : null;
           const chapterItems =
             currentCourseId === 87
               ? jumpLinks.flatMap((jump) => jumpsFromComponent(jump.component))
@@ -4231,8 +4407,8 @@ function renderContentList() {
                 <div class="course-editor__outline-block ${selected ? "is-selected" : ""}" data-item-index="${index}" data-section-slug="${escapeHtml(group.blockSlug)}" draggable="true">
                   <span class="course-editor__outline-block-icon" style="background:${meta.color}1c;color:${meta.color}">${meta.abbrev}</span>
                   <div class="course-editor__outline-block-body">
-                    <span class="course-editor__outline-block-type" style="color:${meta.color}">Block ${blockIndex + 1}: ${escapeHtml(typeLabel)}</span>
-                    <span class="course-editor__outline-block-summary">${escapeHtml(jumpLinksNote ?? jumpSummary ?? contentSummary(item.component))}</span>
+                    <span class="course-editor__outline-block-type" style="color:${meta.color}">Block type: ${escapeHtml(typeLabel)}</span>
+                    <span class="course-editor__outline-block-summary">Students see: ${escapeHtml(studentLabel)}</span>
                     ${chapterHtml}
                   </div>
                   <div class="course-editor__outline-block-actions">
@@ -4284,6 +4460,7 @@ function renderContentList() {
 
   syncAddBlockToolbarTarget();
   bindContentListActions();
+  refreshEditorSequenceNav();
 
   const deleteConfirm = new Set<number>();
 
@@ -5459,7 +5636,111 @@ function finishRename(slug: string, title: string) {
   }
 }
 
-function selectLesson(slug: string, force = false) {
+function courseSnapshotForSequence(): CoursePreviewData | null {
+  if (!courseData?.course || !Array.isArray(courseData.lessons)) return null;
+  const lessons = sortedLessons(courseData).map((lesson) => {
+    const slug = String(lesson.slug ?? "");
+    return (getLessonDraft(slug) ?? lesson) as CourseLesson;
+  });
+  return {
+    ...(courseData as unknown as CoursePreviewData),
+    course: courseData.course as CoursePreviewData["course"],
+    lessons,
+  };
+}
+
+function currentSequenceItem(): ComponentRef | null {
+  if (!contentEditingRef) return null;
+  if (!selectedLessonSlug) return contentEditingRef;
+  const lesson = getLessonDraft(selectedLessonSlug);
+  if (!lesson) return contentEditingRef;
+  return (
+    flattenLessonContent(lesson).find((item) => contentItemMatches(contentEditingRef, item)) ??
+    contentEditingRef
+  );
+}
+
+function sequenceDirectionLabel(
+  direction: "Previous" | "Next",
+  place: { lessonTitle: string; blockTitle: string } | null,
+): string {
+  if (!place) return direction;
+  return `${direction}: ${place.lessonTitle} — ${place.blockTitle}`;
+}
+
+function refreshEditorSequenceNav() {
+  if (!dom.sequenceNav || !dom.sequencePrev || !dom.sequenceNext) return;
+  const editingOpen = Boolean(
+    dom.editForm && !dom.editForm.hidden && contentEditingRef && selectedLessonSlug,
+  );
+  const course = editingOpen ? courseSnapshotForSequence() : null;
+  const position = course
+    ? getEditorSequencePosition(course, selectedLessonSlug, currentSequenceItem())
+    : null;
+  const visible = Boolean(editingOpen && position?.place);
+  dom.sequenceNav.hidden = !visible;
+  if (!position?.place || !course) {
+    dom.sequencePrev.disabled = true;
+    dom.sequenceNext.disabled = true;
+    dom.sequencePrev.title = "Previous";
+    dom.sequenceNext.title = "Next";
+    dom.sequencePrev.setAttribute("aria-label", "Previous");
+    dom.sequenceNext.setAttribute("aria-label", "Next");
+    return;
+  }
+
+  if (dom.sequenceLesson) dom.sequenceLesson.textContent = position.place.lessonTitle;
+  if (dom.sequenceSection) dom.sequenceSection.textContent = position.place.sectionTitle;
+  if (dom.sequenceBlock) dom.sequenceBlock.textContent = position.place.blockTitle;
+  dom.sequencePrev.disabled = position.prev == null;
+  dom.sequenceNext.disabled = position.next == null;
+  const previousLabel = sequenceDirectionLabel(
+    "Previous",
+    editorSequenceStepPlace(course, position.prev),
+  );
+  const nextLabel = sequenceDirectionLabel("Next", editorSequenceStepPlace(course, position.next));
+  dom.sequencePrev.title = previousLabel;
+  dom.sequenceNext.title = nextLabel;
+  dom.sequencePrev.setAttribute("aria-label", previousLabel);
+  dom.sequenceNext.setAttribute("aria-label", nextLabel);
+}
+
+function revealSelectedEditingArea() {
+  const selectedBlock = dom.itemsList?.querySelector(".course-editor__outline-block.is-selected");
+  if (selectedBlock instanceof HTMLElement) {
+    selectedBlock.scrollIntoView({ block: "nearest", inline: "nearest" });
+  }
+  const activeLesson = dom.lessonList?.querySelector(".course-editor__lesson-row.is-active");
+  if (activeLesson instanceof HTMLElement) {
+    activeLesson.scrollIntoView({ block: "nearest", inline: "nearest" });
+  }
+  if (dom.editFields) dom.editFields.scrollTop = 0;
+  dom.sequenceNav?.scrollIntoView({ block: "nearest", inline: "nearest" });
+}
+
+function navigateEditorSequence(direction: "prev" | "next") {
+  const course = courseSnapshotForSequence();
+  if (!course || !selectedLessonSlug || !contentEditingRef) return;
+  const position = getEditorSequencePosition(course, selectedLessonSlug, currentSequenceItem());
+  const step = direction === "prev" ? position.prev : position.next;
+  if (!step) return;
+
+  if (step.lesson.slug !== selectedLessonSlug) {
+    const switched = selectLesson(step.lesson.slug);
+    if (!switched || selectedLessonSlug !== step.lesson.slug) return;
+  }
+
+  openContentEdit({
+    blockSlug: step.item.blockSlug,
+    legacyComponentId: step.item.legacyComponentId,
+    type: step.item.type,
+    pairedLegacyComponentId: step.item.pairedLegacyComponentId,
+    introLegacyComponentId: step.item.introLegacyComponentId,
+  });
+  revealSelectedEditingArea();
+}
+
+function selectLesson(slug: string, force = false): boolean {
   if (
     !force &&
     selectedLessonSlug &&
@@ -5471,7 +5752,7 @@ function selectLesson(slug: string, force = false) {
         "This lesson has unsaved changes. Switch anyway and lose those edits?",
       )
     ) {
-      return;
+      return false;
     }
   }
 
@@ -5485,16 +5766,14 @@ function selectLesson(slug: string, force = false) {
   }
 
   const lesson = sortedLessons(courseData).find((l) => l.slug === slug);
-  if (!lesson) return;
+  if (!lesson) return false;
 
   if (!lessonDrafts.has(slug)) {
     setLessonDraft(slug, lesson);
     lessonSavedJson.set(slug, JSON.stringify(cloneLesson(lesson)));
   }
 
-  if (dom.previewLink && currentCourseId != null) {
-    updateCoursePreviewLink(courseData?.course, slug);
-  }
+  updateCoursePreviewLink(courseData?.course, slug);
   if (dom.courseTitle) {
     dom.courseTitle.value = String(courseData?.course?.title ?? "");
     dom.courseTitle.readOnly = true;
@@ -5508,6 +5787,7 @@ function selectLesson(slug: string, force = false) {
   updateSaveState();
   syncEditorUrl();
   focusLessonTitleIfPending();
+  return true;
 }
 
 function syncRawTextarea() {
@@ -5526,6 +5806,103 @@ function findEmptyBlockSlugs(lesson: LessonRecord) {
     .map((block) => String(block.slug ?? ""));
 }
 
+function fillCourseSelect() {
+  if (!dom.courseSelect) return;
+  dom.courseSelect.innerHTML = courseCatalog
+    .map(
+      (c) => `<option value="${c.id}">${escapeHtml(formatCourseCatalogLabel(c))}</option>`,
+    )
+    .join("");
+}
+
+async function previewDraft() {
+  if (currentCourseId == null) return;
+  if (courseHasUnsavedEdits()) {
+    setStatus("Save the draft before preview.", "is-error");
+    return;
+  }
+  if (!editorial.draftRevisionId) {
+    setStatus("Save a draft before preview.", "is-error");
+    return;
+  }
+  setStatus("Opening the draft preview…");
+  try {
+    const payload = await postCourseAction("previewDraft", {
+      revisionId: editorial.draftRevisionId,
+    });
+    const revisionId = payload.editorial?.draftRevisionId ?? editorial.draftRevisionId;
+    window.open(
+      `/admin/course-content/preview/${currentCourseId}?revision=${encodeURIComponent(revisionId)}`,
+      "_blank",
+      "noopener",
+    );
+    setStatus("Draft preview opened. Students still see the published course.", "is-success");
+  } catch (err) {
+    setStatus(err instanceof Error ? err.message : "Could not preview the draft.", "is-error");
+  }
+}
+
+async function publishDraft() {
+  if (currentCourseId == null) return;
+  if (courseHasUnsavedEdits()) {
+    setStatus("Save the draft before publishing.", "is-error");
+    return;
+  }
+  if (
+    !editorial.draftRevisionId ||
+    editorial.previewedRevisionId !== editorial.draftRevisionId
+  ) {
+    setStatus("Preview this draft before publishing.", "is-error");
+    return;
+  }
+  if (!window.confirm("Publish this previewed draft for students?")) return;
+  setStatus("Publishing the previewed draft…");
+  try {
+    await postCourseAction("publishDraft", { revisionId: editorial.draftRevisionId });
+    setStatus("Published the previewed draft.", "is-success");
+  } catch (err) {
+    setStatus(err instanceof Error ? err.message : "Could not publish the draft.", "is-error");
+  }
+}
+
+async function createCourse() {
+  const title = dom.newTitle?.value.trim() ?? "";
+  const slug = dom.newSlug?.value.trim() ?? "";
+  if (!title) {
+    setStatus("A course title is required.", "is-error");
+    return;
+  }
+  setStatus("Creating a private course…");
+  try {
+    const res = await fetch(API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "createCourse", title, slug }),
+    });
+    const payload = (await res.json()) as CourseActionPayload;
+    if (!res.ok || !payload.ok || !payload.courseId) {
+      throw new Error(payload.error || "Could not create the course.");
+    }
+    const catalogRes = await fetch(API_URL);
+    const catalogPayload = (await catalogRes.json()) as {
+      ok?: boolean;
+      courses?: CourseCatalogEntry[];
+      error?: string;
+    };
+    if (!catalogRes.ok || !catalogPayload.ok) {
+      throw new Error(catalogPayload.error || "The course was created, but the list did not reload.");
+    }
+    courseCatalog = catalogPayload.courses ?? [];
+    fillCourseSelect();
+    if (dom.newTitle) dom.newTitle.value = "";
+    if (dom.newSlug) dom.newSlug.value = "";
+    await loadCourse(payload.courseId);
+    setStatus("Private course created. Students cannot see it until you publish.", "is-success");
+  } catch (err) {
+    setStatus(err instanceof Error ? err.message : "Could not create the course.", "is-error");
+  }
+}
+
 async function saveLesson(fromRaw = false): Promise<boolean> {
   if (!selectedLessonSlug || currentCourseId == null) return false;
   if (lessonSaveInFlight) return false;
@@ -5535,7 +5912,7 @@ async function saveLesson(fromRaw = false): Promise<boolean> {
   const scrollSnapshot = captureScrollSnapshot();
   captureSnippetsOpen();
   const saveButton = fromRaw ? dom.advancedSaveBtn : dom.saveBtn;
-  const saveButtonLabel = fromRaw ? "Save lesson from JSON" : "Save lesson";
+  const saveButtonLabel = fromRaw ? "Save draft from JSON" : "Save draft";
 
   if (fromRaw && dom.rawLesson) {
     try {
@@ -5610,7 +5987,11 @@ async function saveLesson(fromRaw = false): Promise<boolean> {
     }
 
     const refreshRes = await fetch(`${API_URL}?courseId=${currentCourseId}&reload=${Date.now()}`);
-    const refreshPayload = (await refreshRes.json()) as { ok?: boolean; course?: CourseRecord };
+    const refreshPayload = (await refreshRes.json()) as {
+      ok?: boolean;
+      course?: CourseRecord;
+      editorial?: EditorialInfo;
+    };
     const refreshedLesson = refreshPayload.course?.lessons?.find(
       (item) => String(item.slug ?? "") === savedLessonSlug,
     );
@@ -5626,6 +6007,7 @@ async function saveLesson(fromRaw = false): Promise<boolean> {
       );
     }
 
+    rememberEditorial(refreshPayload.editorial);
     setLessonDraft(savedLessonSlug, JSON.parse(JSON.stringify(payload.storedLesson)) as LessonRecord);
     lessonSavedJson.set(savedLessonSlug, JSON.stringify(payload.storedLesson));
     applyCourseFromServer(refreshPayload.course, {
@@ -5638,11 +6020,11 @@ async function saveLesson(fromRaw = false): Promise<boolean> {
     restoreScrollSnapshot(pinnedEditorView?.scroll ?? scrollSnapshot);
     updateSaveState();
 
-    const backupName = payload.backupPath
-      ? String(payload.backupPath).split(/[/\\]/).pop()
-      : "created";
     setSaveButtonSaved(saveButton);
-    confirmSaveSuccess("Lesson saved", `Lesson saved. Backup: ${backupName}`);
+    confirmSaveSuccess(
+      "Draft saved",
+      "Draft saved. Students still see the published course until you publish.",
+    );
     return true;
   } catch (err) {
     resetSaveButtonSaving(saveButton);
@@ -5691,13 +6073,19 @@ async function loadCourse(
 
   try {
     const res = await fetch(`${API_URL}?courseId=${courseId}`);
-    const payload = (await res.json()) as { ok?: boolean; error?: string; course?: CourseRecord };
+    const payload = (await res.json()) as {
+      ok?: boolean;
+      error?: string;
+      course?: CourseRecord;
+      editorial?: EditorialInfo;
+    };
     if (!res.ok || !payload.ok || !payload.course) {
       throw new Error(payload.error || "Could not load course.");
     }
 
     currentCourseId = courseId;
     persistSelectedCourse(courseId);
+    rememberEditorial(payload.editorial);
     courseData = payload.course;
     lessonDrafts.clear();
     lessonSavedJson.clear();
@@ -5768,7 +6156,18 @@ export function initCourseContentEditor() {
   setCourseHtmlSnippetsToast(flashToast);
   initCourseHtmlSnippetsPanel();
 
+  dom.sequencePrev?.addEventListener("click", () => navigateEditorSequence("prev"));
+  dom.sequenceNext?.addEventListener("click", () => navigateEditorSequence("next"));
   dom.saveBtn?.addEventListener("click", () => saveLesson(false));
+  dom.previewBtn?.addEventListener("click", () => {
+    void previewDraft();
+  });
+  dom.publishBtn?.addEventListener("click", () => {
+    void publishDraft();
+  });
+  dom.createCourseBtn?.addEventListener("click", () => {
+    void createCourse();
+  });
   dom.revertBtn?.addEventListener("click", revertLesson);
   dom.lessonTitleInput?.addEventListener("input", () => {
     if (!dom.lessonTitleInput) return;
@@ -5865,14 +6264,7 @@ export function initCourseContentEditor() {
       if (!res.ok || !payload.ok) throw new Error(payload.error || "Could not load courses.");
 
       courseCatalog = payload.courses ?? [];
-      if (dom.courseSelect) {
-        dom.courseSelect.innerHTML = courseCatalog
-          .map(
-            (c) =>
-              `<option value="${c.id}">${escapeHtml(formatCourseCatalogLabel(c))}</option>`,
-          )
-          .join("");
-      }
+      fillCourseSelect();
 
       const allowedCourseIds = courseCatalog.map((course) => course.id);
       const nav = parseEditorNavigationState(window.location.search, allowedCourseIds);

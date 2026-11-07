@@ -40,13 +40,13 @@ describe("course content persist mode", () => {
     ).toBe("blob");
   });
 
-  it("blocks production writes", () => {
-    expect(() =>
+  it("stores production drafts in the editorial blob without opening the Watson editor", () => {
+    expect(
       resolveCourseContentPersistMode({
         hostname: "knititnow.com",
         env: { isViteDev: false },
       }),
-    ).toThrow(/blocked in production/);
+    ).toBe("blob");
     expect(
       isCourseContentAdminAllowed("knititnow.com", { isViteDev: false }),
     ).toBe(false);
@@ -70,8 +70,8 @@ describe("course content persist mode", () => {
 });
 
 describe("writeCourseContentFile adapter", () => {
-  it("does not write the filesystem when persisting through the live overlay", async () => {
-    const writeCourseContentOverlay = vi.fn(async () => {});
+  it("saves a draft in the editorial store and does not write the legacy overlay", async () => {
+    const writeEditorialState = vi.fn(async () => {});
     const commitCourseContentFile = vi.fn(async () => ({
       commitSha: "abc123",
       branch: "dev",
@@ -82,15 +82,18 @@ describe("writeCourseContentFile adapter", () => {
     const result = await writeCourseContentFile(50, data, {
       hostname: "kin-dev.netlify.app",
       env: { isViteDev: false },
-      writeCourseContentOverlay,
+      readEditorialState: async () => null,
+      writeEditorialState,
       commitCourseContentFile,
     });
-    expect(writeCourseContentOverlay).toHaveBeenCalledTimes(1);
+    expect(writeEditorialState).toHaveBeenCalledTimes(1);
     expect(commitCourseContentFile).not.toHaveBeenCalled();
     expect(result).toMatchObject({
       persistedVia: "blob",
       backupPath: "",
     });
+    expect(result.revisionId).toEqual(expect.any(String));
+    expect(result.previewedRevisionId).toBeNull();
   });
 
   it("uses GitHub only when explicitly requested", async () => {
@@ -153,82 +156,9 @@ describe("loadCourseContentDocument overlay", () => {
     const data = await loadCourseContentDocument(COURSE_111_ID, {
       hostname: "kin-dev.netlify.app",
       env: { isViteDev: false },
+      readEditorialState: async () => null,
       readCourseContentOverlay: async () => overlay,
     });
     expect(data.lessons[0]?.title).toBe("Overlay lesson title");
-  });
-
-  it("copies the published Course 50 file onto a stale production overlay", async () => {
-    const bundled = readCourseContentFile(50);
-    const overlay = structuredClone(bundled);
-    delete overlay.course.status;
-    delete overlay.course.published;
-    overlay.course.legacy = { ...overlay.course.legacy, contentRevision: 0 };
-    const written: unknown[] = [];
-    const data = await loadCourseContentDocument(50, {
-      hostname: "knititnow.com",
-      env: { isViteDev: false },
-      readCourseContentOverlay: async () => overlay,
-      writeCourseContentOverlay: async (_courseId, course) => {
-        written.push(course);
-      },
-    });
-    expect(data).toEqual(bundled);
-    expect(data.course.legacy.contentRevision).toBe(1);
-    expect(written).toEqual([bundled]);
-    const assignIds = data.lessons.flatMap((lesson) =>
-      lesson.blocks.map((block) => block.legacy.assignId),
-    );
-    expect(assignIds).toContain(3451);
-    expect(assignIds).not.toContain(5725);
-  });
-
-  it("copies the published Course 50 file when production has no overlay", async () => {
-    const bundled = readCourseContentFile(50);
-    const written: unknown[] = [];
-    const data = await loadCourseContentDocument(50, {
-      hostname: "www.knititnow.com",
-      env: { isViteDev: false },
-      readCourseContentOverlay: async () => null,
-      writeCourseContentOverlay: async (_courseId, course) => {
-        written.push(course);
-      },
-    });
-    expect(data).toEqual(bundled);
-    expect(written).toEqual([bundled]);
-  });
-
-  it("does not overwrite a draft Course 50 overlay, and still serves the published file", async () => {
-    const bundled = readCourseContentFile(50);
-    const overlay = structuredClone(bundled);
-    overlay.course.status = "draft";
-    overlay.course.published = false;
-    const written: unknown[] = [];
-    const data = await loadCourseContentDocument(50, {
-      hostname: "knititnow.com",
-      env: { isViteDev: false },
-      readCourseContentOverlay: async () => overlay,
-      writeCourseContentOverlay: async (_courseId, course) => {
-        written.push(course);
-      },
-    });
-    expect(data).toEqual(bundled);
-    expect(written).toEqual([]);
-  });
-
-  it("does not write another course's production overlay", async () => {
-    const written: unknown[] = [];
-    const overlay = structuredClone(readCourseContentFile(COURSE_111_ID));
-    overlay.lessons[0]!.title = "Leave this overlay alone";
-    const data = await loadCourseContentDocument(COURSE_111_ID, {
-      hostname: "knititnow.com",
-      env: { isViteDev: false },
-      readCourseContentOverlay: async () => overlay,
-      writeCourseContentOverlay: async (_courseId, course) => {
-        written.push(course);
-      },
-    });
-    expect(data.lessons[0]?.title).not.toBe("Leave this overlay alone");
-    expect(written).toEqual([]);
   });
 });

@@ -72,6 +72,7 @@ src/data/*.csv
 **/~ai-*
 # Legacy course migration scratch / export (production course JSON lives in cleaned/)
 src/data/legacy_kin/cleaned/backups/
+src/data/legacy_kin/editorial/
 src/data/legacy_kin/raw/
 src/data/legacy_kin/reports/
 src/data/legacy_kin/exports/course_*.csv

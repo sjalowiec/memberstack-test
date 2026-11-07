@@ -1,9 +1,13 @@
 import type { APIRoute } from "astro";
 import {
+  courseEditorialClientView,
+  createPrivateCourse,
   isAllowedCourseId,
-  isCourseContentAdminAllowed,
-  listAdminCourseSummaries,
+  listEditorCourseSummaries,
   loadCourseContentDocument,
+  previewCourseDraft,
+  publishCourseDraft,
+  readCourseEditorialState,
   saveCourseMetadata,
   saveLessonUpdate,
 } from "../../../lib/legacy_kin/courseContentAdmin";
@@ -17,10 +21,8 @@ import {
   formatCourseSplitReport,
   runCourseContentSplit,
 } from "../../../lib/legacy_kin/courseContentSplit";
-import { courseContentWriteRequiresWatsonSession } from "../../../lib/legacy_kin/courseContentPersist";
+import type { CourseContentPersistResult } from "../../../lib/legacy_kin/courseContentPersist";
 import { commitCourseContentFile } from "../../../lib/legacy_kin/courseContentGithub";
-import { writeCourseContentOverlay } from "../../../lib/legacy_kin/courseContentLiveStore";
-import { requireWatsonSessionJson } from "../../../lib/watson/watsonApiAuth";
 
 export const prerender = false;
 
@@ -39,44 +41,49 @@ function jsonResponse(data: unknown, status = 200) {
   });
 }
 
-function adminBlockedResponse() {
-  return jsonResponse(
-    {
-      ok: false,
-      error: "Course content admin is only available in dev and staging environments.",
+function editorialFields(result: CourseContentPersistResult) {
+  return {
+    revisionId: result.revisionId ?? null,
+    previewedRevisionId: result.previewedRevisionId ?? null,
+    publishedRevisionId: result.publishedRevisionId ?? null,
+    editorial: {
+      draftRevisionId: result.revisionId ?? null,
+      previewedRevisionId: result.previewedRevisionId ?? null,
+      publishedRevisionId: result.publishedRevisionId ?? null,
     },
-    403,
-  );
+  };
 }
 
-function parseCourseId(value: string | null): number | null {
+async function resolveCourseId(
+  value: string | null,
+  options: { hostname: string; env: typeof adminEnv },
+): Promise<number | null> {
   if (!value) return null;
   const parsed = Number.parseInt(value, 10);
-  if (!Number.isFinite(parsed) || !isAllowedCourseId(parsed)) return null;
-  return parsed;
+  if (!Number.isFinite(parsed) || parsed <= 0) return null;
+  if (isAllowedCourseId(parsed)) return parsed;
+  const state = await readCourseEditorialState(parsed, options);
+  if (state?.draft || state?.published) return parsed;
+  return null;
 }
 
 export const GET: APIRoute = async ({ url, request }) => {
-  if (
-    !isCourseContentAdminAllowed(new URL(request.url).hostname, adminEnv)
-  ) {
-    return adminBlockedResponse();
-  }
-
-  const courseId = parseCourseId(url.searchParams.get("courseId"));
+  const hostname = new URL(request.url).hostname;
+  const readOptions = { hostname, env: adminEnv };
+  const courseId = await resolveCourseId(url.searchParams.get("courseId"), readOptions);
 
   try {
-    const courses = listAdminCourseSummaries();
+    const courses = await listEditorCourseSummaries(readOptions);
 
     if (courseId === null) {
       return jsonResponse({ ok: true, courses });
     }
 
-    const course = await loadCourseContentDocument(courseId, {
-      hostname: new URL(request.url).hostname,
-      env: adminEnv,
-    });
-    return jsonResponse({ ok: true, courses, courseId, course });
+    const course = await loadCourseContentDocument(courseId, readOptions);
+    const editorial = courseEditorialClientView(
+      await readCourseEditorialState(courseId, readOptions),
+    );
+    return jsonResponse({ ok: true, courses, courseId, course, editorial });
   } catch (e) {
     const message = e instanceof Error ? e.message : "Could not read course content.";
     return jsonResponse({ ok: false, error: message }, 500);
@@ -85,15 +92,6 @@ export const GET: APIRoute = async ({ url, request }) => {
 
 export const POST: APIRoute = async (context) => {
   const hostname = new URL(context.request.url).hostname;
-  if (!isCourseContentAdminAllowed(hostname, adminEnv)) {
-    return adminBlockedResponse();
-  }
-
-  if (courseContentWriteRequiresWatsonSession(hostname, adminEnv)) {
-    const auth = await requireWatsonSessionJson(context);
-    if (auth instanceof Response) return auth;
-  }
-
   const { request } = context;
 
   if (!request.headers.get("content-type")?.includes("application/json")) {
@@ -107,23 +105,62 @@ export const POST: APIRoute = async (context) => {
     return jsonResponse({ ok: false, error: "Invalid JSON body" }, 400);
   }
 
-  const courseId = Number.parseInt(String(body.courseId ?? ""), 10);
-  if (!Number.isFinite(courseId) || !isAllowedCourseId(courseId)) {
-    return jsonResponse(
-      { ok: false, error: "courseId must be a supported legacy course id." },
-      400,
-    );
-  }
-
   const action = typeof body.action === "string" ? body.action.trim() : "saveLesson";
   const writeOptions = {
     hostname,
     env: adminEnv,
     commitCourseContentFile,
-    writeCourseContentOverlay,
   };
 
+  if (action === "createCourse") {
+    const title = typeof body.title === "string" ? body.title : "";
+    const slug = typeof body.slug === "string" ? body.slug : "";
+    try {
+      const created = await createPrivateCourse(
+        { title, slug: slug || undefined },
+        writeOptions,
+      );
+      return jsonResponse({
+        ok: true,
+        action,
+        courseId: created.courseId,
+        course: created.course,
+        ...editorialFields(created.persist),
+        savedAt: new Date().toISOString(),
+      });
+    } catch (e) {
+      const message = e instanceof Error ? e.message : "Could not create the course.";
+      return jsonResponse({ ok: false, error: message }, 400);
+    }
+  }
+
+  const courseId = await resolveCourseId(String(body.courseId ?? ""), writeOptions);
+  if (courseId === null) {
+    return jsonResponse(
+      { ok: false, error: "courseId must be a supported course id." },
+      400,
+    );
+  }
+
   try {
+    if (action === "previewDraft" || action === "publishDraft") {
+      const revisionId = typeof body.revisionId === "string" ? body.revisionId.trim() : "";
+      if (!revisionId) {
+        return jsonResponse({ ok: false, error: "revisionId is required." }, 400);
+      }
+      const result =
+        action === "previewDraft"
+          ? await previewCourseDraft(courseId, revisionId, writeOptions)
+          : await publishCourseDraft(courseId, revisionId, writeOptions);
+      return jsonResponse({
+        ok: true,
+        action,
+        courseId,
+        ...editorialFields(result),
+        savedAt: new Date().toISOString(),
+      });
+    }
+
     if (action === "addLesson") {
       const result = await addLessonToCourse(courseId, writeOptions);
       return jsonResponse({
@@ -137,6 +174,7 @@ export const POST: APIRoute = async (context) => {
         persistedVia: result.persistedVia,
         branch: result.branch,
         commitSha: result.commitSha,
+        ...editorialFields(result),
         savedAt: new Date().toISOString(),
       });
     }
@@ -157,6 +195,7 @@ export const POST: APIRoute = async (context) => {
         persistedVia: result.persistedVia,
         branch: result.branch,
         commitSha: result.commitSha,
+        ...editorialFields(result),
         savedAt: new Date().toISOString(),
       });
     }
@@ -177,6 +216,7 @@ export const POST: APIRoute = async (context) => {
         persistedVia: result.persistedVia,
         branch: result.branch,
         commitSha: result.commitSha,
+        ...editorialFields(result),
         savedAt: new Date().toISOString(),
       });
     }
@@ -203,6 +243,7 @@ export const POST: APIRoute = async (context) => {
         persistedVia: result.persistedVia,
         branch: result.branch,
         commitSha: result.commitSha,
+        ...editorialFields(result),
         savedAt: new Date().toISOString(),
       });
     }
@@ -250,6 +291,7 @@ export const POST: APIRoute = async (context) => {
         persistedVia: result.persistedVia,
         branch: result.branch,
         commitSha: result.commitSha,
+        ...editorialFields(result),
         savedAt: new Date().toISOString(),
       });
     }
@@ -313,6 +355,7 @@ export const POST: APIRoute = async (context) => {
       storedLesson: result.storedLesson,
       branch: result.branch,
       commitSha: result.commitSha,
+      ...editorialFields(result),
       savedAt: new Date().toISOString(),
     });
   } catch (e) {
