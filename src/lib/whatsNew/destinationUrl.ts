@@ -69,3 +69,10 @@ export function normalizeWhatsNewDestinationUrl(
 export function isValidWhatsNewDestinationUrl(raw: unknown): boolean {
   return normalizeWhatsNewDestinationUrl(raw).ok;
 }
+
+/** True when href is already a normalized site path or https URL. */
+export function acceptsWhatsNewAnnouncementHref(href: string): boolean {
+  if (!href) return false;
+  const normalized = normalizeWhatsNewDestinationUrl(href);
+  return normalized.ok && normalized.value === href;
+}

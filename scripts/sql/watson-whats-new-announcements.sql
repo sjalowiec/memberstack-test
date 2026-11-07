@@ -41,6 +41,10 @@ CREATE TABLE IF NOT EXISTS watson_whats_new_popup_announcement (
   audience TEXT NOT NULL DEFAULT 'everyone'
     CHECK (audience IN ('everyone', 'members')),
   expires_at TIMESTAMPTZ,
+  button_destination_url TEXT,
   enabled BOOLEAN NOT NULL DEFAULT FALSE,
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+ALTER TABLE watson_whats_new_popup_announcement
+  ADD COLUMN IF NOT EXISTS button_destination_url TEXT;

@@ -49,6 +49,13 @@ describe("Watson What's New page", () => {
     expect(page).toContain('name="audience"');
     expect(page).toContain('name="expiresAtLocal"');
     expect(page).toContain("Expiration (America/Los_Angeles)");
+    const popupForm = page.slice(
+      page.indexOf("data-wn-popup-form"),
+      page.indexOf("data-wn-billboard-panel"),
+    );
+    expect(popupForm).toContain("Button destination URL (optional)");
+    expect(popupForm).toContain('name="buttonDestinationUrl"');
+    expect(popupForm).toContain("Leave the button destination blank");
     expect(page).toContain("data-wn-popup-edit");
     expect(page).toContain("data-wn-popup-preview");
     expect(page).toContain("data-wn-popup-enable");
@@ -90,6 +97,8 @@ describe("Watson What's New page", () => {
     );
     expect(popupScript).toContain("/api/watson/whats-new/announcement");
     expect(popupScript).toContain("openWhatsNewAnnouncementPreview");
+    expect(popupScript).toContain("buttonDestinationUrl");
+    expect(popupScript).toContain("popupReadMoreHref");
     expect(popupScript).toContain("data-wn-popup-enable");
     expect(popupScript).toContain("data-wn-popup-disable");
     expect(popupScript).not.toContain("updateWhatsNewCard");
