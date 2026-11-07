@@ -177,7 +177,6 @@ describe("resolveCatalogStatus", () => {
 
 describe("public course catalog cleanup", () => {
   const hiddenPublicCatalogSlugs = [
-    "ribber-basic-bootcamp",
     "not-enough-needles",
     "yes-knits-that-fit",
     "neckline-shaping-practice",
@@ -193,7 +192,17 @@ describe("public course catalog cleanup", () => {
       "Brother",
       "LK-150",
     ]);
-    expect(sections[0]?.courses.map((course) => course.slug)).toEqual(["beginner-workshop"]);
+    expect(sections[0]?.courses.map((course) => course.slug)).toEqual([
+      "beginner-workshop",
+      "ribber-basic-bootcamp",
+    ]);
+    expect(sections[0]?.courses[1]).toMatchObject({
+      title: "Ribber Basic Bootcamp",
+      category: "Getting Started",
+      href: "/courses/66",
+      thumbnail: "/images/courses/ribber.webp",
+      buttonLabel: "View Course",
+    });
     expect(sections[0]?.courses[0]?.title).toBe("Beginner Workshop");
     expect(sections[0]?.courses[0]?.description).toBe(
       "A guided start-to-finish path for new machine knitters.",
@@ -248,7 +257,7 @@ describe("public course catalog cleanup", () => {
     expect(sections[2]?.courses[0]?.thumbnail).toBe("/images/courses/taitexma_160.webp");
 
     const entries = getCourseCatalogEntries();
-    expect(entries).toHaveLength(8);
+    expect(entries).toHaveLength(9);
     expect(entries[0]?.slug).toBe("mastering-the-silver-reed-sk840");
     expect(entries[0]?.title).toBe("Mastering the Silver Reed SK840");
     expect(entries[0]?.buttonLabel).toBe("View Course");
@@ -265,6 +274,7 @@ describe("public course catalog cleanup", () => {
       "/courses/50",
       "/courses/51",
       "/courses/33",
+      "/courses/66",
     ]);
     expect(productionEntries[0]?.href).not.toContain("courses.knititnow.com");
     expect(entries[0]?.access).toBe("purchase");
@@ -353,7 +363,17 @@ describe("groupCourseCatalogSections", () => {
       MACHINE_SPECIFIC_COURSES_HEADING,
       LK150_COURSES_HEADING,
     ]);
-    expect(sections[0]?.courses.map((course) => course.slug)).toEqual(["beginner-workshop"]);
+    expect(sections[0]?.courses.map((course) => course.slug)).toEqual([
+      "beginner-workshop",
+      "ribber-basic-bootcamp",
+    ]);
+    expect(sections[0]?.courses[1]).toMatchObject({
+      title: "Ribber Basic Bootcamp",
+      href: "/courses/66",
+      thumbnail: "/images/courses/ribber.webp",
+      category: "Getting Started",
+    });
+    expect(sections.filter((section) => section.courses.some((course) => course.href === "/courses/66"))).toHaveLength(1);
     expect(sections[0]?.courses[0]?.access).toBe("member");
     expect(sections[0]?.courses[0]?.href).toBe("/courses/33");
     expect(sections[1]?.courses.map((course) => course.slug)).toEqual([
@@ -411,7 +431,8 @@ describe("groupCourseCatalogSections", () => {
     ]);
 
     const published = sections.flatMap((section) => section.courses);
-    expect(published.filter((course) => course.status === "available")).toHaveLength(8);
+    expect(published.filter((course) => course.status === "available")).toHaveLength(9);
+    expect(published.filter((course) => course.href === "/courses/66")).toHaveLength(1);
     expect(published.map((course) => course.slug)).toContain("lk-150-quick-start");
   });
 });
