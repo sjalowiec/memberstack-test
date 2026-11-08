@@ -8,6 +8,7 @@ import KinCourse111Sales from "../components/courses/KinCourse111Sales.astro";
 import KinCourse33Sales from "../components/courses/KinCourse33Sales.astro";
 import KinCourse103Sales from "../components/courses/KinCourse103Sales.astro";
 import KinCourse66Sales from "../components/courses/KinCourse66Sales.astro";
+import KinCoursePurchasableSales from "../components/courses/KinCoursePurchasableSales.astro";
 import "../styles/kin-course/course-shell.css";
 import "../styles/kin-course/legacy-special.css";
 import "../styles/kin-course/legacy-lesson-compat.css";
@@ -69,6 +70,13 @@ const showCourse111Sales = isSk840CourseSlug(courseSlug);
 const showCourse33Sales = isBeginnerWorkshopCourseSlug(courseSlug);
 const showCourse103Sales = isBrother930940CourseSlug(courseSlug);
 const showCourse66Sales = isRibberBootcampCourseSlug(courseSlug);
+const showPurchasableSales =
+  canBuy &&
+  !showCourse86Sales &&
+  !showCourse111Sales &&
+  !showCourse33Sales &&
+  !showCourse103Sales &&
+  !showCourse66Sales;
 const courseSalesDescription = getKinCourseSalesCopy(courseSlug)?.metaDescription ?? "";
 const purchaseCopy =
   "This course is included with Knit It Now membership. You can also purchase this course on its own.";
@@ -81,7 +89,12 @@ const purchaseCopy =
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
     {
-      showCourse86Sales || showCourse111Sales || showCourse33Sales || showCourse103Sales || showCourse66Sales ? (
+      showCourse86Sales ||
+      showCourse111Sales ||
+      showCourse33Sales ||
+      showCourse103Sales ||
+      showCourse66Sales ||
+      showPurchasableSales ? (
         <meta name="description" content={courseSalesDescription} />
       ) : null
     }
@@ -181,6 +194,16 @@ const purchaseCopy =
                   description={courseDescription}
                   topics={learnTopics}
                   included={includedLabels}
+                />
+              ) : showPurchasableSales ? (
+                <KinCoursePurchasableSales
+                  courseSlug={courseSlug}
+                  courseTitle={lockedTitle}
+                  description={courseDescription}
+                  topics={learnTopics}
+                  included={includedLabels}
+                  thumbnailSrc={thumbnailSrc}
+                  thumbnailAlt={thumbnailAlt}
                 />
               ) : (
                 <div class="course-111-gate__card">
