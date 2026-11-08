@@ -183,13 +183,13 @@ describe("Course 86 sales purchase configuration", () => {
     expect(button).toContain("data-course-price-id={priceId}");
     expect(button).toMatch(/priceId \? \(/);
     expect(button).toContain(": null");
-    expect(courseCheckoutPriceId("ribber-basic-bootcamp")).toBeNull();
+    expect(courseCheckoutPriceId("beginner-workshop")).toBeNull();
     expect(coursePurchasePriceLabel(KIN_TAITEXMA_160_COURSE_SLUG)).toBe("$49.99");
     expect(coursePurchasePriceLabel("86")).toBe("$49.99");
   });
 
   it("does not invent a price, product ID, or payment link", async () => {
-    const result = await startCourseCheckout("ribber-basic-bootcamp", {
+    const result = await startCourseCheckout("beginner-workshop", {
       waitForMemberstack: async () => undefined,
     });
     expect(result).toEqual({

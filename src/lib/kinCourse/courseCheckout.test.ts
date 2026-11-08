@@ -1,12 +1,17 @@
 import { describe, expect, it, vi } from "vitest";
 import {
+  BROTHER_930_940_COURSE_PRICE_ID,
+  BROTHER_930_940_COURSE_SLUG,
   KIN_TAITEXMA_160_COURSE_SLUG,
   LEGACY_SK840_COURSE_SLUG,
   PAID_SK840_COURSE_PLAN_ID,
   PAID_TH160_COURSE_PLAN_ID,
+  RIBBER_BOOTCAMP_COURSE_PRICE_ID,
+  RIBBER_BOOTCAMP_COURSE_SLUG,
   SK840_COURSE_PRICE_ID,
   TH160_COURSE_PRICE_ID,
 } from "../../config/legacyCourseEntitlements";
+import { MEMBERSHIPS } from "../../config/memberships";
 import { buildCourseCheckoutReturnUrls, startCourseCheckout } from "./courseCheckout";
 
 function memberstackDom(options: {
@@ -150,6 +155,53 @@ describe("startCourseCheckout", () => {
     expect(purchasePlansWithCheckout).toHaveBeenCalledWith(
       expect.objectContaining({ priceId: "prc_course-ribber-bootcamp-84c300s0" }),
     );
+  });
+});
+
+describe("signed-in member course checkout", () => {
+  it("uses each course price and does not open signup", async () => {
+    const courses = [
+      { slug: RIBBER_BOOTCAMP_COURSE_SLUG, priceId: RIBBER_BOOTCAMP_COURSE_PRICE_ID, href: "https://kin-dev.netlify.app/courses/66" },
+      { slug: KIN_TAITEXMA_160_COURSE_SLUG, priceId: TH160_COURSE_PRICE_ID, href: "https://kin-dev.netlify.app/courses/86" },
+      { slug: LEGACY_SK840_COURSE_SLUG, priceId: SK840_COURSE_PRICE_ID, href: "https://kin-dev.netlify.app/courses/111" },
+      { slug: BROTHER_930_940_COURSE_SLUG, priceId: BROTHER_930_940_COURSE_PRICE_ID, href: "https://kin-dev.netlify.app/courses/103" },
+    ];
+
+    for (const course of courses) {
+      const openModal = vi.fn();
+      const purchasePlansWithCheckout = vi.fn().mockResolvedValue({
+        data: { url: `https://checkout.stripe.com/${course.slug}` },
+      });
+      const result = await startCourseCheckout(course.slug, {
+        waitForMemberstack: async () =>
+          memberstackDom({
+            member: {
+              data: {
+                id: "ms_member",
+                planConnections: [
+                  { planId: MEMBERSHIPS.membership.memberstackPlanId, status: "ACTIVE" },
+                ],
+              },
+            },
+            purchasePlansWithCheckout,
+            openModal,
+          }),
+        getLocation: () => ({ href: course.href }) as Location,
+        assignLocation: vi.fn(),
+      });
+
+      expect(result).toMatchObject({ ok: true, priceId: course.priceId });
+      expect(openModal).not.toHaveBeenCalled();
+      expect(purchasePlansWithCheckout).toHaveBeenCalledWith(
+        expect.objectContaining({ priceId: course.priceId, autoRedirect: false }),
+      );
+      expect(purchasePlansWithCheckout.mock.calls[0]?.[0]?.priceId).not.toBe(
+        MEMBERSHIPS.membership.prices.monthly.memberstackPriceId,
+      );
+      expect(purchasePlansWithCheckout.mock.calls[0]?.[0]?.priceId).not.toBe(
+        MEMBERSHIPS.membership.prices.annual.memberstackPriceId,
+      );
+    }
   });
 });
 

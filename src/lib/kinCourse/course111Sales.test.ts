@@ -179,11 +179,11 @@ describe("Course 111 purchase configuration", () => {
   });
 
   it("fails safely when checkout configuration is missing", async () => {
-    expect(courseCheckoutPriceId("ribber-basic-bootcamp")).toBeNull();
-    expect(coursePurchasePriceLabel("ribber-basic-bootcamp")).toBeNull();
+    expect(courseCheckoutPriceId("beginner-workshop")).toBeNull();
+    expect(coursePurchasePriceLabel("beginner-workshop")).toBeNull();
     expect(shared).toMatch(/priceId \? \(/);
     expect(button).toMatch(/priceId \? \(/);
-    const result = await startCourseCheckout("ribber-basic-bootcamp", {
+    const result = await startCourseCheckout("beginner-workshop", {
       waitForMemberstack: async () => undefined,
     });
     expect(result).toEqual({

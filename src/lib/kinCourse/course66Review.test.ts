@@ -42,8 +42,8 @@ describe("Course 66 Ribber Basic Bootcamp review", () => {
     expect(poc.lessons.map((lesson) => lesson.title)).toEqual(LESSON_TITLES);
 
     expect(getCourseAccessBySlug("ribber-basic-bootcamp")).toBe("member");
-    expect(courseCheckoutPriceId("ribber-basic-bootcamp")).toBeNull();
-    expect(courseCheckoutPriceId("66")).toBeNull();
+    expect(courseCheckoutPriceId("ribber-basic-bootcamp")).toBe("prc_course-ribber-bootcamp-84c300s0");
+    expect(courseCheckoutPriceId("66")).toBe("prc_course-ribber-bootcamp-84c300s0");
     expect(publishedAvailablePlayerHref("ribber-basic-bootcamp")).toBe("/courses/66");
     expect(verifiedHomeStudyPlaybackCourse(26)?.courseId).toBe(66);
     expect(verifiedHomeStudyPlaybackCourse(66)?.courseId).toBe(66);

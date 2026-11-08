@@ -147,6 +147,7 @@ export function applyKinCourseGatePaint(
   });
 
   gate.querySelectorAll<HTMLElement>("[data-course-checkout]").forEach((btn) => {
+    if (btn.hasAttribute("data-member-course-keep-buy")) return;
     btn.hidden = paint === "open";
     if (paint === "open") btn.setAttribute("aria-hidden", "true");
     else btn.removeAttribute("aria-hidden");

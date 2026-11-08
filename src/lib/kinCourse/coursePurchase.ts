@@ -10,11 +10,19 @@ import {
   canonicalCourseCatalogSlug,
   COURSE_INDIVIDUAL_SALES,
   KIN_TAITEXMA_160_COURSE_SLUG,
+  LEGACY_COURSE_PLAN_SLUGS,
   LEGACY_SK840_COURSE_SLUG,
   RIBBER_BOOTCAMP_COURSE_SLUG,
   type IndividualCourseSale,
 } from "../../config/legacyCourseEntitlements";
-import { canAccessCourse, type CourseAccessLevel } from "../courseAccess";
+import { MEMBER_PLAN_IDS } from "../../config/memberships";
+import {
+  canAccessCourse,
+  hasCourseMembershipAccess,
+  hasIndividualCoursePurchase,
+  hasVerifiedHomeStudyCourseAccess,
+  type CourseAccessLevel,
+} from "../courseAccess";
 import type { MemberAccessOptions } from "../memberAccess";
 
 function normalizeCourseKey(value: string | null | undefined): string {
@@ -134,4 +142,61 @@ export function shouldShowCoursePurchaseCtaForViewer(args: {
     courseSlug: args.courseSlug,
     hasAccess,
   });
+}
+
+export const MEMBER_COURSE_INCLUDED_COPY = "This course is included with your membership.";
+export const MEMBER_COURSE_OWNED_COPY = "You own this course";
+export const MEMBER_COURSE_KEEP_ACCESS_COPY =
+  "Keep access to this course even if your membership ends.";
+
+/**
+ * True when this course has its own one-time price and that price's paid plan
+ * unlocks only this course. Membership plans never qualify. An incomplete
+ * sale stays false so the member offer is omitted.
+ */
+export function courseStandalonePurchaseReady(courseSlug: string | null | undefined): boolean {
+  const sale = findIndividualCourseSale(courseSlug);
+  if (!sale?.paidPlanId || !sale.priceId || !sale.priceLabel) return false;
+  const priceId = courseCheckoutPriceId(courseSlug);
+  const label = coursePurchasePriceLabel(courseSlug);
+  if (!priceId || !label || priceId !== sale.priceId || label !== sale.priceLabel.trim()) return false;
+  if (!sale.paidPlanId.startsWith("pln_")) return false;
+  if ((MEMBER_PLAN_IDS as readonly string[]).includes(sale.paidPlanId)) return false;
+  if (priceId === sale.paidPlanId || priceId === sale.legacyPlanId) return false;
+  const granted = LEGACY_COURSE_PLAN_SLUGS[sale.paidPlanId];
+  return Boolean(granted?.length === 1 && granted[0] === sale.slug);
+}
+
+export function memberCourseBuyLabel(priceLabel: string): string {
+  return `Buy for ${priceLabel}`;
+}
+
+export type MemberCourseKeepAccessView =
+  | { kind: "hidden" }
+  | { kind: "owned" }
+  | { kind: "included"; buyLabel: string };
+
+/**
+ * Member offer on the course page. People without access keep the existing
+ * sales-page purchase button. A paid plan or legacy entitlement hides the
+ * member buy button. Membership access shows it only when standalone checkout
+ * is ready.
+ */
+export function resolveMemberCourseKeepAccess(args: {
+  memberOrPayload: unknown;
+  courseSlug?: string | null;
+  verifiedHomeStudyCourseIds?: readonly number[] | null;
+} & MemberAccessOptions): MemberCourseKeepAccessView {
+  if (!courseStandalonePurchaseReady(args.courseSlug)) return { kind: "hidden" };
+
+  const ownsCourse =
+    hasIndividualCoursePurchase(args.courseSlug, args.memberOrPayload) ||
+    hasVerifiedHomeStudyCourseAccess(args.courseSlug, args.verifiedHomeStudyCourseIds);
+  if (ownsCourse) return { kind: "owned" };
+
+  if (!hasCourseMembershipAccess(args.memberOrPayload, args)) return { kind: "hidden" };
+
+  const label = coursePurchasePriceLabel(args.courseSlug);
+  if (!label) return { kind: "hidden" };
+  return { kind: "included", buyLabel: memberCourseBuyLabel(label) };
 }

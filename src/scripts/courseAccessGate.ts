@@ -43,6 +43,7 @@ function setGateAccess(gate: HTMLElement, unlocked: boolean): void {
     else el.removeAttribute("hidden");
   });
   gate.querySelectorAll<HTMLElement>("[data-course-checkout]").forEach((btn) => {
+    if (btn.hasAttribute("data-member-course-keep-buy")) return;
     btn.hidden = unlocked;
     if (unlocked) btn.setAttribute("aria-hidden", "true");
     else btn.removeAttribute("aria-hidden");
