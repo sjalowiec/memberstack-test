@@ -20,7 +20,6 @@ import {
   canAccessCourse,
   hasCourseMembershipAccess,
   hasIndividualCoursePurchase,
-  hasVerifiedHomeStudyCourseAccess,
   type CourseAccessLevel,
 } from "../courseAccess";
 import type { MemberAccessOptions } from "../memberAccess";
@@ -180,19 +179,17 @@ export type MemberCourseKeepAccessView =
  * Member offer on the course page. People without access keep the existing
  * sales-page purchase button. A paid plan or legacy entitlement hides the
  * member buy button. Membership access shows it only when standalone checkout
- * is ready.
+ * is ready. Verified Home Study playback is not an ownership check here.
  */
 export function resolveMemberCourseKeepAccess(args: {
   memberOrPayload: unknown;
   courseSlug?: string | null;
-  verifiedHomeStudyCourseIds?: readonly number[] | null;
 } & MemberAccessOptions): MemberCourseKeepAccessView {
   if (!courseStandalonePurchaseReady(args.courseSlug)) return { kind: "hidden" };
 
-  const ownsCourse =
-    hasIndividualCoursePurchase(args.courseSlug, args.memberOrPayload) ||
-    hasVerifiedHomeStudyCourseAccess(args.courseSlug, args.verifiedHomeStudyCourseIds);
-  if (ownsCourse) return { kind: "owned" };
+  if (hasIndividualCoursePurchase(args.courseSlug, args.memberOrPayload)) {
+    return { kind: "owned" };
+  }
 
   if (!hasCourseMembershipAccess(args.memberOrPayload, args)) return { kind: "hidden" };
 

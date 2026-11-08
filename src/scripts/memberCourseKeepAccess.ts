@@ -7,10 +7,6 @@ import {
   resolveMemberCourseKeepAccess,
   type MemberCourseKeepAccessView,
 } from "../lib/kinCourse/coursePurchase";
-import {
-  ensureHomeStudyPurchaseContext,
-  verifiedHomeStudyCourseIdsForAccess,
-} from "../lib/homeStudyPurchaseClient";
 import { isKinCourseMemberstackResolved } from "../lib/kinCourse/accessGateState";
 import { ensureLegacyPaidThroughContext } from "../lib/memberAccessClient";
 
@@ -77,8 +73,6 @@ async function paintMemberCourseKeepAccess(root: ParentNode = document): Promise
   }
 
   await ensureLegacyPaidThroughContext(res.payload);
-  await ensureHomeStudyPurchaseContext(res.payload);
-  const verifiedHomeStudyCourseIds = verifiedHomeStudyCourseIdsForAccess(res.payload);
 
   for (const node of nodes) {
     applyMemberCourseKeepAccess(
@@ -86,7 +80,6 @@ async function paintMemberCourseKeepAccess(root: ParentNode = document): Promise
       resolveMemberCourseKeepAccess({
         memberOrPayload: res.payload,
         courseSlug: node.dataset.courseSlug ?? null,
-        verifiedHomeStudyCourseIds,
       }),
     );
   }
