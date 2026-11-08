@@ -10,6 +10,14 @@ import { EBOOK_SALES_PAUSED } from "../../lib/legacy/legacyEbookSalesHold";
 const title = "Shop | Knit it Now";
 const description = "Find knitting machines, accessories, software, cables, and guided workshops. Choose what you're looking for.";
 
+const shopNav = [
+  { name: "DesignaKnit", href: "/shop/designaknit" },
+  { name: "Cables", href: "/shop/cables" },
+  { name: "Machines", href: "/shop/machines" },
+  { name: "Accessories", href: "/shop/accessories" },
+  { name: "Downloads", href: "/shop/downloads" },
+];
+
 const categories = [
   {
     name: "Knitting Machines",
@@ -62,11 +70,18 @@ const categories = [
       <p class="page-intro">Tools, machines, and guidance — chosen specifically for machine knitters.</p>
     </header>
 
-    <div class="shop-kit-listing">
-      <Lk150TensionMastKitListing />
-      <HobbyKnitNeedlesListing />
-      <EasyCutYarnCutterListing />
-    </div>
+    <nav class="shop-category-nav" aria-label="Shop categories">
+      <ul class="shop-category-nav-list">
+        {shopNav.map((item) => (
+          <li>
+            <a href={item.href} class="shop-category-link">{item.name}</a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+    <p class="shop-warranty-jump">
+      <a href="#machine-warranty">Machine warranty</a>
+    </p>
 
     <div class="categories-grid">
       {categories.map((category, index) => (
@@ -79,6 +94,19 @@ const categories = [
         </div>
       ))}
     </div>
+
+    <div class="shop-kit-listing">
+      <Lk150TensionMastKitListing />
+      <HobbyKnitNeedlesListing />
+      <EasyCutYarnCutterListing />
+    </div>
+
+    <section id="machine-warranty" class="machine-warranty" aria-labelledby="machine-warranty-heading">
+      <h2 id="machine-warranty-heading">Machine Warranty</h2>
+      <p>
+        New knitting machines purchased from Knit It Now come with a three-month limited warranty from the original purchase date. The warranty covers defects in materials and workmanship for the original purchaser when the machine is used for non-industrial purposes. If a defect is confirmed under the warranty, the defective part will be replaced. Please keep your original sales receipt. Shipping costs for warranty service are the purchaser’s responsibility. If you have a problem with your machine, <a href="/contact/">contact us</a> and we’ll help you with the next step.
+      </p>
+    </section>
   </div>
 </Layout>
 
@@ -91,7 +119,7 @@ const categories = [
 
   .page-header {
     text-align: center;
-    margin-bottom: 2.5rem;
+    margin-bottom: 1.15rem;
   }
 
   .page-header h1 {
@@ -106,18 +134,110 @@ const categories = [
     margin: 0;
   }
 
-  .shop-kit-listing {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(16rem, 22rem));
+  .shop-category-nav {
+    display: flex;
     justify-content: center;
-    gap: 1.5rem;
-    margin: 0 auto 2rem;
+    margin: 0 0 0.65rem;
+  }
+
+  .shop-category-nav-list {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0;
+    margin: 0;
+  }
+
+  .shop-category-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.4rem 0.85rem;
+    border-radius: 999px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.9rem;
+    line-height: 1.2;
+    border: 1px solid #d7e2c8;
+    background: #f6f8f2;
+    transition:
+      background 0.2s ease,
+      color 0.2s ease,
+      border-color 0.2s ease;
+  }
+
+  .shop-page a.shop-category-link:link,
+  .shop-page a.shop-category-link:visited {
+    color: var(--kbm-green);
+    text-decoration: none;
+  }
+
+  .shop-page a.shop-category-link:hover,
+  .shop-page a.shop-category-link:focus-visible {
+    background: #eef3e6;
+    border-color: #c9d8b2;
+    color: #3f5222;
+    text-decoration: none;
+  }
+
+  .shop-page a.shop-category-link:focus-visible {
+    outline: 2px solid var(--kbm-green);
+    outline-offset: 2px;
+  }
+
+  .shop-warranty-jump {
+    text-align: center;
+    margin: 0 0 2.25rem;
+    font-size: 0.9rem;
+    line-height: 1.4;
   }
 
   .categories-grid {
     display: grid;
     grid-template-columns: 1fr;
     gap: 1.5rem;
+    margin-bottom: 2.5rem;
+  }
+
+  .shop-kit-listing {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(16rem, 22rem));
+    justify-content: center;
+    gap: 1.5rem;
+    margin: 0 auto;
+  }
+
+  .machine-warranty {
+    margin-top: 2.75rem;
+    padding-top: 1.75rem;
+    border-top: 1px solid #e8ebe4;
+    scroll-margin-top: calc(var(--header-offset, 170px) + 1rem);
+  }
+
+  .machine-warranty h2 {
+    font-size: 1.35rem;
+    font-weight: 600;
+    color: var(--kbm-green);
+    margin: 0 0 0.75rem;
+  }
+
+  .machine-warranty p {
+    margin: 0;
+    color: #5a6b47;
+    line-height: 1.6;
+  }
+
+  @media (max-width: 640px) {
+    .shop-category-nav-list {
+      gap: 0.4rem;
+    }
+
+    .shop-category-link {
+      font-size: 0.85rem;
+      padding: 0.38rem 0.75rem;
+    }
   }
 
   @media (min-width: 640px) {
