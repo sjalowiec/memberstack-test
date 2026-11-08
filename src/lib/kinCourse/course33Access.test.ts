@@ -43,7 +43,7 @@ const otherIndividualSlugs = [
 ] as const;
 
 describe("Course 33 Beginner Workshop legacy plan", () => {
-  it("maps the legacy plan to Beginner Workshop only and does not sell it", () => {
+  it("maps the legacy and paid plans to Beginner Workshop only", () => {
     expect(LEGACY_BEGINNER_WORKSHOP_COURSE_PLAN_ID).toBe(
       "pln_course-beginner-workshop-legacy-wzr70hsx",
     );
@@ -56,10 +56,16 @@ describe("Course 33 Beginner Workshop legacy plan", () => {
       aliases: ["33"],
       legacyPlanId: LEGACY_BEGINNER_WORKSHOP_COURSE_PLAN_ID,
     });
-    expect(COURSE_INDIVIDUAL_SALES.beginnerWorkshop.paidPlanId).toBeUndefined();
-    expect(COURSE_INDIVIDUAL_SALES.beginnerWorkshop.priceId).toBeUndefined();
-    expect(courseCheckoutPriceId(BEGINNER_WORKSHOP_COURSE_SLUG)).toBeNull();
-    expect(courseCheckoutPriceId("33")).toBeNull();
+    expect(COURSE_INDIVIDUAL_SALES.beginnerWorkshop.paidPlanId).toBe(
+      "pln_course-beginner-workshop-6n490m9l",
+    );
+    expect(COURSE_INDIVIDUAL_SALES.beginnerWorkshop.priceId).toBe(
+      "prc_course-beginner-workshop-paid-4y4a0mi2",
+    );
+    expect(courseCheckoutPriceId(BEGINNER_WORKSHOP_COURSE_SLUG)).toBe(
+      "prc_course-beginner-workshop-paid-4y4a0mi2",
+    );
+    expect(courseCheckoutPriceId("33")).toBe("prc_course-beginner-workshop-paid-4y4a0mi2");
     expect(MEMBER_PLAN_IDS).not.toContain(LEGACY_BEGINNER_WORKSHOP_COURSE_PLAN_ID);
     expect(COURSE_ACCESS_PLAN_IDS).not.toContain(LEGACY_BEGINNER_WORKSHOP_COURSE_PLAN_ID);
   });

@@ -86,7 +86,10 @@ describe("account ownable catalog cards", () => {
         slug: BROTHER_KH260_COURSE_SLUG,
         title: "Brother KH/KR-260 Quick Start",
         href: "/courses/87",
-        planIds: [COURSE_INDIVIDUAL_SALES.brother260.legacyPlanId],
+        planIds: [
+          COURSE_INDIVIDUAL_SALES.brother260.legacyPlanId,
+          COURSE_INDIVIDUAL_SALES.brother260.paidPlanId,
+        ],
       },
       {
         courseId: 103,
@@ -106,6 +109,7 @@ describe("account ownable catalog cards", () => {
         planIds: [
           ...COURSE_INDIVIDUAL_SALES.lk150Patterning.additionalLegacyPlanIds,
           COURSE_INDIVIDUAL_SALES.lk150Patterning.legacyPlanId,
+          COURSE_INDIVIDUAL_SALES.lk150Patterning.paidPlanId,
         ],
       },
       {
@@ -113,21 +117,30 @@ describe("account ownable catalog cards", () => {
         slug: LK150_QUICK_START_COURSE_SLUG,
         title: "LK-150 Quick Start",
         href: "/courses/50",
-        planIds: [COURSE_INDIVIDUAL_SALES.lk150QuickStart.legacyPlanId],
+        planIds: [
+          COURSE_INDIVIDUAL_SALES.lk150QuickStart.legacyPlanId,
+          COURSE_INDIVIDUAL_SALES.lk150QuickStart.paidPlanId,
+        ],
       },
       {
         courseId: 51,
         slug: LK150_FUN_COURSE_SLUG,
         title: "LK-150 Fun",
         href: "/courses/51",
-        planIds: [COURSE_INDIVIDUAL_SALES.lk150Fun.legacyPlanId],
+        planIds: [
+          ...COURSE_INDIVIDUAL_SALES.lk150Fun.additionalLegacyPlanIds,
+          COURSE_INDIVIDUAL_SALES.lk150Fun.legacyPlanId,
+        ],
       },
       {
         courseId: 33,
         slug: BEGINNER_WORKSHOP_COURSE_SLUG,
         title: "Beginner Workshop",
         href: "/courses/33",
-        planIds: [COURSE_INDIVIDUAL_SALES.beginnerWorkshop.legacyPlanId],
+        planIds: [
+          COURSE_INDIVIDUAL_SALES.beginnerWorkshop.legacyPlanId,
+          COURSE_INDIVIDUAL_SALES.beginnerWorkshop.paidPlanId,
+        ],
       },
       {
         courseId: 66,
@@ -206,8 +219,8 @@ describe("ownedCoursesForAccount", () => {
       BROTHER_KH260_COURSE_SLUG,
     ]);
     expect(courses).toEqual([course87]);
-    expect(COURSE_INDIVIDUAL_SALES.brother260.paidPlanId).toBeUndefined();
-    expect(COURSE_INDIVIDUAL_SALES.brother260.priceId).toBeUndefined();
+    expect(COURSE_INDIVIDUAL_SALES.brother260.paidPlanId).toBe("pln_course-brother-260-zz4b0m4l");
+    expect(COURSE_INDIVIDUAL_SALES.brother260.priceId).toBe("prc_course-brother-260-ml3g0zuu");
   });
 
   it("LK150 Patterning plan displays Course 34 only", () => {
@@ -220,14 +233,18 @@ describe("ownedCoursesForAccount", () => {
     ]);
     expect(courses).toEqual([course34]);
     expect(shouldShowAccountMyCourses(courses)).toBe(true);
-    expect(COURSE_INDIVIDUAL_SALES.lk150Patterning.paidPlanId).toBeUndefined();
-    expect(COURSE_INDIVIDUAL_SALES.lk150Patterning.priceId).toBeUndefined();
+    expect(COURSE_INDIVIDUAL_SALES.lk150Patterning.paidPlanId).toBe(
+      "pln_kin-lk150-patterning-gi8n0opa",
+    );
+    expect(COURSE_INDIVIDUAL_SALES.lk150Patterning.priceId).toBe(
+      "prc_kin-lk150-patternining-nd9008k0",
+    );
     expect(COURSE_INDIVIDUAL_SALES.lk150Patterning.legacyPlanId).toBe(
       "pln_course-lk150-patterning-nw00gk6",
     );
   });
 
-  it("Beginner Workshop legacy plan displays Course 33 only and has no checkout price", () => {
+  it("Beginner Workshop legacy plan displays Course 33 only", () => {
     const course33 = catalogCards.find((card) => card.slug === BEGINNER_WORKSHOP_COURSE_SLUG);
     const courses = ownedCoursesForAccount(
       payloadWithPlan(LEGACY_BEGINNER_WORKSHOP_COURSE_PLAN_ID),
@@ -238,8 +255,12 @@ describe("ownedCoursesForAccount", () => {
     ]);
     expect(courses).toEqual([course33]);
     expect(shouldShowAccountMyCourses(courses)).toBe(true);
-    expect(COURSE_INDIVIDUAL_SALES.beginnerWorkshop.paidPlanId).toBeUndefined();
-    expect(COURSE_INDIVIDUAL_SALES.beginnerWorkshop.priceId).toBeUndefined();
+    expect(COURSE_INDIVIDUAL_SALES.beginnerWorkshop.paidPlanId).toBe(
+      "pln_course-beginner-workshop-6n490m9l",
+    );
+    expect(COURSE_INDIVIDUAL_SALES.beginnerWorkshop.priceId).toBe(
+      "prc_course-beginner-workshop-paid-4y4a0mi2",
+    );
     expect(COURSE_INDIVIDUAL_SALES.beginnerWorkshop.legacyPlanId).toBe(
       "pln_course-beginner-workshop-legacy-wzr70hsx",
     );
@@ -251,7 +272,7 @@ describe("ownedCoursesForAccount", () => {
     ).not.toContain(BEGINNER_WORKSHOP_COURSE_SLUG);
   });
 
-  it("LK150 Fun legacy plan displays Course 51 only and has no checkout price", () => {
+  it("LK150 Fun legacy plans display Course 51 only and have no checkout price", () => {
     const course51 = catalogCards.find((card) => card.slug === LK150_FUN_COURSE_SLUG);
     const courses = ownedCoursesForAccount(payloadWithPlan(LK150_FUN_COURSE_PLAN_ID), catalogCards);
     expect(ownedCourseSlugsFromMember(payloadWithPlan(LK150_FUN_COURSE_PLAN_ID))).toEqual([
@@ -263,10 +284,13 @@ describe("ownedCoursesForAccount", () => {
     expect(COURSE_INDIVIDUAL_SALES.lk150Fun.legacyPlanId).toBe(
       "pln_course-lk150-fun-legacy-qn6n0gzm",
     );
+    expect(COURSE_INDIVIDUAL_SALES.lk150Fun.additionalLegacyPlanIds).toEqual([
+      "pln_legacy-kin-lk150-fun-bv8v0oo3",
+    ]);
     expect(MEMBER_PLAN_IDS).not.toContain(LK150_FUN_COURSE_PLAN_ID);
   });
 
-  it("LK150 Quick Start legacy plan displays Course 50 only and has no checkout price", () => {
+  it("LK150 Quick Start legacy plan displays Course 50 only", () => {
     const course50 = catalogCards.find((card) => card.slug === LK150_QUICK_START_COURSE_SLUG);
     const courses = ownedCoursesForAccount(
       payloadWithPlan(LK150_QUICK_START_COURSE_PLAN_ID),
@@ -277,8 +301,12 @@ describe("ownedCoursesForAccount", () => {
     ]);
     expect(courses).toEqual([course50]);
     expect(shouldShowAccountMyCourses(courses)).toBe(true);
-    expect(COURSE_INDIVIDUAL_SALES.lk150QuickStart.paidPlanId).toBeUndefined();
-    expect(COURSE_INDIVIDUAL_SALES.lk150QuickStart.priceId).toBeUndefined();
+    expect(COURSE_INDIVIDUAL_SALES.lk150QuickStart.paidPlanId).toBe(
+      "pln_course-lk150-quickstart-xr3h0zk8",
+    );
+    expect(COURSE_INDIVIDUAL_SALES.lk150QuickStart.priceId).toBe(
+      "prc_course-lk150-quickstart-eg1t0rj5",
+    );
     expect(COURSE_INDIVIDUAL_SALES.lk150QuickStart.legacyPlanId).toBe(
       "pln_kin-lk150-quickstart-7h8i0oxj",
     );

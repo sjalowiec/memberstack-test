@@ -93,6 +93,15 @@ const purchaseInfoItems = (copy.purchaseInfo?.items ?? [])
               </div>
               <div data-sales-cta="loggedOut" hidden>
                 <div class="kin-course-sales__buy-row">
+                  {
+                    priceId ? (
+                      <CoursePurchaseButton
+                        courseSlug={courseSlug}
+                        label={copy.purchaseButtonLabel || "Purchase the Course"}
+                        className="course-home-start kin-course-sales__buy"
+                      />
+                    ) : null
+                  }
                   <a class="course-home-start kin-course-sales__join" href={accessCta.joinHref}>
                     {accessCta.joinLabel}
                   </a>
@@ -107,6 +116,15 @@ const purchaseInfoItems = (copy.purchaseInfo?.items ?? [])
               </div>
               <div data-sales-cta="loggedInNoAccess" hidden>
                 <div class="kin-course-sales__buy-row">
+                  {
+                    priceId ? (
+                      <CoursePurchaseButton
+                        courseSlug={courseSlug}
+                        label={copy.purchaseButtonLabel || "Purchase the Course"}
+                        className="course-home-start kin-course-sales__buy"
+                      />
+                    ) : null
+                  }
                   <a class="course-home-start kin-course-sales__join" href={accessCta.memberHref}>
                     {accessCta.memberLabel}
                   </a>
@@ -173,6 +191,15 @@ const purchaseInfoItems = (copy.purchaseInfo?.items ?? [])
                 </div>
                 <div data-sales-cta="loggedOut" hidden>
                   <div class="kin-course-sales__buy-row">
+                    {
+                      priceId ? (
+                        <CoursePurchaseButton
+                          courseSlug={courseSlug}
+                          label={copy.purchaseButtonLabel || "Purchase the Course"}
+                          className="course-home-start kin-course-sales__buy"
+                        />
+                      ) : null
+                    }
                     <a class="course-home-start kin-course-sales__join" href={accessCta.joinHref}>
                       {accessCta.joinLabel}
                     </a>
@@ -187,6 +214,15 @@ const purchaseInfoItems = (copy.purchaseInfo?.items ?? [])
                 </div>
                 <div data-sales-cta="loggedInNoAccess" hidden>
                   <div class="kin-course-sales__buy-row">
+                    {
+                      priceId ? (
+                        <CoursePurchaseButton
+                          courseSlug={courseSlug}
+                          label={copy.purchaseButtonLabel || "Purchase the Course"}
+                          className="course-home-start kin-course-sales__buy"
+                        />
+                      ) : null
+                    }
                     <a class="course-home-start kin-course-sales__join" href={accessCta.memberHref}>
                       {accessCta.memberLabel}
                     </a>

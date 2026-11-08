@@ -39,9 +39,11 @@ describe("Course 34 LK150 Patterning entitlement", () => {
     ]);
   });
 
-  it("does not sell Course 34 or add its plan to membership access", () => {
-    expect(courseCheckoutPriceId(LK150_PATTERNING_COURSE_SLUG)).toBeNull();
-    expect(courseCheckoutPriceId("34")).toBeNull();
+  it("sells Course 34 with the Memberstack price id and keeps the plan off membership", () => {
+    expect(courseCheckoutPriceId(LK150_PATTERNING_COURSE_SLUG)).toBe(
+      "prc_kin-lk150-patternining-nd9008k0",
+    );
+    expect(courseCheckoutPriceId("34")).toBe("prc_kin-lk150-patternining-nd9008k0");
     expect(MEMBER_PLAN_IDS).not.toContain(LK150_PATTERNING_COURSE_PLAN_ID);
     expect(COURSE_ACCESS_PLAN_IDS).not.toContain(LK150_PATTERNING_COURSE_PLAN_ID);
   });
