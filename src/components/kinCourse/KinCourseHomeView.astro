@@ -1,4 +1,5 @@
 ---
+import MemberCourseKeepAccess from "../courses/MemberCourseKeepAccess.astro";
 import KinCourseLayout from "../../layouts/KinCourseLayout.astro";
 import {
   kinCourseContentsHref,
@@ -13,6 +14,7 @@ interface Props {
 }
 
 const { bundle, preview } = Astro.props;
+const courseSlug = bundle.landing.catalogSlug || bundle.course.slug;
 const startLesson = firstLesson(bundle.course);
 const startHref = startLesson
   ? kinCourseLessonHref(bundle.course.id, startLesson.id, preview)
@@ -26,7 +28,7 @@ const kinLanding = bundle.landing;
   courseTitle={kinLanding.fullTitle}
   thumbnailSrc={kinLanding.image.src}
   thumbnailAlt={kinLanding.image.alt}
-  courseSlug={kinLanding.catalogSlug || bundle.course.slug}
+  courseSlug={courseSlug}
   preview={preview}
   glossary={bundle.glossary}
   courseDescription={kinLanding.descriptionHtml}
@@ -49,6 +51,7 @@ const kinLanding = bundle.landing;
             View Course Contents
           </a>
         </div>
+        <MemberCourseKeepAccess courseSlug={courseSlug} />
       </div>
       <figure class="course-home-figure">
         <img
