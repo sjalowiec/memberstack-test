@@ -93,7 +93,8 @@ export function shouldShowKinCourseSalesPage(args: {
     isSk840CourseSlug(args.courseSlug) ||
     isBrother930940CourseSlug(args.courseSlug) ||
     isBeginnerWorkshopCourseSlug(args.courseSlug) ||
-    isRibberBootcampCourseSlug(args.courseSlug)
+    isRibberBootcampCourseSlug(args.courseSlug) ||
+    courseHasIndividualPurchase(args.courseSlug)
   );
 }
 

@@ -4,19 +4,21 @@
  * Course 86 wording is unchanged. Course 111 uses the SK840 sales copy below.
  * Course 103 uses the Brother 930/940 sales copy. Prices are never invented
  * here — the displayed amount comes from `COURSE_INDIVIDUAL_SALES.*.priceLabel`.
- * Course 33 has no checkout price. Course 66 uses a one-time price.
- * The legacy purchaser plan stays separate from checkout.
+ * Course 33, 66, 87, 34, 50, and 51 use their one-time prices. The legacy
+ * purchaser plan stays separate from checkout.
  */
 import {
   BEGINNER_WORKSHOP_COURSE_SLUG,
   BROTHER_930_940_COURSE_SLUG,
+  BROTHER_KH260_COURSE_SLUG,
   canonicalCourseCatalogSlug,
-  COURSE_INDIVIDUAL_SALES,
   KIN_TAITEXMA_160_COURSE_SLUG,
   LEGACY_SK840_COURSE_SLUG,
+  LK150_FUN_COURSE_SLUG,
+  LK150_PATTERNING_COURSE_SLUG,
+  LK150_QUICK_START_COURSE_SLUG,
   RIBBER_BOOTCAMP_COURSE_SLUG,
 } from "../../config/legacyCourseEntitlements";
-import { kinCourseHomeHref } from "./hrefs";
 
 export type KinCourseSalesFaq = {
   question: string;
@@ -211,8 +213,6 @@ export const KIN_BROTHER_930_940_SALES_COPY: KinCourseSalesCopy = {
   },
 };
 
-const MEMBERSHIP_HREF = "/membership";
-
 /**
  * Published Course 66 outline from the public course page: the catalog
  * description, the lesson sections, and the standard included list.
@@ -257,44 +257,6 @@ function includedSentence(labels: readonly string[]): string {
   if (items.length === 2) return `Includes ${items[0]} and ${items[1]}.`;
   return `Includes ${items.slice(0, -1).join(", ")}, and ${items[items.length - 1]}.`;
 }
-
-export const KIN_BEGINNER_WORKSHOP_SALES_COPY: KinCourseSalesCopy = {
-  courseTitle: "Beginner Workshop",
-  headline: "Get Comfortable with Your Knitting Machine",
-  intro: [
-    "New to machine knitting, or feeling rusty after a break?",
-    "Get familiar with the basics, from threading your machine and choosing yarn to casting on and knitting. Watch the demonstrations, practice at your machine, and revisit anything you need to see again.",
-  ],
-  benefitsHeading: "With this workshop, you can:",
-  benefits: [
-    "Get familiar with threading and basic machine operation",
-    "Learn ways to cast on and bind off",
-    "Explore swatching, gauge, and basic shaping",
-    "Practice your skills with the included hat projects",
-  ],
-  supportingCopy:
-    "Take your time, repeat the demonstrations, and build confidence with practice.",
-  ctaHeading: "Ready to get comfortable with the basics?",
-  accessLine: "Available to Knit It Now members and previous course owners.",
-  purchaseButtonLabel: "Purchase the Course",
-  ownerBefore: "Already have access?",
-  ownerAction: "Sign in",
-  ownerAfter: "to continue.",
-  fallbackImageAlt: "Beginner Workshop",
-  metaDescription:
-    "Get comfortable with your knitting machine. Get familiar with the basics, from threading and choosing yarn to casting on and knitting. Available to Knit It Now members and previous course owners.",
-  accessCta: {
-    startLabel: "Start the Beginner Workshop",
-    startHref: kinCourseHomeHref(COURSE_INDIVIDUAL_SALES.beginnerWorkshop.courseId),
-    joinLabel: "Join Knit It Now",
-    joinHref: MEMBERSHIP_HREF,
-    memberLabel: "Become a member",
-    memberHref: MEMBERSHIP_HREF,
-    signInBefore: "Already have access?",
-    signInLabel: "Sign in",
-    signInAfter: "to continue.",
-  },
-};
 
 export const KIN_RIBBER_BOOTCAMP_SALES_COPY: KinCourseSalesCopy = {
   courseTitle: "Ribber Basic Bootcamp",
@@ -367,6 +329,96 @@ export function ribberBootcampSalesCopy(outline?: {
   };
 }
 
+const PUBLIC_COURSE_PURCHASE_INFO = {
+  heading: "One purchase. Ongoing access.",
+  items: [
+    "{price} one-time payment",
+    "No Knit It Now membership required",
+    "Learn at your own pace",
+    "Return to the course whenever you need a refresher",
+    "A free Knit It Now account is required to access your course",
+  ],
+} as const;
+
+const PUBLIC_COURSE_PURCHASE_FAQ = {
+  heading: "Frequently Asked Questions",
+  items: [
+    {
+      question: "Do I need a Knit It Now membership?",
+      answer: "No. Your course purchase is separate from membership.",
+    },
+    {
+      question: "How long can I access the course?",
+      answer:
+        "You’ll have ongoing access through your Knit It Now account, so you can return whenever you need a refresher.",
+    },
+    {
+      question: "How do I access the course after purchasing?",
+      answer:
+        "Sign in to the Knit It Now account used during checkout, then visit the Courses page and select the course.",
+    },
+  ],
+} as const;
+
+export const KIN_BEGINNER_WORKSHOP_SALES_COPY: KinCourseSalesCopy = {
+  courseTitle: "Beginner Workshop",
+  headline: "Get Comfortable with Your Knitting Machine",
+  intro: [
+    "New to machine knitting, or feeling rusty after a break?",
+    "Get familiar with the basics, from threading your machine and choosing yarn to casting on and knitting. Watch the demonstrations, practice at your machine, and revisit anything you need to see again.",
+  ],
+  benefitsHeading: "With this workshop, you can:",
+  benefits: [
+    "Get familiar with threading and basic machine operation",
+    "Learn ways to cast on and bind off",
+    "Explore swatching, gauge, and basic shaping",
+    "Practice your skills with the included hat projects",
+  ],
+  supportingCopy:
+    "Take your time, repeat the demonstrations, and build confidence with practice.",
+  ctaHeading: "Ready to get comfortable with the basics?",
+  purchaseButtonLabel: "Purchase the Course",
+  ownerBefore: "Already own this course?",
+  ownerAction: "Sign in",
+  ownerAfter: "to continue learning.",
+  fallbackImageAlt: "Beginner Workshop",
+  metaDescription:
+    "Get comfortable with your knitting machine. Get familiar with the basics, from threading your machine and choosing yarn to casting on and knitting.",
+  purchaseInfo: PUBLIC_COURSE_PURCHASE_INFO,
+  faq: PUBLIC_COURSE_PURCHASE_FAQ,
+};
+
+export function purchasableCourseSalesCopy(outline: {
+  courseTitle: string;
+  description?: string | null;
+  topics?: readonly string[];
+  included?: readonly string[];
+}): KinCourseSalesCopy {
+  const courseTitle = outline.courseTitle.trim() || "This course";
+  const description = salesPlainText(outline.description);
+  const topics = (outline.topics ?? []).map((topic) => topic.trim()).filter(Boolean);
+  const included = (outline.included ?? []).map((label) => label.trim()).filter(Boolean);
+  return {
+    courseTitle,
+    headline: description || courseTitle,
+    intro: [
+      "Buy this course once and keep it. No Knit It Now membership is required to keep access.",
+    ],
+    benefitsHeading: "What You'll Learn",
+    benefits: topics,
+    supportingCopy: includedSentence(included),
+    ctaHeading: `Ready to start ${courseTitle}?`,
+    purchaseButtonLabel: "Purchase the Course",
+    ownerBefore: "Already own this course?",
+    ownerAction: "Sign in",
+    ownerAfter: "to continue learning.",
+    fallbackImageAlt: courseTitle,
+    metaDescription: description || courseTitle,
+    purchaseInfo: PUBLIC_COURSE_PURCHASE_INFO,
+    faq: PUBLIC_COURSE_PURCHASE_FAQ,
+  };
+}
+
 export function getKinCourseSalesCopy(
   courseSlug: string | null | undefined,
 ): KinCourseSalesCopy | null {
@@ -376,5 +428,33 @@ export function getKinCourseSalesCopy(
   if (slug === BROTHER_930_940_COURSE_SLUG) return KIN_BROTHER_930_940_SALES_COPY;
   if (slug === BEGINNER_WORKSHOP_COURSE_SLUG) return KIN_BEGINNER_WORKSHOP_SALES_COPY;
   if (slug === RIBBER_BOOTCAMP_COURSE_SLUG) return KIN_RIBBER_BOOTCAMP_SALES_COPY;
+  const publicCourse = PUBLIC_PURCHASABLE_COURSE_SALES[slug ?? ""];
+  if (publicCourse) return purchasableCourseSalesCopy(publicCourse);
   return null;
 }
+
+const PUBLIC_PURCHASABLE_COURSE_SALES: Record<
+  string,
+  { courseTitle: string; description: string }
+> = {
+  [BROTHER_KH260_COURSE_SLUG]: {
+    courseTitle: "Brother KH/KR-260 Quick Start",
+    description:
+      "A step-by-step course for getting started with the Brother KH/KR-260, from setup and casting on through tuck, slip, Fair Isle, lace, plaiting, and ribber techniques.",
+  },
+  [LK150_PATTERNING_COURSE_SLUG]: {
+    courseTitle: "Master LK-150 Patterning",
+    description:
+      "A step-by-step course for patterning on the LK-150, from needle selection through tuck, slip, plating, Fair Isle, and intarsia.",
+  },
+  [LK150_QUICK_START_COURSE_SLUG]: {
+    courseTitle: "LK-150 Quick Start",
+    description:
+      "A step-by-step course for getting started with the LK-150, from yarn and machine setup through casting on, binding off, gauge, and a first project.",
+  },
+  [LK150_FUN_COURSE_SLUG]: {
+    courseTitle: "LK-150 Fun",
+    description:
+      "Build on your LK-150 basics with texture, shaping, and creative techniques you can use in any project.",
+  },
+};

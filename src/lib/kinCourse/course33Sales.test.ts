@@ -3,14 +3,12 @@ import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import {
   BEGINNER_WORKSHOP_COURSE_SLUG,
-  COURSE_INDIVIDUAL_SALES,
   LEGACY_BEGINNER_WORKSHOP_COURSE_PLAN_ID,
   LEGACY_SK840_COURSE_PLAN_ID,
 } from "../../config/legacyCourseEntitlements";
 import { MEMBERSHIPS } from "../../config/memberships";
 import { canAccessCourse } from "../courseAccess";
 import { getCourseCatalogEntries } from "../coursesCatalog";
-import { kinCourseHomeHref } from "./hrefs";
 import {
   courseCheckoutPriceId,
   isBeginnerWorkshopCourseSlug,
@@ -71,18 +69,9 @@ describe("Beginner Workshop sales page", () => {
     expect(layout).toContain("isBeginnerWorkshopCourseSlug");
     expect(lessonPage).toContain("KinCourseLayout");
     expect(lessonPage).not.toContain("BeginnerWorkshopSalesPage");
-    expect(KIN_BEGINNER_WORKSHOP_SALES_COPY.accessCta?.startHref).toBe(
-      kinCourseHomeHref(COURSE_INDIVIDUAL_SALES.beginnerWorkshop.courseId),
-    );
-    expect(KIN_BEGINNER_WORKSHOP_SALES_COPY.accessCta?.startHref).toBe("/courses/33");
-    expect(KIN_BEGINNER_WORKSHOP_SALES_COPY.accessCta?.startLabel).toBe(
-      "Start the Beginner Workshop",
-    );
-    expect(KIN_BEGINNER_WORKSHOP_SALES_COPY.accessCta?.joinHref).toBe("/membership");
-    expect(KIN_BEGINNER_WORKSHOP_SALES_COPY.accessCta?.joinLabel).toBe("Join Knit It Now");
-    expect(KIN_BEGINNER_WORKSHOP_SALES_COPY.accessCta?.memberHref).toBe("/membership");
-    expect(KIN_BEGINNER_WORKSHOP_SALES_COPY.accessCta?.memberLabel).toBe("Become a member");
-    expect(KIN_BEGINNER_WORKSHOP_SALES_COPY.accessCta?.signInLabel).toBe("Sign in");
+    expect(KIN_BEGINNER_WORKSHOP_SALES_COPY.accessCta).toBeUndefined();
+    expect(KIN_BEGINNER_WORKSHOP_SALES_COPY.accessLine).toBeUndefined();
+    expect(KIN_BEGINNER_WORKSHOP_SALES_COPY.purchaseInfo?.items[0]).toBe("{price} one-time payment");
     expect(sales).toContain("data-course-111-login");
     expect(sales).toContain("data-sales-cta");
     expect(courseCheckoutPriceId(BEGINNER_WORKSHOP_COURSE_SLUG)).toBe(
@@ -117,9 +106,7 @@ describe("Beginner Workshop sales page", () => {
       "Take your time, repeat the demonstrations, and build confidence with practice.",
     );
     expect(copy.ctaHeading).toBe("Ready to get comfortable with the basics?");
-    expect(copy.accessLine).toBe(
-      "Available to Knit It Now members and previous course owners.",
-    );
+    expect(copy.accessLine).toBeUndefined();
     const text = salesText();
     expect(text).not.toContain("three hats");
     expect(text).not.toContain("step-by-step");
