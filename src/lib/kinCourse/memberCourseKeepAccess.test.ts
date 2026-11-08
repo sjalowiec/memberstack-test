@@ -121,7 +121,6 @@ const readyCourses = [
     buyLabel: "Buy for $49.99",
     legacyPlanId: LK150_FUN_COURSE_PLAN_ID,
     paidPlanId: PAID_LK150_FUN_COURSE_PLAN_ID,
-    homeStudyCourseId: 51,
     extraPlanIds: [LEGACY_KIN_LK150_FUN_PLAN_ID],
   },
 ] as const;
