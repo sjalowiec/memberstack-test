@@ -131,6 +131,7 @@ describe("account ownable catalog cards", () => {
         planIds: [
           ...COURSE_INDIVIDUAL_SALES.lk150Fun.additionalLegacyPlanIds,
           COURSE_INDIVIDUAL_SALES.lk150Fun.legacyPlanId,
+          COURSE_INDIVIDUAL_SALES.lk150Fun.paidPlanId,
         ],
       },
       {
@@ -314,15 +315,15 @@ describe("ownedCoursesForAccount", () => {
     ).not.toContain(BEGINNER_WORKSHOP_COURSE_SLUG);
   });
 
-  it("LK150 Fun legacy plans display Course 51 only and have no checkout price", () => {
+  it("LK150 Fun legacy plans display Course 51 only", () => {
     const course51 = catalogCards.find((card) => card.slug === LK150_FUN_COURSE_SLUG);
     const courses = ownedCoursesForAccount(payloadWithPlan(LK150_FUN_COURSE_PLAN_ID), catalogCards);
     expect(ownedCourseSlugsFromMember(payloadWithPlan(LK150_FUN_COURSE_PLAN_ID))).toEqual([
       LK150_FUN_COURSE_SLUG,
     ]);
     expect(courses).toEqual([course51]);
-    expect(COURSE_INDIVIDUAL_SALES.lk150Fun.paidPlanId).toBeUndefined();
-    expect(COURSE_INDIVIDUAL_SALES.lk150Fun.priceId).toBeUndefined();
+    expect(COURSE_INDIVIDUAL_SALES.lk150Fun.paidPlanId).toBe("pln_course-lk150-fun-p21x0ren");
+    expect(COURSE_INDIVIDUAL_SALES.lk150Fun.priceId).toBe("prc_course-lk150-fun-594h0mo4");
     expect(COURSE_INDIVIDUAL_SALES.lk150Fun.legacyPlanId).toBe(
       "pln_course-lk150-fun-legacy-qn6n0gzm",
     );

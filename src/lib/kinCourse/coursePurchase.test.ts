@@ -72,7 +72,9 @@ describe("course checkout Price IDs", () => {
     expect(coursePurchasePriceLabel(LK150_PATTERNING_COURSE_SLUG)).toBe("$49.99");
     expect(courseCheckoutPriceId("33")).toBe("prc_course-beginner-workshop-paid-4y4a0mi2");
     expect(courseCheckoutPriceId("50")).toBe("prc_course-lk150-quickstart-eg1t0rj5");
-    expect(courseCheckoutPriceId("51")).toBeNull();
+    expect(courseCheckoutPriceId("51")).toBe("prc_course-lk150-fun-594h0mo4");
+    expect(courseCheckoutPriceId("51")).not.toBe("pln_course-lk150-fun-p21x0ren");
+    expect(courseCheckoutPriceId("lk-150-fun")).not.toBe("pln_course-lk150-fun-legacy-qn6n0gzm");
     expect(
       shouldShowKinCourseSalesPage({ courseSlug: BROTHER_KH260_COURSE_SLUG, hasAccess: false }),
     ).toBe(false);
