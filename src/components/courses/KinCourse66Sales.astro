@@ -1,0 +1,28 @@
+---
+/**
+ * Course 66 sales page. Access stays in canAccessCourse. Checkout uses the
+ * shared one-time purchase button. The lesson list comes from the loaded course
+ * when the page has one.
+ */
+import KinCourseSales from "./KinCourseSales.astro";
+import { ribberBootcampSalesCopy } from "../../lib/kinCourse/courseSalesCopy";
+
+interface Props {
+  courseSlug: string;
+  thumbnailSrc?: string;
+  thumbnailAlt?: string;
+  description?: string | null;
+  topics?: readonly string[];
+  included?: readonly string[];
+}
+
+const { courseSlug, thumbnailSrc, thumbnailAlt, description, topics, included } = Astro.props;
+const copy = ribberBootcampSalesCopy({ description, topics, included });
+---
+
+<KinCourseSales
+  courseSlug={courseSlug}
+  copy={copy}
+  thumbnailSrc={thumbnailSrc}
+  thumbnailAlt={thumbnailAlt}
+/>

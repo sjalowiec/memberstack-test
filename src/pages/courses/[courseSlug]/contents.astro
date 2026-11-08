@@ -55,6 +55,9 @@ function lessonCountLabel(count: number): string {
       courseSlug={bundle.landing.catalogSlug || bundle.course.slug}
       preview={preview}
       glossary={bundle.glossary}
+      courseDescription={bundle.landing.descriptionHtml}
+      learnTopics={bundle.landing.topics}
+      includedLabels={bundle.landing.included.map((item) => item.label)}
     >
       <header class="course-outline-header">
         <p class="course-outline-home">
