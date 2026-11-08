@@ -1,0 +1,43 @@
+---
+/**
+ * Public sales page for a one-time course that does not have its own sales
+ * wrapper. Same locked-gate placement as Course 66: the price and Purchase
+ * the Course button stay visible to signed-out visitors and signed-in
+ * non-members. Lessons stay in the gated player.
+ */
+import KinCourseSales from "./KinCourseSales.astro";
+import { purchasableCourseSalesCopy } from "../../lib/kinCourse/courseSalesCopy";
+
+interface Props {
+  courseSlug: string;
+  courseTitle: string;
+  description?: string | null;
+  topics?: readonly string[];
+  included?: readonly string[];
+  thumbnailSrc?: string;
+  thumbnailAlt?: string;
+}
+
+const {
+  courseSlug,
+  courseTitle,
+  description,
+  topics = [],
+  included = [],
+  thumbnailSrc,
+  thumbnailAlt,
+} = Astro.props;
+const copy = purchasableCourseSalesCopy({
+  courseTitle,
+  description,
+  topics,
+  included,
+});
+---
+
+<KinCourseSales
+  courseSlug={courseSlug}
+  copy={copy}
+  thumbnailSrc={thumbnailSrc}
+  thumbnailAlt={thumbnailAlt}
+/>

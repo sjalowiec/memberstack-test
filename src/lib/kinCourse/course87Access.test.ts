@@ -19,6 +19,6 @@ describe("Course 87 local DEV publication", () => {
     expect(courseCheckoutPriceId(BROTHER_KH260_COURSE_SLUG)).toBe("prc_course-brother-260-ml3g0zuu");
     expect(
       shouldShowKinCourseSalesPage({ courseSlug: "87", hasAccess: false }),
-    ).toBe(false);
+    ).toBe(true);
   });
 });

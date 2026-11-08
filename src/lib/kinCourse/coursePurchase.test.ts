@@ -77,8 +77,12 @@ describe("course checkout Price IDs", () => {
     expect(courseCheckoutPriceId("lk-150-fun")).not.toBe("pln_course-lk150-fun-legacy-qn6n0gzm");
     expect(
       shouldShowKinCourseSalesPage({ courseSlug: BROTHER_KH260_COURSE_SLUG, hasAccess: false }),
-    ).toBe(false);
-    expect(shouldShowKinCourseSalesPage({ courseSlug: "87", hasAccess: false })).toBe(false);
+    ).toBe(true);
+    expect(shouldShowKinCourseSalesPage({ courseSlug: "87", hasAccess: false })).toBe(true);
+    expect(shouldShowKinCourseSalesPage({ courseSlug: "34", hasAccess: false })).toBe(true);
+    expect(shouldShowKinCourseSalesPage({ courseSlug: "50", hasAccess: false })).toBe(true);
+    expect(shouldShowKinCourseSalesPage({ courseSlug: "51", hasAccess: false })).toBe(true);
+    expect(shouldShowKinCourseSalesPage({ courseSlug: "51", hasAccess: true })).toBe(false);
   });
 });
 
