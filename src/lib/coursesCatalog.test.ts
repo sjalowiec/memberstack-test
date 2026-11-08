@@ -199,6 +199,7 @@ describe("public course catalog cleanup", () => {
     expect(sections[0]?.courses[1]).toMatchObject({
       title: "Ribber Basic Bootcamp",
       category: "Getting Started",
+      access: "purchase",
       href: "/courses/66",
       thumbnail: "/images/courses/ribber.webp",
       buttonLabel: "View Course",
