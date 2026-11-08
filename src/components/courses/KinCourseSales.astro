@@ -5,6 +5,7 @@
  * owners never see this because the gate paints the player instead.
  */
 import CoursePurchaseButton from "./CoursePurchaseButton.astro";
+import MemberCourseKeepAccess from "./MemberCourseKeepAccess.astro";
 import { getCourseCatalogEntries } from "../../lib/coursesCatalog";
 import { getCourseAccessBySlug } from "../../lib/coursesCatalogAccess";
 import { canonicalCourseCatalogSlug } from "../../config/legacyCourseEntitlements";
@@ -257,6 +258,8 @@ const purchaseInfoItems = (copy.purchaseInfo?.items ?? [])
       </section>
     ) : null
   }
+
+  <MemberCourseKeepAccess courseSlug={courseSlug} />
 </article>
 
 <style>

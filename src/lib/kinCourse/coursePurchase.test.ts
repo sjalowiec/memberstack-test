@@ -59,7 +59,8 @@ describe("course checkout Price IDs", () => {
     expect(courseCheckoutPriceId(KIN_TAITEXMA_160_COURSE_SLUG)).not.toBe(PAID_TH160_COURSE_PLAN_ID);
     expect(courseCheckoutPriceId(LEGACY_SK840_COURSE_SLUG)).not.toBe(PAID_SK840_COURSE_PLAN_ID);
     expect(courseCheckoutPriceId(LEGACY_SK840_COURSE_SLUG)).not.toBe(LEGACY_SK840_COURSE_PLAN_ID);
-    expect(courseCheckoutPriceId("ribber-basic-bootcamp")).toBeNull();
+    expect(courseCheckoutPriceId("ribber-basic-bootcamp")).toBe("prc_course-ribber-bootcamp-84c300s0");
+    expect(courseCheckoutPriceId("ribber-basic-bootcamp")).not.toBe("pln_course-ribber-bootcamp-a4c200uh");
     expect(courseCheckoutPriceId(BROTHER_KH260_COURSE_SLUG)).toBeNull();
     expect(courseCheckoutPriceId("87")).toBeNull();
     expect(courseCheckoutPriceId(LK150_PATTERNING_COURSE_SLUG)).toBeNull();
