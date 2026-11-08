@@ -40,12 +40,21 @@ function courseLockAriaLabel(access: "free" | "member" | "purchase"): string {
 <Layout title={pageTitle} description={pageDescription} bodyClass="page--tight-header">
   <div class="courses-page">
     <header class="courses-hero">
-      <div class="courses-hero__text">
-        <h1 class="courses-hero__title">Courses</h1>
-        <p class="courses-hero__subtitle">
-          Follow guided lessons at your own pace. Work the exercises, build skills, and
-          return anytime to review a technique.
-        </p>
+      <div class="courses-hero__lead">
+        <img
+          class="courses-hero__logo"
+          src="/icons/course-logo.svg"
+          alt=""
+          width="250"
+          height="214"
+        />
+        <div class="courses-hero__text">
+          <h1 class="courses-hero__title">Courses</h1>
+          <p class="courses-hero__subtitle">
+            Follow guided lessons at your own pace. Work the exercises, build skills, and
+            return anytime to review a technique.
+          </p>
+        </div>
       </div>
       {
         availableCount > 0 ? (
@@ -186,6 +195,21 @@ function courseLockAriaLabel(access: "free" | "member" | "purchase"): string {
     justify-content: space-between;
     gap: 24px;
     margin: 0 0 28px;
+  }
+
+  .courses-hero__lead {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .courses-hero__logo {
+    width: 96px;
+    height: auto;
+    flex: 0 0 auto;
+    display: block;
   }
 
   .courses-hero__text {
@@ -387,6 +411,16 @@ function courseLockAriaLabel(access: "free" | "member" | "purchase"): string {
     .courses-hero {
       flex-direction: column;
       align-items: flex-start;
+    }
+
+    .courses-hero__lead {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .courses-hero__logo {
+      width: 64px;
     }
 
     .courses-grid {
