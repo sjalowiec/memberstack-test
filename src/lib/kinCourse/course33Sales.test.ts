@@ -85,9 +85,12 @@ describe("Beginner Workshop sales page", () => {
     expect(KIN_BEGINNER_WORKSHOP_SALES_COPY.accessCta?.signInLabel).toBe("Sign in");
     expect(sales).toContain("data-course-111-login");
     expect(sales).toContain("data-sales-cta");
-    expect(courseCheckoutPriceId(BEGINNER_WORKSHOP_COURSE_SLUG)).toBeNull();
-    expect(courseCheckoutPriceId("33")).toBeNull();
-    expect(salesText()).not.toContain("Purchase");
+    expect(courseCheckoutPriceId(BEGINNER_WORKSHOP_COURSE_SLUG)).toBe(
+      "prc_course-beginner-workshop-paid-4y4a0mi2",
+    );
+    expect(courseCheckoutPriceId("33")).toBe("prc_course-beginner-workshop-paid-4y4a0mi2");
+    expect(KIN_BEGINNER_WORKSHOP_SALES_COPY.purchaseButtonLabel).toBe("Purchase the Course");
+    expect(sales).toContain("CoursePurchaseButton");
     expect(salesText()).not.toContain("prc_");
   });
 
@@ -123,7 +126,6 @@ describe("Beginner Workshop sales page", () => {
     expect(text).not.toContain("Know what to practice next");
     expect(text).not.toContain("Double Warm Hat");
     expect(text).not.toContain("Shaped Watch Cap");
-    expect(text).not.toContain("Purchase");
     expect(sales).toContain("copy.accessLine");
     expect(sales).toContain("kin-course-sales__benefits");
     expect(sales).toContain('aria-labelledby="kin-course-sales-cta-heading"');

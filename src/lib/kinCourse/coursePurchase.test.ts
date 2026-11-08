@@ -61,11 +61,20 @@ describe("course checkout Price IDs", () => {
     expect(courseCheckoutPriceId(LEGACY_SK840_COURSE_SLUG)).not.toBe(LEGACY_SK840_COURSE_PLAN_ID);
     expect(courseCheckoutPriceId("ribber-basic-bootcamp")).toBe("prc_course-ribber-bootcamp-84c300s0");
     expect(courseCheckoutPriceId("ribber-basic-bootcamp")).not.toBe("pln_course-ribber-bootcamp-a4c200uh");
-    expect(courseCheckoutPriceId(BROTHER_KH260_COURSE_SLUG)).toBeNull();
-    expect(courseCheckoutPriceId("87")).toBeNull();
-    expect(courseCheckoutPriceId(LK150_PATTERNING_COURSE_SLUG)).toBeNull();
-    expect(courseCheckoutPriceId("34")).toBeNull();
-    expect(coursePurchasePriceLabel(LK150_PATTERNING_COURSE_SLUG)).toBeNull();
+    expect(courseCheckoutPriceId(BROTHER_KH260_COURSE_SLUG)).toBe("prc_course-brother-260-ml3g0zuu");
+    expect(courseCheckoutPriceId("87")).toBe("prc_course-brother-260-ml3g0zuu");
+    expect(courseCheckoutPriceId("87")).not.toBe("pln_course-brother-260-zz4b0m4l");
+    expect(courseCheckoutPriceId(LK150_PATTERNING_COURSE_SLUG)).toBe(
+      "prc_kin-lk150-patternining-nd9008k0",
+    );
+    expect(courseCheckoutPriceId("34")).toBe("prc_kin-lk150-patternining-nd9008k0");
+    expect(courseCheckoutPriceId("34")).not.toBe("pln_kin-lk150-patterning-gi8n0opa");
+    expect(coursePurchasePriceLabel(LK150_PATTERNING_COURSE_SLUG)).toBe("$49.99");
+    expect(courseCheckoutPriceId("33")).toBe("prc_course-beginner-workshop-paid-4y4a0mi2");
+    expect(courseCheckoutPriceId("50")).toBe("prc_course-lk150-quickstart-eg1t0rj5");
+    expect(courseCheckoutPriceId("51")).toBe("prc_course-lk150-fun-594h0mo4");
+    expect(courseCheckoutPriceId("51")).not.toBe("pln_course-lk150-fun-p21x0ren");
+    expect(courseCheckoutPriceId("lk-150-fun")).not.toBe("pln_course-lk150-fun-legacy-qn6n0gzm");
     expect(
       shouldShowKinCourseSalesPage({ courseSlug: BROTHER_KH260_COURSE_SLUG, hasAccess: false }),
     ).toBe(false);

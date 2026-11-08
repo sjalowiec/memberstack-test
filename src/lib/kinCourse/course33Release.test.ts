@@ -77,14 +77,20 @@ describe("published Beginner Workshop", () => {
     }
   });
 
-  it("lets members and the legacy plan in, and does not sell the course", () => {
+  it("lets members and the legacy plan in, and sells the one-time price", () => {
     expect(LEGACY_COURSE_PLAN_SLUGS[LEGACY_BEGINNER_WORKSHOP_COURSE_PLAN_ID]).toEqual([
       BEGINNER_WORKSHOP_COURSE_SLUG,
     ]);
-    expect(COURSE_INDIVIDUAL_SALES.beginnerWorkshop.paidPlanId).toBeUndefined();
-    expect(COURSE_INDIVIDUAL_SALES.beginnerWorkshop.priceId).toBeUndefined();
-    expect(courseCheckoutPriceId(BEGINNER_WORKSHOP_COURSE_SLUG)).toBeNull();
-    expect(courseCheckoutPriceId("33")).toBeNull();
+    expect(COURSE_INDIVIDUAL_SALES.beginnerWorkshop.paidPlanId).toBe(
+      "pln_course-beginner-workshop-6n490m9l",
+    );
+    expect(COURSE_INDIVIDUAL_SALES.beginnerWorkshop.priceId).toBe(
+      "prc_course-beginner-workshop-paid-4y4a0mi2",
+    );
+    expect(courseCheckoutPriceId(BEGINNER_WORKSHOP_COURSE_SLUG)).toBe(
+      "prc_course-beginner-workshop-paid-4y4a0mi2",
+    );
+    expect(courseCheckoutPriceId("33")).toBe("prc_course-beginner-workshop-paid-4y4a0mi2");
 
     const member = payloadWithPlan(MEMBERSHIPS.membership.memberstackPlanId);
     expect(hasCourseMembershipAccess(member)).toBe(true);

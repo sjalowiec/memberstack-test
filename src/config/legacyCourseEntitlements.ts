@@ -22,8 +22,11 @@ export const PAID_SK840_COURSE_PLAN_ID = "pln_course-sk840--xy1u30uqt" as const;
 export const SK840_COURSE_PRICE_ID = "prc_course-sk840-hn300ud" as const;
 
 export const BROTHER_KH260_COURSE_SLUG = "brother-kh-kr-260-quick-start" as const;
-/** Free plan for verified legacy owners. There is no paid price for this course. */
+/** Free plan for verified legacy owners. Checkout must not use this id. */
 export const LEGACY_BROTHER_260_COURSE_PLAN_ID = "pln_course-brother-260-legacy-m2vb0y2r" as const;
+/** One-time paid plan. Checkout uses {@link BROTHER_260_COURSE_PRICE_ID}, not this id. */
+export const PAID_BROTHER_260_COURSE_PLAN_ID = "pln_course-brother-260-zz4b0m4l" as const;
+export const BROTHER_260_COURSE_PRICE_ID = "prc_course-brother-260-ml3g0zuu" as const;
 
 export const BROTHER_930_940_COURSE_SLUG = "ultimate-brother-930-940-workshop" as const;
 /** Free plan "Course: Brother930-940 Legacy" for verified owners of challenge 103. */
@@ -41,21 +44,40 @@ export const LK150_PATTERNING_COURSE_SLUG = "master-lk-patterning" as const;
  */
 export const LEGACY_KIN_LK150_PATTERNING_PLAN_ID =
   "pln_legacy-kin-lk150-patterning-uk9508lp" as const;
-/** Later free plan "Course: LK150 Patterning". No checkout price is configured here. */
+/** Later free plan "Course: LK150 Patterning". Checkout must not use this id. */
 export const LK150_PATTERNING_COURSE_PLAN_ID = "pln_course-lk150-patterning-nw00gk6" as const;
+/** One-time paid plan. Checkout uses {@link LK150_PATTERNING_COURSE_PRICE_ID}, not this id. */
+export const PAID_LK150_PATTERNING_COURSE_PLAN_ID = "pln_kin-lk150-patterning-gi8n0opa" as const;
+/**
+ * Memberstack spells this price id "patternining". Checkout must use that spelling.
+ */
+export const LK150_PATTERNING_COURSE_PRICE_ID = "prc_kin-lk150-patternining-nd9008k0" as const;
 
 export const LK150_FUN_COURSE_SLUG = "lk-150-fun" as const;
-/** Free permanent plan for verified LK-150 Fun owners. No checkout price is configured here. */
+/** Free plan "Course: Lk150 Fun Legacy". Checkout must not use this id. */
 export const LK150_FUN_COURSE_PLAN_ID = "pln_course-lk150-fun-legacy-qn6n0gzm" as const;
+/** Original free plan "Legacy - KIN_LK150 Fun". Checkout must not use this id. */
+export const LEGACY_KIN_LK150_FUN_PLAN_ID = "pln_legacy-kin-lk150-fun-bv8v0oo3" as const;
+/** One-time paid plan. Checkout uses {@link LK150_FUN_COURSE_PRICE_ID}, not this id. */
+export const PAID_LK150_FUN_COURSE_PLAN_ID = "pln_course-lk150-fun-p21x0ren" as const;
+export const LK150_FUN_COURSE_PRICE_ID = "prc_course-lk150-fun-594h0mo4" as const;
 
 export const LK150_QUICK_START_COURSE_SLUG = "lk-150-quick-start" as const;
-/** Permanent plan for verified LK-150 Quick Start owners. Active membership also opens the course. No checkout price is configured here. */
+/** Free plan for verified LK-150 Quick Start owners. Checkout must not use this id. */
 export const LK150_QUICK_START_COURSE_PLAN_ID = "pln_kin-lk150-quickstart-7h8i0oxj" as const;
+/** One-time paid plan. Checkout uses {@link LK150_QUICK_START_COURSE_PRICE_ID}, not this id. */
+export const PAID_LK150_QUICK_START_COURSE_PLAN_ID = "pln_course-lk150-quickstart-xr3h0zk8" as const;
+export const LK150_QUICK_START_COURSE_PRICE_ID = "prc_course-lk150-quickstart-eg1t0rj5" as const;
 
 export const BEGINNER_WORKSHOP_COURSE_SLUG = "beginner-workshop" as const;
-/** Free plan for verified Beginner Workshop owners. No checkout price is configured here. */
+/** Free plan for verified Beginner Workshop owners. Checkout must not use this id. */
 export const LEGACY_BEGINNER_WORKSHOP_COURSE_PLAN_ID =
   "pln_course-beginner-workshop-legacy-wzr70hsx" as const;
+/** One-time paid plan. Checkout uses {@link BEGINNER_WORKSHOP_COURSE_PRICE_ID}, not this id. */
+export const PAID_BEGINNER_WORKSHOP_COURSE_PLAN_ID =
+  "pln_course-beginner-workshop-6n490m9l" as const;
+export const BEGINNER_WORKSHOP_COURSE_PRICE_ID =
+  "prc_course-beginner-workshop-paid-4y4a0mi2" as const;
 
 export const RIBBER_BOOTCAMP_COURSE_SLUG = "ribber-basic-bootcamp" as const;
 /** Free plan for previous Ribber Basic Bootcamp buyers. Checkout must not use this id. */
@@ -122,6 +144,9 @@ export const COURSE_INDIVIDUAL_SALES = {
     slug: BROTHER_KH260_COURSE_SLUG,
     aliases: ["87"],
     legacyPlanId: LEGACY_BROTHER_260_COURSE_PLAN_ID,
+    paidPlanId: PAID_BROTHER_260_COURSE_PLAN_ID,
+    priceId: BROTHER_260_COURSE_PRICE_ID,
+    priceLabel: "$49.99",
   },
   brother930940: {
     key: "brother930940",
@@ -140,6 +165,9 @@ export const COURSE_INDIVIDUAL_SALES = {
     aliases: ["34"],
     legacyPlanId: LK150_PATTERNING_COURSE_PLAN_ID,
     additionalLegacyPlanIds: [LEGACY_KIN_LK150_PATTERNING_PLAN_ID],
+    paidPlanId: PAID_LK150_PATTERNING_COURSE_PLAN_ID,
+    priceId: LK150_PATTERNING_COURSE_PRICE_ID,
+    priceLabel: "$49.99",
   },
   lk150QuickStart: {
     key: "lk150QuickStart",
@@ -147,6 +175,9 @@ export const COURSE_INDIVIDUAL_SALES = {
     slug: LK150_QUICK_START_COURSE_SLUG,
     aliases: ["50"],
     legacyPlanId: LK150_QUICK_START_COURSE_PLAN_ID,
+    paidPlanId: PAID_LK150_QUICK_START_COURSE_PLAN_ID,
+    priceId: LK150_QUICK_START_COURSE_PRICE_ID,
+    priceLabel: "$49.99",
   },
   lk150Fun: {
     key: "lk150Fun",
@@ -154,6 +185,10 @@ export const COURSE_INDIVIDUAL_SALES = {
     slug: LK150_FUN_COURSE_SLUG,
     aliases: ["51"],
     legacyPlanId: LK150_FUN_COURSE_PLAN_ID,
+    additionalLegacyPlanIds: [LEGACY_KIN_LK150_FUN_PLAN_ID],
+    paidPlanId: PAID_LK150_FUN_COURSE_PLAN_ID,
+    priceId: LK150_FUN_COURSE_PRICE_ID,
+    priceLabel: "$49.99",
   },
   beginnerWorkshop: {
     key: "beginnerWorkshop",
@@ -161,6 +196,9 @@ export const COURSE_INDIVIDUAL_SALES = {
     slug: BEGINNER_WORKSHOP_COURSE_SLUG,
     aliases: ["33"],
     legacyPlanId: LEGACY_BEGINNER_WORKSHOP_COURSE_PLAN_ID,
+    paidPlanId: PAID_BEGINNER_WORKSHOP_COURSE_PLAN_ID,
+    priceId: BEGINNER_WORKSHOP_COURSE_PRICE_ID,
+    priceLabel: "$49.99",
   },
   ribberBootcamp: {
     key: "ribberBootcamp",

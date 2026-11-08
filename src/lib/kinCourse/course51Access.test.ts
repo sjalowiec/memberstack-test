@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
+  LEGACY_COURSE_PLAN_SLUGS,
+  LEGACY_KIN_LK150_FUN_PLAN_ID,
   LK150_FUN_COURSE_PLAN_ID,
   LK150_FUN_COURSE_SLUG,
 } from "../../config/legacyCourseEntitlements";
@@ -8,7 +10,7 @@ import { readCourseContentFile } from "../legacy_kin/courseContentAdmin";
 import { courseCheckoutPriceId } from "./coursePurchase";
 
 describe("Course 51 LK-150 Fun publication", () => {
-  it("publishes the reviewed course without a checkout price", () => {
+  it("publishes the reviewed course with the one-time LK150 Fun price", () => {
     const poc = readCourseContentFile(51);
     expect(poc.course.legacyChallengeId).toBe(51);
     expect(poc.course.title).toBe("LK-150 Fun");
@@ -16,9 +18,14 @@ describe("Course 51 LK-150 Fun publication", () => {
     expect(poc.course.status).toBe("published");
     expect(poc.course.published).toBe(true);
     expect(poc.course.thumbnail).toBe("/images/courses/lk-150_fun.webp");
-    expect(courseCheckoutPriceId(LK150_FUN_COURSE_SLUG)).toBeNull();
-    expect(courseCheckoutPriceId("51")).toBeNull();
+    expect(courseCheckoutPriceId(LK150_FUN_COURSE_SLUG)).toBe("prc_course-lk150-fun-594h0mo4");
+    expect(courseCheckoutPriceId("51")).toBe("prc_course-lk150-fun-594h0mo4");
+    expect(courseCheckoutPriceId("51")).not.toBe("pln_course-lk150-fun-p21x0ren");
     expect(MEMBER_PLAN_IDS).not.toContain(LK150_FUN_COURSE_PLAN_ID);
+    expect(MEMBER_PLAN_IDS).not.toContain(LEGACY_KIN_LK150_FUN_PLAN_ID);
     expect(COURSE_ACCESS_PLAN_IDS).not.toContain(LK150_FUN_COURSE_PLAN_ID);
+    expect(COURSE_ACCESS_PLAN_IDS).not.toContain(LEGACY_KIN_LK150_FUN_PLAN_ID);
+    expect(LEGACY_COURSE_PLAN_SLUGS[LK150_FUN_COURSE_PLAN_ID]).toEqual([LK150_FUN_COURSE_SLUG]);
+    expect(LEGACY_COURSE_PLAN_SLUGS[LEGACY_KIN_LK150_FUN_PLAN_ID]).toEqual([LK150_FUN_COURSE_SLUG]);
   });
 });

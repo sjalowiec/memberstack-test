@@ -276,7 +276,7 @@ export const KIN_BEGINNER_WORKSHOP_SALES_COPY: KinCourseSalesCopy = {
     "Take your time, repeat the demonstrations, and build confidence with practice.",
   ctaHeading: "Ready to get comfortable with the basics?",
   accessLine: "Available to Knit It Now members and previous course owners.",
-  purchaseButtonLabel: "",
+  purchaseButtonLabel: "Purchase the Course",
   ownerBefore: "Already have access?",
   ownerAction: "Sign in",
   ownerAfter: "to continue.",
