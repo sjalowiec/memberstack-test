@@ -152,7 +152,6 @@ describe("getCourseCatalogEntries href", () => {
 describe("resolveCatalogStatus", () => {
   it("shows in-progress for active draft courses with contentStatus in_progress", () => {
     expect(resolveCatalogStatus("nothing-fits-draft", "coming-soon")).toBe("in-progress");
-    expect(resolveCatalogStatus("beginner-workshop", "coming-soon")).toBe("in-progress");
   });
 
   it("keeps a published production catalog course available even while contentStatus is in_progress", () => {
@@ -165,6 +164,7 @@ describe("resolveCatalogStatus", () => {
     "shows available for published cleaned courses",
     () => {
       expect(resolveCatalogStatus("not-enough-needles", "coming-soon")).toBe("available");
+      expect(resolveCatalogStatus("beginner-workshop", "coming-soon")).toBe("available");
       expect(resolveCatalogStatus("ribber-basic-bootcamp", "coming-soon")).toBe("available");
     },
     20_000,
@@ -177,63 +177,76 @@ describe("resolveCatalogStatus", () => {
 
 describe("public course catalog cleanup", () => {
   const hiddenPublicCatalogSlugs = [
-    "beginner-workshop",
-    "ribber-basic-bootcamp",
     "not-enough-needles",
     "yes-knits-that-fit",
     "neckline-shaping-practice",
     "mastering-the-silver-reed-sk840-a-comprehensive-course",
   ] as const;
 
-  it("lists SK840 and Course 86 as the public catalog courses", () => {
+  it("lists the published catalog courses, including Ribber Basic Bootcamp under Getting Started", () => {
     const sections = getCourseCatalogEntriesByCategory();
     expect(sections.map((section) => section.category)).toEqual([
+      "Getting Started",
       "Silver Reed",
       "Taitexma",
       "Brother",
       "LK-150",
     ]);
     expect(sections[0]?.courses.map((course) => course.slug)).toEqual([
+      "beginner-workshop",
+      "ribber-basic-bootcamp",
+    ]);
+    expect(sections[0]?.courses[1]).toMatchObject({
+      title: "Ribber Basic Bootcamp",
+      category: "Getting Started",
+      href: "/courses/66",
+      buttonLabel: "View Course",
+      access: "member",
+      status: "available",
+      thumbnail: "/images/courses/ribber.webp",
+    });
+    expect(sections[1]?.courses.map((course) => course.slug)).toEqual([
       "mastering-the-silver-reed-sk840",
     ]);
-    expect(sections[1]?.courses.map((course) => course.slug)).toEqual([
+    expect(sections[2]?.courses.map((course) => course.slug)).toEqual([
       "taitexma-th-tr-160-getting-started",
     ]);
-    expect(sections[2]?.courses.map((course) => course.slug)).toEqual([
-      "brother-kh-kr-260-quick-start",
-    ]);
-    expect(sections[2]?.courses[0]?.href).toBe("/courses/87");
-    expect(sections[2]?.courses[0]?.buttonLabel).toBe("View Course");
-    expect(sections[2]?.courses[0]?.access).toBe("purchase");
-    expect(sections[2]?.courses[0]?.thumbnail).toBe("/images/courses/260.webp");
     expect(sections[3]?.courses.map((course) => course.slug)).toEqual([
+      "brother-kh-kr-260-quick-start",
+      "ultimate-brother-930-940-workshop",
+    ]);
+    expect(sections[3]?.courses[0]?.href).toBe("/courses/87");
+    expect(sections[3]?.courses[0]?.buttonLabel).toBe("View Course");
+    expect(sections[3]?.courses[0]?.access).toBe("purchase");
+    expect(sections[3]?.courses[0]?.thumbnail).toBe("/images/courses/260.webp");
+    expect(sections[4]?.courses.map((course) => course.slug)).toEqual([
       "master-lk-patterning",
       "lk-150-quick-start",
       "lk-150-fun",
     ]);
-    expect(sections[3]?.courses[0]?.href).toBe("/courses/34");
-    expect(sections[3]?.courses[0]?.buttonLabel).toBe("View Course");
-    expect(sections[3]?.courses[0]?.access).toBe("purchase");
-    expect(sections[3]?.courses[0]?.thumbnail).toBe("/images/courses/lk-150_patterning.webp");
-    expect(sections[3]?.courses[1]?.href).toBe("/courses/50");
-    expect(sections[3]?.courses[1]?.title).toBe("LK-150 Quick Start");
-    expect(sections[3]?.courses[1]?.buttonLabel).toBe("View Course");
-    expect(sections[3]?.courses[1]?.access).toBe("member");
-    expect(sections[3]?.courses[1]?.status).toBe("available");
-    expect(sections[3]?.courses[1]?.thumbnail).toBe("/images/courses/lk-150_quick.webp");
-    expect(sections[3]?.courses[2]?.href).toBe("/courses/51");
-    expect(sections[3]?.courses[2]?.title).toBe("LK-150 Fun");
-    expect(sections[3]?.courses[2]?.buttonLabel).toBe("View Course");
-    expect(sections[3]?.courses[2]?.access).toBe("member");
-    expect(sections[3]?.courses[2]?.status).toBe("available");
-    expect(sections[3]?.courses[2]?.thumbnail).toBe("/images/courses/lk-150_fun.webp");
-    expect(sections[1]?.courses[0]?.href).toBe("/courses/86");
-    expect(sections[1]?.courses[0]?.buttonLabel).toBe("View Course");
-    expect(sections[1]?.courses[0]?.access).toBe("purchase");
-    expect(sections[1]?.courses[0]?.thumbnail).toBe("/images/courses/taitexma_160.webp");
+    expect(sections[4]?.courses[0]?.href).toBe("/courses/34");
+    expect(sections[4]?.courses[0]?.buttonLabel).toBe("View Course");
+    expect(sections[4]?.courses[0]?.access).toBe("purchase");
+    expect(sections[4]?.courses[0]?.thumbnail).toBe("/images/courses/lk-150_patterning.webp");
+    expect(sections[4]?.courses[1]?.href).toBe("/courses/50");
+    expect(sections[4]?.courses[1]?.title).toBe("LK-150 Quick Start");
+    expect(sections[4]?.courses[1]?.buttonLabel).toBe("View Course");
+    expect(sections[4]?.courses[1]?.access).toBe("member");
+    expect(sections[4]?.courses[1]?.status).toBe("available");
+    expect(sections[4]?.courses[1]?.thumbnail).toBe("/images/courses/lk-150_quick.webp");
+    expect(sections[4]?.courses[2]?.href).toBe("/courses/51");
+    expect(sections[4]?.courses[2]?.title).toBe("LK-150 Fun");
+    expect(sections[4]?.courses[2]?.buttonLabel).toBe("View Course");
+    expect(sections[4]?.courses[2]?.access).toBe("member");
+    expect(sections[4]?.courses[2]?.status).toBe("available");
+    expect(sections[4]?.courses[2]?.thumbnail).toBe("/images/courses/lk-150_fun.webp");
+    expect(sections[2]?.courses[0]?.href).toBe("/courses/86");
+    expect(sections[2]?.courses[0]?.buttonLabel).toBe("View Course");
+    expect(sections[2]?.courses[0]?.access).toBe("purchase");
+    expect(sections[2]?.courses[0]?.thumbnail).toBe("/images/courses/taitexma_160.webp");
 
     const entries = getCourseCatalogEntries();
-    expect(entries).toHaveLength(6);
+    expect(entries).toHaveLength(9);
     expect(entries[0]?.slug).toBe("mastering-the-silver-reed-sk840");
     expect(entries[0]?.title).toBe("Mastering the Silver Reed SK840");
     expect(entries[0]?.buttonLabel).toBe("View Course");
@@ -245,9 +258,12 @@ describe("public course catalog cleanup", () => {
       "/courses/111",
       "/courses/86",
       "/courses/87",
+      "/courses/103",
       "/courses/34",
       "/courses/50",
       "/courses/51",
+      "/courses/33",
+      "/courses/66",
     ]);
     expect(productionEntries[0]?.href).not.toContain("courses.knititnow.com");
     expect(entries[0]?.access).toBe("purchase");
@@ -258,7 +274,9 @@ describe("public course catalog cleanup", () => {
     for (const slug of hiddenPublicCatalogSlugs) {
       expect(slugs).not.toContain(slug);
     }
+    expect(slugs).toContain("ribber-basic-bootcamp");
     expect(getCourseCatalogCategories()).toEqual([
+      "Getting Started",
       "Silver Reed",
       "Taitexma",
       "Brother",
@@ -331,30 +349,40 @@ describe("groupCourseCatalogSections", () => {
     const sections = groupCourseCatalogSections(getCourseCatalogEntriesByCategory());
 
     expect(sections.map((section) => section.category)).toEqual([
+      "Getting Started",
       MACHINE_SPECIFIC_COURSES_HEADING,
       LK150_COURSES_HEADING,
     ]);
     expect(sections[0]?.courses.map((course) => course.slug)).toEqual([
+      "beginner-workshop",
+      "ribber-basic-bootcamp",
+    ]);
+    expect(sections[0]?.courses[1]?.href).toBe("/courses/66");
+    expect(sections[1]?.courses.map((course) => course.slug)).toEqual([
       "mastering-the-silver-reed-sk840",
       "taitexma-th-tr-160-getting-started",
       "brother-kh-kr-260-quick-start",
+      "ultimate-brother-930-940-workshop",
     ]);
-    expect(sections[0]?.courses.map((course) => course.category)).toEqual([
+    expect(sections[1]?.courses.map((course) => course.category)).toEqual([
       "Silver Reed",
       "Taitexma",
       "Brother",
+      "Brother",
     ]);
-    expect(sections[0]?.courses.map((course) => course.href)).toEqual([
+    expect(sections[1]?.courses.map((course) => course.href)).toEqual([
       "/courses/111",
       "/courses/86",
       "/courses/87",
+      "/courses/103",
     ]);
-    expect(sections[0]?.courses.map((course) => course.access)).toEqual([
+    expect(sections[1]?.courses.map((course) => course.access)).toEqual([
+      "purchase",
       "purchase",
       "purchase",
       "purchase",
     ]);
-    expect(sections[1]?.courses.map((course) => ({
+    expect(sections[2]?.courses.map((course) => ({
       slug: course.slug,
       category: course.category,
       href: course.href,
@@ -385,7 +413,8 @@ describe("groupCourseCatalogSections", () => {
     ]);
 
     const published = sections.flatMap((section) => section.courses);
-    expect(published.filter((course) => course.status === "available")).toHaveLength(6);
+    expect(published.filter((course) => course.status === "available")).toHaveLength(9);
     expect(published.map((course) => course.slug)).toContain("lk-150-quick-start");
+    expect(published.map((course) => course.slug)).toContain("ribber-basic-bootcamp");
   });
 });
