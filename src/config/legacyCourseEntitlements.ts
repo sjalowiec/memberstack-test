@@ -56,11 +56,11 @@ export const LK150_PATTERNING_COURSE_PRICE_ID = "prc_kin-lk150-patternining-nd90
 export const LK150_FUN_COURSE_SLUG = "lk-150-fun" as const;
 /** Free plan "Course: Lk150 Fun Legacy". Checkout must not use this id. */
 export const LK150_FUN_COURSE_PLAN_ID = "pln_course-lk150-fun-legacy-qn6n0gzm" as const;
-/**
- * Original free plan "Legacy - KIN_LK150 Fun".
- * The listed paid plan was not in Memberstack, so this course has no checkout price.
- */
+/** Original free plan "Legacy - KIN_LK150 Fun". Checkout must not use this id. */
 export const LEGACY_KIN_LK150_FUN_PLAN_ID = "pln_legacy-kin-lk150-fun-bv8v0oo3" as const;
+/** One-time paid plan. Checkout uses {@link LK150_FUN_COURSE_PRICE_ID}, not this id. */
+export const PAID_LK150_FUN_COURSE_PLAN_ID = "pln_course-lk150-fun-p21x0ren" as const;
+export const LK150_FUN_COURSE_PRICE_ID = "prc_course-lk150-fun-594h0mo4" as const;
 
 export const LK150_QUICK_START_COURSE_SLUG = "lk-150-quick-start" as const;
 /** Free plan for verified LK-150 Quick Start owners. Checkout must not use this id. */
@@ -186,6 +186,9 @@ export const COURSE_INDIVIDUAL_SALES = {
     aliases: ["51"],
     legacyPlanId: LK150_FUN_COURSE_PLAN_ID,
     additionalLegacyPlanIds: [LEGACY_KIN_LK150_FUN_PLAN_ID],
+    paidPlanId: PAID_LK150_FUN_COURSE_PLAN_ID,
+    priceId: LK150_FUN_COURSE_PRICE_ID,
+    priceLabel: "$49.99",
   },
   beginnerWorkshop: {
     key: "beginnerWorkshop",

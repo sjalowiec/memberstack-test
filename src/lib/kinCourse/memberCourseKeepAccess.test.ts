@@ -5,7 +5,6 @@ import {
   BEGINNER_WORKSHOP_COURSE_SLUG,
   BROTHER_930_940_COURSE_SLUG,
   BROTHER_KH260_COURSE_SLUG,
-  COURSE_INDIVIDUAL_SALES,
   KIN_TAITEXMA_160_COURSE_SLUG,
   LEGACY_BEGINNER_WORKSHOP_COURSE_PLAN_ID,
   LEGACY_BROTHER_260_COURSE_PLAN_ID,
@@ -25,6 +24,7 @@ import {
   PAID_BEGINNER_WORKSHOP_COURSE_PLAN_ID,
   PAID_BROTHER_260_COURSE_PLAN_ID,
   PAID_BROTHER_930_940_COURSE_PLAN_ID,
+  PAID_LK150_FUN_COURSE_PLAN_ID,
   PAID_LK150_PATTERNING_COURSE_PLAN_ID,
   PAID_LK150_QUICK_START_COURSE_PLAN_ID,
   PAID_RIBBER_BOOTCAMP_COURSE_PLAN_ID,
@@ -124,6 +124,14 @@ const readyCourses = [
     homeStudyCourseId: 50,
     extraPlanIds: [],
   },
+  {
+    slug: LK150_FUN_COURSE_SLUG,
+    buyLabel: "Buy for $49.99",
+    legacyPlanId: LK150_FUN_COURSE_PLAN_ID,
+    paidPlanId: PAID_LK150_FUN_COURSE_PLAN_ID,
+    homeStudyCourseId: 51,
+    extraPlanIds: [LEGACY_KIN_LK150_FUN_PLAN_ID],
+  },
 ] as const;
 
 describe("member keep-access offer", () => {
@@ -221,29 +229,13 @@ describe("member keep-access offer", () => {
   });
 
   it("omits the member offer when standalone checkout is not configured", () => {
-    expect(courseStandalonePurchaseReady(LK150_FUN_COURSE_SLUG)).toBe(false);
-    expect(courseStandalonePurchaseReady("51")).toBe(false);
+    expect(courseStandalonePurchaseReady("not-a-course")).toBe(false);
     expect(
       resolveMemberCourseKeepAccess({
         memberOrPayload: member,
-        courseSlug: LK150_FUN_COURSE_SLUG,
+        courseSlug: "not-a-course",
       }),
     ).toEqual({ kind: "hidden" });
-    expect(COURSE_INDIVIDUAL_SALES.lk150Fun.paidPlanId).toBeUndefined();
-    expect(COURSE_INDIVIDUAL_SALES.lk150Fun.priceId).toBeUndefined();
-    expect(COURSE_INDIVIDUAL_SALES.lk150Fun.additionalLegacyPlanIds).toEqual([
-      LEGACY_KIN_LK150_FUN_PLAN_ID,
-    ]);
-    for (const planId of [LK150_FUN_COURSE_PLAN_ID, LEGACY_KIN_LK150_FUN_PLAN_ID]) {
-      const owner = payloadWithPlan(planId);
-      expect(canAccessCourse("member", owner, { courseSlug: LK150_FUN_COURSE_SLUG })).toBe(true);
-      expect(
-        resolveMemberCourseKeepAccess({
-          memberOrPayload: owner,
-          courseSlug: "51",
-        }),
-      ).toEqual({ kind: "hidden" });
-    }
   });
 
   it("keeps Start Course primary and wires the secondary buy button to the course price", () => {
