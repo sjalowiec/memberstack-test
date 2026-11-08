@@ -128,6 +128,16 @@ describe("account ownable catalog cards", () => {
         href: "/courses/33",
         planIds: [COURSE_INDIVIDUAL_SALES.beginnerWorkshop.legacyPlanId],
       },
+      {
+        courseId: 66,
+        slug: COURSE_INDIVIDUAL_SALES.ribberBootcamp.slug,
+        title: "Ribber Basic Bootcamp",
+        href: "/courses/66",
+        planIds: [
+          COURSE_INDIVIDUAL_SALES.ribberBootcamp.legacyPlanId,
+          COURSE_INDIVIDUAL_SALES.ribberBootcamp.paidPlanId,
+        ],
+      },
     ]);
   });
 

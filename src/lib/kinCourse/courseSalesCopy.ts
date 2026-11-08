@@ -4,8 +4,8 @@
  * Course 86 wording is unchanged. Course 111 uses the SK840 sales copy below.
  * Course 103 uses the Brother 930/940 sales copy. Prices are never invented
  * here — the displayed amount comes from `COURSE_INDIVIDUAL_SALES.*.priceLabel`.
- * Course 33 and Course 66 have no checkout price. Course 66 keeps the legacy
- * purchaser plan separate from checkout.
+ * Course 33 has no checkout price. Course 66 uses a one-time price.
+ * The legacy purchaser plan stays separate from checkout.
  */
 import {
   BEGINNER_WORKSHOP_COURSE_SLUG,
@@ -307,23 +307,40 @@ export const KIN_RIBBER_BOOTCAMP_SALES_COPY: KinCourseSalesCopy = {
   benefits: KIN_RIBBER_BOOTCAMP_LESSON_TOPICS,
   supportingCopy: includedSentence(KIN_RIBBER_BOOTCAMP_INCLUDED),
   ctaHeading: "Ready to get comfortable with your ribber?",
-  accessLine: "Available to Knit It Now members and previous course owners.",
-  purchaseButtonLabel: "",
-  ownerBefore: "Already have access?",
+  purchaseButtonLabel: "Purchase the Course",
+  ownerBefore: "Already own this course?",
   ownerAction: "Sign in",
-  ownerAfter: "to continue.",
+  ownerAfter: "to continue learning.",
   fallbackImageAlt: "Ribber Basic Bootcamp",
   metaDescription: KIN_RIBBER_BOOTCAMP_DESCRIPTION,
-  accessCta: {
-    startLabel: "Start Ribber Basic Bootcamp",
-    startHref: kinCourseHomeHref(COURSE_INDIVIDUAL_SALES.ribberBootcamp.courseId),
-    joinLabel: "Join Knit It Now",
-    joinHref: MEMBERSHIP_HREF,
-    memberLabel: "Become a member",
-    memberHref: MEMBERSHIP_HREF,
-    signInBefore: "Already have access?",
-    signInLabel: "Sign in",
-    signInAfter: "to continue.",
+  purchaseInfo: {
+    heading: "One purchase. Ongoing access.",
+    items: [
+      "{price} one-time payment",
+      "No Knit It Now membership required",
+      "Learn at your own pace",
+      "Return to the course whenever you need a refresher",
+      "A free Knit It Now account is required to access your course",
+    ],
+  },
+  faq: {
+    heading: "Frequently Asked Questions",
+    items: [
+      {
+        question: "Do I need a Knit It Now membership?",
+        answer: "No. Your course purchase is separate from membership.",
+      },
+      {
+        question: "How long can I access the course?",
+        answer:
+          "You’ll have ongoing access through your Knit It Now account, so you can return whenever you need a refresher.",
+      },
+      {
+        question: "How do I access the course after purchasing?",
+        answer:
+          "Sign in to the Knit It Now account used during checkout, then visit the Courses page and select the course.",
+      },
+    ],
   },
 };
 

@@ -2,8 +2,8 @@
  * Memberstack one-price checkout for individual courses.
  *
  * Uses `purchasePlansWithCheckout({ priceId })`. Logged-out visitors complete
- * Memberstack signup first, then checkout on the new account. Logged-in
- * non-members check out on their existing account.
+ * Memberstack signup or login in that modal, then checkout on the account.
+ * Logged-in non-members check out on their existing account.
  */
 import { memberIdFromMemberstackPayload } from "../patterns/memberstackMember";
 import { courseCheckoutPriceId } from "./coursePurchase";
@@ -130,19 +130,19 @@ export async function startCourseCheckout(
     if (!memberIdFromMemberstackPayload(memberPayload)) {
       const signupResult = await ms.openModal?.("SIGNUP");
       const signupType = (signupResult as { type?: string } | undefined)?.type;
-      if (signupType !== "SIGNUP") {
+      memberPayload = await ms.getCurrentMember();
+      if (!memberIdFromMemberstackPayload(memberPayload)) {
+        if (signupType === "SIGNUP") {
+          return {
+            ok: false,
+            reason: "not-logged-in",
+            message: "Account created, but login did not complete. Try again or log in first.",
+          };
+        }
         return {
           ok: false,
           reason: "signup-canceled",
           message: "Create your account or log in to continue to checkout.",
-        };
-      }
-      memberPayload = await ms.getCurrentMember();
-      if (!memberIdFromMemberstackPayload(memberPayload)) {
-        return {
-          ok: false,
-          reason: "not-logged-in",
-          message: "Account created, but login did not complete. Try again or log in first.",
         };
       }
     }

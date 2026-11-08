@@ -150,6 +150,37 @@ describe("startCourseCheckout", () => {
       expect.objectContaining({ priceId: SK840_COURSE_PRICE_ID }),
     );
   });
+
+  it("continues to checkout when the signup modal is used to log in", async () => {
+    const openModal = vi.fn().mockResolvedValue({ type: "LOGIN" });
+    const getCurrentMember = vi
+      .fn()
+      .mockResolvedValueOnce({ data: null })
+      .mockResolvedValueOnce({ data: { id: "ms_existing" } });
+    const purchasePlansWithCheckout = vi.fn().mockResolvedValue({
+      data: { url: "https://checkout.stripe.com/login" },
+    });
+
+    const result = await startCourseCheckout("66", {
+      waitForMemberstack: async () =>
+        ({
+          getCurrentMember,
+          purchasePlansWithCheckout,
+          openModal,
+        }) as unknown as NonNullable<Window["$memberstackDom"]>,
+      getLocation: () => ({ href: "https://kin-dev.netlify.app/courses/66" }) as Location,
+      assignLocation: vi.fn(),
+    });
+
+    expect(openModal).toHaveBeenCalledWith("SIGNUP");
+    expect(result).toMatchObject({
+      ok: true,
+      priceId: "prc_course-ribber-bootcamp-84c300s0",
+    });
+    expect(purchasePlansWithCheckout).toHaveBeenCalledWith(
+      expect.objectContaining({ priceId: "prc_course-ribber-bootcamp-84c300s0" }),
+    );
+  });
 });
 
 describe("buildCourseCheckoutReturnUrls", () => {

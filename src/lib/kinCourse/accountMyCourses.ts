@@ -21,7 +21,7 @@ export type AccountOwnedCourseCard = {
 
 /** Browser-safe display + entitlement metadata for individually owned courses. */
 export type AccountOwnableCourse = {
-  courseId: 86 | 111 | 87 | 103 | 34 | 50 | 51 | 33;
+  courseId: 86 | 111 | 87 | 103 | 34 | 50 | 51 | 33 | 66;
   slug: string;
   title: string;
   href: string;
@@ -92,6 +92,13 @@ export const ACCOUNT_OWNABLE_COURSES: readonly AccountOwnableCourse[] = [
     title: "Beginner Workshop",
     href: "/courses/33",
     planIds: ownablePlanIds(COURSE_INDIVIDUAL_SALES.beginnerWorkshop),
+  },
+  {
+    courseId: COURSE_INDIVIDUAL_SALES.ribberBootcamp.courseId,
+    slug: COURSE_INDIVIDUAL_SALES.ribberBootcamp.slug,
+    title: "Ribber Basic Bootcamp",
+    href: "/courses/66",
+    planIds: ownablePlanIds(COURSE_INDIVIDUAL_SALES.ribberBootcamp),
   },
 ];
 
