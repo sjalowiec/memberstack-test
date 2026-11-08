@@ -51,8 +51,8 @@ describe("Course 50 LK-150 Quick Start legacy plan", () => {
     expect(canAccessCourse(access, loggedInNeither, { courseSlug: slug })).toBe(false);
     expect(getCourseViewerState(access, loggedInNeither, { courseSlug: slug })).toBe("needsMembership");
     expect(canAccessCourse(access, inactiveMember, { courseSlug: slug })).toBe(false);
-    expect(courseCheckoutPriceId(slug)).toBeNull();
-    expect(courseCheckoutPriceId("50")).toBeNull();
+    expect(courseCheckoutPriceId(slug)).toBe("prc_course-lk150-quickstart-eg1t0rj5");
+    expect(courseCheckoutPriceId("50")).toBe("prc_course-lk150-quickstart-eg1t0rj5");
     expect(MEMBER_PLAN_IDS).not.toContain(LK150_QUICK_START_COURSE_PLAN_ID);
     expect(COURSE_ACCESS_PLAN_IDS).not.toContain(LK150_QUICK_START_COURSE_PLAN_ID);
   });

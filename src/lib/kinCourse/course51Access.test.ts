@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
+  LEGACY_COURSE_PLAN_SLUGS,
+  LEGACY_KIN_LK150_FUN_PLAN_ID,
   LK150_FUN_COURSE_PLAN_ID,
   LK150_FUN_COURSE_SLUG,
 } from "../../config/legacyCourseEntitlements";
@@ -19,6 +21,10 @@ describe("Course 51 LK-150 Fun publication", () => {
     expect(courseCheckoutPriceId(LK150_FUN_COURSE_SLUG)).toBeNull();
     expect(courseCheckoutPriceId("51")).toBeNull();
     expect(MEMBER_PLAN_IDS).not.toContain(LK150_FUN_COURSE_PLAN_ID);
+    expect(MEMBER_PLAN_IDS).not.toContain(LEGACY_KIN_LK150_FUN_PLAN_ID);
     expect(COURSE_ACCESS_PLAN_IDS).not.toContain(LK150_FUN_COURSE_PLAN_ID);
+    expect(COURSE_ACCESS_PLAN_IDS).not.toContain(LEGACY_KIN_LK150_FUN_PLAN_ID);
+    expect(LEGACY_COURSE_PLAN_SLUGS[LK150_FUN_COURSE_PLAN_ID]).toEqual([LK150_FUN_COURSE_SLUG]);
+    expect(LEGACY_COURSE_PLAN_SLUGS[LEGACY_KIN_LK150_FUN_PLAN_ID]).toEqual([LK150_FUN_COURSE_SLUG]);
   });
 });

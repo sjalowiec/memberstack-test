@@ -5,7 +5,7 @@ import { courseCheckoutPriceId, shouldShowKinCourseSalesPage } from "./coursePur
 import { loadKinCourseBundle } from "./load";
 
 describe("Course 87 local DEV publication", () => {
-  it("publishes the player without a paid price", async () => {
+  it("publishes the player with the one-time Brother 260 price", async () => {
     const poc = readCourseContentFile(87);
     expect(poc.course.status).toBe("published");
     expect(poc.course.published).toBe(true);
@@ -15,8 +15,8 @@ describe("Course 87 local DEV publication", () => {
     const bundle = await loadKinCourseBundle(87);
     expect(bundle?.course.id).toBe(87);
     expect(bundle?.course.title).toBe("Brother KH/KR-260 Quick Start");
-    expect(courseCheckoutPriceId("87")).toBeNull();
-    expect(courseCheckoutPriceId(BROTHER_KH260_COURSE_SLUG)).toBeNull();
+    expect(courseCheckoutPriceId("87")).toBe("prc_course-brother-260-ml3g0zuu");
+    expect(courseCheckoutPriceId(BROTHER_KH260_COURSE_SLUG)).toBe("prc_course-brother-260-ml3g0zuu");
     expect(
       shouldShowKinCourseSalesPage({ courseSlug: "87", hasAccess: false }),
     ).toBe(false);
