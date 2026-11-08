@@ -58,8 +58,13 @@ export const LEGACY_BEGINNER_WORKSHOP_COURSE_PLAN_ID =
   "pln_course-beginner-workshop-legacy-wzr70hsx" as const;
 
 export const RIBBER_BOOTCAMP_COURSE_SLUG = "ribber-basic-bootcamp" as const;
+/** Free plan for previous Ribber Basic Bootcamp buyers. Checkout must not use this id. */
 export const LEGACY_RIBBER_BOOTCAMP_COURSE_PLAN_ID =
   "pln_course-ribber-bootcamp-legacy-sgc1002r" as const;
+/** One-time paid plan. Checkout uses {@link RIBBER_BOOTCAMP_COURSE_PRICE_ID}, not this id. */
+export const PAID_RIBBER_BOOTCAMP_COURSE_PLAN_ID =
+  "pln_course-ribber-bootcamp-a4c200uh" as const;
+export const RIBBER_BOOTCAMP_COURSE_PRICE_ID = "prc_course-ribber-bootcamp-84c300s0" as const;
 
 export type IndividualCourseSaleKey =
   | "th160"
@@ -163,6 +168,9 @@ export const COURSE_INDIVIDUAL_SALES = {
     slug: RIBBER_BOOTCAMP_COURSE_SLUG,
     aliases: ["66"],
     legacyPlanId: LEGACY_RIBBER_BOOTCAMP_COURSE_PLAN_ID,
+    paidPlanId: PAID_RIBBER_BOOTCAMP_COURSE_PLAN_ID,
+    priceId: RIBBER_BOOTCAMP_COURSE_PRICE_ID,
+    priceLabel: "$49.99",
   },
 } as const satisfies Record<IndividualCourseSaleKey, IndividualCourseSale>;
 
