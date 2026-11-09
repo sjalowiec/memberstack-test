@@ -13,6 +13,7 @@ import {
   buildSavePayloadFromWorkingDraft,
 } from "./customPatternProjectClient";
 import {
+  persistAvailableNeedlesEverywhere,
   readAvailableNeedlesFromAllSources,
   syncAvailableNeedlesMirrorsFromAllSources,
 } from "./availableNeedlesMirrors";
@@ -142,6 +143,17 @@ describe("saved pattern Available Needles update", () => {
     );
     expect(loadExpressPersisted()?.availableNeedles).toBe("250");
     expect(readAvailableNeedlesFromAllSources().value).toBe("250");
+  });
+
+  it("writes an edited needle count into the builder machine section as well as the other stores", () => {
+    hydrateSavedCustomPatternProjectSession(sleevelessSavedProject("100"), { editChoicesReopen: true });
+    persistAvailableNeedlesEverywhere("130");
+    const data = getPatternData();
+    expect(String((data.machine as Record<string, unknown>).availableNeedles)).toBe("130");
+    expect(String((data.yarnGaugeMachine as Record<string, unknown>).availableNeedles)).toBe("130");
+    expect(String(getCurrentPattern().machine.availableNeedles)).toBe("130");
+    expect(loadExpressPersisted()?.availableNeedles).toBe("130");
+    expect(readAvailableNeedlesFromAllSources().value).toBe("130");
   });
 
   it("pattern-width validation resolves the updated saved value after reopen", () => {

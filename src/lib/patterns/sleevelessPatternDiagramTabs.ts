@@ -73,6 +73,8 @@ export type BuildSleevelessDiagramHostOptions = {
   src: string;
   alt: string;
   cardiganHalfSide?: "left" | "right";
+  /** Marks a center-seam half so hydration uses that half's generated shaping. */
+  centerSeamDiagramKey?: string;
 };
 
 /**
@@ -122,11 +124,13 @@ export function buildSleevelessPatternDiagramHostHtml(
   const half = options.cardiganHalfSide;
   const halfAttr =
     half === "left" || half === "right" ? ` data-sleeveless-cardigan-half="${half}"` : "";
+  const seamKey = options.centerSeamDiagramKey?.trim() ?? "";
+  const seamAttr = seamKey ? ` data-center-seam-diagram="${escapeHtml(seamKey)}"` : "";
 
   return buildSleevelessPatternDiagramEnlargeHostHtml({
     alt: options.alt,
     innerHostHtml:
-      `<div class="sleeveless-piece-split__diagram-svg sleeveless-pattern-diagram-panel__svg" data-sleeveless-diagram ${hostAttr} data-src="${src}" data-alt="${alt}"${pieceModeAttr}${halfAttr}>` +
+      `<div class="sleeveless-piece-split__diagram-svg sleeveless-pattern-diagram-panel__svg" data-sleeveless-diagram ${hostAttr} data-src="${src}" data-alt="${alt}"${pieceModeAttr}${halfAttr}${seamAttr}>` +
       `<p class="sleeveless-pattern-boot-msg">Loading diagram…</p>` +
       `</div>`,
   });
@@ -139,6 +143,7 @@ export type BuildSleevelessPatternDiagramTabsOptions = {
   shapingSrc: string;
   shapingAlt: string;
   cardiganHalfSide?: "left" | "right";
+  centerSeamDiagramKey?: string;
 };
 
 /**
@@ -148,7 +153,9 @@ export type BuildSleevelessPatternDiagramTabsOptions = {
 export function buildSleevelessPatternDiagramTabsShellHtml(
   options: BuildSleevelessPatternDiagramTabsOptions,
 ): string {
-  const idPrefix = `sleeveless-${options.piece}-diagram`;
+  const idPrefix = options.centerSeamDiagramKey
+    ? `sleeveless-${options.centerSeamDiagramKey}-diagram`
+    : `sleeveless-${options.piece}-diagram`;
   const tablistLabel =
     options.piece === "back"
       ? "Back diagram view"
@@ -181,6 +188,7 @@ export function buildSleevelessPatternDiagramTabsShellHtml(
           src: options.stsRowsSrc,
           alt: options.stsRowsAlt,
           cardiganHalfSide: options.cardiganHalfSide,
+          centerSeamDiagramKey: options.centerSeamDiagramKey,
         }),
       },
       {
@@ -194,6 +202,7 @@ export function buildSleevelessPatternDiagramTabsShellHtml(
             src: options.shapingSrc,
             alt: options.shapingAlt,
             cardiganHalfSide: options.cardiganHalfSide,
+            centerSeamDiagramKey: options.centerSeamDiagramKey,
           }),
       },
     ],

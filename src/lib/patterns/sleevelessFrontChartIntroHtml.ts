@@ -108,6 +108,8 @@ export type SleevelessPatternTabFrontChartRenderOptions = {
   resetRowCounterForSecondShoulder?: boolean;
   /** Set-in round neck: scrap off the held center neckline after the Second Shoulder checklist. */
   finishHeldNecklineAfterSecondShoulder?: boolean;
+  /** Split Set-In front: the left-front note replaces the opposite-front sentence. */
+  omitOppositePieceNote?: boolean;
 };
 
 /**
@@ -133,7 +135,7 @@ export function sleevelessPatternTabFrontChartTableOptions(
   result: SleevelessPatternTabFrontResult,
   options?: Pick<
     SleevelessPatternTabFrontChartRenderOptions,
-    "secondShoulderExtraHtml" | "relocateIntro" | "resetRowCounterForSecondShoulder" | "finishHeldNecklineAfterSecondShoulder"
+    "secondShoulderExtraHtml" | "relocateIntro" | "resetRowCounterForSecondShoulder" | "finishHeldNecklineAfterSecondShoulder" | "omitOppositePieceNote"
   >,
 ): NeckShoulderChartRenderOptions {
   const chart = result.frontNeckShoulderShapingChart;
@@ -160,6 +162,7 @@ export function sleevelessPatternTabFrontChartTableOptions(
     ...(options?.finishHeldNecklineAfterSecondShoulder === true
       ? { finishHeldNecklineAfterSecondShoulder: true }
       : {}),
+    ...(options?.omitOppositePieceNote === true ? { omitOppositePieceNote: true } : {}),
     suppressCarriagePositionTip: relocateIntro,
     ...(frontUsesShoulderTabs
       ? necklineShapingTwoSideTabPresentation()

@@ -1067,6 +1067,11 @@ export type NeckShoulderChartRenderOptions = {
   /** When true (or chart flag), completion copy uses cardigan front wording and hides second-shoulder UI. */
   isCardiganFront?: boolean;
   /**
+   * Center-seam Set-In halves explain the second piece in a reverse-shaping note.
+   * Omit the cardigan line that says to work the opposite front.
+   */
+  omitOppositePieceNote?: boolean;
+  /**
    * When false, shoulders are worked straight (drop shoulder), so the second-shoulder completion
    * copy reverses only the neckline shaping. Defaults to true (sleeveless: neckline + shoulder shaping).
    */
@@ -1678,7 +1683,7 @@ ${shell.close}`;
     activeSideOnly && !isCardiganFront
       ? `${secondShoulderToggleHtml}
 ${collapsible ? secondShoulderCollapsibleHtml : secondShoulderLegacyHtml}`
-      : activeSideOnly && isCardiganFront
+      : activeSideOnly && isCardiganFront && options?.omitOppositePieceNote !== true
         ? `<p class="ns-shaping-chart__active-side-note">${instructionWithHeldStitchesHtml(
             heldShoulderStitches,
             false,

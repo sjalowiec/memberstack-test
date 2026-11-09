@@ -206,8 +206,8 @@
   html[data-pattern-print-choice="charts"] .sleeveless-pattern-piece,
   html[data-pattern-print-choice="charts"] #pattern-content .pattern-section:not(:has(.ns-shaping-chart)):not(:has(.ns-visual-guides)):not(:has(.shaping-map)):not(:has(.pattern-print-chart-setup)),
   html[data-pattern-print-choice="charts"] #pattern-content .sleeveless-pattern-row:not(:has(.ns-shaping-chart)):not(:has(.ns-visual-guides)):not(:has(.shaping-map)):not(:has(.pattern-print-chart-setup)),
-  html[data-pattern-print-choice="charts"] #pattern-content .sleeveless-piece-split__diagram,
-  html[data-pattern-print-choice="charts"] #pattern-content .pattern-layout__sidebar,
+  html[data-pattern-print-choice="charts"] #pattern-content .sleeveless-piece-split__diagram:not(:has([data-pattern-diagram-panel="shaping-notation"])),
+  html[data-pattern-print-choice="charts"] #pattern-content .pattern-layout__sidebar:not(:has([data-pattern-diagram-panel="shaping-notation"])),
   html[data-pattern-print-choice="charts"] .pattern-print-written-shaping,
   html[data-pattern-print-choice="charts"] .pattern-finishing-steps,
   html[data-pattern-print-choice="charts"] .pattern-finishing-list {
@@ -223,6 +223,21 @@
   html[data-pattern-print-choice="charts"] #pattern-content .sleeveless-piece-split {
     display: block !important;
     grid-template-columns: 1fr !important;
+  }
+
+  html[data-pattern-print-choice="charts"] #pattern-content .pattern-layout__sidebar:has([data-pattern-diagram-panel="shaping-notation"]),
+  html[data-pattern-print-choice="charts"] #pattern-content .sleeveless-piece-split__diagram:has([data-pattern-diagram-panel="shaping-notation"]) {
+    display: block !important;
+  }
+
+  html[data-pattern-print-choice="charts"] #pattern-content [data-pattern-diagram-panel="sts-rows"],
+  html[data-pattern-print-choice="instructions"] #pattern-content .sleeveless-pattern-reading-layout .pattern-diagram-tabs__panel[data-pattern-diagram-panel="shaping-notation"] {
+    display: none !important;
+  }
+
+  html[data-pattern-print-choice="charts"] #pattern-content [data-pattern-diagram-panel="shaping-notation"],
+  html[data-pattern-print-choice="both"] #pattern-content [data-pattern-diagram-panel="shaping-notation"] {
+    display: block !important;
   }
 
   html[data-pattern-print-choice="charts"] #pattern-content .ns-shaping-chart,
