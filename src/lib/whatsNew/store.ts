@@ -7,7 +7,7 @@ import {
 } from "../watson/schema";
 import type { WatsonQueryFn } from "../watson/memberSearch";
 import { normalizeVimeoUrl } from "../videoReplies/vimeoUrl";
-import type { WhatsNewAnnouncement } from "./announcement";
+import { announcementButtonLabel, type WhatsNewAnnouncement } from "./announcement";
 import {
   buildPopupAnnouncement,
   isPopupAnnouncementActive,
@@ -114,6 +114,7 @@ const ANNOUNCEMENT_SCHEMA_LABELS = [
   "index idx_watson_whats_new_announcement_events_card",
   "table watson_whats_new_popup_announcement",
   "alter watson_whats_new_popup_announcement button destination",
+  "alter watson_whats_new_popup_announcement button text",
 ];
 
 let announcementSchemaReady: Promise<void> | null = null;
@@ -138,13 +139,13 @@ async function ensureWhatsNewAnnouncementSchemaOnce(): Promise<void> {
     await queryWatson("SELECT popup_enabled, popup_audience, popup_expires_on FROM watson_whats_new_cards LIMIT 1");
     await queryWatson("SELECT id FROM watson_whats_new_announcement_events LIMIT 1");
     await queryWatson(
-      "SELECT announcement_id, button_destination_url FROM watson_whats_new_popup_announcement LIMIT 1",
+      "SELECT announcement_id, button_text, button_destination_url FROM watson_whats_new_popup_announcement LIMIT 1",
     );
     return;
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     if (
-      !/popup_|button_destination_url|watson_whats_new_announcement_events|watson_whats_new_popup_announcement/i.test(
+      !/popup_|button_text|button_destination_url|watson_whats_new_announcement_events|watson_whats_new_popup_announcement/i.test(
         message,
       )
     ) {
@@ -414,6 +415,7 @@ const POPUP_ANNOUNCEMENT_SQL = `
     introduction,
     audience,
     expires_at,
+    button_text,
     button_destination_url,
     enabled,
     updated_at
@@ -451,6 +453,7 @@ export async function getPublicWhatsNewAnnouncement(
     title: saved.title.trim(),
     introductionHtml: saved.introductionHtml,
     href: saved.href,
+    buttonLabel: announcementButtonLabel(saved.buttonText),
     audience: saved.audience,
   };
 }
@@ -488,11 +491,12 @@ export async function upsertWhatsNewPopupAnnouncement(
         introduction,
         audience,
         expires_at,
+        button_text,
         button_destination_url,
         enabled,
         updated_at
       )
-      VALUES ($1, $2, $3, $4, $5, $6, $7::timestamptz, $8, $9, NOW())
+      VALUES ($1, $2, $3, $4, $5, $6, $7::timestamptz, $8, $9, $10, NOW())
       ON CONFLICT (key) DO UPDATE SET
         announcement_id = EXCLUDED.announcement_id,
         source_card_id = EXCLUDED.source_card_id,
@@ -500,6 +504,7 @@ export async function upsertWhatsNewPopupAnnouncement(
         introduction = EXCLUDED.introduction,
         audience = EXCLUDED.audience,
         expires_at = EXCLUDED.expires_at,
+        button_text = EXCLUDED.button_text,
         button_destination_url = EXCLUDED.button_destination_url,
         enabled = EXCLUDED.enabled,
         updated_at = NOW()
@@ -510,6 +515,7 @@ export async function upsertWhatsNewPopupAnnouncement(
         introduction,
         audience,
         expires_at,
+        button_text,
         button_destination_url,
         enabled,
         updated_at
@@ -522,6 +528,7 @@ export async function upsertWhatsNewPopupAnnouncement(
       validated.value.introductionHtml,
       validated.value.audience,
       validated.value.expiresAt,
+      validated.value.buttonText,
       validated.value.buttonDestinationUrl,
       validated.value.enabled,
     ],

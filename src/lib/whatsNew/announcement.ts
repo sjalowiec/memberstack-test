@@ -11,6 +11,13 @@ export const WHATS_NEW_ANNOUNCEMENT_NOTE =
 
 export const WHATS_NEW_ANNOUNCEMENT_READ_MORE = "Read more";
 
+/** Visible pop-up button label. A blank or missing label stays “Read more”. */
+export function announcementButtonLabel(value: unknown): string {
+  if (typeof value !== "string") return WHATS_NEW_ANNOUNCEMENT_READ_MORE;
+  const trimmed = value.trim();
+  return trimmed || WHATS_NEW_ANNOUNCEMENT_READ_MORE;
+}
+
 export const WHATS_NEW_ENTRY_ANCHOR_PREFIX = "whats-new-entry-";
 
 export type WhatsNewAnnouncement = {
@@ -18,6 +25,8 @@ export type WhatsNewAnnouncement = {
   title: string;
   introductionHtml: string;
   href: string;
+  /** Visible button label. Existing announcements without one use Read more. */
+  buttonLabel: string;
   audience: WhatsNewPopupAudience;
 };
 
@@ -62,6 +71,7 @@ export function toWhatsNewAnnouncement(card: WhatsNewCard): WhatsNewAnnouncement
     title: card.title.trim(),
     introductionHtml: sanitizeCardDescriptionHtml(card.description),
     href: whatsNewEntryHref(card.id),
+    buttonLabel: WHATS_NEW_ANNOUNCEMENT_READ_MORE,
     audience: card.popupAudience,
   };
 }

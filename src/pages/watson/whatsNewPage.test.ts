@@ -53,8 +53,14 @@ describe("Watson What's New page", () => {
       page.indexOf("data-wn-popup-form"),
       page.indexOf("data-wn-billboard-panel"),
     );
+    expect(popupForm).toContain("Button text (optional)");
+    expect(popupForm).toContain('name="buttonText"');
+    expect(popupForm.indexOf('name="buttonText"')).toBeLessThan(
+      popupForm.indexOf('name="buttonDestinationUrl"'),
+    );
     expect(popupForm).toContain("Button destination URL (optional)");
     expect(popupForm).toContain('name="buttonDestinationUrl"');
+    expect(popupForm).toContain("Leave the button text blank");
     expect(popupForm).toContain("Leave the button destination blank");
     expect(page).toContain("data-wn-popup-edit");
     expect(page).toContain("data-wn-popup-preview");
@@ -97,7 +103,9 @@ describe("Watson What's New page", () => {
     );
     expect(popupScript).toContain("/api/watson/whats-new/announcement");
     expect(popupScript).toContain("openWhatsNewAnnouncementPreview");
+    expect(popupScript).toContain("buttonText");
     expect(popupScript).toContain("buttonDestinationUrl");
+    expect(popupScript).toContain("announcementButtonLabel");
     expect(popupScript).toContain("popupReadMoreHref");
     expect(popupScript).toContain("data-wn-popup-enable");
     expect(popupScript).toContain("data-wn-popup-disable");
