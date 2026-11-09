@@ -285,12 +285,14 @@ describe("whatsNew store", () => {
       introduction: "<p>Stories from knitters.</p>",
       audience: "everyone",
       expires_at: "2026-12-01T17:00:00.000Z",
+      button_text: null,
       button_destination_url: null,
       enabled: true,
       updated_at: "2026-11-01T00:00:00.000Z",
     };
     const savedRow: WhatsNewPopupAnnouncementRow = {
       ...existing,
+      button_text: "Read knitter stories",
       button_destination_url: "/testimonials",
     };
     const queryFn = vi.fn().mockResolvedValueOnce([existing]).mockResolvedValueOnce([savedRow]);
@@ -301,6 +303,7 @@ describe("whatsNew store", () => {
         audience: "everyone",
         expiresAtLocal: "2026-12-01T09:00",
         sourceCardId: "card-knitters",
+        buttonText: "  Read knitter stories  ",
         buttonDestinationUrl: "/testimonials",
         enabled: true,
       },
@@ -309,6 +312,7 @@ describe("whatsNew store", () => {
     expect(saved.ok).toBe(true);
     if (!saved.ok) return;
     expect(saved.value.href).toBe("/testimonials");
+    expect(saved.value.buttonText).toBe("Read knitter stories");
     expect(saved.value.audience).toBe("everyone");
     expect(saved.value.expiresAt).toBe("2026-12-01T17:00:00.000Z");
     expect(saved.value.id).toBe("announcement-knitters");
@@ -317,7 +321,9 @@ describe("whatsNew store", () => {
     expect(params[1]).toBe("announcement-knitters");
     expect(params[5]).toBe("everyone");
     expect(params[6]).toBe("2026-12-01T17:00:00.000Z");
-    expect(params[7]).toBe("/testimonials");
+    expect(params[7]).toBe("Read knitter stories");
+    expect(params[8]).toBe("/testimonials");
+    expect(String(queryFn.mock.calls[1]?.[0])).toContain("button_text");
     expect(String(queryFn.mock.calls[1]?.[0])).toContain("button_destination_url");
 
     const publicAnnouncement = await getPublicWhatsNewAnnouncement(
@@ -325,6 +331,7 @@ describe("whatsNew store", () => {
       new Date("2026-11-07T00:00:00.000Z"),
     );
     expect(publicAnnouncement?.href).toBe("/testimonials");
+    expect(publicAnnouncement?.buttonLabel).toBe("Read knitter stories");
     expect(publicAnnouncement?.audience).toBe("everyone");
 
     const unchanged = await getPublicWhatsNewAnnouncement(
@@ -332,5 +339,6 @@ describe("whatsNew store", () => {
       new Date("2026-11-07T00:00:00.000Z"),
     );
     expect(unchanged?.href).toBe("/whats-new#whats-new-entry-card-knitters");
+    expect(unchanged?.buttonLabel).toBe("Read more");
   });
 });

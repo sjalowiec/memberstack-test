@@ -81,11 +81,17 @@ describe("schema", () => {
     expect(labels).toContain("table watson_whats_new_announcement_events");
     expect(labels).toContain("table watson_whats_new_popup_announcement");
     expect(labels).toContain("alter watson_whats_new_popup_announcement button destination");
+    expect(labels).toContain("alter watson_whats_new_popup_announcement button text");
     expect(
       nativeStatements.find(
         (statement) => statement.label === "table watson_whats_new_popup_announcement",
       )?.sql,
     ).toContain("button_destination_url TEXT");
+    expect(
+      nativeStatements.find(
+        (statement) => statement.label === "alter watson_whats_new_popup_announcement button text",
+      )?.sql,
+    ).toContain("button_text TEXT");
     expect(labels).toContain("alter watson_tip_of_the_week cta columns");
     expect(
       nativeStatements.find((statement) => statement.label === "table watson_whats_new_cards")?.sql,

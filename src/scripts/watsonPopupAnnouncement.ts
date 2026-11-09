@@ -1,5 +1,7 @@
+import { announcementButtonLabel } from "../lib/whatsNew/announcement";
 import { normalizeWhatsNewDestinationUrl } from "../lib/whatsNew/destinationUrl";
 import { popupReadMoreHref } from "../lib/whatsNew/popupAnnouncement";
+import { WHATS_NEW_BUTTON_TEXT_MAX_LENGTH } from "../lib/whatsNew/types";
 import { sanitizeCardDescriptionHtml } from "../lib/whatsNew/sanitizeBillboardHtml";
 import { initCompactRichText } from "./watsonRichTextEditor";
 import { openWhatsNewAnnouncementPreview } from "./whatsNewAnnouncement";
@@ -177,6 +179,16 @@ export function initWatsonPopupAnnouncement(root: ParentNode = document): void {
     }
     const sourceCardId = fieldValue(form, "sourceCardId").trim();
     const savedId = fieldValue(form, "announcementId").trim();
+    const buttonText = fieldValue(form, "buttonText").trim();
+    if (buttonText.length > WHATS_NEW_BUTTON_TEXT_MAX_LENGTH) {
+      showForm();
+      setStatus(
+        status,
+        `Button text must be ${WHATS_NEW_BUTTON_TEXT_MAX_LENGTH} characters or fewer.`,
+        true,
+      );
+      return;
+    }
     const destination = normalizeWhatsNewDestinationUrl(fieldValue(form, "buttonDestinationUrl"));
     if (!destination.ok) {
       showForm();
@@ -188,6 +200,7 @@ export function initWatsonPopupAnnouncement(root: ParentNode = document): void {
       title,
       introductionHtml: fieldValue(form, "introduction"),
       href: popupReadMoreHref(sourceCardId, destination.value),
+      buttonLabel: announcementButtonLabel(buttonText),
     });
   });
 
@@ -207,6 +220,7 @@ export function initWatsonPopupAnnouncement(root: ParentNode = document): void {
           audience: fieldValue(form, "audience") || "everyone",
           expiresAtLocal: fieldValue(form, "expiresAtLocal"),
           sourceCardId: fieldValue(form, "sourceCardId"),
+          buttonText: fieldValue(form, "buttonText"),
           buttonDestinationUrl: fieldValue(form, "buttonDestinationUrl"),
           enabled,
         }),

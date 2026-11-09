@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { announcementToShow } from "./announcement";
+import { announcementButtonLabel, announcementToShow } from "./announcement";
 import {
   buildPopupAnnouncement,
   formatLosAngelesDateTime,
@@ -23,6 +23,7 @@ function announcement(
     sourceCardId: "card-1",
     title: "Help Hub",
     introductionHtml: "<p>Find answers in the Help Hub.</p>",
+    buttonText: null,
     buttonDestinationUrl: null,
     href: "/whats-new#whats-new-entry-card-1",
     audience: "everyone",
@@ -76,6 +77,7 @@ describe("pop-up announcement schedule", () => {
       title: "Help Hub",
       introductionHtml: "<p>Hello</p>",
       href: "/whats-new",
+      buttonLabel: "Read more",
       audience: "everyone" as const,
     };
     const next = { ...first, id: "announcement-2", title: "A newer note" };
@@ -111,10 +113,58 @@ describe("pop-up announcement schedule", () => {
     expect(saved.ok).toBe(true);
     if (saved.ok) {
       expect(saved.value.buttonDestinationUrl).toBe("/testimonials");
+      expect(saved.value.buttonText).toBeNull();
       expect(saved.value.audience).toBe("members");
       expect(saved.value.expiresAt).toBe("2026-12-01T17:00:00.000Z");
       expect(saved.value.sourceCardId).toBe("card-9");
     }
+  });
+
+  it("keeps the button label and destination independent", () => {
+    const labelOnly = validatePopupAnnouncementInput({
+      title: "What Knitters Say",
+      introductionHtml: "<p>Stories from knitters.</p>",
+      buttonText: "  Read knitter stories  ",
+      buttonDestinationUrl: "",
+    });
+    expect(labelOnly.ok).toBe(true);
+    if (labelOnly.ok) {
+      expect(labelOnly.value.buttonText).toBe("Read knitter stories");
+      expect(labelOnly.value.buttonDestinationUrl).toBeNull();
+    }
+
+    const destinationOnly = validatePopupAnnouncementInput({
+      title: "What Knitters Say",
+      introductionHtml: "<p>Stories from knitters.</p>",
+      buttonText: "   ",
+      buttonDestinationUrl: "/testimonials",
+    });
+    expect(destinationOnly.ok).toBe(true);
+    if (destinationOnly.ok) {
+      expect(destinationOnly.value.buttonText).toBeNull();
+      expect(destinationOnly.value.buttonDestinationUrl).toBe("/testimonials");
+      expect(announcementButtonLabel(destinationOnly.value.buttonText)).toBe("Read more");
+    }
+
+    const both = validatePopupAnnouncementInput({
+      title: "What Knitters Say",
+      introductionHtml: "<p>Stories from knitters.</p>",
+      buttonText: "Read knitter stories",
+      buttonDestinationUrl: "/testimonials",
+    });
+    expect(both.ok).toBe(true);
+    if (both.ok) {
+      expect(both.value.buttonText).toBe("Read knitter stories");
+      expect(both.value.buttonDestinationUrl).toBe("/testimonials");
+    }
+
+    const tooLong = validatePopupAnnouncementInput({
+      title: "What Knitters Say",
+      introductionHtml: "<p>Stories from knitters.</p>",
+      buttonText: "R".repeat(61),
+      buttonDestinationUrl: "/testimonials",
+    });
+    expect(tooLong.ok).toBe(false);
   });
 
   it("treats a blank button destination as no override and rejects an unsafe one", () => {
@@ -147,15 +197,20 @@ describe("pop-up announcement schedule", () => {
     };
     const fallback = buildPopupAnnouncement(row);
     expect(fallback?.href).toBe("/whats-new#whats-new-entry-card-1");
+    expect(fallback?.buttonText).toBeNull();
+    expect(announcementButtonLabel(fallback?.buttonText)).toBe("Read more");
     expect(fallback?.buttonDestinationUrl).toBeNull();
     expect(fallback?.audience).toBe("everyone");
     expect(fallback?.expiresAt).toBe("2026-12-01T17:00:00.000Z");
 
     const direct = buildPopupAnnouncement({
       ...row,
+      button_text: "  Read knitter stories  ",
       button_destination_url: "/testimonials",
     });
     expect(direct?.href).toBe("/testimonials");
+    expect(direct?.buttonText).toBe("Read knitter stories");
+    expect(announcementButtonLabel(direct?.buttonText)).toBe("Read knitter stories");
     expect(direct?.buttonDestinationUrl).toBe("/testimonials");
     expect(direct?.audience).toBe("everyone");
     expect(direct?.expiresAt).toBe("2026-12-01T17:00:00.000Z");
