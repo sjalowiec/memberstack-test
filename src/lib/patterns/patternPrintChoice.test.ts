@@ -6,6 +6,9 @@ import {
   PATTERN_PRINT_CHOICES,
   PATTERN_PRINT_HIDE_TIPS_HELP,
   PATTERN_PRINT_HIDE_TIPS_LABEL,
+  PATTERN_PRINT_PAGE_RANGE_NOTE,
+  PATTERN_PRINT_SELECTED_PAGES_HREF,
+  PATTERN_PRINT_SELECTED_PAGES_LINK,
 } from "./patternPrintChoice";
 import { renderPatternDisplayRowsHtml } from "./sleevelessPatternDisplayHtml";
 import { renderSleevelessPrintPieceHtml } from "./sleevelessPatternPrintRender";
@@ -87,6 +90,15 @@ describe("pattern print choices", () => {
     );
     expect(PATTERN_PRINT_HIDE_TIPS_LABEL).toBe("Hide Pattern Tips");
     expect(PATTERN_PRINT_HIDE_TIPS_HELP).toBe("Uncheck to include tips.");
+    expect(PATTERN_PRINT_PAGE_RANGE_NOTE).toBe(
+      "Only need a few pages? After you click Print, choose the page numbers you want in your print window.",
+    );
+    expect(PATTERN_PRINT_SELECTED_PAGES_LINK).toBe("How to print selected pages");
+    expect(PATTERN_PRINT_SELECTED_PAGES_HREF).toBe(
+      "/help-hub/my-pattern-has-a-lot-of-pages-how-can-i-print-just-the-pages-i-want",
+    );
+    expect(PATTERN_PRINT_SELECTED_PAGES_HREF.startsWith("/")).toBe(true);
+    expect(PATTERN_PRINT_SELECTED_PAGES_HREF).not.toMatch(/^https?:/);
     const personalization = readFileSync("src/scripts/patternPrintPersonalization.ts", "utf8");
     expect(personalization).toContain("openPatternPrintChoiceDialog");
     expect(personalization).toContain("includeTips");
@@ -99,6 +111,17 @@ describe("pattern print choices", () => {
     expect(choiceSource).not.toContain("Instructions + charts and checklists");
     expect(dialog).toContain("PATTERN_PRINT_HIDE_TIPS_LABEL");
     expect(dialog).toContain("PATTERN_PRINT_HIDE_TIPS_HELP");
+    expect(dialog).toContain("PATTERN_PRINT_PAGE_RANGE_NOTE");
+    expect(dialog).toContain("PATTERN_PRINT_SELECTED_PAGES_LINK");
+    expect(dialog).toContain("PATTERN_PRINT_SELECTED_PAGES_HREF");
+    expect(dialog).toContain('target="_blank"');
+    expect(dialog).toContain('data-pattern-print-selected-pages');
+    const tipsAt = dialog.indexOf("pattern-print-choice-dialog__tips");
+    const pageRangeAt = dialog.indexOf("pattern-print-choice-dialog__page-range");
+    const reminderAt = dialog.indexOf("pattern-print-choice-dialog__reminder");
+    expect(tipsAt).toBeGreaterThan(-1);
+    expect(pageRangeAt).toBeGreaterThan(tipsAt);
+    expect(reminderAt).toBeGreaterThan(pageRangeAt);
     expect(dialog).toContain('name="pattern-print-hide-tips"');
     expect(dialog).toContain('data-pattern-print-hide-tips value="yes" checked');
     expect(dialog).toContain("box?.checked !== true");
@@ -113,6 +136,7 @@ describe("pattern print choices", () => {
     expect(css).toContain('html[data-pattern-print-choice="both"]');
     expect(css).toContain("table-header-group");
     expect(css).toContain("break-inside: avoid");
+    expect(css).toContain("pattern-print-choice-dialog__page-range");
     expect(css).toContain("pattern-video-modal-link");
     expect(readFileSync("src/styles/print.css", "utf8")).toContain("pattern-print-choice.css");
     const tipsCss = readFileSync("src/styles/pattern-tips.css", "utf8");

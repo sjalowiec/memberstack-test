@@ -9,6 +9,9 @@ import {
   PATTERN_PRINT_CHOICES,
   PATTERN_PRINT_HIDE_TIPS_HELP,
   PATTERN_PRINT_HIDE_TIPS_LABEL,
+  PATTERN_PRINT_PAGE_RANGE_NOTE,
+  PATTERN_PRINT_SELECTED_PAGES_HREF,
+  PATTERN_PRINT_SELECTED_PAGES_LINK,
   type PatternPrintChoice,
   type PatternPrintSelection,
 } from "../lib/patterns/patternPrintChoice";
@@ -42,6 +45,7 @@ function dialogHtml(): string {
         <span class="pattern-print-choice-dialog__option-text">${PATTERN_PRINT_HIDE_TIPS_HELP}</span>
       </span>
     </label>
+    <p class="pattern-print-choice-dialog__page-range">${escapeDialogText(PATTERN_PRINT_PAGE_RANGE_NOTE)} <a class="pattern-print-choice-dialog__page-range-link" href="${PATTERN_PRINT_SELECTED_PAGES_HREF}" target="_blank" rel="noopener noreferrer" data-pattern-print-selected-pages>${escapeDialogText(PATTERN_PRINT_SELECTED_PAGES_LINK)}</a></p>
     <p class="pattern-print-choice-dialog__reminder">${PATTERN_PRINT_CHOICE_REMINDER}</p>
     <div class="pattern-print-choice-dialog__actions">
       <button type="button" class="pattern-print-choice-dialog__btn" data-pattern-print-choice-cancel>Cancel</button>
@@ -53,7 +57,12 @@ function dialogHtml(): string {
 function ensureDialog(): HTMLDialogElement | null {
   const existing = document.getElementById(DIALOG_ID);
   if (existing instanceof HTMLDialogElement) {
-    if (existing.querySelector("[data-pattern-print-hide-tips]")) return existing;
+    if (
+      existing.querySelector("[data-pattern-print-hide-tips]") &&
+      existing.querySelector("[data-pattern-print-selected-pages]")
+    ) {
+      return existing;
+    }
     existing.remove();
   }
   const dialog = document.createElement("dialog");

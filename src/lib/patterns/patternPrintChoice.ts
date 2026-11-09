@@ -26,6 +26,15 @@ export const PATTERN_PRINT_HIDE_TIPS_LABEL = "Hide Pattern Tips";
 
 export const PATTERN_PRINT_HIDE_TIPS_HELP = "Uncheck to include tips.";
 
+export const PATTERN_PRINT_PAGE_RANGE_NOTE =
+  "Only need a few pages? After you click Print, choose the page numbers you want in your print window.";
+
+export const PATTERN_PRINT_SELECTED_PAGES_LINK = "How to print selected pages";
+
+/** Same-site Help Hub article. A root-relative path stays on the site the reader is using. */
+export const PATTERN_PRINT_SELECTED_PAGES_HREF =
+  "/help-hub/my-pattern-has-a-lot-of-pages-how-can-i-print-just-the-pages-i-want";
+
 export type PatternPrintSelection = {
   choice: PatternPrintChoice;
   includeTips: boolean;

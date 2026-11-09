@@ -89,6 +89,23 @@
   margin-top: 0.2rem;
 }
 
+.pattern-print-choice-dialog__page-range {
+  margin: 0.75rem 0 0;
+  font-size: 0.95rem;
+  line-height: 1.45;
+}
+
+.pattern-print-choice-dialog__page-range-link {
+  color: #52682d;
+  text-decoration: underline;
+  text-underline-offset: 0.12em;
+}
+
+.pattern-print-choice-dialog__page-range-link:hover,
+.pattern-print-choice-dialog__page-range-link:focus-visible {
+  color: #3e4f22;
+}
+
 .pattern-print-choice-dialog__actions {
   display: flex;
   justify-content: flex-end;
