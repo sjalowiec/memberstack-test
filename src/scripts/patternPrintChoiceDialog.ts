@@ -10,6 +10,7 @@ import {
   PATTERN_PRINT_HIDE_TIPS_HELP,
   PATTERN_PRINT_HIDE_TIPS_LABEL,
   PATTERN_PRINT_PAGE_RANGE_NOTE,
+  PATTERN_PRINT_SELECTED_PAGES_BACK,
   PATTERN_PRINT_SELECTED_PAGES_HREF,
   PATTERN_PRINT_SELECTED_PAGES_LINK,
   type PatternPrintChoice,
@@ -36,20 +37,26 @@ function dialogHtml(): string {
   }).join("");
   return `<form class="pattern-print-choice-dialog__panel" method="dialog">
     <h2 id="pattern-print-choice-title" class="pattern-print-choice-dialog__heading">Print pattern</h2>
-    <p class="pattern-print-choice-dialog__lead">${PATTERN_PRINT_CHOICE_PDF_NOTE}</p>
-    <div class="pattern-print-choice-dialog__options" role="radiogroup" aria-label="What to print">${options}</div>
-    <label class="pattern-print-choice-dialog__tips">
-      <input type="checkbox" name="pattern-print-hide-tips" data-pattern-print-hide-tips value="yes" checked />
-      <span>
-        <span class="pattern-print-choice-dialog__option-title">${PATTERN_PRINT_HIDE_TIPS_LABEL}</span>
-        <span class="pattern-print-choice-dialog__option-text">${PATTERN_PRINT_HIDE_TIPS_HELP}</span>
-      </span>
-    </label>
-    <p class="pattern-print-choice-dialog__page-range">${escapeDialogText(PATTERN_PRINT_PAGE_RANGE_NOTE)} <a class="pattern-print-choice-dialog__page-range-link" href="${PATTERN_PRINT_SELECTED_PAGES_HREF}" target="_blank" rel="noopener noreferrer" data-pattern-print-selected-pages>${escapeDialogText(PATTERN_PRINT_SELECTED_PAGES_LINK)}</a></p>
-    <p class="pattern-print-choice-dialog__reminder">${PATTERN_PRINT_CHOICE_REMINDER}</p>
-    <div class="pattern-print-choice-dialog__actions">
-      <button type="button" class="pattern-print-choice-dialog__btn" data-pattern-print-choice-cancel>Cancel</button>
-      <button type="submit" class="pattern-print-choice-dialog__btn pattern-print-choice-dialog__btn--primary" data-pattern-print-choice-confirm>Print</button>
+    <div class="pattern-print-choice-dialog__options-view" data-pattern-print-options>
+      <p class="pattern-print-choice-dialog__lead">${PATTERN_PRINT_CHOICE_PDF_NOTE}</p>
+      <div class="pattern-print-choice-dialog__options" role="radiogroup" aria-label="What to print">${options}</div>
+      <label class="pattern-print-choice-dialog__tips">
+        <input type="checkbox" name="pattern-print-hide-tips" data-pattern-print-hide-tips value="yes" checked />
+        <span>
+          <span class="pattern-print-choice-dialog__option-title">${PATTERN_PRINT_HIDE_TIPS_LABEL}</span>
+          <span class="pattern-print-choice-dialog__option-text">${PATTERN_PRINT_HIDE_TIPS_HELP}</span>
+        </span>
+      </label>
+      <p class="pattern-print-choice-dialog__page-range">${escapeDialogText(PATTERN_PRINT_PAGE_RANGE_NOTE)} <button type="button" class="pattern-print-choice-dialog__page-range-link" data-pattern-print-selected-pages>${escapeDialogText(PATTERN_PRINT_SELECTED_PAGES_LINK)}</button></p>
+      <p class="pattern-print-choice-dialog__reminder">${PATTERN_PRINT_CHOICE_REMINDER}</p>
+      <div class="pattern-print-choice-dialog__actions">
+        <button type="button" class="pattern-print-choice-dialog__btn" data-pattern-print-choice-cancel>Cancel</button>
+        <button type="submit" class="pattern-print-choice-dialog__btn pattern-print-choice-dialog__btn--primary" data-pattern-print-choice-confirm>Print</button>
+      </div>
+    </div>
+    <div class="pattern-print-choice-dialog__help" data-pattern-print-help hidden>
+      <button type="button" class="pattern-print-choice-dialog__help-back" data-pattern-print-help-back>${escapeDialogText(PATTERN_PRINT_SELECTED_PAGES_BACK)}</button>
+      <iframe class="pattern-print-choice-dialog__help-frame" data-pattern-print-help-frame title="${escapeDialogText(PATTERN_PRINT_SELECTED_PAGES_LINK)}"></iframe>
     </div>
   </form>`;
 }
@@ -59,7 +66,8 @@ function ensureDialog(): HTMLDialogElement | null {
   if (existing instanceof HTMLDialogElement) {
     if (
       existing.querySelector("[data-pattern-print-hide-tips]") &&
-      existing.querySelector("[data-pattern-print-selected-pages]")
+      existing.querySelector("[data-pattern-print-selected-pages]") &&
+      existing.querySelector("[data-pattern-print-help-back]")
     ) {
       return existing;
     }
@@ -81,6 +89,51 @@ function resetDialogDefaults(dialog: HTMLDialogElement): void {
   }
   const hideTips = dialog.querySelector<HTMLInputElement>("[data-pattern-print-hide-tips]");
   if (hideTips) hideTips.checked = true;
+  showPrintOptions(dialog);
+}
+
+function showPrintOptions(dialog: HTMLDialogElement): void {
+  const options = dialog.querySelector<HTMLElement>("[data-pattern-print-options]");
+  const help = dialog.querySelector<HTMLElement>("[data-pattern-print-help]");
+  if (options) options.hidden = false;
+  if (help) help.hidden = true;
+}
+
+function fitHelpArticle(frame: HTMLIFrameElement): void {
+  const doc = frame.contentDocument;
+  if (!doc?.head || doc.getElementById("pattern-print-help-frame-style")) return;
+  const style = doc.createElement("style");
+  style.id = "pattern-print-help-frame-style";
+  style.textContent = ".kbm-header-wrap, footer { display: none !important; }";
+  doc.head.append(style);
+  const article = doc.querySelector("[data-help-hub-article-slug]");
+  if (article instanceof HTMLElement) article.scrollIntoView({ block: "start" });
+}
+
+function showSelectedPagesHelp(dialog: HTMLDialogElement): void {
+  const options = dialog.querySelector<HTMLElement>("[data-pattern-print-options]");
+  const help = dialog.querySelector<HTMLElement>("[data-pattern-print-help]");
+  if (options) options.hidden = true;
+  if (help) help.hidden = false;
+  const frame = dialog.querySelector<HTMLIFrameElement>("[data-pattern-print-help-frame]");
+  if (frame && frame.dataset.patternPrintHelpReady !== "yes") {
+    frame.dataset.patternPrintHelpReady = "yes";
+    frame.addEventListener("load", () => fitHelpArticle(frame));
+  }
+  if (frame && frame.getAttribute("src") !== PATTERN_PRINT_SELECTED_PAGES_HREF) {
+    frame.src = PATTERN_PRINT_SELECTED_PAGES_HREF;
+  }
+  dialog.querySelector<HTMLElement>("[data-pattern-print-help-back]")?.focus();
+}
+
+function returnToPrintOptions(dialog: HTMLDialogElement): void {
+  showPrintOptions(dialog);
+  dialog.querySelector<HTMLElement>("[data-pattern-print-selected-pages]")?.focus();
+}
+
+function helpIsOpen(dialog: HTMLDialogElement): boolean {
+  const help = dialog.querySelector<HTMLElement>("[data-pattern-print-help]");
+  return Boolean(help && !help.hidden);
 }
 
 function selectedChoice(dialog: HTMLDialogElement): PatternPrintChoice {
@@ -118,6 +171,8 @@ export function openPatternPrintChoiceDialog(
       dialog.removeEventListener("cancel", onCancel);
       confirmBtn?.removeEventListener("click", onConfirm);
       cancelBtn?.removeEventListener("click", onCancelClick);
+      helpBtn?.removeEventListener("click", onHelp);
+      backBtn?.removeEventListener("click", onBack);
       if (dialog.open) dialog.close();
       triggerEl?.focus?.();
       resolve(selection);
@@ -130,12 +185,31 @@ export function openPatternPrintChoiceDialog(
       event.preventDefault();
       finish(null);
     };
-    const onCancel = () => finish(null);
+    const onHelp = (event: Event) => {
+      event.preventDefault();
+      showSelectedPagesHelp(dialog);
+    };
+    const onBack = (event: Event) => {
+      event.preventDefault();
+      returnToPrintOptions(dialog);
+    };
+    const onCancel = (event: Event) => {
+      if (helpIsOpen(dialog)) {
+        event.preventDefault();
+        returnToPrintOptions(dialog);
+        return;
+      }
+      finish(null);
+    };
     const onClose = () => finish(null);
     const confirmBtn = dialog.querySelector("[data-pattern-print-choice-confirm]");
     const cancelBtn = dialog.querySelector("[data-pattern-print-choice-cancel]");
+    const helpBtn = dialog.querySelector("[data-pattern-print-selected-pages]");
+    const backBtn = dialog.querySelector("[data-pattern-print-help-back]");
     confirmBtn?.addEventListener("click", onConfirm);
     cancelBtn?.addEventListener("click", onCancelClick);
+    helpBtn?.addEventListener("click", onHelp);
+    backBtn?.addEventListener("click", onBack);
     dialog.addEventListener("cancel", onCancel);
     dialog.addEventListener("close", onClose);
     try {

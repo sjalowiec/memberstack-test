@@ -96,14 +96,52 @@
 }
 
 .pattern-print-choice-dialog__page-range-link {
+  display: inline;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
   color: #52682d;
   text-decoration: underline;
   text-underline-offset: 0.12em;
+  cursor: pointer;
 }
 
 .pattern-print-choice-dialog__page-range-link:hover,
 .pattern-print-choice-dialog__page-range-link:focus-visible {
   color: #3e4f22;
+}
+
+.pattern-print-choice-dialog__options-view[hidden],
+.pattern-print-choice-dialog__help[hidden] {
+  display: none !important;
+}
+
+.pattern-print-choice-dialog__help {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.pattern-print-choice-dialog__help-back {
+  align-self: flex-start;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: #52682d;
+  font: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 0.12em;
+  cursor: pointer;
+}
+
+.pattern-print-choice-dialog__help-frame {
+  width: 100%;
+  height: min(62vh, 32rem);
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #fff;
 }
 
 .pattern-print-choice-dialog__actions {

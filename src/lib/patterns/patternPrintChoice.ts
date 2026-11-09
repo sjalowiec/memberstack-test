@@ -31,6 +31,8 @@ export const PATTERN_PRINT_PAGE_RANGE_NOTE =
 
 export const PATTERN_PRINT_SELECTED_PAGES_LINK = "How to print selected pages";
 
+export const PATTERN_PRINT_SELECTED_PAGES_BACK = "Back to print options";
+
 /** Same-site Help Hub article. A root-relative path stays on the site the reader is using. */
 export const PATTERN_PRINT_SELECTED_PAGES_HREF =
   "/help-hub/my-pattern-has-a-lot-of-pages-how-can-i-print-just-the-pages-i-want";

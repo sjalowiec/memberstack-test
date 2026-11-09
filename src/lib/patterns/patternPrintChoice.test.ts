@@ -7,6 +7,7 @@ import {
   PATTERN_PRINT_HIDE_TIPS_HELP,
   PATTERN_PRINT_HIDE_TIPS_LABEL,
   PATTERN_PRINT_PAGE_RANGE_NOTE,
+  PATTERN_PRINT_SELECTED_PAGES_BACK,
   PATTERN_PRINT_SELECTED_PAGES_HREF,
   PATTERN_PRINT_SELECTED_PAGES_LINK,
 } from "./patternPrintChoice";
@@ -94,6 +95,7 @@ describe("pattern print choices", () => {
       "Only need a few pages? After you click Print, choose the page numbers you want in your print window.",
     );
     expect(PATTERN_PRINT_SELECTED_PAGES_LINK).toBe("How to print selected pages");
+    expect(PATTERN_PRINT_SELECTED_PAGES_BACK).toBe("Back to print options");
     expect(PATTERN_PRINT_SELECTED_PAGES_HREF).toBe(
       "/help-hub/my-pattern-has-a-lot-of-pages-how-can-i-print-just-the-pages-i-want",
     );
@@ -114,8 +116,15 @@ describe("pattern print choices", () => {
     expect(dialog).toContain("PATTERN_PRINT_PAGE_RANGE_NOTE");
     expect(dialog).toContain("PATTERN_PRINT_SELECTED_PAGES_LINK");
     expect(dialog).toContain("PATTERN_PRINT_SELECTED_PAGES_HREF");
-    expect(dialog).toContain('target="_blank"');
+    expect(dialog).toContain("PATTERN_PRINT_SELECTED_PAGES_BACK");
     expect(dialog).toContain('data-pattern-print-selected-pages');
+    expect(dialog).toContain('data-pattern-print-help-back');
+    expect(dialog).toContain('data-pattern-print-help-frame');
+    expect(dialog).toContain("showSelectedPagesHelp(dialog)");
+    expect(dialog).toContain("returnToPrintOptions(dialog)");
+    expect(dialog).toContain('querySelector<HTMLElement>("[data-pattern-print-selected-pages]")?.focus()');
+    expect(dialog).toContain("frame.src = PATTERN_PRINT_SELECTED_PAGES_HREF");
+    expect(dialog).not.toContain('target="_blank"');
     const tipsAt = dialog.indexOf("pattern-print-choice-dialog__tips");
     const pageRangeAt = dialog.indexOf("pattern-print-choice-dialog__page-range");
     const reminderAt = dialog.indexOf("pattern-print-choice-dialog__reminder");
