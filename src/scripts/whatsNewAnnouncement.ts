@@ -1,4 +1,5 @@
 import {
+  announcementButtonLabel,
   announcementToShow,
   type WhatsNewAnnouncement,
 } from "../lib/whatsNew/announcement";
@@ -25,6 +26,7 @@ type OpenInput = {
   title: string;
   introductionHtml: string;
   href: string;
+  buttonLabel?: string;
 };
 
 let openPreviewImpl: ((input: OpenInput) => void) | null = null;
@@ -127,6 +129,7 @@ function asAnnouncement(value: unknown): WhatsNewAnnouncement | null {
     title: row.title.trim(),
     introductionHtml: row.introductionHtml,
     href: row.href,
+    buttonLabel: announcementButtonLabel(row.buttonLabel),
     audience: row.audience,
   };
 }
@@ -240,6 +243,7 @@ function wireAnnouncement(host: HTMLElement): void {
     title.textContent = input.title.trim();
     intro.innerHTML = safeIntro;
     link.href = acceptsWhatsNewAnnouncementHref(input.href) ? input.href : "/whats-new";
+    link.textContent = announcementButtonLabel(input.buttonLabel);
     link.dataset.cardId = input.id;
     if (previewNote) previewNote.hidden = mode !== "preview";
     host.dataset.preview = mode === "preview" ? "true" : "false";

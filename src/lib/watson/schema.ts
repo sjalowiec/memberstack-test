@@ -445,6 +445,7 @@ ON watson_whats_new_announcement_events (environment, card_id, event_type)`,
   audience TEXT NOT NULL DEFAULT 'everyone'
     CHECK (audience IN ('everyone', 'members')),
   expires_at TIMESTAMPTZ,
+  button_text TEXT,
   button_destination_url TEXT,
   enabled BOOLEAN NOT NULL DEFAULT FALSE,
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
@@ -454,6 +455,11 @@ ON watson_whats_new_announcement_events (environment, card_id, event_type)`,
       label: "alter watson_whats_new_popup_announcement button destination",
       sql: `ALTER TABLE watson_whats_new_popup_announcement
   ADD COLUMN IF NOT EXISTS button_destination_url TEXT`,
+    },
+    {
+      label: "alter watson_whats_new_popup_announcement button text",
+      sql: `ALTER TABLE watson_whats_new_popup_announcement
+  ADD COLUMN IF NOT EXISTS button_text TEXT`,
     },
     {
       label: "index idx_watson_whats_new_cards_public",

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  announcementButtonLabel,
   announcementToShow,
   isWhatsNewAnnouncementEligible,
   selectWhatsNewAnnouncements,
@@ -40,6 +41,9 @@ describe("What's New popup announcements", () => {
   it("links Read more to the full What's New entry", () => {
     expect(whatsNewEntryHref("card-1")).toBe("/whats-new#whats-new-entry-card-1");
     expect(WHATS_NEW_ANNOUNCEMENT_NOTE).toContain("What’s New");
+    expect(announcementButtonLabel(null)).toBe("Read more");
+    expect(announcementButtonLabel("   ")).toBe("Read more");
+    expect(announcementButtonLabel("  Read knitter stories  ")).toBe("Read knitter stories");
   });
 
   it("shows only a published, unexpired popup", () => {

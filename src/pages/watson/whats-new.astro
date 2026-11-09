@@ -2,6 +2,7 @@
 import WatsonPageShell from "../../components/watson/WatsonPageShell.astro";
 import {
   WHATS_NEW_BOARD_COLUMNS,
+  WHATS_NEW_BUTTON_TEXT_MAX_LENGTH,
   WHATS_NEW_CATEGORIES,
   WHATS_NEW_CATEGORY_LABELS,
   WHATS_NEW_DEFAULT_BUTTON_TEXT,
@@ -27,6 +28,7 @@ import {
   listWhatsNewAnnouncementActivityCounts,
   type WhatsNewAnnouncementActivityCounts,
 } from "../../lib/whatsNew/store";
+import { announcementButtonLabel } from "../../lib/whatsNew/announcement";
 import {
   formatLosAngelesDateTime,
   POPUP_ANNOUNCEMENT_AUDIENCE_LABELS,
@@ -97,6 +99,9 @@ const popupExpirationLabel = popupAnnouncement?.expiresAt
   : popupAnnouncement
     ? "No expiration"
     : "—";
+const popupButtonTextLabel = popupAnnouncement
+  ? announcementButtonLabel(popupAnnouncement.buttonText)
+  : "—";
 const popupButtonDestinationLabel = popupAnnouncement?.buttonDestinationUrl
   ? popupAnnouncement.buttonDestinationUrl
   : popupAnnouncement
@@ -197,6 +202,10 @@ function cardDataAttr(card: (typeof activeCards)[number]): string {
         <div>
           <dt>Expiration (America/Los_Angeles)</dt>
           <dd>{popupExpirationLabel}</dd>
+        </div>
+        <div>
+          <dt>Button text</dt>
+          <dd>{popupButtonTextLabel}</dd>
         </div>
         <div>
           <dt>Button destination</dt>
@@ -306,7 +315,18 @@ function cardDataAttr(card: (typeof activeCards)[number]): string {
               value={popupAnnouncement?.expiresAtLocal ?? ""}
             />
           </label>
-          <label class="watson-wn__field watson-wn__field--full">
+          <label class="watson-wn__field">
+            <span>Button text (optional)</span>
+            <input
+              class="watson__search-input"
+              name="buttonText"
+              type="text"
+              maxlength={WHATS_NEW_BUTTON_TEXT_MAX_LENGTH}
+              placeholder="Read more"
+              value={popupAnnouncement?.buttonText ?? ""}
+            />
+          </label>
+          <label class="watson-wn__field">
             <span>Button destination URL (optional)</span>
             <input
               class="watson__search-input"
@@ -320,10 +340,11 @@ function cardDataAttr(card: (typeof activeCards)[number]): string {
         </div>
         <p class="watson-wn__hint">
           Leave the expiration blank to keep the pop-up up until you disable it. It stops when that
-          Pacific time is reached. Leave the button destination blank to keep Read more linked to
-          the What's New entry. A URL here is used in Preview and on the public site. Save stores
-          this draft and keeps it enabled or disabled. Enable shows it. Disable hides it. Preview
-          does not publish it and does not change who has already closed it.
+          Pacific time is reached. Leave the button text blank to use Read more. Leave the button destination blank
+          to keep the button linked to the What's New entry. The label and the URL are independent,
+          so you can change either one. Preview and the public pop-up use the saved label and
+          destination. Save stores this draft and keeps it enabled or disabled. Enable shows it.
+          Disable hides it. Preview does not publish it and does not change who has already closed it.
         </p>
         <div class="watson-wn__actions">
           <button type="submit" class="watson__button">Save</button>

@@ -7,6 +7,7 @@ import {
   sanitizeCardDescriptionHtml,
 } from "./sanitizeBillboardHtml";
 import {
+  WHATS_NEW_BUTTON_TEXT_MAX_LENGTH,
   WHATS_NEW_INTRODUCTION_MAX_LENGTH,
   WHATS_NEW_POPUP_AUDIENCES,
   WHATS_NEW_TITLE_MAX_LENGTH,
@@ -29,6 +30,8 @@ export type WhatsNewPopupAnnouncementRow = {
   introduction: string;
   audience: string;
   expires_at: Date | string | null;
+  /** Absent until the button text column is selected. Blank means Read more. */
+  button_text?: string | null;
   /** Absent until the button destination column is selected. */
   button_destination_url?: string | null;
   enabled: boolean;
@@ -41,7 +44,9 @@ export type WhatsNewPopupAnnouncement = {
   sourceCardId: string | null;
   title: string;
   introductionHtml: string;
-  /** Optional Read more destination. Blank keeps the What's New entry link. */
+  /** Saved button label. Null means the pop-up shows Read more. */
+  buttonText: string | null;
+  /** Optional button destination. Blank keeps the What's New entry link. */
   buttonDestinationUrl: string | null;
   href: string;
   audience: WhatsNewPopupAudience;
@@ -59,13 +64,23 @@ export type ValidatedPopupAnnouncementInput = {
   audience: WhatsNewPopupAudience;
   expiresAt: string | null;
   sourceCardId: string | null;
+  /** Null when the optional label is blank. Independent of the destination. */
+  buttonText: string | null;
   buttonDestinationUrl: string | null;
   enabled: boolean;
 };
 
+/** Saved label, or null when the field is blank. Does not look at the destination. */
+export function normalizePopupButtonText(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+  const trimmed = value.trim();
+  return trimmed || null;
+}
+
 /**
- * Read more opens the button destination when one is saved.
+ * The button opens the destination when one is saved.
  * A blank destination keeps the What's New entry, or /whats-new when there is no entry.
+ * The label does not change the destination.
  */
 export function popupReadMoreHref(
   sourceCardId: string | null | undefined,
@@ -188,11 +203,13 @@ export function buildPopupAnnouncement(
   const sourceCardId = row.source_card_id?.trim() || null;
   const destination = normalizeWhatsNewDestinationUrl(row.button_destination_url ?? null);
   const buttonDestinationUrl = destination.ok ? destination.value : null;
+  const buttonText = normalizePopupButtonText(row.button_text);
   return {
     id: row.announcement_id.trim(),
     sourceCardId,
     title: row.title ?? "",
     introductionHtml: sanitizeCardDescriptionHtml(row.introduction ?? ""),
+    buttonText,
     buttonDestinationUrl,
     href: popupReadMoreHref(sourceCardId, buttonDestinationUrl),
     audience: row.audience,
@@ -284,6 +301,22 @@ export function validatePopupAnnouncementInput(
     sourceCardId = source;
   }
 
+  const buttonRaw = input.buttonText ?? input.button_text;
+  let buttonText: string | null = null;
+  if (buttonRaw != null && buttonRaw !== "") {
+    if (typeof buttonRaw !== "string") {
+      return { ok: false, error: "Button text must be a string." };
+    }
+    const trimmed = buttonRaw.trim();
+    if (trimmed.length > WHATS_NEW_BUTTON_TEXT_MAX_LENGTH) {
+      return {
+        ok: false,
+        error: `Button text must be ${WHATS_NEW_BUTTON_TEXT_MAX_LENGTH} characters or fewer.`,
+      };
+    }
+    buttonText = trimmed || null;
+  }
+
   const destination = normalizeWhatsNewDestinationUrl(
     input.buttonDestinationUrl ?? input.button_destination_url ?? null,
   );
@@ -302,6 +335,7 @@ export function validatePopupAnnouncementInput(
       audience,
       expiresAt,
       sourceCardId,
+      buttonText,
       buttonDestinationUrl: destination.value,
       enabled: Boolean(input.enabled),
     },
