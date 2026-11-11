@@ -9,7 +9,16 @@
  */
 
 import { collectInnerNeckDecreasePointsFromTimeline } from "./notationOverlaySvg";
-import { cardiganArmholeNotationYs } from "./sleevelessFrontCardiganArmholeNotationLayout";
+import {
+  armholeTopBaseline,
+  dropStackKeepingGaps,
+  notationBoxHitsSegment,
+  notationElbowLeader,
+  notationLabelBox,
+  placeUpwardStackClearOfCeiling,
+  rcBaselineGap,
+  separateBaseline,
+} from "./shapingNotationCrowdLayout";
 import { formatRcNotation } from "./sleevelessBackJapaneseNotation";
 import { isSleevelessShapedBodyShape } from "./sleevelessAlineShaping";
 import {
@@ -365,16 +374,22 @@ export function buildSleevelessFrontCardiganVNeckShapingNotationDiagramSvg(
     labels.rcReset && Math.abs(frame.neckStartY - frame.armholeStartY) < 1.5
       ? RC_RESET_GAP + Math.round(FS_RC * 1.25)
       : 0;
+  const neckRcY = separateBaseline(
+    frame.neckStartY - neckStartOffset,
+    [resetY, frame.armholeStartY, frame.shoulderY],
+    rcBaselineGap(FS_RC),
+    { min: 16, max: VB_H - 16 },
+  );
   parts.push(
     rcText(
       gutterX,
-      frame.neckStartY - neckStartOffset,
+      neckRcY,
       labels.rcNeckStart,
       "neck-start-rc",
       ` data-rc="${escapeXml(labels.rcNeckStart)}" data-garment-rc="${fmtNum(neckStartGarmentRc)}"`,
     ),
   );
-  const shareTopRcGuide = Math.abs(frame.neckStartY - neckStartOffset - frame.shoulderY) < FS_RC;
+  const shareTopRcGuide = Math.abs(neckRcY - frame.shoulderY) < FS_RC;
   if (labels.rcShoulderStart && !shareTopRcGuide) {
     parts.push(
       rcText(
@@ -439,8 +454,16 @@ export function buildSleevelessFrontCardiganVNeckShapingNotationDiagramSvg(
     })),
   ].filter((entry) => entry.line.length > 0);
   const armholeBoY = frame.armholeStartY;
-  const armholeYs = cardiganArmholeNotationYs(armholeBoY, armholeStack.length);
-  const armholeOutlineX = armholeYs.reduce(
+  const armholePlaced = placeUpwardStackClearOfCeiling({
+    count: armholeStack.length,
+    startY: armholeBoY,
+    gap: NECK_NOTATION_GAP,
+    topBaseline: armholeTopBaseline(frame.shoulderY, FS_NOTATION),
+    belowY: frame.armholeStartY + NECK_NOTATION_GAP,
+  });
+  const armholeYs = armholePlaced.ys;
+  const armholeUpYs = armholeYs.filter((y, index) => index === 0 || y <= armholeBoY + 0.5);
+  const armholeOutlineX = armholeUpYs.reduce(
     (maxX, y) => Math.max(maxX, rightArmholeOutlineXAtY(frame, y)),
     frame.afterRight,
   );
@@ -458,6 +481,17 @@ export function buildSleevelessFrontCardiganVNeckShapingNotationDiagramSvg(
       `<text data-role="${entry.role}" data-notation="${escapeXml(entry.notation)}" data-label-zone="armhole" data-stack-order="${i}" x="${fmtNum(armholeLabelX)}" y="${fmtNum(y)}" text-anchor="start" fill="${MUTED}" ${textFont(FS_NOTATION)}>${escapeXml(entry.line)}</text>`,
     );
   }
+  if (armholePlaced.firstOverflow >= 0) {
+    parts.push(
+      notationElbowLeader({
+        role: "armhole-label-leader",
+        edgeX: frame.afterRight,
+        edgeY: frame.lastArmholeY,
+        labelX: armholeLabelX,
+        labelY: armholeYs[armholePlaced.firstOverflow]!,
+      }),
+    );
+  }
 
   const neckLines = labels.neckShaping.split("\n").filter(Boolean);
   const vBandTop = Math.min(frame.neckStartY, frame.neckCornerY);
@@ -468,19 +502,67 @@ export function buildSleevelessFrontCardiganVNeckShapingNotationDiagramSvg(
   const vEdgeX = vNeckEdgeXAtY(frame, neckMidY);
   const rcSafeX = gutterX + RC_GUTTER_MIN_CLEARANCE;
   const neckLabelX = clamp(Math.max(vEdgeX + V_EDGE_GAP, rcSafeX), rcSafeX, ARMHOLE_LABEL_SAFE_MAX_X);
+  const preliminaryNeckYs = stackYs(neckLastBaseline, neckLines.length, NECK_NOTATION_GAP, "up");
+  const vNeckLineFits = (line: string, baseline: number) => {
+    if (baseline <= frame.neckCornerY + 2) return false;
+    const box = notationLabelBox(neckLabelX, baseline, line, FS_NOTATION, "start");
+    const samples = [baseline - FS_NOTATION * 0.35, baseline];
+    for (const y of samples) {
+      if (y >= frame.neckStartY || y <= frame.neckCornerY) continue;
+      const edge = vNeckEdgeXAtY(frame, y);
+      if ((box.left + box.right) / 2 < edge + 2) return false;
+      const slopeX = rightShoulderOutlineXAtY(frame, y);
+      const inset = (box.right - box.left) * 0.2;
+      if (slopeX > box.left + inset && slopeX < box.right - inset) return false;
+    }
+    if (
+      notationBoxHitsSegment(box, frame.neckRight, frame.neckCornerY, frame.afterRight, frame.shoulderY, 6) ||
+      notationBoxHitsSegment(box, frame.neckLeft, frame.shoulderY, frame.afterRight, frame.shoulderY, 6) ||
+      notationBoxHitsSegment(box, frame.neckLeft, frame.neckStartY, frame.neckRight, frame.neckCornerY, 2) ||
+      notationBoxHitsSegment(box, frame.neckLeft, frame.neckStartY, frame.neckRight, frame.neckStartY, 4) ||
+      notationBoxHitsSegment(box, frame.neckLeft, frame.armholeStartY, frame.right, frame.armholeStartY, 8)
+    ) {
+      return false;
+    }
+    return true;
+  };
+  const neckYs = dropStackKeepingGaps({
+    ys: preliminaryNeckYs,
+    gap: NECK_NOTATION_GAP,
+    limit: Math.min(VB_H - 28, frame.armholeStartY + NECK_NOTATION_GAP * 3),
+    fits: (index, baseline) => vNeckLineFits(neckLines[index] ?? "", baseline),
+  });
+  const inBand = neckYs.filter((y) => y <= frame.neckStartY + 0.5);
+  const neckDrawnLast = inBand.length > 0 ? Math.max(...inBand) : neckYs.length > 0 ? Math.max(...neckYs) : neckLastBaseline;
+  const neckTopY = neckYs.length > 0 ? Math.min(...neckYs) : frame.neckStartY;
+  const neckLeaderEdgeY = Math.min(frame.neckStartY, Math.max(neckTopY, frame.neckCornerY + 1));
+  const neckLeaderEdgeX = vNeckEdgeXAtY(frame, neckLeaderEdgeY);
   parts.push(
-    `<g data-role="neck-label-zone" data-x="${fmtNum(neckLabelX)}" data-y="${fmtNum(neckLastBaseline)}" data-v-edge-x="${fmtNum(vEdgeX)}" data-rc-safe-x="${fmtNum(rcSafeX)}" data-placement="cardigan-v"></g>`,
+    `<g data-role="neck-label-zone" data-x="${fmtNum(neckLabelX)}" data-y="${fmtNum(neckDrawnLast)}" data-v-edge-x="${fmtNum(vEdgeX)}" data-rc-safe-x="${fmtNum(rcSafeX)}" data-placement="cardigan-v"></g>`,
   );
-  parts.push(
-    drawNotationStack(
-      neckLines,
-      neckLabelX,
-      neckLastBaseline,
-      `data-role="neck-shaping" data-label-zone="neck" data-notation="${escapeXml(labels.neckShaping)}"`,
-      "start",
-      NECK_NOTATION_GAP,
-    ),
-  );
+  const neckBottomY = neckYs.length > 0 ? Math.max(...neckYs) : frame.neckStartY;
+  if (
+    neckLines.length > 0 &&
+    (neckBottomY > frame.neckStartY + 4 ||
+      neckTopY >= frame.neckStartY - 2 ||
+      neckLabelX - neckLeaderEdgeX > 22)
+  ) {
+    parts.push(
+      notationElbowLeader({
+        role: "neck-label-leader",
+        edgeX: neckLeaderEdgeX,
+        edgeY: neckLeaderEdgeY,
+        labelX: neckLabelX,
+        labelY: neckTopY,
+      }),
+    );
+  }
+  for (const [i, line] of neckLines.entries()) {
+    const y = neckYs[i] ?? neckDrawnLast;
+    parts.push(
+      `<text data-role="neck-shaping" data-label-zone="neck" data-notation="${escapeXml(labels.neckShaping)}" data-stack-order="${i}" x="${fmtNum(neckLabelX)}" y="${fmtNum(y)}" text-anchor="start" fill="${MUTED}" ${textFont(FS_NOTATION)}>${escapeXml(line)}</text>`,
+    );
+  }
 
   const shLines = labels.shoulderShaping.split("\n").filter(Boolean);
   const shAnchorX = frame.afterRight + SHOULDER_SLOPE_T * (frame.neckRight - frame.afterRight);

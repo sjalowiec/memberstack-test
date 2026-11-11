@@ -31,6 +31,7 @@ import {
   type StitchDecreasePoint,
 } from "./shapingNotationCompress";
 import { collectCompleteShoulderShapingPoints } from "./shoulderShapingNotation";
+import { rcBaselineGap, separateBaseline } from "./shapingNotationCrowdLayout";
 import type { SleevelessBackPatternResult } from "./sleevelessPatternOutput";
 
 const VB_W = 400;
@@ -773,10 +774,16 @@ export function buildSleevelessFrontVNeckShapingNotationDiagramSvg(
     labels.rcReset && Math.abs(frame.neckStartY - frame.armholeStartY) < 1.5
       ? RC_RESET_GAP + Math.round(FS_RC * 1.25)
       : 0;
+  const neckRcY = separateBaseline(
+    frame.neckStartY - neckStartOffset,
+    [resetY, frame.armholeStartY, frame.shoulderY],
+    rcBaselineGap(FS_RC),
+    { min: 16, max: VB_H - 16 },
+  );
   parts.push(
     rcText(
       gutterX,
-      frame.neckStartY - neckStartOffset,
+      neckRcY,
       labels.rcNeckStart,
       "neck-start-rc",
       ` data-rc="${escapeXml(labels.rcNeckStart)}" data-garment-rc="${fmtNum(neckStartGarmentRc)}"`,

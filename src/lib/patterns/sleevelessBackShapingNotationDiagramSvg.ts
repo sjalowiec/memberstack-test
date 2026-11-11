@@ -37,6 +37,13 @@ import {
   type StitchDecreasePoint,
 } from "./shapingNotationCompress";
 import { collectCompleteShoulderShapingPoints } from "./shoulderShapingNotation";
+import {
+  armholeTopBaseline,
+  notationElbowLeader,
+  placeUpwardStackClearOfCeiling,
+  rcBaselineGap,
+  separateBaseline,
+} from "./shapingNotationCrowdLayout";
 import type { SleevelessBackPatternResult } from "./sleevelessPatternOutput";
 
 const VB_W = SLEEVELESS_BACK_GARMENT_VB_W;
@@ -444,7 +451,12 @@ export function buildSleevelessBackShapingNotationDiagramSvg(
       : Math.abs(frame.neckStartY - frame.shoulderY) < 1.5
         ? RC_RESET_GAP
         : 0;
-  const neckRcY = frame.neckStartY + neckStartOffset;
+  const neckRcY = separateBaseline(
+    frame.neckStartY + neckStartOffset,
+    [resetY, frame.armholeStartY],
+    rcBaselineGap(FS_RC),
+    { min: 16, max: VB_H - 16 },
+  );
   const shoulderRcY = frame.shoulderY;
   /**
    * Neck start and shoulder start are consecutive garment rows on a shallow Back.
@@ -524,10 +536,29 @@ export function buildSleevelessBackShapingNotationDiagramSvg(
       line,
     })),
   ].filter((entry) => entry.line.length > 0);
+  const armholePlaced = placeUpwardStackClearOfCeiling({
+    count: armholeStack.length,
+    startY: armholeBoY,
+    gap: ARMHOLE_NOTATION_GAP,
+    topBaseline: armholeTopBaseline(frame.shoulderY, FS_NOTATION),
+    belowY: frame.armholeStartY + ARMHOLE_NOTATION_GAP,
+  });
+  const armholeYs = armholePlaced.ys;
   for (const [i, entry] of armholeStack.entries()) {
-    const y = armholeBoY - i * ARMHOLE_NOTATION_GAP;
+    const y = armholeYs[i]!;
     parts.push(
       `<text data-role="${entry.role}" data-notation="${escapeXml(entry.notation)}" data-label-zone="armhole" data-stack-order="${i}" x="${fmtNum(armholeLabelX)}" y="${fmtNum(y)}" text-anchor="start" fill="${MUTED}" ${textFont(FS_NOTATION)}>${escapeXml(entry.line)}</text>`,
+    );
+  }
+  if (armholePlaced.firstOverflow >= 0) {
+    parts.push(
+      notationElbowLeader({
+        role: "armhole-label-leader",
+        edgeX: frame.afterRight,
+        edgeY: frame.lastArmholeY,
+        labelX: armholeLabelX,
+        labelY: armholeYs[armholePlaced.firstOverflow]!,
+      }),
     );
   }
 

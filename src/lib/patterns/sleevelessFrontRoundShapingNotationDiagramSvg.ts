@@ -56,6 +56,13 @@ import {
   collectCompleteShoulderShapingPoints,
   shoulderShapingNotationLinesFromTimeline,
 } from "./shoulderShapingNotation";
+import {
+  armholeTopBaseline,
+  notationElbowLeader,
+  placeUpwardStackClearOfCeiling,
+  rcBaselineGap,
+  separateBaseline,
+} from "./shapingNotationCrowdLayout";
 
 const VB_W = 400;
 const VB_H = 480;
@@ -791,10 +798,16 @@ export function buildSleevelessFrontRoundShapingNotationDiagramSvg(
       : Math.abs(frame.neckStartY - frame.shoulderY) < 1.5
         ? RC_RESET_GAP
         : 0;
+  const neckRcY = separateBaseline(
+    frame.neckStartY + neckStartOffset,
+    [resetY, frame.armholeStartY, frame.shoulderY],
+    rcBaselineGap(FS_RC),
+    { min: 16, max: VB_H - 16 },
+  );
   parts.push(
     rcText(
       gutterX,
-      frame.neckStartY + neckStartOffset,
+      neckRcY,
       labels.rcNeckStart,
       "neck-start-rc",
       ` data-rc="${escapeXml(labels.rcNeckStart)}" data-garment-rc="${fmtNum(neckStartGarmentRc)}"`,
@@ -864,8 +877,16 @@ export function buildSleevelessFrontRoundShapingNotationDiagramSvg(
     })),
   ].filter((entry) => entry.line.length > 0);
   const armholeBoY = frame.armholeStartY - 14;
-  const armholeYs = armholeStack.map((_, i) => armholeBoY - i * ARMHOLE_NOTATION_GAP);
-  const armholeOutlineX = armholeYs.reduce(
+  const armholePlaced = placeUpwardStackClearOfCeiling({
+    count: armholeStack.length,
+    startY: armholeBoY,
+    gap: ARMHOLE_NOTATION_GAP,
+    topBaseline: armholeTopBaseline(frame.shoulderY, FS_NOTATION),
+    belowY: frame.armholeStartY + ARMHOLE_NOTATION_GAP,
+  });
+  const armholeYs = armholePlaced.ys;
+  const armholeUpYs = armholeYs.filter((y, index) => index === 0 || y <= armholeBoY + 0.5);
+  const armholeOutlineX = armholeUpYs.reduce(
     (maxX, y) => Math.max(maxX, rightArmholeOutlineXAtY(frame, y)),
     frame.afterRight,
   );
@@ -881,6 +902,17 @@ export function buildSleevelessFrontRoundShapingNotationDiagramSvg(
     const y = armholeYs[i]!;
     parts.push(
       `<text data-role="${entry.role}" data-notation="${escapeXml(entry.notation)}" data-label-zone="armhole" data-stack-order="${i}" x="${fmtNum(armholeLabelX)}" y="${fmtNum(y)}" text-anchor="start" fill="${MUTED}" ${textFont(FS_NOTATION)}>${escapeXml(entry.line)}</text>`,
+    );
+  }
+  if (armholePlaced.firstOverflow >= 0) {
+    parts.push(
+      notationElbowLeader({
+        role: "armhole-label-leader",
+        edgeX: frame.afterRight,
+        edgeY: frame.lastArmholeY,
+        labelX: armholeLabelX,
+        labelY: armholeYs[armholePlaced.firstOverflow]!,
+      }),
     );
   }
 
