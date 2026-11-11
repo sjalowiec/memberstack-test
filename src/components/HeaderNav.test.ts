@@ -257,6 +257,24 @@ describe("Header green-bar search button replaces terracotta strip", () => {
     expect(headerSource).toContain("lastSearchTrigger");
     expect(headerSource).toContain("restore.focus");
     expect(headerSource).toContain('querySelectorAll("[data-open-search-modal]")');
+    expect(headerSource).not.toContain("menuDrawerOpen");
+  });
+
+  it("places one terracotta search banner on the shared open-modal path", () => {
+    const bannerStart = headerSource.indexOf('class="kbm-site-search-banner"');
+    expect(bannerStart).toBeGreaterThan(-1);
+    const banner = headerSource.slice(bannerStart, bannerStart + 900);
+    expect(banner).toContain("data-open-search-modal");
+    expect(banner).toContain('data-testid="site-search-banner"');
+    expect(banner).toContain("Looking for something? Search all of Knit It Now");
+    expect(banner).toContain('aria-hidden="true"');
+    expect(banner).toContain('class="kbm-site-search-banner__icon"');
+    expect(headerSource).toContain("showSiteSearchBanner");
+    expect(headerSource).toContain('pathname.startsWith("/admin/")');
+    expect(headerSource).toMatch(
+      /@media print\s*\{[\s\S]*\.kbm-site-search-banner\s*\{[\s\S]*display:\s*none/,
+    );
+    expect(headerSource).not.toContain("kbm-site-search-banner__dismiss");
   });
 
   it("keeps visible hover and focus styles on the green-bar search button", () => {
