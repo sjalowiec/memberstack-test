@@ -12,6 +12,47 @@ const CHART_SELECTOR = [
   "[data-heel-toe-shaping-map]",
 ].join(", ");
 
+const SET_IN_SLEEVE_PRINT_DIAGRAM_PANEL =
+  ".set-in-sleeve-pattern-page #pattern-content [data-pattern-diagram-panel]";
+
+export type SetInSleevePrintDiagramPanel = {
+  hasAttribute(name: string): boolean;
+  removeAttribute(name: string): void;
+  setAttribute(name: string, value: string): void;
+};
+
+/**
+ * The inactive diagram tab uses the hidden attribute. Browser print keeps that
+ * panel out even when print CSS sets display:block. Charts and the complete
+ * pattern need both drawings, so the attribute is cleared until printing ends.
+ */
+export function revealHiddenPrintDiagramPanels(
+  panels: Iterable<SetInSleevePrintDiagramPanel>,
+): () => void {
+  const restore: Array<() => void> = [];
+  for (const panel of panels) {
+    if (!panel.hasAttribute("hidden")) continue;
+    panel.removeAttribute("hidden");
+    restore.push(() => panel.setAttribute("hidden", ""));
+  }
+  return () => {
+    for (const undo of restore.reverse()) undo();
+  };
+}
+
+function revealSetInSleevePrintDiagrams(
+  doc: Document,
+  choice: PatternPrintChoice,
+  cleanups: Array<() => void>,
+): void {
+  if (choice !== "charts" && choice !== "both") return;
+  if (!doc.querySelector(".set-in-sleeve-pattern-page")) return;
+  const restore = revealHiddenPrintDiagramPanels(
+    doc.querySelectorAll<HTMLElement>(SET_IN_SLEEVE_PRINT_DIAGRAM_PANEL),
+  );
+  cleanups.push(restore);
+}
+
 function chartRoots(root: ParentNode): HTMLElement[] {
   const all = [...root.querySelectorAll<HTMLElement>(CHART_SELECTOR)];
   return all.filter((element) => !all.some((other) => other !== element && other.contains(element)));
@@ -176,6 +217,7 @@ export function applyPatternPrintLayout(
   const includeTips = options?.includeTips === true && choice !== "charts";
   root.dataset.patternPrintIncludeTips = includeTips ? "true" : "false";
   const cleanups: Array<() => void> = [];
+  revealSetInSleevePrintDiagrams(doc, choice, cleanups);
   if (includeTips) {
     doc.querySelectorAll<HTMLDetailsElement>(".pattern-tip details").forEach((details) => {
       if (details.closest(".pattern-tip.no-print, .pattern-tips-control-box")) return;

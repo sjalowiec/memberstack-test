@@ -52,7 +52,7 @@ import "../../../../styles/patterns/pattern-errata-notice.css";
 >
   <PatternPrintFooter footerBottomLeftExtra=" · KnitItNow.com/set-in-sleeve" />
   <SleevelessPatternMemberGate>
-  <main class="wizard-page sleeveless-pattern-page sleeveless-workspace-subpage pattern-app-shell" data-pattern-print-skip-modal>
+  <main class="wizard-page sleeveless-pattern-page set-in-sleeve-pattern-page sleeveless-workspace-subpage pattern-app-shell" data-pattern-print-skip-modal>
     <div id="sleeveless-pattern-top" class="wizard-container scroll-mt-[96px]">
       <div class="calculator-card hat-builder-inputs">
         <SavedPatternHeader part="actions">
@@ -389,12 +389,26 @@ import "../../../../styles/patterns/pattern-errata-notice.css";
     }
 
     :global(#pattern-content .sleeveless-pattern-diagram-tabs__panel),
-    :global(#pattern-content .sleeveless-pattern-diagram-tabs__panel[hidden]) {
+    :global(#pattern-content .sleeveless-pattern-diagram-tabs__panel[hidden]),
+    :global(html[data-pattern-print-choice="charts"] .set-in-sleeve-pattern-page #pattern-content [data-pattern-diagram-panel="sts-rows"]),
+    :global(html[data-pattern-print-choice="charts"] .set-in-sleeve-pattern-page #pattern-content [data-pattern-diagram-panel="shaping-notation"]),
+    :global(html[data-pattern-print-choice="both"] .set-in-sleeve-pattern-page #pattern-content [data-pattern-diagram-panel="sts-rows"]),
+    :global(html[data-pattern-print-choice="both"] .set-in-sleeve-pattern-page #pattern-content [data-pattern-diagram-panel="shaping-notation"]) {
       display: block !important;
+      visibility: visible !important;
       margin: 0 !important;
       min-width: 0 !important;
+      height: auto !important;
+      max-height: none !important;
+      overflow: visible !important;
       break-inside: avoid !important;
       page-break-inside: avoid !important;
+    }
+
+    :global(html[data-pattern-print-choice="instructions"] .set-in-sleeve-pattern-page #pattern-content .sleeveless-piece-split__diagram),
+    :global(html[data-pattern-print-choice="instructions"] .set-in-sleeve-pattern-page #pattern-content .pattern-layout__sidebar),
+    :global(html[data-pattern-print-choice="instructions"] .set-in-sleeve-pattern-page #pattern-content .sleeveless-pattern-diagram-tabs) {
+      display: none !important;
     }
 
     :global(#pattern-content .pattern-layout.pattern-layout--garment-columns),
