@@ -320,6 +320,16 @@
     return summary;
   }
 
+  // Optional booking offer for /choose-a-machine only. The reference chooser
+  // does not set data-booking-url, so its results stay email-only.
+  function bookingOfferHtml() {
+    const bookingUrl = (mount.dataset.bookingUrl || "").trim();
+    if (!bookingUrl) return "";
+    return `
+      <p class="wizard-booking">Prefer to talk it through? <a class="wizard-booking-link" href="${escapeHtml(bookingUrl)}" target="_blank" rel="noopener noreferrer">Book a call with Sue</a></p>
+    `;
+  }
+
   // Build the "Contact Sue" mailto href dynamically from the current wizard state.
   // Subject + body are URL-encoded with encodeURIComponent.
   function buildContactMailto() {
@@ -615,6 +625,20 @@
       .wizard-cta-btn:hover {
         opacity: 0.9;
       }
+      .wizard-booking {
+        margin: 0.875rem 0 0;
+        font-size: 1rem;
+        line-height: 1.5;
+        color: #374151;
+      }
+      .wizard-booking-link {
+        color: ${COLORS.green};
+        font-weight: 600;
+        text-decoration: underline;
+      }
+      .wizard-booking-link:hover {
+        opacity: 0.8;
+      }
       .wizard-results-section {
         margin-bottom: 1.5rem;
       }
@@ -824,6 +848,7 @@
       </div>
 
       <a href="${escapeHtml(mailtoHref)}" class="wizard-cta-btn">${ICONS.messageCircle} Contact Sue</a>
+      ${bookingOfferHtml()}
     `;
 
     const cardInner = SHOW_MACHINE_RECOMMENDATIONS ? recommendationsInner : contactInner;

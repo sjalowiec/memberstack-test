@@ -78,7 +78,8 @@ const newToMkCards = [
   },
   {
     title: "Choose a Knitting Machine",
-    href: "/reference/machines/choose",
+    href: "/choose-a-machine",
+    favoriteContentId: "/reference/machines/choose",
     description:
       "Not sure which machine is right for you? Answer a few simple questions to discover the machine type and features that best fit your goals.",
     testid: "ref-card-new-to-mk-choose-a-knitting-machine",
@@ -88,6 +89,13 @@ const newToMkCards = [
     href: "/reference/buying-a-used-knitting-machine/",
     description: "Know what to ask, what to check, and what to budget before you buy.",
     testid: "ref-card-new-to-mk-buying-a-used-knitting-machine",
+  },
+  {
+    title: "How Difficult Is It to Learn?",
+    href: "/reference/how-difficult-is-it-to-learn/",
+    description:
+      "Curious about machine knitting? Find out what to practice first and how to work up to your first project.",
+    testid: "ref-card-new-to-mk-how-difficult-is-it-to-learn",
   },
 ];
 ---
@@ -104,7 +112,8 @@ const newToMkCards = [
    
       <div class="ref-cards">
         {newToMkCards.map((item) => {
-          const contentId = normalizeFavoriteHref(item.href) || item.href;
+          const savedId = "favoriteContentId" in item ? item.favoriteContentId : item.href;
+          const contentId = normalizeFavoriteHref(savedId) || item.href;
           return (
             <a
               href={item.href}
@@ -131,7 +140,7 @@ const newToMkCards = [
         <a href="/manuals" class="reference-quick-links__item">Knitting Machine Manuals</a>
         <a href="/troubleshoot" class="reference-quick-links__item">Troubleshooting</a>
         <a href="/reference/repairs" class="reference-quick-links__item">Machine Repairs</a>
-        <a href="/reference/machines/choose" class="reference-quick-links__item">Choose a Machine</a>
+        <a href="/choose-a-machine" class="reference-quick-links__item">Choose a Machine</a>
         <a href="/reference/machines" class="reference-quick-links__item">Machine Database</a>
         <a href="/reference/bookshelf" class="reference-quick-links__item">Bookshelf</a>
         <a href="/reference/knitting-machine-table" class="reference-quick-links__item">Knitting Machine Table</a>
