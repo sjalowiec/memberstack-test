@@ -167,8 +167,10 @@ describe("pattern print choices", () => {
     const frontPrint = printParagraphs(result.frontDisplayRows);
     expect(backPrint).not.toMatch(/checklist/i);
     expect(frontPrint).not.toMatch(/checklist/i);
-    expect(backPrint).toMatch(/carriage on the (left|right)/i);
-    expect(frontPrint).toMatch(/carriage on the (left|right)/i);
+    expect(backPrint).toContain("COR means carriage on the right.");
+    expect(frontPrint).toContain("COL means carriage on the left.");
+    expect(backPrint.match(/COR means carriage on the right/g)).toHaveLength(1);
+    expect(frontPrint.match(/COL means carriage on the left/g)).toHaveLength(1);
     expect(backPrint).toMatch(/RC: \d{3}/);
     expect(frontPrint).toMatch(/RC: \d{3}/);
     const printHtml = [

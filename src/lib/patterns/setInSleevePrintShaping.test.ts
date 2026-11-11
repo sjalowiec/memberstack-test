@@ -10,6 +10,9 @@ import { withSetInSleeveConstructionAuthored } from "./setInSleeveConstructionId
 import { generateSetInSleevePattern, SET_IN_LEFT_FRONT_REVERSE_TITLE, SET_IN_RIGHT_BACK_REVERSE_TITLE } from "./setInSleevePatternOutput";
 import {
   SET_IN_HELD_NECKLINE_FINISH_SENTENCE,
+  SET_IN_PRINT_CARRIAGE_DEFINITION,
+  SET_IN_PRINT_INTERVENING_ROWS,
+  condenseChecklistRows,
   setInBackPrintShapingOptions,
   setInFrontPrintShapingOptions,
   setInNecklinePrintShaping,
@@ -91,31 +94,37 @@ function visibleText(rows: readonly { kind: string; paragraphs?: string[]; trust
     .join("\n");
 }
 
-function sliceFor(paragraphs: readonly string[], side: "first" | "second"): string[] {
-  const secondAt = paragraphs.findIndex((line) => line === "Second shoulder." || line === "Second side.");
-  if (side === "first") return secondAt < 0 ? [...paragraphs] : paragraphs.slice(0, secondAt);
-  return secondAt < 0 ? [] : paragraphs.slice(secondAt + 1);
+function rowRcs(row: ActiveSideInstructionTableRow): number[] {
+  const end = row.rcEnd !== undefined && row.rcEnd > row.rc ? row.rcEnd : row.rc;
+  const rcs: number[] = [];
+  for (let rc = row.rc; rc <= end; rc += 1) rcs.push(rc);
+  return rcs;
 }
 
-function assertChecklistRows(paragraphs: readonly string[], rows: readonly ActiveSideInstructionTableRow[]): void {
-  for (const row of rows) {
-    const rc = formatRcColon(row.rc);
-    const sentence = paragraphs.find((line) => line.includes(rc));
-    expect(sentence, rc).toBeTruthy();
-    const line = sentence ?? "";
-    if (row.rcEnd !== undefined && row.rcEnd !== row.rc) {
-      expect(line).toContain(String(row.rcEnd).padStart(3, "0"));
-    }
-    if (/^right$/i.test(row.carriagePosition)) expect(line).toMatch(/carriage on the right/i);
-    if (/^left$/i.test(row.carriagePosition)) expect(line).toMatch(/carriage on the left/i);
-    if (/alternating/i.test(row.carriagePosition)) expect(line).toMatch(/alternating/i);
-    expect(line.toLowerCase()).toContain(row.action.trim().replace(/\.$/, "").toLowerCase());
-    const display = row.stitchesRemainingDisplay?.trim();
-    if (display) expect(line).toContain(display.replace(/\.$/, ""));
-    else expect(line).toContain(String(Math.max(0, Math.floor(row.stitchesRemaining))));
-    if (row.passNote) expect(line).toContain(row.passNote.trim());
-    if (row.action !== NECK_SHOULDER_PRINT_KNIT_EVEN_LABEL) {
-      expect(line).toMatch(/hold|bind off|decrease|scrap|return|knit/i);
+function assertAccountsForEveryRow(rows: readonly ActiveSideInstructionTableRow[]): void {
+  const condensed = condenseChecklistRows(rows);
+  const shaping = rows
+    .filter((row) => row.action !== NECK_SHOULDER_PRINT_KNIT_EVEN_LABEL)
+    .flatMap(rowRcs)
+    .sort((a, b) => a - b);
+  const knit = rows
+    .filter((row) => row.action === NECK_SHOULDER_PRINT_KNIT_EVEN_LABEL)
+    .flatMap(rowRcs)
+    .sort((a, b) => a - b);
+  expect([...condensed.shapingRcs].sort((a, b) => a - b)).toEqual(shaping);
+  const knitAccounted = [...condensed.interveningKnitRcs, ...condensed.plainKnitRcs].sort((a, b) => a - b);
+  expect(knitAccounted).toEqual(knit);
+  expect(new Set(condensed.shapingRcs).size).toBe(condensed.shapingRcs.length);
+  expect(new Set(knitAccounted).size).toBe(knitAccounted.length);
+  const covered = new Set<number>();
+  for (const group of condensed.groups) {
+    expect(condensed.lines).toContain(group.line);
+    expect(group.line).toContain(group.carriage);
+    expect(group.line).toContain(formatRcColon(group.rcs[0]!));
+    if (group.times > 1) expect(group.line).toContain(`${group.times} times`);
+    for (const rc of group.rcs) {
+      expect(covered.has(rc)).toBe(false);
+      covered.add(rc);
     }
   }
 }
@@ -138,8 +147,22 @@ describe("set-in instructions-only neckline shaping", () => {
       expect(back).toContain(SET_IN_HELD_NECKLINE_FINISH_SENTENCE);
     }
     expect(front.some((line) => /Second shoulder\.|Second side\./.test(line))).toBe(true);
-    expect(front.join("\n")).toMatch(/carriage on the (left|right)/);
-    expect(back.join("\n")).toMatch(/Bind off|Hold|Decrease|Scrap off/);
+    expect(back.filter((line) => line === SET_IN_PRINT_CARRIAGE_DEFINITION)).toHaveLength(1);
+    expect(front.filter((line) => line === SET_IN_PRINT_CARRIAGE_DEFINITION)).toHaveLength(1);
+    expect(back.join("\n")).toMatch(/COR|COL/);
+    expect(front.join("\n")).toMatch(/\bCOR\b/);
+    expect(front.join("\n")).toContain(SET_IN_PRINT_INTERVENING_ROWS);
+    expect(back.join("\n")).toContain(
+      "bind off or hold 4 stitches at the shoulder edge every other row 4 times",
+    );
+    expect(back.join("\n")).toContain("hold 3 stitches at the neck edge every other row 2 times");
+    expect(back.join("\n")).toContain("At the same time, at RC: 053, COL, hold 4 stitches at the neck edge.");
+    expect(back.join("\n")).not.toContain("hold 3 stitches at the neck edge every other row 3 times");
+    expect(front.join("\n")).toContain("decrease 1 stitch at the neck edge every other row 6 times");
+    expect(front.join("\n")).toContain("Knit in pattern to RC: 047.");
+    expect(front.join("\n")).toContain(
+      "At the same time, beginning at RC: 019, COL, bind off 3 stitches at the neck edge every other row 2 times.",
+    );
     const backShaping = setInNecklinePrintShaping(
       result.neckShoulderShapingChart,
       result.debug.armholeStartRow,
@@ -159,10 +182,11 @@ describe("set-in instructions-only neckline shaping", () => {
     );
     expect(back).toEqual(backShaping.paragraphs);
     expect(front).toEqual(frontShaping.paragraphs);
-    assertChecklistRows(sliceFor(back, "first"), backShaping.firstRows);
-    assertChecklistRows(sliceFor(back, "second"), backShaping.secondRows);
-    assertChecklistRows(sliceFor(front, "first"), frontShaping.firstRows);
-    assertChecklistRows(sliceFor(front, "second"), frontShaping.secondRows);
+    assertAccountsForEveryRow(backShaping.firstRows);
+    assertAccountsForEveryRow(backShaping.secondRows);
+    assertAccountsForEveryRow(frontShaping.firstRows);
+    assertAccountsForEveryRow(frontShaping.secondRows);
+    expect(condenseChecklistRows(frontShaping.firstRows).lines.length).toBeLessThan(frontShaping.firstRows.length);
     expect(backShaping.firstRows.some((row) => row.action !== NECK_SHOULDER_PRINT_KNIT_EVEN_LABEL)).toBe(true);
     expect(frontShaping.firstRows.some((row) => row.action !== NECK_SHOULDER_PRINT_KNIT_EVEN_LABEL)).toBe(true);
 
@@ -205,9 +229,14 @@ describe("set-in instructions-only neckline shaping", () => {
     expect(front.join("\n")).not.toMatch(/checklist/i);
     expect(back).not.toContain("Second shoulder.");
     expect(front).not.toContain("Second shoulder.");
-    expect(back.join("\n")).toMatch(/carriage on the (left|right)/);
-    expect(front.join("\n")).toMatch(/carriage on the (left|right)/);
-    expect(front.join("\n")).toMatch(/Bind off|Hold|Decrease/);
+    expect(back.filter((line) => line === SET_IN_PRINT_CARRIAGE_DEFINITION)).toHaveLength(1);
+    expect(front.filter((line) => line === SET_IN_PRINT_CARRIAGE_DEFINITION)).toHaveLength(1);
+    expect(back.join("\n")).toMatch(/\bCOR\b/);
+    expect(front.join("\n")).toMatch(/\bCOL\b/);
+    expect(front.join("\n")).toContain("decrease 1 stitch at the neck edge every 4 rows 5 times");
+    expect(back.join("\n")).toContain("bind off 14 stitches at the neck edge");
+    expect(back.join("\n")).toContain("decrease 2 stitches at the neck edge every other row 5 times");
+    expect(back.join("\n")).toContain("At the same time, at RC: 075, COL, bind off 10 stitches at the neck edge.");
     expect(back.join("\n")).not.toContain(SET_IN_HELD_NECKLINE_FINISH_SENTENCE);
     const backShaping = setInNecklinePrintShaping(
       result.neckShoulderShapingChart,
@@ -221,8 +250,8 @@ describe("set-in instructions-only neckline shaping", () => {
     );
     expect(back).toEqual(backShaping.paragraphs);
     expect(front).toEqual(frontShaping.paragraphs);
-    assertChecklistRows(back, backShaping.firstRows);
-    assertChecklistRows(front, frontShaping.firstRows);
+    assertAccountsForEveryRow(backShaping.firstRows);
+    assertAccountsForEveryRow(frontShaping.firstRows);
     expect(backShaping.secondRows).toEqual([]);
     expect(frontShaping.secondRows).toEqual([]);
 
