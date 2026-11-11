@@ -109,7 +109,7 @@
   }
 
   body.page--pattern-workspace .sleeveless-pattern-page .sleeveless-pattern-inpage-nav {
-    top: calc(var(--kbm-env-banner-h, 0px) + var(--header-offset, 64px) + 2px);
+    top: calc(var(--kbm-env-banner-h, 0px) + var(--header-offset, 112px) + 2px);
   }
 
   body.page--pattern-workspace .sleeveless-pattern-page img,

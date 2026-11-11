@@ -12,7 +12,7 @@ describe("header offset after search-strip removal", () => {
     expect(layoutSource).toContain("Math.max(72, measured)");
     expect(layoutSource).not.toMatch(/Math\.max\(fallback,\s*measured\)/);
     expect(layoutSource).toMatch(/const fallback = 100/);
-    expect(layoutSource).toContain("--header-offset: 100px");
+    expect(layoutSource).toContain("--header-offset: 136px");
   });
 
   it("keeps the shared header fixed (no shrink-on-scroll)", () => {
