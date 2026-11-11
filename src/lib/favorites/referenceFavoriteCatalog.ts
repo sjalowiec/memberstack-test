@@ -1,12 +1,12 @@
 /**
  * Catalog of favoritable reference destinations (hub cards + linked pages).
- * content_id is the normalized site path.
+ * content_id is the saved favorite path. href is the page that opens.
  */
 
 import { normalizeFavoriteHref } from "./favoriteHref";
 import type { FavoriteItemMeta } from "./favoriteCatalog";
 
-type RefItem = { title: string; href: string };
+type RefItem = { title: string; href: string; contentId?: string };
 
 /** Keep in sync with cards on /reference (and related popular links). */
 const RAW_REFERENCE_ITEMS: RefItem[] = [
@@ -14,7 +14,11 @@ const RAW_REFERENCE_ITEMS: RefItem[] = [
     title: "Wisdom from Machine Knitters",
     href: "/start-here/wisdom-from-machine-knitters",
   },
-  { title: "Choose a Knitting Machine", href: "/reference/machines/choose" },
+  {
+    title: "Choose a Knitting Machine",
+    href: "/choose-a-machine",
+    contentId: "/reference/machines/choose",
+  },
   { title: "Glossary", href: "/glossary" },
   { title: "Abbreviations", href: "/reference/abbreviations" },
   { title: "Machine Database", href: "/reference/machines" },
@@ -29,6 +33,10 @@ const RAW_REFERENCE_ITEMS: RefItem[] = [
   {
     title: "Buying a Used Knitting Machine",
     href: "/reference/buying-a-used-knitting-machine",
+  },
+  {
+    title: "How Difficult Is It to Learn?",
+    href: "/reference/how-difficult-is-it-to-learn",
   },
   { title: "Machine Knitter's Bookshelf", href: "/reference/bookshelf" },
   {
@@ -55,9 +63,10 @@ export function buildReferenceFavoriteCatalog(
   const byId = new Map<string, FavoriteItemMeta>();
   for (const item of [...RAW_REFERENCE_ITEMS, ...extras]) {
     const href = normalizeFavoriteHref(item.href);
-    if (!href) continue;
-    byId.set(href, {
-      content_id: href,
+    const contentId = normalizeFavoriteHref(item.contentId || item.href);
+    if (!href || !contentId) continue;
+    byId.set(contentId, {
+      content_id: contentId,
       title: item.title.trim() || href,
       href,
     });

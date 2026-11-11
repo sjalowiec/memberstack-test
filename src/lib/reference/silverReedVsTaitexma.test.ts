@@ -105,7 +105,7 @@ describe("silver-reed-vs-taitexma reference page", () => {
   });
 
   it("links to valid internal routes", () => {
-    expect(pageSource).toContain('href="/reference/machines/choose"');
+    expect(pageSource).toContain('href="/choose-a-machine"');
     expect(pageSource).toContain('href="/glossary/needle-pitch"');
     expect(pageSource).toContain('href="/shop/machines"');
     expect(pageSource).toContain('href="/designaknit"');

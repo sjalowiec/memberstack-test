@@ -1,0 +1,115 @@
+---
+/**
+ * Shared knitting-machine chooser: title, intro, and the wf-machine-choice wizard.
+ * Used by /choose-a-machine and /reference/machines/choose.
+ * The favorite id stays on the original reference path so existing saved stars still match.
+ */
+import "../../styles/wizard.css";
+import "../../styles/favorites.css";
+import FavoriteStar from "../favorites/FavoriteStar.astro";
+import FavoritesRuntime from "../favorites/FavoritesRuntime.astro";
+
+interface Props {
+  /** Optional results-page booking URL. Omitted on the reference chooser. */
+  bookingUrl?: string;
+  /** Card title level. The reference page uses h1; the create page uses h2 under its own page heading. */
+  titleTag?: "h1" | "h2";
+}
+
+const { bookingUrl = "", titleTag = "h1" } = Astro.props;
+const chooseTitle = "Choose a Knitting Machine";
+const chooseFavoriteId = "/reference/machines/choose";
+const trimmedBookingUrl = bookingUrl.trim();
+---
+
+<div class="header-panel">
+  <img src="/images/machines/knitting-machine-and-ribber.webp" alt="Machine Choice Wizard" class="intro-icon">
+  <div class="header-right">
+    <div class="favorite-title-row">
+      {titleTag === "h2" ? (
+        <h2 class="header-title">{chooseTitle}</h2>
+      ) : (
+        <h1 class="header-title">{chooseTitle}</h1>
+      )}
+      <FavoriteStar
+        contentType="reference"
+        contentId={chooseFavoriteId}
+        title={chooseTitle}
+      />
+    </div>
+    <p class="intro-tagline">Answer a few questions to discover which knitting machine control types and features fit your goals.</p>
+  </div>
+  <FavoritesRuntime contentType="reference" />
+</div>
+
+<div class="wizard-container">
+  <div
+    id="wizard-wf-machine-choice"
+    data-testid="wizard-container"
+    data-booking-url={trimmedBookingUrl || undefined}
+  ></div>
+</div>
+
+<script type="module" src="/scripts/wizards/wf-machine-choice.js"></script>
+
+<style>
+  .header-panel {
+    background-color: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(82, 104, 45, 0.1);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+  }
+
+  .intro-icon {
+    width: 120px;
+    height: 120px;
+    flex-shrink: 0;
+    object-fit: cover;
+    border-radius: 12px;
+  }
+
+  .header-right {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    min-width: 0;
+  }
+
+  .header-title {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #52682D;
+  }
+
+  .intro-tagline {
+    margin: 0;
+    font-size: 1rem;
+    color: #2c3a57;
+    line-height: 1.6;
+  }
+
+  .wizard-container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 1rem;
+  }
+
+  @media (max-width: 768px) {
+    .header-panel {
+      flex-direction: column;
+      text-align: center;
+    }
+
+    .intro-icon {
+      width: 100px;
+      height: 100px;
+    }
+  }
+</style>

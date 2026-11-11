@@ -1,0 +1,106 @@
+---
+export const prerender = true;
+
+import Layout from "../../layouts/Layout.astro";
+import ReferencePageShell from "../../components/ReferencePageShell.astro";
+
+const PAGE_H1 = "How Difficult Is It to Learn?";
+const SEO_TITLE = "How Difficult Is It to Learn? | Knit it Now";
+const META_DESCRIPTION =
+  "Curious about machine knitting? Find out what to practice first and how to work up to your first project.";
+const CANONICAL_URL = "https://knititnow.com/reference/how-difficult-is-it-to-learn";
+const GETTING_STARTED_HREF = "/getting-started-guide/";
+---
+
+<Layout title={SEO_TITLE} description={META_DESCRIPTION} bodyClass="page--tight-header">
+  <Fragment slot="head">
+    <link rel="canonical" href={CANONICAL_URL} />
+  </Fragment>
+
+  <ReferencePageShell
+    title={PAGE_H1}
+    backHref="/reference"
+    backLabel="Back to References"
+  >
+    <article class="learn-difficulty">
+      <p class="learn-difficulty__intro">
+        There’s a learning curve, but you can knit your first piece of fabric while you’re still learning what all those levers do. Start with a few rows of plain knitting. That’s enough to get a feel for how the machine works.
+      </p>
+
+      <section aria-labelledby="try-first">
+        <h2 id="try-first">What should I try first?</h2>
+        <p>
+          Start with a small practice piece. Learn how to get the yarn onto the needles, move the carriage back and forth, and take the knitting off the machine. Then do it again. Each time, you’ll get a better feel for what the yarn and needles are doing.
+        </p>
+        <p>
+          If you drop a stitch or the whole piece comes off the needles, welcome to machine knitting! It happens. That little practice piece is exactly where you want to learn how to start again.
+        </p>
+      </section>
+
+      <section aria-labelledby="hand-knit">
+        <h2 id="hand-knit">Do I need to know how to hand knit?</h2>
+        <p>
+          You can start either way. If you already hand knit, you’ll recognize things like stitches, rows, and gauge. If you’re brand new, you can learn those as you go. Either way, moving the carriage and getting a feel for the machine will be new.
+        </p>
+      </section>
+
+      <section aria-labelledby="wearable">
+        <h2 id="wearable">When can I make something I’ll actually wear?</h2>
+        <p>
+          Once you can knit a small piece and take it off the machine, try a simple cowl made from a rectangle. You’ll get practice casting on, knitting evenly, and finishing a piece. When you’re ready to try a sweater, practice one new skill at a time on a small piece of knitting. A neckline is a lot easier to try when there’s no sweater attached!
+        </p>
+        <p>
+          Already have a machine? The <a href={GETTING_STARTED_HREF}>Getting Started Guide</a> will help you check it over and knit your first practice swatch.
+        </p>
+      </section>
+    </article>
+  </ReferencePageShell>
+</Layout>
+
+<style>
+  .learn-difficulty {
+    margin-top: 0.15rem;
+    color: #243015;
+    font-size: 1.05rem;
+    line-height: 1.6;
+  }
+
+  .learn-difficulty__intro {
+    margin: 0 0 1.25rem;
+    max-width: 40rem;
+    font-size: 1.12rem;
+    line-height: 1.55;
+  }
+
+  .learn-difficulty section + section {
+    margin-top: 1.75rem;
+  }
+
+  .learn-difficulty h2 {
+    margin: 0 0 0.75rem;
+    font-size: 1.35rem;
+    line-height: 1.25;
+    font-weight: 650;
+    color: #3f4b35;
+  }
+
+  .learn-difficulty p {
+    margin: 0 0 0.9rem;
+    max-width: 40rem;
+  }
+
+  .learn-difficulty section p:last-child {
+    margin-bottom: 0;
+  }
+
+  .learn-difficulty a {
+    color: var(--kbm-green, #52682d);
+    font-weight: 700;
+  }
+
+  @media (max-width: 640px) {
+    .learn-difficulty__intro {
+      font-size: 1.05rem;
+    }
+  }
+</style>

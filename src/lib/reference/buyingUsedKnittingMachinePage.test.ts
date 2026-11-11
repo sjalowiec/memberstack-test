@@ -39,7 +39,9 @@ describe("buying a used knitting machine reference page", () => {
   });
 
   it("links out to the machine chooser without changing that page", () => {
-    expect(pageSource).toContain('const CHOOSE_MACHINE_HREF = "/reference/machines/choose"');
+    expect(pageSource).toContain('const CHOOSE_MACHINE_HREF = "/choose-a-machine"');
+    expect(favoriteCatalogSource).toContain('href: "/choose-a-machine"');
+    expect(favoriteCatalogSource).toContain('contentId: "/reference/machines/choose"');
     expect(pageSource).toContain("Get Help Choosing a Machine");
     expect(pageSource).toContain(
       "Answer a few questions to share what you’re looking for with Sue.",
