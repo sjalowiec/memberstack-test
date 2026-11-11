@@ -1,119 +1,34 @@
 ---
 import Layout from "../../../layouts/Layout.astro";
-import "../../../styles/wizard.css";
-import "../../../styles/favorites.css";
 import WizardBackLink from "../../../components/wizards/WizardBackLink.astro";
 import ProgressNav from "../../../components/ProgressNav.astro";
-import FavoriteStar from "../../../components/favorites/FavoriteStar.astro";
-import FavoritesRuntime from "../../../components/favorites/FavoritesRuntime.astro";
+import MachineChooser from "../../../components/machines/MachineChooser.astro";
 import { gettingStartedItems } from "../../../lib/gettingStartedNav";
 
-const chooseTitle = "Choose a Knitting Machine";
+// "Need a Machine?" now opens /choose-a-machine, so this page is not that step.
+const progressCurrent = "";
 ---
 
-<Layout 
-  title="Choose a Knitting Machine | Knit it Now" 
+<Layout
+  title="Choose a Knitting Machine | Knit it Now"
   description="Answer a few questions to discover which knitting machine control types and features fit your goals."
   toolPrintTitle="Choose a Knitting Machine"
 >
+  <div class="wizard-page">
+    <ProgressNav current={progressCurrent} items={gettingStartedItems} />
+    <WizardBackLink fallback="/reference" label="? Back to Reference" />
+    <MachineChooser />
+  </div>
+</Layout>
 
 <style>
-.wizard-page {
-  padding-top: 1rem;
-  padding-bottom: 3rem;
-  background: var(--page-bg);
-  max-width: 1400px;
-  margin: 0 auto;
-  padding-left: 1.5rem;
-  padding-right: 1.5rem;
-}
-
-.header-panel {
-  background-color: #ffffff;
-  border-radius: 16px;
-  box-shadow: 0 4px 20px rgba(82, 104, 45, 0.1);
-  padding: 1.5rem;
-  margin-bottom: 1.5rem;
-  display: flex;
-  align-items: center;
-  gap: 1.5rem;
-  flex-wrap: wrap;
-}
-
-.intro-icon {
-  width: 120px;
-  height: 120px;
-  flex-shrink: 0;
-  object-fit: cover;
-  border-radius: 12px;
-}
-
-.header-right {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  min-width: 0;
-}
-
-.header-title {
-  margin: 0;
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: #52682D;
-}
-
-.intro-tagline {
-  margin: 0;
-  font-size: 1rem;
-  color: #2c3a57;
-  line-height: 1.6;
-}
-
-.wizard-container {
-  max-width: 900px;
-  margin: 0 auto;
-  padding: 0 1rem;
-}
-
-@media (max-width: 768px) {
-  .header-panel {
-    flex-direction: column;
-    text-align: center;
+  .wizard-page {
+    padding-top: 1rem;
+    padding-bottom: 3rem;
+    background: var(--page-bg);
+    max-width: 1400px;
+    margin: 0 auto;
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
   }
-  
-  .intro-icon {
-    width: 100px;
-    height: 100px;
-  }
-}
 </style>
-
-<div class="wizard-page">
-  <ProgressNav current="need-machine" items={gettingStartedItems} />
-  <WizardBackLink fallback="/reference" label="? Back to Reference" />
-  
-  <div class="header-panel">
-    <img src="/images/machines/knitting-machine-and-ribber.webp" alt="Machine Choice Wizard" class="intro-icon">
-    <div class="header-right">
-      <div class="favorite-title-row">
-        <h1 class="header-title">{chooseTitle}</h1>
-        <FavoriteStar
-          contentType="reference"
-          contentId="/reference/machines/choose"
-          title={chooseTitle}
-        />
-      </div>
-      <p class="intro-tagline">Answer a few questions to discover which knitting machine control types and features fit your goals.</p>
-    </div>
-    <FavoritesRuntime contentType="reference" />
-  </div>
-
-  <div class="wizard-container">
-    <div id="wizard-wf-machine-choice" data-testid="wizard-container"></div>
-  </div>
-</div>
-
-<script type="module" src="/scripts/wizards/wf-machine-choice.js"></script>
-
-</Layout>
