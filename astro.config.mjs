@@ -47,6 +47,14 @@ export default defineConfig({
           // Netlify dev emulation writes per-request temp dirs + function bundles here; watching it
           // leaks file handles on Windows (EMFILE). Not app source, so safe to ignore.
           "**/.netlify/**",
+          // Nested Claude worktrees copy public images and src. Watching them opens the same
+          // directories once per file and exhausts the Windows file-handle limit (EMFILE).
+          "**/.claude/**",
+          // Static image trees are served as files. Watching every image opens one handle per file.
+          "**/public/images/**",
+          "**/public/challenge/**",
+          "**/public/stitch-patterns/**",
+          "**/public/downloads/**",
           "**/src/data/legacy_kin/cleaned/backups/**",
           // Editor saves write these files. Watching them restarts the dev server mid-save
           // and reloads the editor before the save response can confirm persistence.
