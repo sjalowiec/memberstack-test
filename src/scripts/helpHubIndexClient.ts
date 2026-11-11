@@ -1,8 +1,10 @@
 /** In-page Help Hub landing search. This does not call Pagefind or site search. */
 
 import { reportHelpHubAction } from "../lib/analytics/helpHubGa";
+import { helpHubArticlePath } from "../lib/helpHub/articleLink";
 import { queueSearchCommit } from "../lib/searchActivityClient";
 import { rankSearchText } from "../lib/searchSynonyms";
+import { initHelpHubCopyLinks } from "./helpHubCopyLink";
 
 export function helpHubEntryVisibleForQuery(searchText: string, query: string): boolean {
   const q = query.trim();
@@ -166,6 +168,62 @@ function articleTitle(entry: HTMLDetailsElement): string {
   return text || "Help Hub";
 }
 
+/** Stored slug for this row. The address never uses the visible title. */
+function articleSlug(entry: HTMLDetailsElement): string {
+  const row = entry.closest("[data-help-hub-entry]");
+  if (!(row instanceof HTMLElement)) return "";
+  return (row.dataset.helpHubSlug ?? "").trim();
+}
+
+function readingSlugFromHistory(): string {
+  try {
+    const slug = history.state?.slug;
+    return typeof slug === "string" ? slug.trim() : "";
+  } catch {
+    return "";
+  }
+}
+
+function articleEntryForSlug(root: ParentNode, slug: string): HTMLDetailsElement | null {
+  const want = slug.trim().toLowerCase();
+  if (!want) return null;
+  const entries = root.querySelectorAll("[data-help-hub-entry]");
+  for (const node of entries) {
+    if (!(node instanceof HTMLElement)) continue;
+    if (node.closest("[data-help-hub-favorites]")) continue;
+    if ((node.dataset.helpHubSlug ?? "").trim().toLowerCase() !== want) continue;
+    const details = node.querySelector("details[data-help-hub-answer]");
+    if (details instanceof HTMLDetailsElement) return details;
+  }
+  return null;
+}
+
+function setArticleCopySlug(root: ParentNode, slug: string): void {
+  root.querySelectorAll("[data-help-hub-copy-link]").forEach((node) => {
+    if (!(node instanceof HTMLButtonElement)) return;
+    if (slug) node.dataset.helpHubCopySlug = slug;
+    else delete node.dataset.helpHubCopySlug;
+  });
+}
+
+/** Put the permanent article path in the address bar without leaving the hub. */
+function rememberArticleAddress(slug: string): void {
+  const path = helpHubArticlePath(slug);
+  const state = { [READING_HISTORY_KEY]: true, ...(slug ? { slug } : {}) };
+  try {
+    if ("scrollRestoration" in history) history.scrollRestoration = "manual";
+    if (readingHistoryActive()) {
+      if (path) history.replaceState(state, "", path);
+      else history.replaceState(state, "");
+      return;
+    }
+    if (path) history.pushState(state, "", path);
+    else history.pushState(state, "");
+  } catch {
+    /* History can reject the extra entry; the in-page Back button still closes. */
+  }
+}
+
 function articlePanel(root: ParentNode): HTMLElement | null {
   const panel = root.querySelector("[data-help-hub-article-panel]");
   return panel instanceof HTMLElement ? panel : null;
@@ -207,15 +265,10 @@ export function openHelpHubArticle(root: ParentNode, entry: HTMLDetailsElement):
   const scrollY = window.scrollY;
   const parent = entry.parentNode;
   const next = entry.nextSibling;
+  const slug = articleSlug(entry);
   heading.textContent = articleTitle(entry);
-  if (!readingHistoryActive()) {
-    try {
-      if ("scrollRestoration" in history) history.scrollRestoration = "manual";
-      history.pushState({ [READING_HISTORY_KEY]: true }, "");
-    } catch {
-      /* History can reject the extra entry; the in-page Back button still closes. */
-    }
-  }
+  rememberArticleAddress(slug);
+  setArticleCopySlug(root, slug);
   slot.replaceChildren(entry);
   panel.hidden = false;
   if (root instanceof HTMLElement) root.classList.add("is-reading");
@@ -255,6 +308,7 @@ export function closeHelpHubArticle(
   const heading = articleHeading(root);
   if (panel) panel.hidden = true;
   if (heading) heading.textContent = "";
+  setArticleCopySlug(root, "");
   if (root instanceof HTMLElement) root.classList.remove("is-reading");
 
   const restoreFocus = options.restoreFocus !== false;
@@ -276,7 +330,10 @@ function onAnswerToggle(root: ParentNode, entry: HTMLDetailsElement): void {
   if (ignoreAnswerToggle) return;
   if (!entry.open) {
     stopHelpHubInlineMedia(entry);
-    if (readingSession?.entry === entry) closeHelpHubArticle(root);
+    if (readingSession?.entry === entry) {
+      if (readingHistoryActive()) requestCloseHelpHubArticle(root);
+      else closeHelpHubArticle(root);
+    }
     return;
   }
   if (!suppressAnswerOpenTracking) {
@@ -351,11 +408,23 @@ export function initHelpHubIndex(root: ParentNode): void {
     button.addEventListener("click", () => requestCloseHelpHubArticle(root));
   });
 
+  initHelpHubCopyLinks(root);
+
   window.addEventListener("popstate", () => {
     if (readingHistoryActive()) {
-      if (!readingSession && lastOpenedEntry && !lastOpenedEntry.open) {
+      const slug = readingSlugFromHistory();
+      const entry =
+        (lastOpenedEntry &&
+        slug &&
+        articleSlug(lastOpenedEntry).toLowerCase() === slug.toLowerCase()
+          ? lastOpenedEntry
+          : null) ||
+        articleEntryForSlug(root, slug) ||
+        lastOpenedEntry;
+      if (entry && readingSession?.entry !== entry) {
         suppressAnswerOpenTracking = true;
-        lastOpenedEntry.open = true;
+        if (!entry.open) entry.open = true;
+        else openHelpHubArticle(root, entry);
         suppressAnswerOpenTracking = false;
       }
       return;

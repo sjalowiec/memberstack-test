@@ -5,6 +5,7 @@ import FavoritesRuntime from "../../components/favorites/FavoritesRuntime.astro"
 import FavoriteStar from "../../components/favorites/FavoriteStar.astro";
 import "../../components/talk-bubbles.css";
 import "../../styles/favorites.css";
+import HelpHubCopyLink from "../../components/help-hub/HelpHubCopyLink.astro";
 import HelpHubTipContent from "../../components/help-hub/HelpHubTipContent.astro";
 import { loadPublicHelpHubTips } from "../../lib/helpHub/loadTips";
 import { loadPublicHelpHubCategories } from "../../lib/helpHub/loadCategories";
@@ -352,6 +353,7 @@ if (debugHelpHubTip) {
           <button type="button" class="help-hub-article-back" data-help-hub-article-back>
             Back to Help Hub questions
           </button>
+          <HelpHubCopyLink />
         </p>
         <h2 id="help-hub-article-title" class="help-hub-article-panel__title" data-help-hub-article-title tabindex="-1"></h2>
         <div data-help-hub-article-slot></div>
@@ -1323,6 +1325,10 @@ if (debugHelpHubTip) {
     }
 
     .help-hub-article-panel__nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      align-items: center;
       margin: 0;
     }
 

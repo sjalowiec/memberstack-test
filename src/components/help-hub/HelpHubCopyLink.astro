@@ -1,0 +1,69 @@
+---
+interface Props {
+  /** Stored article slug. The index sets this when an article opens. */
+  slug?: string;
+}
+
+const slug = typeof Astro.props.slug === "string" ? Astro.props.slug.trim() : "";
+---
+
+<span class="help-hub-copy-link-wrap">
+  <button
+    type="button"
+    class="help-hub-copy-link"
+    data-help-hub-copy-link
+    data-help-hub-copy-slug={slug || undefined}
+  >
+    Copy link
+  </button>
+  <span class="help-hub-copy-link__status" data-help-hub-copy-status aria-live="polite"></span>
+</span>
+
+<style>
+  .help-hub-copy-link-wrap {
+    display: inline-flex;
+  }
+
+  .help-hub-copy-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 2.75rem;
+    padding: 0.55rem 1.05rem;
+    border: 1px solid rgba(82, 104, 45, 0.35);
+    border-radius: 999px;
+    background: #fff;
+    color: var(--kbm-green, #52682d);
+    font: inherit;
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1.2;
+    cursor: pointer;
+  }
+
+  .help-hub-copy-link:hover,
+  .help-hub-copy-link:focus-visible {
+    background: #f3f6ee;
+    outline: 2px solid var(--kbm-green, #52682d);
+    outline-offset: 2px;
+  }
+
+  .help-hub-copy-link__status {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  @media (max-width: 768px) {
+    .help-hub-copy-link-wrap,
+    .help-hub-copy-link {
+      width: 100%;
+    }
+  }
+</style>
