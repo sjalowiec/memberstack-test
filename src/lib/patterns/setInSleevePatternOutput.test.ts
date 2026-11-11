@@ -11,6 +11,11 @@ import {
   resolvePatternSystemFromProject,
 } from "./patternSystemId";
 import { buildSetInSleeveNeedleCapacityHtml, centerSeamHalfStitches } from "./centerSeamConstruction";
+import {
+  SET_IN_SLEEVE_PATTERN_LANDING_CANONICAL_URL,
+  SET_IN_SLEEVE_PATTERN_LANDING_PATH,
+  SET_IN_SLEEVE_PATTERN_PRINT_ORIGIN_URL,
+} from "./setInSleevePatternLanding";
 import { computeDefaultMeasurementsFromChartRow } from "./sleevelessExpressSizeChartClient";
 import type { ChartRow } from "./sleevelessExpressSizeChartTypes";
 import {
@@ -542,7 +547,16 @@ describe("set-in sleeve saved patterns, print, and membership", () => {
     expect(patternPage).toContain('data-express-construction="set-in-sleeve"');
     expect(patternPage).toContain("data-pattern-print-skip-modal");
     expect(patternPage).toContain("PatternPrintFooter");
-    expect(patternPage).toContain("KnitItNow.com/set-in-sleeve");
+    expect(SET_IN_SLEEVE_PATTERN_LANDING_PATH).toBe("/patterns/set-in-sleeve");
+    expect(SET_IN_SLEEVE_PATTERN_LANDING_CANONICAL_URL).toBe(
+      "https://knititnow.com/patterns/set-in-sleeve",
+    );
+    expect(SET_IN_SLEEVE_PATTERN_PRINT_ORIGIN_URL).toBe("KnitItNow.com/patterns/set-in-sleeve");
+    expect(patternPage).toContain(
+      "footerBottomLeftExtra={` · ${SET_IN_SLEEVE_PATTERN_PRINT_ORIGIN_URL}`}",
+    );
+    expect(patternPage).toContain("printOriginUrl={SET_IN_SLEEVE_PATTERN_PRINT_ORIGIN_URL}");
+    expect(patternPage).not.toContain("KnitItNow.com/set-in-sleeve");
     expect(readFileSync("src/pages/patterns/set-in-sleeve/builder.astro", "utf8")).toContain(
       'data-express-review-href="/patterns/set-in-sleeve/pattern/?generated=1"',
     );

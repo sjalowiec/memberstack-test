@@ -10,6 +10,9 @@ import { buildSetInSleeveBuilderNewPatternHref } from "./patternStorage";
 export const SET_IN_SLEEVE_PATTERN_LANDING_PATH = "/patterns/set-in-sleeve";
 export const SET_IN_SLEEVE_PATTERN_LANDING_CANONICAL_URL =
   "https://knititnow.com/patterns/set-in-sleeve";
+/** Printed footer text. Same public path as the landing page, without a scheme. */
+export const SET_IN_SLEEVE_PATTERN_PRINT_ORIGIN_URL =
+  `KnitItNow.com${SET_IN_SLEEVE_PATTERN_LANDING_PATH}`;
 
 export const SET_IN_SLEEVE_PATTERN_LANDING_IMAGE_SRC = "/images/patterns/set-in.png";
 

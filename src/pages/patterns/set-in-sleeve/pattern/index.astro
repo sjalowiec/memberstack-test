@@ -21,7 +21,10 @@ import {
   AVAILABLE_NEEDLES_LABEL,
   AVAILABLE_NEEDLES_REQUIRED_MESSAGE,
 } from "../../../../lib/patterns/sleevelessExpressAvailableNeedles";
-import { SET_IN_SLEEVE_PATTERN_LANDING_IMAGE_SRC } from "../../../../lib/patterns/setInSleevePatternLanding";
+import {
+  SET_IN_SLEEVE_PATTERN_LANDING_IMAGE_SRC,
+  SET_IN_SLEEVE_PATTERN_PRINT_ORIGIN_URL,
+} from "../../../../lib/patterns/setInSleevePatternLanding";
 
 import "../../../../styles/ns-shaping-chart.css";
 import "../../../../styles/shaping-map.css";
@@ -50,7 +53,7 @@ import "../../../../styles/patterns/pattern-errata-notice.css";
   bodyClass="pattern-print-global-footer"
   patternWorkspace={true}
 >
-  <PatternPrintFooter footerBottomLeftExtra=" · KnitItNow.com/set-in-sleeve" />
+  <PatternPrintFooter footerBottomLeftExtra={` · ${SET_IN_SLEEVE_PATTERN_PRINT_ORIGIN_URL}`} />
   <SleevelessPatternMemberGate>
   <main class="wizard-page sleeveless-pattern-page set-in-sleeve-pattern-page sleeveless-workspace-subpage pattern-app-shell" data-pattern-print-skip-modal>
     <div id="sleeveless-pattern-top" class="wizard-container scroll-mt-[96px]">
@@ -109,7 +112,7 @@ import "../../../../styles/patterns/pattern-errata-notice.css";
               tipsStorageKey="sleeveless-show-tips"
               tipsScopeSelector="#sleeveless-pattern-tips-scope"
               printOriginLabel="Created with the Knit It Now Set-In Sleeve Pattern Builder"
-              printOriginUrl="KnitItNow.com/set-in-sleeve"
+              printOriginUrl={SET_IN_SLEEVE_PATTERN_PRINT_ORIGIN_URL}
             >
               <PatternPrintPersonalization slot="print-personalization">
                 <div slot="print-summary" class="sg-pattern-print-at-a-glance" data-sg-pattern-print-at-a-glance>
