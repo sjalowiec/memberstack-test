@@ -75,6 +75,13 @@ describe("Help Hub public SSR", () => {
     expect(indexSource).toContain("data-help-hub-article-panel");
     expect(indexSource).toContain("Back to Help Hub questions");
     expect(indexSource).toContain("data-help-hub-article-title");
+    expect(indexSource).toContain("<HelpHubCopyLink />");
+    const copyLinkSource = readFileSync(
+      join(here, "..", "..", "components", "help-hub", "HelpHubCopyLink.astro"),
+      "utf8",
+    );
+    expect(copyLinkSource).toContain("Copy link");
+    expect(copyLinkSource).toContain("data-help-hub-copy-link");
   });
 
   it("shows one published question and quick answer below search and above New in the Help Hub", () => {
@@ -183,6 +190,8 @@ describe("Help Hub public SSR", () => {
     expect(tipPageSource).toContain("FavoritesRuntime");
     expect(tipPageSource).toContain("initHelpHubArticleReturn");
     expect(tipPageSource).toContain("data-help-hub-article-slug");
+    expect(tipPageSource).toContain("<HelpHubCopyLink slug={articleSlug} />");
+    expect(tipPageSource).toContain("initHelpHubCopyLinks");
     expect(tipContentSource).toContain("help-hub-article-question");
     expect(tipContentSource).toContain("helpHubFavoriteContentId");
     const titleAt = tipContentSource.indexOf("help-hub-article-question");

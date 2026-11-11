@@ -62,6 +62,10 @@ describe("Help Hub index client", () => {
     expect(clientSource).toContain('history.scrollRestoration = "manual"');
     expect(clientSource).toContain("preventScroll: true");
     expect(clientSource).toContain("helpHubReading");
+    expect(clientSource).toContain("helpHubArticlePath");
+    expect(clientSource).toContain("rememberArticleAddress");
+    expect(clientSource).toContain("history.replaceState");
+    expect(clientSource).toContain("initHelpHubCopyLinks");
     expect(clientSource).toContain("popstate");
     expect(clientSource).toContain('reportHelpHubAction("discovery_open", slug, "accordion")');
     expect(clientSource).toContain("a.help-hub-question-permalink");

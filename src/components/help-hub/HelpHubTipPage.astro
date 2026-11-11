@@ -3,6 +3,7 @@ import Layout from "../../layouts/Layout.astro";
 import PageBackLink from "../common/PageBackLink.astro";
 import PageHead from "../PageHead.astro";
 import FavoritesRuntime from "../favorites/FavoritesRuntime.astro";
+import HelpHubCopyLink from "./HelpHubCopyLink.astro";
 import HelpHubTipContent from "./HelpHubTipContent.astro";
 import { loadMergedVideoCatalog } from "../../lib/videos/videoCatalogStore";
 import {
@@ -62,15 +63,24 @@ const articleSlug = !preview && typeof tip.slug === "string" ? tip.slug.trim() :
       </p>
     )}
     <PageBackLink href="/help-hub" text="Back to Help Hub" />
+    {articleSlug && (
+      <div class="help-hub-article-copy">
+        <HelpHubCopyLink slug={articleSlug} />
+      </div>
+    )}
     <HelpHubTipContent tip={tip} lessons={lessons} videos={catalogVideos} markSections={preview} />
     <FavoritesRuntime contentType="reference" />
   </section>
   <script>
     import { bootHelpHubMemberLessonGates } from "../../scripts/helpHubMemberLessonGateClient";
+    import { initHelpHubCopyLinks } from "../../scripts/helpHubCopyLink";
     import { initHelpHubArticleReturn } from "../../scripts/helpHubLandingReturnClient";
 
     const article = document.querySelector("[data-help-hub-article-slug]");
-    if (article instanceof HTMLElement) initHelpHubArticleReturn(article);
+    if (article instanceof HTMLElement) {
+      initHelpHubArticleReturn(article);
+      initHelpHubCopyLinks(article);
+    }
 
     if (document.readyState === "loading") {
       document.addEventListener("DOMContentLoaded", bootHelpHubMemberLessonGates);
@@ -96,5 +106,9 @@ const articleSlug = !preview && typeof tip.slug === "string" ? tip.slug.trim() :
     max-width: min(1180px, 100%);
     margin-left: auto;
     margin-right: auto;
+  }
+
+  .help-hub-article-copy {
+    margin: -0.35rem 0 1.25rem;
   }
 </style>
