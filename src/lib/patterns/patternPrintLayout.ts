@@ -23,8 +23,8 @@ export type SetInSleevePrintDiagramPanel = {
 
 /**
  * The inactive diagram tab uses the hidden attribute. Browser print keeps that
- * panel out even when print CSS sets display:block. Charts and the complete
- * pattern need both drawings, so the attribute is cleared until printing ends.
+ * panel out even when print CSS sets display:block. Every Set-In Sleeve print
+ * choice needs both drawings, so the attribute is cleared until printing ends.
  */
 export function revealHiddenPrintDiagramPanels(
   panels: Iterable<SetInSleevePrintDiagramPanel>,
@@ -45,7 +45,7 @@ function revealSetInSleevePrintDiagrams(
   choice: PatternPrintChoice,
   cleanups: Array<() => void>,
 ): void {
-  if (choice !== "charts" && choice !== "both") return;
+  if (choice !== "instructions" && choice !== "charts" && choice !== "both") return;
   if (!doc.querySelector(".set-in-sleeve-pattern-page")) return;
   const restore = revealHiddenPrintDiagramPanels(
     doc.querySelectorAll<HTMLElement>(SET_IN_SLEEVE_PRINT_DIAGRAM_PANEL),
