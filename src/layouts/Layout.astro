@@ -134,7 +134,7 @@ const resolvedBodyClass = [
     })();
   </script>
 
-  <main class="site-content" data-pagefind-body style="padding-top: calc(var(--header-offset, 100px) + var(--header-buffer, 24px) + var(--kbm-env-banner-h, 0px));">
+  <main class="site-content" data-pagefind-body style="padding-top: calc(var(--header-offset, 136px) + var(--header-buffer, 24px) + var(--kbm-env-banner-h, 0px));">
     <slot />
     {onboarding && (
       <nav class="onboarding-skip" aria-label="Skip onboarding">
@@ -165,8 +165,8 @@ const resolvedBodyClass = [
 
 <style is:global>
   :root {
-    /* Green-bar-only provisional; JS measures .kbm-header-wrap and refines. */
-    --header-offset: 100px;
+    /* Provisional until JS measures .kbm-header-wrap (green bar + search banner). */
+    --header-offset: 136px;
     --header-buffer: 36px;   /* EXTRA breathing room */
   }
 
@@ -190,10 +190,10 @@ const resolvedBodyClass = [
     }
   }
 
-  /* Pattern workspaces: provisional compact phone offset until JS measures the shorter header. */
+  /* Pattern workspaces: provisional phone offset until JS measures the compact bar plus search banner. */
   @media (max-width: 767.98px) {
     body.page--pattern-workspace {
-      --header-offset: 64px;
+      --header-offset: 112px;
       --header-buffer: 8px;
     }
   }
