@@ -251,7 +251,18 @@ describe("homepage promo markup contract", () => {
       "Get inspired by hand-knitting patterns and find ideas and resources to make them on your knitting machine.",
     );
     expect(feature).not.toContain("Featured Knit-able");
-    expect(feature).toContain("Explore Christmas Stockings");
+    expect(feature).toContain("Nifty Gifty Stocking");
+    expect(feature).toContain(
+      "A mini stocking you can personalize with a small motif. Knit this little Christmas stocking, then add a Christmas tree, an initial, or a design of your own.",
+    );
+    expect(feature).toContain('href="/knit-ables/nifty-gifty-stocking"');
+    expect(feature).toContain("nifty-grifty-stocking.png");
+    expect(indexAstro).toContain(
+      'href="/images/knit-ables/christmas-stockings/nifty-grifty-stocking.png"',
+    );
+    expect(indexAstro).not.toContain("christmas-stockings.png");
+    expect(feature).not.toContain("Christmas Stockings");
+    expect(feature).not.toContain("christmas-stockings-your-way");
     expect(feature).toMatch(
       /href="\/knit-ables" class="home-v2-featured__more"/,
     );
