@@ -514,7 +514,7 @@ function setInWrittenRcLabel(raw: string | undefined): string {
   return `RC: ${String(Math.max(0, parseInt(match[1], 10))).padStart(3, "0")}`;
 }
 
-const SET_IN_HELD_NECKLINE_FINISH_SENTENCE =
+export const SET_IN_HELD_NECKLINE_FINISH_SENTENCE =
   "Scrap off or bind off all remaining held neckline stitches.";
 
 function heldNecklineFinishHtml(enabled: boolean): string {

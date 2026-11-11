@@ -9,7 +9,11 @@ import { rowCounterResetBlockHtml } from "./rowCounterReset";
 import { renderDropShoulderSleeveShapingChartHtml } from "./dropShoulderSleeveShapingChart";
 import { renderSleevelessBodyShapingChartHtml } from "./sleevelessBodyShapingChartHtml";
 import { patternTipWrapperHtml, type SleevelessPatternDisplayRow } from "./sleevelessPatternOutput";
-import { instructionParagraphClass } from "./patternPrintWrittenShaping";
+import {
+  instructionParagraphClass,
+  patternPrintSummaryLineClass,
+  printWrittenShapingBlockHtml,
+} from "./patternPrintWrittenShaping";
 
 export function escapePatternDisplayHtml(s: string): string {
   return String(s)
@@ -61,6 +65,7 @@ export function renderPatternDisplayBlockHtml(
   if (row.rc) {
     leftBits.push(`<p class="sleeveless-pattern-rc">${escapePatternDisplayHtml(row.rc)}</p>`);
   }
+  const hasWrittenShaping = (row.printInstructionParagraphs?.length ?? 0) > 0;
   const trusted = row.trustedParagraphs;
   if (trusted && trusted.length > 0) {
     for (const p of trusted) {
@@ -77,17 +82,29 @@ export function renderPatternDisplayBlockHtml(
         leftBits.push(t);
         continue;
       }
-      leftBits.push(`<p class="${instructionParagraphClass(p, "sleeveless-pattern-line")}">${p}</p>`);
+      leftBits.push(
+        `<p class="${instructionParagraphClass(p, "sleeveless-pattern-line")}${patternPrintSummaryLineClass(p, hasWrittenShaping)}">${p}</p>`,
+      );
     }
   } else {
     for (const p of row.paragraphs) {
       const t = String(p).trim();
       if (t) {
         leftBits.push(
-          `<p class="${instructionParagraphClass(t, "sleeveless-pattern-line")}">${escapePatternDisplayHtml(t)}</p>`,
+          `<p class="${instructionParagraphClass(t, "sleeveless-pattern-line")}${patternPrintSummaryLineClass(t, hasWrittenShaping)}">${escapePatternDisplayHtml(t)}</p>`,
         );
       }
     }
+  }
+  if (hasWrittenShaping) {
+    leftBits.push(
+      printWrittenShapingBlockHtml(
+        row.printInstructionParagraphs,
+        escapePatternDisplayHtml,
+        "sleeveless-pattern-line",
+        { omitHidden: true },
+      ),
+    );
   }
   if (row.bodyShapingChartRows && row.bodyShapingChartRows.length > 0) {
     leftBits.push(

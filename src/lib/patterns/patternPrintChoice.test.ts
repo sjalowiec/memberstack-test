@@ -160,18 +160,25 @@ describe("pattern print choices", () => {
     const frontHtml = renderPatternDisplayRowsHtml(result.frontDisplayRows, { pieceSectionId: "front" });
     expect(html).toContain("Use the checklist below for row-by-row neckline and shoulder shaping.");
     expect(html).toContain('class="sleeveless-pattern-line pattern-print-checklist-pointer"');
-    expect(html).not.toContain("pattern-print-written-shaping");
+    expect(html).toContain("pattern-print-written-shaping");
     expect(html).not.toContain("Work the First Shoulder and the neck edge first");
     expect(frontHtml).not.toContain("Work the First Shoulder and the neck edge first");
-    expect(printParagraphs(result.displayRows)).toBe("");
-    expect(printParagraphs(result.frontDisplayRows)).toBe("");
+    const backPrint = printParagraphs(result.displayRows);
+    const frontPrint = printParagraphs(result.frontDisplayRows);
+    expect(backPrint).not.toMatch(/checklist/i);
+    expect(frontPrint).not.toMatch(/checklist/i);
+    expect(backPrint).toMatch(/carriage on the (left|right)/i);
+    expect(frontPrint).toMatch(/carriage on the (left|right)/i);
+    expect(backPrint).toMatch(/RC: \d{3}/);
+    expect(frontPrint).toMatch(/RC: \d{3}/);
     const printHtml = [
       renderSleevelessPrintPieceHtml(result.displayRows, "", "back"),
       renderSleevelessPrintPieceHtml(result.frontDisplayRows, "", "front"),
     ].join("\n");
     expect(printHtml).toContain("Use the checklist below for row-by-row neckline and shoulder shaping.");
     expect(printHtml).not.toContain("Work the First Shoulder and the neck edge first");
-    expect(printHtml).not.toContain("pattern-print-written-shaping");
+    expect(printHtml).toContain("pattern-print-written-shaping");
+    expect(printHtml).not.toContain("pattern-print-written-shaping\" hidden");
 
     const sleeveText = result.sleeveDisplayRows
       .flatMap((row) => (row.kind === "block" ? row.paragraphs ?? [] : []))
@@ -198,8 +205,7 @@ describe("pattern print choices", () => {
     expect(chartRows.length).toBeGreaterThan(0);
     const html = renderPatternDisplayRowsHtml(result.displayRows, { pieceSectionId: "back" });
     expect(html).toContain("sleeveless-body-shaping-chart");
-    expect(html).not.toContain("pattern-print-written-shaping");
+    expect(html).toContain("pattern-print-written-shaping");
     expect(html).not.toContain("A-line shaping readings");
-    expect(html).not.toContain("stitches remain");
   });
 });

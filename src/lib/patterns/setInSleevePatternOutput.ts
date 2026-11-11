@@ -52,6 +52,12 @@ import {
 } from "./sweaterBodyHemInstructions";
 import { withSetInSleeveConstructionAuthored } from "./setInSleeveConstructionIdentity";
 import {
+  attachSetInNecklinePrintShaping,
+  setInBackPrintShapingOptions,
+  setInFrontPrintShapingOptions,
+  setInNecklinePrintShapingParagraphs,
+} from "./setInSleevePrintShaping";
+import {
   SET_IN_NECKLINE_ORIENTATION_TIP_ID,
   setInBackArmholeBindOffTrickTip,
   setInNecklineOrientationTipBlock,
@@ -626,6 +632,7 @@ function rightBackReverseRows(): SleevelessPatternDisplayRow[] {
         "Work body shaping at the armhole edge.",
         "Bind off the armhole edge with the carriage on the right.",
         "At the start of the neckline, bind off at the center edge with the carriage on the left, including the seam stitch.",
+        "Work the neckline and shoulder shaping with the same row numbers as the left back. Keep neckline shaping on the center edge and shoulder shaping on the armhole edge, with the carriage on the opposite side.",
       ],
     },
   ];
@@ -642,6 +649,7 @@ function leftFrontReverseRows(includeBustDart: boolean): SleevelessPatternDispla
     "Work body shaping at the armhole edge.",
     "Bind off the armhole edge with the carriage on the left.",
     "At the start of the neckline, bind off at the center edge with the carriage on the right, including the seam stitch.",
+    "Work the neckline and shoulder shaping with the same row numbers as the right front. Keep neckline shaping on the center edge and shoulder shaping on the armhole edge, with the carriage on the opposite side.",
   ];
   if (includeBustDart) {
     paragraphs.push(
@@ -930,7 +938,41 @@ function prepareCenterSeamHalf(
     rows = applySetInBackOpening(rows, half.debug.hemRows);
     rows = applySplitBackInstructionCues(rows, side);
   }
-  return rows;
+  const chart = half.frontNeckShoulderShapingChart;
+  const armholeStart = half.debug.armholeStartRow;
+  if (piece === "back") {
+    return attachSetInNecklinePrintShaping(
+      rows,
+      setInNecklinePrintShapingParagraphs(
+        chart,
+        armholeStart,
+        setInBackPrintShapingOptions({ centerSeamHalf: true, shallowRound: false }),
+      ),
+    );
+  }
+  if (vNeck) {
+    return attachSetInNecklinePrintShaping(
+      rows,
+      setInNecklinePrintShapingParagraphs(
+        chart,
+        armholeStart,
+        setInFrontPrintShapingOptions({ splitFront: true, roundNeck: false, centerBindOff: 0 }),
+      ),
+      /Decrease 1 stitch at the center edge/,
+    );
+  }
+  return attachSetInNecklinePrintShaping(
+    rows,
+    setInNecklinePrintShapingParagraphs(
+      chart,
+      armholeStart,
+      setInFrontPrintShapingOptions({
+        splitFront: true,
+        roundNeck: true,
+        centerBindOff: Number(half.debug.frontCenterNeckBindOffStitches) || 0,
+      }),
+    ),
+  );
 }
 
 function generateSetInSleeveWithCenterSeams(patternData: Record<string, unknown>): SetInSleevePatternResult {
@@ -1323,11 +1365,41 @@ export function generateSetInSleevePattern(
     ...needleLines,
   ]);
 
+  const backRows = rewriteSetInDisplayRows(applySetInBackOpening(displayRows, debug.hemRows));
+  const frontRows = rewriteSetInDisplayRows(frontDisplayRows);
+  const shapedBack = options?.halfPiece
+    ? backRows
+    : attachSetInNecklinePrintShaping(
+        backRows,
+        setInNecklinePrintShapingParagraphs(
+          body.neckShoulderShapingChart,
+          debug.armholeStartRow,
+          setInBackPrintShapingOptions({
+            centerSeamHalf: false,
+            shallowRound: debug.backNeckRoundNecklineStrategy === "shallow-round",
+          }),
+        ),
+      );
+  const shapedFront = options?.halfPiece
+    ? frontRows
+    : attachSetInNecklinePrintShaping(
+        frontRows,
+        setInNecklinePrintShapingParagraphs(
+          body.frontNeckShoulderShapingChart,
+          debug.armholeStartRow,
+          setInFrontPrintShapingOptions({
+            splitFront: false,
+            roundNeck: !vNeck,
+            centerBindOff: Number(debug.frontCenterNeckBindOffStitches) || 0,
+          }),
+        ),
+      );
+
   return {
     ...body,
     warnings,
-    displayRows: rewriteSetInDisplayRows(applySetInBackOpening(displayRows, debug.hemRows)),
-    frontDisplayRows: rewriteSetInDisplayRows(frontDisplayRows),
+    displayRows: shapedBack,
+    frontDisplayRows: shapedFront,
     isSetInSleeve: true,
     sleeveDisplayRows: rewriteSetInDisplayRows(sleeveDisplayRows),
     overviewRows,

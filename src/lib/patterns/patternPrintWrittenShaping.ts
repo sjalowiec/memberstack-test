@@ -54,14 +54,28 @@ export function instructionParagraphClass(text: string, className: string): stri
   return isPatternPrintChecklistPointer(text) ? `${className} pattern-print-checklist-pointer` : className;
 }
 
+/**
+ * Summary lines that the instructions-only print replaces with the written shaping.
+ * They stay visible on screen and in Charts / Complete pattern.
+ */
+export function patternPrintSummaryLineClass(text: string, hasWrittenShaping: boolean): string {
+  if (!hasWrittenShaping) return "";
+  const plain = String(text).replace(/<[^>]+>/g, " ");
+  if (/Decrease 1 stitch at the center edge on row /i.test(plain)) return " pattern-print-summary-line";
+  if (/shoulder stitches remain/i.test(plain)) return " pattern-print-summary-line";
+  return "";
+}
+
 export function printWrittenShapingBlockHtml(
   paragraphs: readonly string[] | undefined,
   escapeHtml: (value: string) => string,
   lineClass = "sleeveless-pattern-line",
+  options?: { omitHidden?: boolean },
 ): string {
   if (!paragraphs || paragraphs.length === 0) return "";
   const inner = paragraphs
     .map((paragraph) => `<p class="${lineClass}">${escapeHtml(paragraph)}</p>`)
     .join("");
-  return `<div class="pattern-print-written-shaping" hidden>${inner}</div>`;
+  const hidden = options?.omitHidden ? "" : " hidden";
+  return `<div class="pattern-print-written-shaping"${hidden}>${inner}</div>`;
 }

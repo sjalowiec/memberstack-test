@@ -9,7 +9,11 @@ import { parseInlineMarkedLine } from "./inlineRcHeading";
 import { renderSleevelessBodyShapingChartHtml } from "./sleevelessBodyShapingChartHtml";
 import { renderDropShoulderSleeveShapingChartHtml } from "./dropShoulderSleeveShapingChart";
 import { renderBustDartCustomizationPrintHtml } from "./bustDartFrontSlotHtml";
-import { instructionParagraphClass } from "./patternPrintWrittenShaping";
+import {
+  instructionParagraphClass,
+  patternPrintSummaryLineClass,
+  printWrittenShapingBlockHtml,
+} from "./patternPrintWrittenShaping";
 
 function escapeHtml(s: string): string {
   return String(s)
@@ -56,6 +60,7 @@ function renderPrintBlockRow(
   if (row.rc) {
     leftBits.push(`<p class="print-rc">${escapeHtml(row.rc)}</p>`);
   }
+  const hasWrittenShaping = (row.printInstructionParagraphs?.length ?? 0) > 0;
   const trusted = row.trustedParagraphs;
   if (trusted && trusted.length > 0) {
     for (const p of trusted) {
@@ -73,15 +78,28 @@ function renderPrintBlockRow(
         leftBits.push(t);
         continue;
       }
-      leftBits.push(`<p class="${instructionParagraphClass(p, "print-line")}">${p}</p>`);
+      leftBits.push(
+        `<p class="${instructionParagraphClass(p, "print-line")}${patternPrintSummaryLineClass(p, hasWrittenShaping)}">${p}</p>`,
+      );
     }
   } else {
     for (const p of row.paragraphs) {
       const raw = String(p);
       if (isOmittedTipParagraph(raw)) continue;
       const t = String(p).trim();
-      if (t) leftBits.push(`<p class="${instructionParagraphClass(t, "print-line")}">${escapeHtml(t)}</p>`);
+      if (t) {
+        leftBits.push(
+          `<p class="${instructionParagraphClass(t, "print-line")}${patternPrintSummaryLineClass(t, hasWrittenShaping)}">${escapeHtml(t)}</p>`,
+        );
+      }
     }
+  }
+  if (hasWrittenShaping) {
+    leftBits.push(
+      printWrittenShapingBlockHtml(row.printInstructionParagraphs, escapeHtml, "print-line", {
+        omitHidden: true,
+      }),
+    );
   }
   if (row.bodyShapingChartRows && row.bodyShapingChartRows.length > 0) {
     leftBits.push(
