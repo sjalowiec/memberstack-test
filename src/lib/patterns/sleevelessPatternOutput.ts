@@ -580,8 +580,14 @@ export type SleevelessPatternDisplayRow =
   | { kind: "piece"; title: string }
   /** `title` is plain text (slug/id + plain-text lines); `titleHtml` is optional trusted heading markup (e.g. a glossary link). */
   | { kind: "section"; title: string; titleHtml?: string }
-  /** Filled client-side with chart table (see pattern tab). */
-  | { kind: "neckShoulderChartTableMount" }
+  /**
+   * Filled client-side with chart table (see pattern tab).
+   * `chartPiece` names a center-seam half so that mount gets that half's checklist.
+   */
+  | {
+      kind: "neckShoulderChartTableMount";
+      chartPiece?: "left-back" | "right-back" | "left-front" | "right-front";
+    }
   /**
    * Optional Bust Dart control + (when active) full dart knitting instructions.
    * Placed in Front BODY at the dart RC. Screen shows controls; print omits inactive slots.
@@ -640,6 +646,8 @@ export type SleevelessPatternDisplayRow =
       bodyShapingChartRows?: SleevelessBodyShapingChartRow[];
       /** Overrides the default body-shaping chart id when more than one chart is on a piece. */
       bodyShapingChartId?: string;
+      /** Piece name for a body chart that is printed apart from its instructions. */
+      bodyShapingChartTitle?: string;
       /** Optional completed-rows switch label for this body-shaping chart only. */
       bodyShapingChartCompletedRowsLabel?: string;
       /**

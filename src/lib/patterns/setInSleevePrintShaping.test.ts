@@ -236,12 +236,16 @@ describe("set-in instructions-only neckline shaping", () => {
     expect(front.join("\n")).toContain("decrease 1 stitch at the neck edge every 4 rows 5 times");
     expect(back.join("\n")).toContain("bind off 14 stitches at the neck edge");
     expect(back.join("\n")).toContain("decrease 2 stitches at the neck edge every other row 5 times");
-    expect(back.join("\n")).toContain("At the same time, at RC: 075, COL, bind off 10 stitches at the neck edge.");
+    expect(back.join("\n")).toContain("At the same time, at RC: 075, COR, bind off 10 stitches at the neck edge.");
     expect(back.join("\n")).not.toContain(SET_IN_HELD_NECKLINE_FINISH_SENTENCE);
     const backShaping = setInNecklinePrintShaping(
       result.neckShoulderShapingChart,
       result.debug.armholeStartRow,
-      setInBackPrintShapingOptions({ centerSeamHalf: true, shallowRound: false }),
+      setInBackPrintShapingOptions({
+        centerSeamHalf: true,
+        shallowRound: false,
+        invertCarriageParity: true,
+      }),
     );
     const frontShaping = setInNecklinePrintShaping(
       result.frontNeckShoulderShapingChart,

@@ -446,18 +446,32 @@ function labelHalfRows(
   side: "left" | "right",
 ): SleevelessPatternDisplayRow[] {
   const title = `${side === "left" ? "LEFT" : "RIGHT"} ${piece === "back" ? "BACK" : "FRONT"}`;
+  const pieceName = `${side === "left" ? "Left" : "Right"} ${piece === "back" ? "back" : "front"}`;
   const fromPhrase = side === "left" ? "the left front" : "the right front";
   const toPhrase = piece === "back" ? (side === "left" ? "the left back" : "the right back") : fromPhrase;
+  const chartPiece = `${side}-${piece}` as const;
   const labeled = rows
     .filter((row) => row.kind !== "piece")
     .map((row) => {
+      if (row.kind === "neckShoulderChartTableMount") {
+        return { ...row, chartPiece };
+      }
       if (piece === "back" && row.kind === "section" && row.title.includes("FRONT")) {
         return { ...row, title: row.title.replaceAll("FRONT", "BACK") };
       }
-      if (row.kind !== "block" || !row.paragraphs || piece !== "back") return row;
+      if (row.kind !== "block") return row;
+      const withBodyTitle =
+        row.bodyShapingChartRows && row.bodyShapingChartRows.length > 0
+          ? {
+              ...row,
+              bodyShapingChartTitle: `${pieceName} body shaping`,
+              bodyShapingChartId: `set-in-${side}-${piece}-body-shaping`,
+            }
+          : row;
+      if (!withBodyTitle.paragraphs || piece !== "back") return withBodyTitle;
       return {
-        ...row,
-        paragraphs: row.paragraphs.map((paragraph) =>
+        ...withBodyTitle,
+        paragraphs: withBodyTitle.paragraphs.map((paragraph) =>
           paragraph
             .replaceAll(fromPhrase, toPhrase)
             .replaceAll("center-front", "center-back")
@@ -930,8 +944,8 @@ function prepareCenterSeamHalf(
   fullNeckStitches: number,
 ): SleevelessPatternDisplayRow[] {
   let rows = labelHalfRows(half.frontDisplayRows, piece, side);
-  if (side === "right" || vNeck) rows = withoutChartMount(rows);
   if (vNeck && piece === "front") {
+    rows = withoutChartMount(rows);
     rows = replaceNecklineSection(rows, vNeckHalfLines(half, side, fullNeckStitches));
   }
   if (piece === "back") {
@@ -946,7 +960,11 @@ function prepareCenterSeamHalf(
       setInNecklinePrintShapingParagraphs(
         chart,
         armholeStart,
-        setInBackPrintShapingOptions({ centerSeamHalf: true, shallowRound: false }),
+        setInBackPrintShapingOptions({
+          centerSeamHalf: true,
+          shallowRound: false,
+          invertCarriageParity: side === "left",
+        }),
       ),
     );
   }
@@ -956,7 +974,12 @@ function prepareCenterSeamHalf(
       setInNecklinePrintShapingParagraphs(
         chart,
         armholeStart,
-        setInFrontPrintShapingOptions({ splitFront: true, roundNeck: false, centerBindOff: 0 }),
+        setInFrontPrintShapingOptions({
+          splitFront: true,
+          roundNeck: false,
+          centerBindOff: 0,
+          invertCarriageParity: side === "left",
+        }),
       ),
       /Decrease 1 stitch at the center edge/,
     );
@@ -970,6 +993,7 @@ function prepareCenterSeamHalf(
         splitFront: true,
         roundNeck: true,
         centerBindOff: Number(half.debug.frontCenterNeckBindOffStitches) || 0,
+        invertCarriageParity: side === "left",
       }),
     ),
   );

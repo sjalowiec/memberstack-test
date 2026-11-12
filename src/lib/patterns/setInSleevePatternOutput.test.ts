@@ -50,6 +50,7 @@ import {
   SET_IN_SPLIT_BACK_TIP_ID,
   SET_IN_SPLIT_BACK_TIP_TITLE,
 } from "./setInSleevePatternOutput";
+import { renderSetInCenterSeamNeckChartHtml } from "./setInSleevePrintShaping";
 import { tryBuildLiveSleevelessFrontStsRowsDiagramSvg } from "./sleevelessFrontStsRowsDiagramSvg";
 import { tryBuildLiveSleevelessFrontCardiganRoundNotationSvg } from "./sleevelessFrontCardiganRoundShapingNotationDiagramSvg";
 import { tryBuildLiveSleevelessFrontCardiganVNeckNotationSvg } from "./sleevelessFrontCardiganVNeckShapingNotationDiagramSvg";
@@ -891,6 +892,8 @@ describe("set-in back neckline and shoulder checklist", () => {
     expect(setIn).toContain('mount.querySelector("#sg-neck-shoulder-chart-table-back")');
     expect(setIn).toContain("renderNeckShoulderShapingChartTableOnlyHtml");
     expect(setIn).toContain('tableHeading: "First Shoulder Checklist"');
+    expect(setIn).toContain("renderSetInCenterSeamNeckChartHtml");
+    expect(setIn).toContain("data-set-in-neck-chart");
     expect(setIn).toContain("window.kbmNeckShoulderChartPrintContext");
     expect(setIn).toContain("bindSecondShoulderChecklistToggles(mount)");
     expect(setIn).toContain("initChartProgressTracking");
@@ -1129,6 +1132,116 @@ describe("set-in sleeve center seams", () => {
     expect(result.needleCapacity?.shouldBlock).toBe(true);
     expect(result.needleCapacity?.offerSeams).toBe(true);
     expect(textOf(result.displayRows)).toContain("Bind off");
+  });
+
+  it("prints the left back and right front checklists from each piece", () => {
+    const seamed = generateSetInSleevePattern(withCenterSeams(pattern({ availableNeedles: 80 })));
+    const backMounts = seamed.displayRows.filter((row) => row.kind === "neckShoulderChartTableMount");
+    const frontMounts = seamed.frontDisplayRows.filter((row) => row.kind === "neckShoulderChartTableMount");
+    expect(backMounts.map((row) => (row.kind === "neckShoulderChartTableMount" ? row.chartPiece : ""))).toEqual([
+      "left-back",
+    ]);
+    expect(frontMounts.map((row) => (row.kind === "neckShoulderChartTableMount" ? row.chartPiece : ""))).toEqual([
+      "right-front",
+    ]);
+
+    const pieces = seamed.centerSeamPieces!;
+    const backHtml = renderSetInCenterSeamNeckChartHtml({
+      piece: "left-back",
+      chart: pieces.leftBack.frontNeckShoulderShapingChart,
+      armholeStartRow: pieces.leftBack.debug.armholeStartRow,
+    });
+    const frontHtml = renderSetInCenterSeamNeckChartHtml({
+      piece: "right-front",
+      chart: pieces.rightFront!.frontNeckShoulderShapingChart,
+      armholeStartRow: pieces.rightFront!.debug.armholeStartRow,
+    });
+    const plain = (html: string) => html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ");
+    const backText = plain(backHtml);
+    const frontText = plain(frontHtml);
+    expect(backText).toContain("Left back neckline and shoulder");
+    expect(backText).toContain("Center edge");
+    expect(backText).not.toContain("Center-front");
+    expect(frontText).toContain("Right front neckline and shoulder");
+    expect(frontText).toContain("Center edge");
+    expect(frontText).not.toContain("Left back");
+
+    const introRc = (text: string) => text.match(/When Armhole RC reaches (\d+), begin neckline shaping at the center edge/)?.[1];
+    const neck = (text: string, carriage: "Left" | "Right") =>
+      text.match(new RegExp(`(\\d{3}) \\(${carriage}\\) Bind off (\\d+) sts Neck (\\d+)`));
+    const backNeck = neck(backText, "Right");
+    const frontNeck = neck(frontText, "Left");
+    expect(backNeck).toBeTruthy();
+    expect(frontNeck).toBeTruthy();
+    expect(introRc(backText)).toBe(backNeck?.[1]);
+    expect(introRc(frontText)).toBe(frontNeck?.[1]);
+    expect(backNeck?.[1]).not.toBe(frontNeck?.[1]);
+    const carriages = (html: string) =>
+      [...html.matchAll(/row-counter-number">(\d+)<\/span>\s*<span class="ns-shaping-chart__row-counter-side">\(([^)]+)\)/g)].map(
+        (match) => ({ rc: Number(match[1]), carriage: match[2] ?? "" }),
+      );
+    for (const row of carriages(backHtml)) {
+      if (row.carriage.startsWith("Alternating")) continue;
+      expect(row.carriage).toBe(row.rc % 2 === 0 ? "Left" : "Right");
+    }
+    for (const row of carriages(frontHtml)) {
+      if (row.carriage.startsWith("Alternating")) continue;
+      expect(row.carriage).toBe(row.rc % 2 === 0 ? "Right" : "Left");
+    }
+
+    function lastArmholeStitches(rows: typeof seamed.displayRows): number {
+      let section = "";
+      let stitches = 0;
+      for (const row of rows) {
+        if (row.kind === "section") {
+          section = row.title;
+          continue;
+        }
+        if (section !== "ARMHOLE" || row.kind !== "block" || row.stitchCount === undefined) continue;
+        stitches = row.stitchCount;
+      }
+      return stitches;
+    }
+    const backStart = lastArmholeStitches(seamed.displayRows);
+    const frontStart = lastArmholeStitches(seamed.frontDisplayRows);
+    expect(backStart - Number(backNeck?.[2])).toBe(Number(backNeck?.[3]));
+    expect(frontStart - Number(frontNeck?.[2])).toBe(Number(frontNeck?.[3]));
+    expect(backHtml).toContain('class="ns-shaping-chart');
+    expect(frontHtml).toContain('class="ns-shaping-chart');
+  });
+
+  it("names each center-seam body chart for the piece whose rows it prints", () => {
+    const saved = pattern({
+      bodyShape: "aline",
+      neckline: "round",
+      stitchesPerInch: 7,
+      rowsPerInch: 11,
+      availableNeedles: 150,
+    });
+    (saved.fit as Record<string, unknown>).cbMeasurementOverrides = { hip: "50" };
+    const seamed = generateSetInSleevePattern(withCenterSeams(saved));
+    const bodyChart = (rows: typeof seamed.displayRows) =>
+      rows.find((row) => row.kind === "block" && (row.bodyShapingChartRows?.length ?? 0) > 0);
+    const back = bodyChart(seamed.displayRows);
+    const front = bodyChart(seamed.frontDisplayRows);
+    expect(back?.kind).toBe("block");
+    expect(front?.kind).toBe("block");
+    if (back?.kind !== "block" || front?.kind !== "block") return;
+    expect(back.bodyShapingChartTitle).toBe("Left back body shaping");
+    expect(front.bodyShapingChartTitle).toBe("Right front body shaping");
+    expect(back.bodyShapingChartId).not.toBe(front.bodyShapingChartId);
+    const backHem = seamed.centerSeamPieces!.leftBack.debug.cardiganHalfLeftCastOnSts ?? 0;
+    const frontHem = seamed.centerSeamPieces!.rightFront!.debug.cardiganHalfLeftCastOnSts ?? 0;
+    expect(back.bodyShapingChartRows?.[0]?.stitchesRemaining).toBe(backHem - 1);
+    expect(front.bodyShapingChartRows?.[0]?.stitchesRemaining).toBe(frontHem - 1);
+    expect(back.bodyShapingChartRows?.[0]?.action).toMatch(/armhole edge/i);
+    expect(front.bodyShapingChartRows?.[0]?.action).toMatch(/armhole edge/i);
+    const backHtml = renderPatternDisplayRowsHtml(seamed.displayRows, { pieceSectionId: "back" });
+    const frontHtml = renderPatternDisplayRowsHtml(seamed.frontDisplayRows, { pieceSectionId: "front" });
+    expect(backHtml).toContain("Left back body shaping");
+    expect(frontHtml).toContain("Right front body shaping");
+    expect(backHtml).toContain('class="ns-shaping-chart');
+    expect(frontHtml).toContain('class="ns-shaping-chart');
   });
 
   it("splits a round pullover into four halves and keeps the sleeve", () => {

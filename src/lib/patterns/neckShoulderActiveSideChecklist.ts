@@ -66,6 +66,12 @@ export type ActiveSideInstructionTableRow = {
 /** Back neckline checklist: prepend center divide/setup row at the timeline center-bind-off RC. */
 export type ActiveShoulderChecklistOptions = {
   includeCenterNecklineSetupRow?: boolean;
+  /**
+   * Center-seam left pieces place the center edge on the right. The timeline still records
+   * that edge as the inner edge; only the carriage label is mirrored so a neck bind-off
+   * starts with the carriage on the right.
+   */
+  invertCarriageParity?: boolean;
 };
 
 /** Edge label for the center neckline divide/setup row (not a worked shaping pass). */
@@ -676,7 +682,9 @@ function buildSideInstructionTableRows(
   );
   const toDisplay = (rel: number) =>
     displayChecklistRc(rel, rcBase, originGarmentRc, firstArmholeGarmentRc, rowCounterPolicy);
-  const invertCarriage = side === "left";
+  const invertCarriage = side === "left" || options?.invertCarriageParity === true;
+  const noteSide: "left" | "right" =
+    options?.invertCarriageParity === true ? (side === "right" ? "left" : "right") : side;
   const carriageFor = (rc: number) =>
     invertCarriage ? carriagePositionForSecondShoulderRc(rc) : carriagePositionForActiveSideRc(rc);
   const insertArmholeReset =
@@ -788,7 +796,7 @@ function buildSideInstructionTableRows(
       source.alignDisplayRcToTimeline && sameRowPartner
         ? simultaneousShapingPassNote({
             localRc: displayRc,
-            side,
+            side: noteSide,
             outerKind: (action.edge === "Neck" ? sameRowPartner.kind : action.kind) as
               | "bindOff"
               | "decrease"

@@ -330,6 +330,10 @@ export type ActiveShoulderChartIntroOptions = {
   /** When true (or chart flag), intro uses cardigan front wording instead of pullover divide language. */
   isCardiganFront?: boolean | undefined;
   /**
+   * Center-seam halves say “center edge”. An open cardigan front keeps “center-front edge”.
+   */
+  necklineEdgePhrase?: string | undefined;
+  /**
    * When false, the shoulders are worked straight (drop shoulder) so the reverse-shaping copy
    * mentions only the neckline shaping. Defaults to true (sleeveless: neckline + shoulder shaping).
    */
@@ -621,10 +625,18 @@ function formatActiveShoulderCardiganFrontNecklineHtml(args: {
   localStartRcLabel?: string | undefined;
   atRcPrefix?: boolean | undefined;
   vNeckStart?: boolean | undefined;
+  edgePhrase?: string | undefined;
 }): string {
   const localStartLabel = String(args.localStartRcLabel ?? "").trim();
+  const edgePhrase = String(args.edgePhrase ?? "").trim();
   const tail = escapeHtml(
-    args.vNeckStart === true ? CARDIGAN_FRONT_VNECK_START_TAIL : CARDIGAN_FRONT_NECKLINE_START_TAIL,
+    edgePhrase
+      ? args.vNeckStart === true
+        ? `begin V-neck shaping at the ${edgePhrase}`
+        : `begin neckline shaping at the ${edgePhrase}`
+      : args.vNeckStart === true
+        ? CARDIGAN_FRONT_VNECK_START_TAIL
+        : CARDIGAN_FRONT_NECKLINE_START_TAIL,
   );
   const rcColon = localStartLabel.match(/^RC:\s*(\d{1,4})$/i);
   if (rcColon) {
@@ -655,13 +667,18 @@ export function renderActiveShoulderChartIntroHtml(options: ActiveShoulderChartI
       resolveFrontVNeckRowCounterDisplayPolicy(
         options.chart?.frontVNeckArmholeComposition ?? options.frontArmholeNecklineOverlap,
       ) === "continuous-garment-rc";
+    const edgePhrase = String(options.necklineEdgePhrase ?? "").trim();
+    const edgeTitle = edgePhrase
+      ? `${edgePhrase.charAt(0).toUpperCase()}${edgePhrase.slice(1)}`
+      : "Center-front edge";
     const innerParts: string[] = [];
     if (activeShoulderCenterDivideIntroApplies(options.centerBindOffStitches, options.chart)) {
       innerParts.push(
-        `<p><strong>Center-front edge:</strong><br>${formatActiveShoulderCardiganFrontNecklineHtml({
+        `<p><strong>${escapeHtml(edgeTitle)}:</strong><br>${formatActiveShoulderCardiganFrontNecklineHtml({
           localStartRcLabel: options.localStartRcLabel,
           atRcPrefix: continuousGarmentRc,
           vNeckStart: continuousGarmentRc,
+          edgePhrase,
         })}</p>`,
       );
     }
@@ -1066,6 +1083,8 @@ export type NeckShoulderChartRenderOptions = {
   fullWidthChartOneRowPerRc?: boolean;
   /** When true (or chart flag), completion copy uses cardigan front wording and hides second-shoulder UI. */
   isCardiganFront?: boolean;
+  /** Mirror carriage labels for a center-seam piece whose center edge is on the right. */
+  invertCarriageParity?: boolean;
   /**
    * Center-seam Set-In halves explain the second piece in a reverse-shaping note.
    * Omit the cardigan line that says to work the opposite front.
@@ -1359,10 +1378,14 @@ function renderShoulderTabsHtml(args: {
 
 function activeShoulderChecklistOptions(
   options?: NeckShoulderChartRenderOptions,
-): { includeCenterNecklineSetupRow?: boolean } | undefined {
-  return options?.includeCenterNecklineSetupRow === true
-    ? { includeCenterNecklineSetupRow: true }
-    : undefined;
+): { includeCenterNecklineSetupRow?: boolean; invertCarriageParity?: boolean } | undefined {
+  const includeCenter = options?.includeCenterNecklineSetupRow === true;
+  const invertCarriage = options?.invertCarriageParity === true;
+  if (!includeCenter && !invertCarriage) return undefined;
+  return {
+    ...(includeCenter ? { includeCenterNecklineSetupRow: true } : {}),
+    ...(invertCarriage ? { invertCarriageParity: true } : {}),
+  };
 }
 
 function chartBodyRowsHtml(
@@ -1389,7 +1412,9 @@ function chartBodyRowsHtml(
     const activeRowsBeforeCompact = activeRows.length;
     /** Plain-knit merge matches full-chart rules except sleeveless V-neck (one RC per row). */
     if (!vNeckStyleOneRowPerRc) {
-      activeRows = compactActiveSideInstructionRowsForPrint(activeRows);
+      activeRows = compactActiveSideInstructionRowsForPrint(activeRows, {
+        invertCarriageParity: options?.invertCarriageParity === true,
+      });
     }
     if (
       import.meta.env.DEV &&
@@ -1772,13 +1797,15 @@ export function renderNeckShoulderShapingPrintInstructionTableHtml(
   const printRowsRaw = buildActiveSideInstructionTableRows(
     chart,
     activeSideRcStart,
-    options?.includeCenterNecklineSetupRow === true ? { includeCenterNecklineSetupRow: true } : undefined,
+    activeShoulderChecklistOptions(options),
   );
   const vNeckStyleOneRowPerRc =
     isFullWidthVNeckFrontStyleChart(chart) && options?.fullWidthChartOneRowPerRc !== false;
   const printRows = vNeckStyleOneRowPerRc
     ? printRowsRaw
-    : compactActiveSideInstructionRowsForPrint(printRowsRaw);
+    : compactActiveSideInstructionRowsForPrint(printRowsRaw, {
+        invertCarriageParity: options?.invertCarriageParity === true,
+      });
   const showSecondShoulderChecklist =
     !isCardiganFront && options?.showSecondShoulderChecklist === true;
   const sequentialShoulderHeadings =

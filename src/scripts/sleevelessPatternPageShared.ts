@@ -52,6 +52,10 @@ import {
 } from "../lib/patterns/sleevelessPatternOutput.ts";
 import { generateDropShoulderPattern } from "../lib/patterns/dropShoulderPatternOutput.ts";
 import { generateSetInSleevePattern } from "../lib/patterns/setInSleevePatternOutput.ts";
+import {
+  isSetInCenterSeamChartPiece,
+  renderSetInCenterSeamNeckChartHtml,
+} from "../lib/patterns/setInSleevePrintShaping.ts";
 import { buildSetInSleeveNeedleCapacityHtml } from "../lib/patterns/centerSeamConstruction.ts";
 import {
   setInBackNecklineMachineHelpCardHtml,
@@ -733,8 +737,16 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
         const printIntro = intro
           ? intro.charAt(0).toUpperCase() + intro.slice(1)
           : "Custom sleeveless sweater pattern based on your saved builder choices.";
-        const chartAreaId =
-          pieceSectionId === "front"
+        const chartPiece = typeof row.chartPiece === "string" ? row.chartPiece : "";
+        const chartHostId = chartPiece
+          ? `sg-neck-shoulder-chart-table-${chartPiece}`
+          : String(chartTableMountId || "");
+        const chartPieceAttr = chartPiece
+          ? ` data-set-in-neck-chart="${escapeHtml(chartPiece)}"`
+          : "";
+        const chartAreaId = chartPiece
+          ? `neckline-shoulder-chart-print-area-${chartPiece}`
+          : pieceSectionId === "front"
             ? "front-neckline-shoulder-chart-print-area"
             : "neckline-shoulder-chart-print-area";
         const chartAreaOpen = `<div id="${chartAreaId}" data-second-shoulder-scope>`;
@@ -743,7 +755,7 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
     <p class="neckline-chart-print-only-header-title">${escapeHtml(printPatternTitle)}</p>
     <p class="neckline-chart-print-only-header-intro">Custom pattern for ${escapeHtml(printIntro)}</p>
   </div>
-  <div class="sg-pattern-output sg-neck-chart-print-block" id="${escapeHtml(chartTableMountId)}"></div>
+  <div class="sg-pattern-output sg-neck-chart-print-block" id="${escapeHtml(chartHostId)}"${chartPieceAttr}></div>
   <p class="neckline-chart-print-only-footer">Created by Knit It Now · Printed <span data-neckline-chart-print-date></span></p>
 </div>`;
         // Visual Guides at the neckline chart mount. Overlap V-neck Front keeps the written
@@ -4592,8 +4604,32 @@ table {
       isSleevelessVNeckChoice(patternMerged) || isSleevelessVNeckChoice(generatorPatternData);
     const setInBackNeckHelpCard = setInBackNecklineMachineHelpCardHtml();
     const setInFrontNeckHelpCard = setInFrontNecklineMachineHelpCardHtml(setInFrontIsVNeck);
+    const taggedNeckCharts = mount.querySelectorAll("[data-set-in-neck-chart]");
+    const usePieceNeckCharts = taggedNeckCharts.length > 0 && result.centerSeamPieces;
+    if (usePieceNeckCharts) {
+      taggedNeckCharts.forEach((host) => {
+        const key = host.getAttribute("data-set-in-neck-chart") || "";
+        if (!isSetInCenterSeamChartPiece(key)) return;
+        const source =
+          key === "left-back"
+            ? result.centerSeamPieces.leftBack
+            : key === "right-back"
+              ? result.centerSeamPieces.rightBack
+              : key === "left-front"
+                ? result.centerSeamPieces.leftFront
+                : result.centerSeamPieces.rightFront;
+        const chart = source?.frontNeckShoulderShapingChart;
+        if (!source || !chart) return;
+        host.innerHTML = renderSetInCenterSeamNeckChartHtml({
+          piece: key,
+          chart,
+          armholeStartRow: source.debug?.armholeStartRow,
+          helpCardHtml: key.endsWith("back") ? setInBackNeckHelpCard : setInFrontNeckHelpCard,
+        });
+      });
+    }
     const backChartTableHost = mount.querySelector("#sg-neck-shoulder-chart-table-back");
-    if (backChartTableHost && result.neckShoulderShapingChart) {
+    if (!usePieceNeckCharts && backChartTableHost && result.neckShoulderShapingChart) {
       backChartTableHost.innerHTML = renderNeckShoulderShapingChartTableOnlyHtml(
         result.neckShoulderShapingChart,
         "ns-shaping-chart-back",
@@ -4628,7 +4664,7 @@ table {
       frontHelpCardHtml,
     );
     const frontChartTableHost = mount.querySelector("#sg-neck-shoulder-chart-table-front");
-    if (frontChartTableHost && result.frontNeckShoulderShapingChart) {
+    if (!usePieceNeckCharts && frontChartTableHost && result.frontNeckShoulderShapingChart) {
       frontChartTableHost.innerHTML = renderSleevelessPatternTabFrontChartTableHtml(result, {
         relocateIntro: frontIsRoundNeck && !result.centerSeams?.splitFront,
         introSuffix: frontHelpCardHtml,
@@ -4641,7 +4677,7 @@ table {
         omitOppositePieceNote: result.centerSeams?.splitFront === true,
       });
     }
-    if (frontIsRoundNeck) {
+    if (frontIsRoundNeck && !usePieceNeckCharts) {
       const frontWrittenIntroHost = mount.querySelector("#sg-front-ns-written-intro");
       if (frontWrittenIntroHost instanceof HTMLElement) {
         const frontCarriageTip = renderCarriagePositionPatternTipHtml({ activeSideOnly: true });

@@ -6,6 +6,7 @@
 
 import {
   armholeLocalRcActiveShoulderChecklistStart,
+  armholeLocalRcFirstActiveSideNecklineShapingAction,
   buildActiveSideInstructionTableRows,
   buildHeldSideInstructionTableRows,
   buildSecondShoulderInstructionTableRows,
@@ -21,8 +22,11 @@ import {
 } from "./neckShoulderShapingChart";
 import {
   compactActiveSideInstructionRowsForPrint,
+  renderActiveShoulderChartIntroHtml,
+  renderNeckShoulderShapingChartTableOnlyHtml,
   SET_IN_HELD_NECKLINE_FINISH_SENTENCE,
 } from "./neckShoulderShapingChartHtml";
+import { centerBindOffStitchesFromNeckShoulderChart } from "./sleevelessPatternOutput";
 import { isPatternPrintChecklistPointer } from "./patternPrintWrittenShaping";
 import {
   formatRcColon,
@@ -45,6 +49,8 @@ export type SetInNecklinePrintShapingOptions = {
   finishHeldNecklineAfterSecondShoulder: boolean;
   /** One piece. No mirrored shoulder list. */
   singleSide: boolean;
+  /** Left pieces: center edge is on the right, so neckline carriage labels are mirrored. */
+  invertCarriageParity?: boolean;
 };
 
 export type SetInNecklinePrintShaping = {
@@ -58,6 +64,7 @@ const CENTER_SETUP_RC_OPTIONS = { includeCenterNecklineSetupRow: true as const }
 export function setInBackPrintShapingOptions(args: {
   centerSeamHalf: boolean;
   shallowRound: boolean;
+  invertCarriageParity?: boolean;
 }): SetInNecklinePrintShapingOptions {
   if (args.centerSeamHalf) {
     return {
@@ -66,6 +73,7 @@ export function setInBackPrintShapingOptions(args: {
       resetRowCounterForSecondShoulder: false,
       finishHeldNecklineAfterSecondShoulder: false,
       singleSide: true,
+      invertCarriageParity: args.invertCarriageParity === true,
     };
   }
   return {
@@ -81,6 +89,7 @@ export function setInFrontPrintShapingOptions(args: {
   splitFront: boolean;
   roundNeck: boolean;
   centerBindOff: number;
+  invertCarriageParity?: boolean;
 }): SetInNecklinePrintShapingOptions {
   const split = args.splitFront;
   return {
@@ -89,11 +98,15 @@ export function setInFrontPrintShapingOptions(args: {
     resetRowCounterForSecondShoulder: !split,
     finishHeldNecklineAfterSecondShoulder: !split && args.roundNeck && args.centerBindOff > 0,
     singleSide: split,
+    invertCarriageParity: args.invertCarriageParity === true,
   };
 }
 
-function checklistBuildOptions(includeCenter: boolean) {
-  return includeCenter ? CENTER_SETUP_RC_OPTIONS : undefined;
+function checklistBuildOptions(options: SetInNecklinePrintShapingOptions) {
+  return {
+    ...(options.includeCenterNecklineSetupRow ? CENTER_SETUP_RC_OPTIONS : {}),
+    ...(options.invertCarriageParity ? { invertCarriageParity: true } : {}),
+  };
 }
 
 function displayRowsForChecklist(
@@ -453,7 +466,7 @@ export function setInNecklinePrintShaping(
 ): SetInNecklinePrintShaping {
   if (!chart?.rows?.length) return { paragraphs: [], firstRows: [], secondRows: [] };
   const rcStart = armholeLocalRcActiveShoulderChecklistStart(chart, armholeStartRow, CENTER_SETUP_RC_OPTIONS);
-  const buildOptions = checklistBuildOptions(options.includeCenterNecklineSetupRow);
+  const buildOptions = checklistBuildOptions(options);
   let active = buildActiveSideInstructionTableRows(chart, rcStart, buildOptions);
   if (options.hideCenterNecklineSetupRow) {
     active = active.filter((row) => !isCenterNecklineSetupChecklistRow(row));
@@ -535,4 +548,69 @@ export function attachSetInNecklinePrintShaping(
     attached = true;
     return { ...row, printInstructionParagraphs: [...paragraphs] };
   });
+}
+
+export const SET_IN_CENTER_SEAM_CHART_PIECES = [
+  "left-back",
+  "right-back",
+  "left-front",
+  "right-front",
+] as const;
+
+export type SetInCenterSeamChartPiece = (typeof SET_IN_CENTER_SEAM_CHART_PIECES)[number];
+
+const SET_IN_CENTER_SEAM_CHART_COPY: Record<
+  SetInCenterSeamChartPiece,
+  { title: string; invertCarriageParity: boolean }
+> = {
+  "left-back": { title: "Left back neckline and shoulder", invertCarriageParity: true },
+  "right-back": { title: "Right back neckline and shoulder", invertCarriageParity: false },
+  "left-front": { title: "Left front neckline and shoulder", invertCarriageParity: true },
+  "right-front": { title: "Right front neckline and shoulder", invertCarriageParity: false },
+};
+
+export function isSetInCenterSeamChartPiece(value: string): value is SetInCenterSeamChartPiece {
+  return (SET_IN_CENTER_SEAM_CHART_PIECES as readonly string[]).includes(value);
+}
+
+/**
+ * Checklist for one center-seam half. The intro row is the first neckline action in this
+ * piece's own chart, and the carriage matches that piece's center edge.
+ */
+export function renderSetInCenterSeamNeckChartHtml(args: {
+  piece: SetInCenterSeamChartPiece;
+  chart: NeckShoulderShapingChart;
+  armholeStartRow: number | null | undefined;
+  helpCardHtml?: string;
+}): string {
+  const copy = SET_IN_CENTER_SEAM_CHART_COPY[args.piece];
+  const neckRc = armholeLocalRcFirstActiveSideNecklineShapingAction(args.chart, args.armholeStartRow);
+  const label = `RC:${String(Math.max(0, Math.floor(neckRc ?? 0))).padStart(3, "0")}`;
+  const intro = renderActiveShoulderChartIntroHtml({
+    localStartRcLabel: label,
+    centerBindOffStitches: centerBindOffStitchesFromNeckShoulderChart(args.chart),
+    chart: args.chart,
+    necklineEdgePhrase: "center edge",
+    omitRepeatedNecklineSetup: true,
+    wrapperClass: "pattern-shaping-intro",
+    layout: "labeled",
+    includeWorkflowSteps: true,
+  });
+  const help = typeof args.helpCardHtml === "string" && args.helpCardHtml.trim() ? `\n${args.helpCardHtml}` : "";
+  const rcStart = armholeLocalRcActiveShoulderChecklistStart(args.chart, args.armholeStartRow, CENTER_SETUP_RC_OPTIONS);
+  return renderNeckShoulderShapingChartTableOnlyHtml(
+    args.chart,
+    `ns-shaping-chart-${args.piece}`,
+    `${intro}${help}`,
+    {
+      activeSideOnly: true,
+      activeSideRcStart: rcStart,
+      includeCenterNecklineSetupRow: false,
+      hideCenterNecklineSetupRow: true,
+      tableHeading: copy.title,
+      omitOppositePieceNote: true,
+      invertCarriageParity: copy.invertCarriageParity,
+      collapsible: false,
+    },
+  );
 }

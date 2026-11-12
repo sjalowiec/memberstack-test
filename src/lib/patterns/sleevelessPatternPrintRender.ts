@@ -104,7 +104,8 @@ function renderPrintBlockRow(
   if (row.bodyShapingChartRows && row.bodyShapingChartRows.length > 0) {
     leftBits.push(
       renderSleevelessBodyShapingChartHtml(row.bodyShapingChartRows, {
-        chartId: `sleeveless-body-shaping-chart-${pieceKey}`,
+        chartId: row.bodyShapingChartId || `sleeveless-body-shaping-chart-${pieceKey}`,
+        ...(row.bodyShapingChartTitle ? { title: row.bodyShapingChartTitle } : {}),
       }),
     );
   }
