@@ -124,6 +124,7 @@ export function renderPatternDisplayBlockHtml(
           ? `${row.sleeveShapingChartId}-${pieceSectionId}`
           : `drop-shoulder-sleeve-shaping-chart-${pieceSectionId}`,
         showTitle: false,
+        counterNote: row.chartCounterNote,
       }),
     );
   }

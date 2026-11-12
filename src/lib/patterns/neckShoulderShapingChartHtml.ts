@@ -18,6 +18,7 @@ import {
   NECK_SHOULDER_PRINT_KNIT_EVEN_LABEL,
   plainKnitSpanCarriageEdgeDisplay,
 } from "./neckShoulderShapingChart";
+import { chartCounterNoteHtml } from "./chartCounterHeader";
 import { PATTERN_PRINT_ESSENTIAL_DISCLOSURE_CLASS } from "./patternEssentialDisclosurePrint";
 import {
   ACTIVE_SHOULDER_CHART_INTRO_SENTENCE,
@@ -1150,6 +1151,11 @@ export type NeckShoulderChartRenderOptions = {
    * shoulders are worked, so this sentence follows the Second Shoulder checklist.
    */
   finishHeldNecklineAfterSecondShoulder?: boolean;
+  /**
+   * Names the row counter this checklist uses. Shown on the chart and copied into
+   * the repeated print header. Does not change row numbers or shaping.
+   */
+  counterNote?: string;
 };
 
 const SECOND_SHOULDER_CHECKLIST_HEADING = "Second Shoulder Checklist";
@@ -1229,6 +1235,7 @@ function collapsibleChecklistShellHtml(
     includePrintSlot?: boolean;
     extraClass?: string;
     dataSecondShoulderContent?: boolean;
+    counterNote?: string;
   },
 ): { open: string; close: string } {
   const extraClass = options?.extraClass ? ` ${options.extraClass}` : "";
@@ -1238,15 +1245,19 @@ function collapsibleChecklistShellHtml(
   const printSlot = options?.includePrintSlot !== false
     ? `<span class="ns-shaping-chart__disclosure-actions" data-chart-print-slot></span>`
     : "";
+  const summaryNote = chartCounterNoteHtml(options?.counterNote, "summary");
+  const printNote = chartCounterNoteHtml(options?.counterNote, "print");
   return {
     open: `<details class="${escapeHtml(`${sectionClass} ns-shaping-chart--collapsible ${PATTERN_PRINT_ESSENTIAL_DISCLOSURE_CLASS}${extraClass}`)}"${dataAttr}${hiddenAttr}${openAttr}>
   <summary class="ns-shaping-chart__disclosure-header">
     <span class="ns-shaping-chart__disclosure-chevron" aria-hidden="true"><i class="fas fa-chevron-right"></i></span>
     <span id="${escapeHtml(headingId)}" class="ns-shaping-chart__title ns-shaping-chart__disclosure-title">${escapeHtml(title)}</span>
     ${printSlot}
+    ${summaryNote}
   </summary>
   <div class="ns-shaping-chart__disclosure-body">
-  ${checklistInnerOpenHtml()}`,
+  ${checklistInnerOpenHtml()}
+  ${printNote}`,
     close: `${checklistInnerCloseHtml()}
 </div>
 </details>`,
@@ -1343,6 +1354,7 @@ function renderShoulderTabsHtml(args: {
   firstBindoffHtml: string;
   secondExtraHtml: string;
   secondTableHtml: string;
+  counterNoteHtml?: string;
 }): string {
   const firstTabId = `${args.idPrefix}-tab-first`;
   const secondTabId = `${args.idPrefix}-tab-second`;
@@ -1357,6 +1369,7 @@ function renderShoulderTabsHtml(args: {
     <span class="ns-shaping-chart__disclosure-actions no-print" data-chart-print-slot></span>
   </div>
   ${checklistInnerOpenHtml()}
+  ${args.counterNoteHtml ?? ""}
   ${args.intro}
   <div class="ns-shaping-chart__tabpanel" role="tabpanel" id="${escapeHtml(firstPanelId)}" aria-labelledby="${escapeHtml(firstTabId)}" ${NS_SHOULDER_PANEL_ATTR}="first">
     ${wrapChecklistPrintLeadHtml(
@@ -1681,6 +1694,7 @@ export function renderNeckShoulderShapingChartTableOnlyHtml(
             includePrintSlot: false,
             extraClass: "ns-shaping-chart--second-shoulder",
             dataSecondShoulderContent: true,
+            counterNote: options?.counterNote,
           },
         );
         return `${shell.open}
@@ -1734,6 +1748,7 @@ ${collapsible ? secondShoulderCollapsibleHtml : secondShoulderLegacyHtml}`
       firstBindoffHtml,
       secondExtraHtml: secondShoulderExtra,
       secondTableHtml: `${secondSideLeadHtml}${secondShoulderTableHtml}`,
+      counterNoteHtml: chartCounterNoteHtml(options?.counterNote, "visible"),
     });
   }
 
@@ -1741,7 +1756,8 @@ ${collapsible ? secondShoulderCollapsibleHtml : secondShoulderLegacyHtml}`
     ? wrapChecklistPrintLeadHtml(tableHeading, headingId, primaryTableHtml)
     : primaryTableHtml;
 
-  const checklistBodyHtml = `${intro}
+  const checklistBodyHtml = `${collapsible ? "" : chartCounterNoteHtml(options?.counterNote, "visible")}
+  ${intro}
   ${primaryTableForBody}
   ${firstBindoffHtml}
   ${activeSideTailHtml}`;
@@ -1750,6 +1766,7 @@ ${collapsible ? secondShoulderCollapsibleHtml : secondShoulderLegacyHtml}`
     const shell = collapsibleChecklistShellHtml(sectionClass, headingId, tableHeading, {
       open: collapsibleOpen,
       includePrintSlot: true,
+      counterNote: options?.counterNote,
     });
     return `${shell.open}
   ${checklistBodyHtml}

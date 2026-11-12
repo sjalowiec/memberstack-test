@@ -26,6 +26,8 @@ import {
   renderNeckShoulderShapingChartTableOnlyHtml,
   SET_IN_HELD_NECKLINE_FINISH_SENTENCE,
 } from "./neckShoulderShapingChartHtml";
+import { setInNecklineChartCounterNote } from "./chartCounterHeader";
+import { resolveFrontVNeckRowCounterDisplayPolicy } from "./frontArmholeNecklineComposition";
 import { centerBindOffStitchesFromNeckShoulderChart } from "./sleevelessPatternOutput";
 import { isPatternPrintChecklistPointer } from "./patternPrintWrittenShaping";
 import {
@@ -584,6 +586,19 @@ export function renderSetInCenterSeamNeckChartHtml(args: {
   helpCardHtml?: string;
 }): string {
   const copy = SET_IN_CENTER_SEAM_CHART_COPY[args.piece];
+  const overlap = args.chart.frontVNeckArmholeComposition;
+  const timelineRows = args.chart.timeline?.map((entry) => entry.row) ?? [];
+  const garmentRows = timelineRows.length > 0 ? timelineRows : args.chart.rows.map((row) => row.row);
+  const firstGarmentRow = garmentRows.length > 0 ? Math.min(...garmentRows) : undefined;
+  const necklineStartLocalRc =
+    firstGarmentRow !== undefined && typeof args.armholeStartRow === "number"
+      ? firstGarmentRow - args.armholeStartRow
+      : undefined;
+  const counterNote = setInNecklineChartCounterNote({
+    necklineStartLocalRc,
+    continuousGarmentRc:
+      overlap != null && resolveFrontVNeckRowCounterDisplayPolicy(overlap) === "continuous-garment-rc",
+  });
   const neckRc = armholeLocalRcFirstActiveSideNecklineShapingAction(args.chart, args.armholeStartRow);
   const label = `RC:${String(Math.max(0, Math.floor(neckRc ?? 0))).padStart(3, "0")}`;
   const intro = renderActiveShoulderChartIntroHtml({
@@ -611,6 +626,7 @@ export function renderSetInCenterSeamNeckChartHtml(args: {
       omitOppositePieceNote: true,
       invertCarriageParity: copy.invertCarriageParity,
       collapsible: false,
+      counterNote,
     },
   );
 }

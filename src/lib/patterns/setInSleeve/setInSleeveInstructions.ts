@@ -34,6 +34,10 @@ import { shapingActionRowNumbers } from "../evenShapingSchedule";
 import { formatRepeatedShapingInstruction } from "../legoBlocks/repeatedShapingInstruction";
 import { formatParentheticalRcList, normalizeParentheticalRcLists } from "../parentheticalRcList";
 import { RESET_ROW_COUNTER_TEXT } from "../rowCounterReset";
+import {
+  cuffUpSleeveCapChartCounterNote,
+  cuffUpSleeveShapingChartCounterNote,
+} from "../chartCounterHeader";
 import { cuffUpSleeveBodyRowCounterResetBlock } from "../legoBlocks/cuffUpSleeveRowCounter";
 import { buildPatternQuickTipInnerHtml } from "../patternQuickTip";
 import { sidewaysCuffUpCuffChoiceLines } from "../sidewaysCardiganSleeveCuffCopy";
@@ -703,12 +707,14 @@ export function buildSetInCuffUpSleevePresentation(
     });
   }
 
+  const sleeveCounterReset = !omitRibbing;
   displayRows.push({ kind: "section", title: "SLEEVE SHAPING CHART" });
   if (taperRows.length > 0) {
     displayRows.push({
       kind: "block",
       paragraphs: [],
       sleeveShapingChartRows: taperRows,
+      chartCounterNote: cuffUpSleeveShapingChartCounterNote(sleeveCounterReset),
     });
   } else {
     displayRows.push({
@@ -731,6 +737,7 @@ export function buildSetInCuffUpSleevePresentation(
     paragraphs: [],
     sleeveShapingChartRows: capModel.chartRows,
     sleeveShapingChartId: SET_IN_SLEEVE_CAP_SHAPING_CHART_ID,
+    chartCounterNote: cuffUpSleeveCapChartCounterNote(sleeveCounterReset),
   });
 
   return { blocks, displayRows, shapingRcs };

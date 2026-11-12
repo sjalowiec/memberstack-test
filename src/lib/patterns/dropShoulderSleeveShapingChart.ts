@@ -5,6 +5,7 @@
  * and {@link buildDropShoulderSleeveJapaneseNotationReplacements}.
  */
 
+import { chartCounterNoteHtml } from "./chartCounterHeader";
 import { sleeveShapingPerSide, type EvenShapingSchedule } from "./evenShapingSchedule";
 import { cuffUpSleeveBodyRowCounter } from "./legoBlocks/cuffUpSleeveRowCounter";
 import { formatRowBasedShapingNotation, rowBasedShapingNotation } from "./shapingNotationCompress";
@@ -235,6 +236,8 @@ export type DropShoulderSleeveShapingChartRenderOptions = {
   chartId: string;
   /** When false, rely on an outer section heading (e.g. SLEEVE SHAPING CHART). */
   showTitle?: boolean;
+  /** Names the row counter this sleeve chart uses. Omitted charts keep the generic print header. */
+  counterNote?: string;
 };
 
 /**
@@ -269,11 +272,13 @@ export function renderDropShoulderSleeveShapingChartHtml(
   const titleHtml = showTitle
     ? `<h3 id="${escapeHtml(headingId)}" class="ns-shaping-chart__title ns-shaping-chart__title--body">Sleeve Shaping Chart</h3>`
     : "";
+  const counterNoteHtml = chartCounterNoteHtml(options.counterNote);
 
   return `<section class="ns-shaping-chart ns-shaping-chart--body drop-shoulder-sleeve-shaping-chart"${
     showTitle ? ` aria-labelledby="${escapeHtml(headingId)}"` : ""
   }>
   ${titleHtml}
+  ${counterNoteHtml}
   <div class="ns-shaping-chart__progress-section" data-chart-id="${escapeHtml(chartId)}">
     ${renderProgressToolbarHtml()}
     <div class="ns-shaping-chart__table-wrap">

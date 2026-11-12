@@ -3,6 +3,7 @@
  * Presentation only; does not generate notation, maps, or shaping math.
  */
 import { buildShapingNotationChartHelpTriggerHtml } from "../glossary/shapingNotationGlossary.ts";
+import { chartCounterNoteHtml } from "./chartCounterHeader.ts";
 import type { NotationPreviewConstruction } from "./neckShoulderShapingChartHtml.ts";
 import { renderShapingMapSvg, type ShapingMapData } from "./shapingMapSvg.ts";
 
@@ -21,6 +22,8 @@ export type BuildPatternVisualGuidesOpts = {
   shapingMapMirror?: boolean;
   /** Short reading note shown with the map. */
   shapingMapNote?: string;
+  /** Names the row counter used by this piece's shaping map and notation. */
+  counterNote?: string;
 };
 
 function escapeHtml(text: string): string {
@@ -41,8 +44,10 @@ function shapingNotationCardHtml(opts: BuildPatternVisualGuidesOpts): string {
   const piece = opts.piece;
   const helpTrigger = buildShapingNotationChartHelpTriggerHtml(escapeAttr, escapeHtml);
 
+  const counterNote = chartCounterNoteHtml(opts.counterNote);
   return `<section class="ns-visual-guides__card ns-visual-guides__card--notation">
     <h4 class="ns-visual-guides__card-title">Shaping Notation</h4>
+    ${counterNote}
     ${helpTrigger}
     <div class="ns-visual-guides__preview ns-visual-guides__preview--notation" data-pattern-notation-host data-pattern-notation-piece="${escapeHtml(piece)}">
       <p class="sleeveless-pattern-boot-msg">Loading notation…</p>
@@ -57,12 +62,14 @@ function shapingMapCardHtml(
   shapingMapData: ShapingMapData,
   mirror: boolean,
   note?: string,
+  counterNote?: string,
 ): string {
   const noteHtml = note?.trim()
     ? `<p class="shaping-map__note">${escapeHtml(note.trim())}</p>`
     : "";
   return `<section class="ns-visual-guides__card ns-visual-guides__card--map">
     <h4 class="ns-visual-guides__card-title">Shaping Map</h4>
+    ${chartCounterNoteHtml(counterNote)}
     ${noteHtml}
     <div class="ns-visual-guides__preview ns-visual-guides__preview--map">${renderShapingMapSvg(shapingMapData, { mirror })}</div>
     <div class="ns-visual-guides__actions no-print">
@@ -79,7 +86,12 @@ export function buildPatternVisualGuidesHtml(opts: BuildPatternVisualGuidesOpts)
   const notationCard = shapingNotationCardHtml(opts);
   const shapingMapData = opts.shapingMapData ?? null;
   const mapCard = shapingMapData
-    ? shapingMapCardHtml(shapingMapData, opts.shapingMapMirror !== false, opts.shapingMapNote)
+    ? shapingMapCardHtml(
+        shapingMapData,
+        opts.shapingMapMirror !== false,
+        opts.shapingMapNote,
+        opts.counterNote,
+      )
     : "";
   if (!notationCard && !mapCard) return "";
 

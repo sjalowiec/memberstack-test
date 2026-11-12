@@ -110,6 +110,8 @@ export type SleevelessPatternTabFrontChartRenderOptions = {
   finishHeldNecklineAfterSecondShoulder?: boolean;
   /** Split Set-In front: the left-front note replaces the opposite-front sentence. */
   omitOppositePieceNote?: boolean;
+  /** Set-in neckline chart header naming the row counter. Sleeveless leaves this unset. */
+  counterNote?: string;
 };
 
 /**
@@ -135,7 +137,7 @@ export function sleevelessPatternTabFrontChartTableOptions(
   result: SleevelessPatternTabFrontResult,
   options?: Pick<
     SleevelessPatternTabFrontChartRenderOptions,
-    "secondShoulderExtraHtml" | "relocateIntro" | "resetRowCounterForSecondShoulder" | "finishHeldNecklineAfterSecondShoulder" | "omitOppositePieceNote"
+    "secondShoulderExtraHtml" | "relocateIntro" | "resetRowCounterForSecondShoulder" | "finishHeldNecklineAfterSecondShoulder" | "omitOppositePieceNote" | "counterNote"
   >,
 ): NeckShoulderChartRenderOptions {
   const chart = result.frontNeckShoulderShapingChart;
@@ -163,6 +165,7 @@ export function sleevelessPatternTabFrontChartTableOptions(
       ? { finishHeldNecklineAfterSecondShoulder: true }
       : {}),
     ...(options?.omitOppositePieceNote === true ? { omitOppositePieceNote: true } : {}),
+    ...(options?.counterNote ? { counterNote: options.counterNote } : {}),
     suppressCarriagePositionTip: relocateIntro,
     ...(frontUsesShoulderTabs
       ? necklineShapingTwoSideTabPresentation()

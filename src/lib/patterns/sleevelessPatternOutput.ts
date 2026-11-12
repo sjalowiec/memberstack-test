@@ -667,6 +667,8 @@ export type SleevelessPatternDisplayRow =
        * Omit it to keep the Drop Shoulder sleeve chart id.
        */
       sleeveShapingChartId?: string;
+      /** Header sentence naming this chart's row counter. Presentation only. */
+      chartCounterNote?: string;
       /** Total stitches on the piece after this block; shown in the right column when defined */
       stitchCount?: number;
       /**

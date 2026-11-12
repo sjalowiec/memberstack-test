@@ -3,6 +3,7 @@
  * Chart numbers stay in the page; this only shows, hides, and orders them.
  */
 
+import { resolveChartCounterHeader } from "./chartCounterHeader";
 import type { PatternPrintChoice } from "./patternPrintChoice";
 
 const CHART_SELECTOR = [
@@ -109,10 +110,11 @@ function chartLabel(chart: HTMLElement, project: string, nameOverride?: string):
       .trim() ||
     "";
   const name = ownName || sectionName || "Shaping chart";
-  const reset = rowCounterResetBefore(chart);
-  const counter = reset
-    ? "Row counter was reset to RC: 000 before this chart. Readings use that counter."
-    : "RC is the row counter for this piece.";
+  const explicitNote = chart.querySelector("[data-chart-counter-note]")?.textContent ?? "";
+  const counter = resolveChartCounterHeader({
+    explicitNote,
+    resetBeforeChart: rowCounterResetBefore(chart) !== null,
+  });
   return [project, piece, name, counter].filter((part) => part.length > 0).join(" · ");
 }
 

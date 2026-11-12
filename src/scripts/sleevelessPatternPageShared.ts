@@ -122,8 +122,10 @@ import {
 } from "../lib/patterns/neckShoulderShapingChartHtml.ts";
 import { buildPatternVisualGuidesHtml } from "../lib/patterns/patternVisualGuides.ts";
 import {
+  resolveFrontVNeckRowCounterDisplayPolicy,
   sleevelessFrontVNeckWrittenPathPresentation,
 } from "../lib/patterns/frontArmholeNecklineComposition.ts";
+import { setInNecklineChartCounterNote } from "../lib/patterns/chartCounterHeader.ts";
 import {
   renderSleevelessPatternTabFrontChartTableHtml,
   renderSleevelessPatternTabFrontWrittenIntroHtml,
@@ -2302,6 +2304,17 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
         font-size: 1rem;
         font-weight: 700;
       }
+      .ns-shaping-chart__counter-note,
+      .ns-shaping-chart__counter-note--print {
+        display: block !important;
+        margin: 0 0 0.45rem;
+        font-size: 0.92rem;
+        font-weight: 700;
+        line-height: 1.4;
+      }
+      .ns-shaping-chart__counter-note--summary {
+        display: none !important;
+      }
       .ns-shaping-chart__intro {
         margin: 0 0 0.55rem;
       }
@@ -4357,6 +4370,17 @@ table {
       { firstArmholeRc: result?.debug?.armholeStartRow },
     );
     const frontIsRoundNeck = !!frontShapingMapData;
+    const setInFrontContinuousGarmentRc =
+      (isSleevelessVNeckChoice(patternMerged) || isSleevelessVNeckChoice(generatorPatternData)) &&
+      resolveFrontVNeckRowCounterDisplayPolicy(result?.debug?.frontArmholeNecklineOverlap) ===
+        "continuous-garment-rc";
+    const setInBackCounterNote = setInNecklineChartCounterNote({
+      necklineStartLocalRc: result?.debug?.backNecklineStartLocalRC,
+    });
+    const setInFrontCounterNote = setInNecklineChartCounterNote({
+      necklineStartLocalRc: result?.debug?.frontNecklineStartLocalRC,
+      continuousGarmentRc: setInFrontContinuousGarmentRc,
+    });
     const frontShapingMapNote =
       "The shoulder is at the top of this map. Neckline steps continue down to the center. The checklist uses the same row numbers, starting at the center neckline and working upward.";
     const backShapingMapData = centerSeamApplied
@@ -4408,6 +4432,7 @@ table {
               construction: "sleeveless",
               patternData: diagramPatternData,
               shapingMapData: backShapingMapData,
+              counterNote: setInBackCounterNote,
             }
           : undefined,
       },
@@ -4429,6 +4454,7 @@ table {
               patternData: diagramPatternData,
               shapingMapData: frontShapingMapData,
               shapingMapNote: frontShapingMapNote,
+              counterNote: setInFrontCounterNote,
               frontRoundNeckLayout: frontIsRoundNeck,
               checklistBeforeVisualGuides:
                 result?.debug?.frontVNeckShapingTimingCase != null ||
@@ -4587,6 +4613,7 @@ table {
           resetRowCounterForSecondShoulder: false,
           finishHeldNecklineAfterSecondShoulder: false,
           omitOppositePieceNote: true,
+          counterNote: setInBackCounterNote,
         }
       : {
           activeSideOnly: true,
@@ -4596,6 +4623,7 @@ table {
           tableHeading: "First Shoulder Checklist",
           collapsibleDefaultOpen: false,
           resetRowCounterForSecondShoulder: true,
+          counterNote: setInBackCounterNote,
           finishHeldNecklineAfterSecondShoulder:
             result?.debug?.backNeckRoundNecklineStrategy === "shallow-round",
         };
@@ -4669,6 +4697,7 @@ table {
         relocateIntro: frontIsRoundNeck && !result.centerSeams?.splitFront,
         introSuffix: frontHelpCardHtml,
         secondShoulderExtraHtml: result.centerSeams?.splitFront ? "" : frontSecondShoulderMapHtml,
+        counterNote: setInFrontCounterNote,
         resetRowCounterForSecondShoulder: !result.centerSeams?.splitFront,
         finishHeldNecklineAfterSecondShoulder:
           !result.centerSeams?.splitFront &&
@@ -4708,6 +4737,7 @@ table {
         options: sleevelessPatternTabFrontChartTableOptions(result, {
           relocateIntro: frontIsRoundNeck && !result.centerSeams?.splitFront,
           secondShoulderExtraHtml: result.centerSeams?.splitFront ? "" : frontSecondShoulderMapHtml,
+          counterNote: setInFrontCounterNote,
           resetRowCounterForSecondShoulder: !result.centerSeams?.splitFront,
           finishHeldNecklineAfterSecondShoulder:
             !result.centerSeams?.splitFront &&

@@ -116,6 +116,7 @@ function renderPrintBlockRow(
           ? `${row.sleeveShapingChartId}-${pieceKey}`
           : `drop-shoulder-sleeve-shaping-chart-${pieceKey}`,
         showTitle: false,
+        counterNote: row.chartCounterNote,
       }),
     );
   }

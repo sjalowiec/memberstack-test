@@ -44,6 +44,7 @@
 .ns-shaping-chart__disclosure-header {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 12px;
   width: 100%;
   box-sizing: border-box;
@@ -52,6 +53,24 @@
   background: var(--kbm-green-050, #f4f6ee);
   list-style: none;
   user-select: none;
+}
+
+.ns-shaping-chart__counter-note {
+  margin: 0 0 0.65rem;
+  font-size: 0.92rem;
+  font-weight: 600;
+  line-height: 1.4;
+  color: #1f2937;
+}
+
+.ns-shaping-chart__counter-note--summary {
+  flex: 1 0 100%;
+  margin: 0.15rem 0 0 1.7rem;
+  font-size: 0.82rem;
+}
+
+.ns-shaping-chart__counter-note--print {
+  display: none;
 }
 
 /* Hide the native disclosure triangle across browsers (we render our own chevron). */
@@ -520,10 +539,15 @@
 
   .ns-shaping-chart__title,
   .ns-shaping-chart__intro,
+  .ns-shaping-chart__counter-note,
   .pattern-shaping-intro,
   .print-chart-intro {
     break-after: avoid;
     page-break-after: avoid;
+  }
+
+  .ns-shaping-chart__counter-note--print {
+    display: block;
   }
 
   /* Keep each checklist heading with the table header and first data row. */

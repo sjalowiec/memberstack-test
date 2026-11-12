@@ -344,6 +344,15 @@
     text-align: left;
   }
 
+  /*
+   * Charts and Complete pattern repeat the counter sentence in the chart banner
+   * and in each table header. Hide the on-chart copy so it is not printed twice.
+   */
+  html[data-pattern-print-choice="charts"] .ns-shaping-chart__counter-note,
+  html[data-pattern-print-choice="both"] .ns-shaping-chart__counter-note {
+    display: none !important;
+  }
+
   .pattern-print-chart-banner {
     break-inside: avoid;
     page-break-inside: avoid;
