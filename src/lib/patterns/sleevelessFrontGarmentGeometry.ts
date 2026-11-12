@@ -56,8 +56,8 @@ export function sleevelessFrontMeasurementLastArmholeY(
  * only keeps those labels inside the SVG.
  */
 export const SLEEVELESS_FRONT_STS_ROWS_RIGHT_LABEL_CLEARANCE = 130;
-/** The hem width measure sits below the cast-on arrow. This keeps that line inside the frame. */
-const SLEEVELESS_FRONT_STS_ROWS_BOTTOM_LABEL_CLEARANCE = 22;
+/** Room below the garment for the cast-on stitch count and its knitted width. */
+const SLEEVELESS_FRONT_STS_ROWS_BOTTOM_LABEL_CLEARANCE = 56;
 export const SLEEVELESS_FRONT_STS_ROWS_VIEWBOX = {
   width: SLEEVELESS_FRONT_GARMENT_VB_W + SLEEVELESS_FRONT_STS_ROWS_RIGHT_LABEL_CLEARANCE,
   height: SLEEVELESS_FRONT_GARMENT_VB_H + SLEEVELESS_FRONT_STS_ROWS_BOTTOM_LABEL_CLEARANCE,

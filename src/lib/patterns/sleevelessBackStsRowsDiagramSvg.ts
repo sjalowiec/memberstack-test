@@ -31,7 +31,9 @@ import {
 } from "./legoBlocks/crossShoulderMeasurement";
 import type { MeasurementDisplayUnit } from "./patternMeasurementDisplayUnit";
 import {
+  castOnEdgeDiagramLabel,
   formatPatternDiagramMeasurement,
+  parseStitchesRowsDiagramLabel,
   stitchesRowsDiagramLabel,
 } from "./patternStitchesRowsDiagramLabel";
 import type { SleevelessBackPatternResult } from "./sleevelessPatternOutput";
@@ -47,8 +49,8 @@ const FONT = "Poppins, system-ui, Arial, sans-serif";
 const FS_STITCH = 22;
 const FS_SECONDARY = 18;
 const LINE_GAP = 32;
-/** The hem width measure sits below the cast-on arrow. This keeps that line inside the frame. */
-const BOTTOM_LABEL_CLEARANCE = 22;
+/** Room below the garment for the cast-on stitch count and its knitted width. */
+const BOTTOM_LABEL_CLEARANCE = 56;
 /**
  * Start-anchored row labels ("218 rows") begin just right of the body.
  * The garment canvas stays 400 wide; this extra viewBox width is only so
@@ -103,6 +105,24 @@ function countLines(
     { text: label.count, extra },
     ...(label.measure ? [{ text: label.measure }] : []),
   ];
+}
+
+function castOnLines(stitches: number, stitchesPerInch: number, unit: MeasurementDisplayUnit, extra: string) {
+  const label = parseStitchesRowsDiagramLabel(castOnEdgeDiagramLabel(stitches, stitchesPerInch, unit));
+  return [
+    { text: label.count, extra },
+    ...(label.measure ? [{ text: label.measure }] : []),
+  ];
+}
+
+/** Puts the stitch count and knitted width below the cast-on edge, inside the viewBox. */
+function castOnPlacement(bottomY: number, lineCount: number): { arrowY: number; labelY: number } {
+  const viewBottom = SLEEVELESS_BACK_STS_ROWS_VIEWBOX.height;
+  const arrowY = bottomY + 16;
+  const half = labelBlockHalfHeight(lineCount);
+  const preferred = arrowY + 14 + half;
+  const maxY = viewBottom - 12 - half;
+  return { arrowY, labelY: Math.min(maxY, preferred) };
 }
 
 function arrowHead(x: number, y: number, dir: "up" | "down" | "left" | "right"): string {
@@ -345,17 +365,22 @@ function drawMeasurements(model: SleevelessBackStsRowsDiagramModel, frame: Frame
     ),
   );
 
+  const castOn = castOnLines(
+    model.widths.hemStitches,
+    model.widths.stitchesPerInch,
+    unit,
+    ` data-sts="${fmtNum(model.widths.hemStitches)}"`,
+  );
+  const castOnPlace = castOnPlacement(frame.bottomY, castOn.length);
   parts.push(
     horizontalArrow(
-      Math.min(VB_H - 22, frame.bottomY + 18),
+      castOnPlace.arrowY,
       frame.hemLeft,
       frame.hemRight,
-      Math.min(VB_H - 8, frame.bottomY + 34),
+      castOnPlace.labelY,
       "width-measurement",
       "cast-on",
-      [
-        ...countLines(model.widths.hemStitches, "sts", finished.hemWidthInches, unit, ` data-sts="${fmtNum(model.widths.hemStitches)}"`),
-      ],
+      castOn,
     ),
   );
 

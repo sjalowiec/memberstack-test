@@ -13,7 +13,9 @@ import {
 } from "./legoBlocks/crossShoulderMeasurement";
 import type { MeasurementDisplayUnit } from "./patternMeasurementDisplayUnit";
 import {
+  castOnEdgeDiagramLabel,
   formatPatternDiagramMeasurement,
+  parseStitchesRowsDiagramLabel,
   stitchesRowsDiagramLabel,
 } from "./patternStitchesRowsDiagramLabel";
 import {
@@ -108,6 +110,24 @@ function countLines(
     { text: label.count, extra },
     ...(label.measure ? [{ text: label.measure }] : []),
   ];
+}
+
+function castOnLines(stitches: number, stitchesPerInch: number, unit: MeasurementDisplayUnit, extra: string) {
+  const label = parseStitchesRowsDiagramLabel(castOnEdgeDiagramLabel(stitches, stitchesPerInch, unit));
+  return [
+    { text: label.count, extra },
+    ...(label.measure ? [{ text: label.measure }] : []),
+  ];
+}
+
+/** Puts the stitch count and knitted width below the cast-on edge, inside the viewBox. */
+function castOnPlacement(bottomY: number, lineCount: number): { arrowY: number; labelY: number } {
+  const viewBottom = SLEEVELESS_FRONT_STS_ROWS_VIEWBOX.height;
+  const arrowY = bottomY + 16;
+  const half = labelBlockHalfHeight(lineCount);
+  const preferred = arrowY + 14 + half;
+  const maxY = viewBottom - 12 - half;
+  return { arrowY, labelY: Math.min(maxY, preferred) };
 }
 
 function arrowHead(x: number, y: number, dir: "up" | "down" | "left" | "right"): string {
@@ -481,17 +501,22 @@ function drawMeasurements(model: SleevelessFrontStsRowsDiagramModel, frame: Fram
     ),
   );
 
+  const castOn = castOnLines(
+    model.widths.hemStitches,
+    model.widths.stitchesPerInch,
+    unit,
+    ` data-sts="${fmtNum(model.widths.hemStitches)}"`,
+  );
+  const castOnPlace = castOnPlacement(frame.bottomY, castOn.length);
   parts.push(
     horizontalArrow(
-      Math.min(VB_H - 22, frame.bottomY + 18),
+      castOnPlace.arrowY,
       frame.hemLeft,
       frame.hemRight,
-      Math.min(VB_H - 8, frame.bottomY + 34),
+      castOnPlace.labelY,
       "width-measurement",
       "cast-on",
-      [
-        ...countLines(model.widths.hemStitches, "sts", finished.hemWidthInches, unit, ` data-sts="${fmtNum(model.widths.hemStitches)}"`),
-      ],
+      castOn,
     ),
   );
 

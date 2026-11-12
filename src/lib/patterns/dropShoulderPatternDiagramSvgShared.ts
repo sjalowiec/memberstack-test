@@ -13,6 +13,9 @@ import type { MeasurementDisplayUnit } from "./patternMeasurementDisplayUnit";
 
 export const DS_VB_W = 430;
 export const DS_VB_H = 520;
+/** Extra viewBox below the garment so the cast-on width line is not clipped. */
+export const DS_CAST_ON_VIEWBOX_PAD = 40;
+export const DS_STS_ROWS_VIEWBOX_H = DS_VB_H + DS_CAST_ON_VIEWBOX_PAD;
 export const DS_FONT = "Poppins, system-ui, Arial, sans-serif";
 export const DS_ARROW = "#52682d";
 export const DS_STROKE = "#1a1a1a";
@@ -810,12 +813,8 @@ export function drawBodyWidth(
 export function drawHemWidth(
   frame: DropShoulderDiagramFrame,
   hemStitchesLabel: string,
-  hemStitches: number,
-  bodyWidthStitches: number,
-  options?: { evenWhenEqual?: boolean },
 ): string {
   if (!hemStitchesLabel) return "";
-  if (!options?.evenWhenEqual && hemStitches === bodyWidthStitches) return "";
   const y = frame.bottom + 22;
   return [
     `<g class="ds-diagram__hem-width" data-cast-on-width="true" data-cast-on-y="${fmtNum(y)}">`,
@@ -896,20 +895,24 @@ export function wrapGeneratedDiagramSvg(attrs: {
   dataAttrs: Record<string, string | number>;
   title: string;
   body: string;
+  viewBoxWidth?: number;
+  viewBoxHeight?: number;
 }): string {
+  const width = attrs.viewBoxWidth && attrs.viewBoxWidth > 0 ? attrs.viewBoxWidth : DS_VB_W;
+  const height = attrs.viewBoxHeight && attrs.viewBoxHeight > 0 ? attrs.viewBoxHeight : DS_VB_H;
   const data = Object.entries(attrs.dataAttrs)
     .map(([k, v]) => ` ${k}="${escapeXml(String(v))}"`)
     .join("");
   const safeBody = attrs.body.replace(/\bNaN\b/g, "0").replace(/\bInfinity\b/g, "0");
   return (
-    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${DS_VB_W} ${DS_VB_H}"` +
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${fmtNum(width)} ${fmtNum(height)}"` +
     ` width="100%" height="auto" preserveAspectRatio="xMidYMid meet" role="img"` +
     ` aria-label="${escapeXml(attrs.ariaLabel)}"` +
     ` class="${escapeXml(attrs.className)}"` +
     data +
     `>` +
     `<title>${escapeXml(attrs.title)}</title>` +
-    `<rect x="0" y="0" width="${DS_VB_W}" height="${DS_VB_H}" fill="#fff"/>` +
+    `<rect x="0" y="0" width="${fmtNum(width)}" height="${fmtNum(height)}" fill="#fff"/>` +
     safeBody +
     `</svg>`
   );

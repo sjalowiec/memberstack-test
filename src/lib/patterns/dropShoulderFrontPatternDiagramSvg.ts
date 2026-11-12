@@ -15,6 +15,7 @@ import type { SleevelessBackPatternResult } from "./sleevelessPatternOutput";
 import {
   DS_FILL,
   DS_FS_MEASURE,
+  DS_STS_ROWS_VIEWBOX_H,
   DS_FS_SMALL,
   DS_FS_TITLE,
   DS_FW_TITLE,
@@ -123,9 +124,7 @@ export function buildDropShoulderFrontStitchesRowsSvg(
     drawBodyLength(frame, model.bodyLengthLabel, model.garment === "cardigan" ? "right" : "left"),
     drawHemDepth(frame, model.hemDepthLabel),
     drawFrontNecklineDims(frame, model),
-    drawHemWidth(frame, model.hemStitchesLabel, model.hemStitches, model.bodyWidthStitches, {
-      evenWhenEqual: true,
-    }),
+    drawHemWidth(frame, model.hemStitchesLabel),
   ].join("");
 
   return wrapGeneratedDiagramSvg({
@@ -151,6 +150,7 @@ export function buildDropShoulderFrontStitchesRowsSvg(
       "data-shoulder-stitches": model.shoulderStitchesEach,
     },
     title: "Drop Shoulder Front - Stitches & Rows",
+    viewBoxHeight: DS_STS_ROWS_VIEWBOX_H,
     body,
   });
 }

@@ -13,6 +13,7 @@ import {
 } from "./sleevelessDiagramBodyShapeSrc";
 import { isSleevelessCardiganGarmentStyle } from "./sleevelessFrontDiagramSrc";
 import { sweaterCrossShoulderSpans, type SweaterShoulderSpan } from "./legoBlocks/crossShoulderMeasurement";
+import { knittedWidthInches } from "./legoBlocks/stitchesRowsDiagramLabel";
 import { shoulderStitchesPerSideForDiagram } from "./sleevelessGarmentDiagramReplacements";
 import { resolveEffectiveFinishedBustInches } from "./customBuildEffectiveFinishedBust";
 import { resolveEffectiveHemDepthInches } from "./customBuildEffectiveHemDepth";
@@ -119,7 +120,7 @@ export function sleevelessPieceFinishedSpans(
   patternData: unknown,
   garmentStyle: "pullover" | "cardigan",
   hemStitches: number,
-  bustStitches: number,
+  _bustStitches: number,
   unit: MeasurementDisplayUnit,
   overrides?: { neckDepthInches?: number; neckWidthInches?: number },
 ): SleevelessStsRowsFinishedSpans {
@@ -141,7 +142,7 @@ export function sleevelessPieceFinishedSpans(
       resolveEffectiveBackNeckDepthInches(data) ??
       storedInches(d.reservedNecklineShoulderInches),
     bustWidthInches,
-    hemWidthInches: hemStitches === bustStitches ? bustWidthInches : undefined,
+    hemWidthInches: knittedWidthInches(hemStitches, d.stitchesPerInch),
     neckWidthInches: overrides?.neckWidthInches ?? neck,
   };
 }

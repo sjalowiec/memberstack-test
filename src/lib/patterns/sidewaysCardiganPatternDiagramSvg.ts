@@ -51,6 +51,7 @@ import {
 } from "./sidewaysCardiganEditMeasurementDiagramSvg";
 import type { MeasurementDisplayUnit } from "./patternMeasurementDisplayUnit";
 import {
+  castOnEdgeDiagramLabel,
   formatPatternDiagramMeasurement,
   formatStitchesRowsDiagramLabel,
   parseStitchesRowsDiagramLabel,
@@ -73,6 +74,8 @@ export type SidewaysCardiganPatternDiagramModel = {
   measurements: SidewaysCardiganEditMeasurementDiagramInput["measurements"];
   sleeveCalc: SidewaysCardiganSleeveCalc | null;
   castOnStitches: number;
+  /** Swatch stitch gauge. Cast-on width is the edge stitch count divided by this. */
+  stitchesPerInch: number;
   /** Selected Summary / Edit unit. Counts stay unitless; measurements follow this. */
   displayUnit: MeasurementDisplayUnit;
   /**
@@ -132,6 +135,7 @@ export function buildSidewaysCardiganPatternDiagramModel(args: {
     calc: args.calc,
     sleeveCalc,
     castOnStitches: sidewaysCardiganCastOnStitches(args.calc, garmentStyle),
+    stitchesPerInch: args.input.stitchesPerInch,
     displayUnit: args.displayUnit === "cm" ? "cm" : "in",
     sectionInches,
     measurements: {
@@ -368,7 +372,15 @@ function drawCardiganStsRows(
       type.row,
       "middle",
     ),
-    measureLabel(edgeX, castOnY, `CO ${sts(edge)}`, "cast-on-sts", type.stitch, "middle", ` data-knit-edge="start" data-sts="${edge}"`),
+    measureLabel(
+      edgeX,
+      castOnY,
+      `CO ${castOnEdgeDiagramLabel(edge, model.stitchesPerInch, unit)}`,
+      "cast-on-sts",
+      type.stitch,
+      "middle",
+      ` data-knit-edge="start" data-sts="${edge}"`,
+    ),
     measureLabel(edgeX, bindOffY, `BO ${sts(edge)}`, "bind-off-sts", type.stitch, "middle", ` data-knit-edge="end" data-sts="${edge}"`),
   ].join("");
 }
@@ -550,7 +562,15 @@ function drawPulloverStsRows(
       type.row,
       "end",
     ),
-    measureLabel(midX, castOnY, `CO ${sts(edge, lengthIn)}`, "cast-on-sts", type.stitch, "middle", ` data-knit-edge="start" data-sts="${edge}"`),
+    measureLabel(
+      midX,
+      castOnY,
+      `CO ${castOnEdgeDiagramLabel(edge, model.stitchesPerInch, unit)}`,
+      "cast-on-sts",
+      type.stitch,
+      "middle",
+      ` data-knit-edge="start" data-sts="${edge}"`,
+    ),
     measureLabel(
       midX,
       startNoteY,

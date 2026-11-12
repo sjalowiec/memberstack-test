@@ -11,7 +11,11 @@ import {
   tryBuildLiveSleevelessBackStsRowsDiagramSvg,
   tryBuildSleevelessBackStsRowsDiagramSvg,
 } from "./sleevelessBackStsRowsDiagramSvg";
-import { formatPatternDiagramMeasurement } from "./patternStitchesRowsDiagramLabel";
+import {
+  formatKnittedDiagramMeasurement,
+  formatPatternDiagramMeasurement,
+  knittedWidthInches,
+} from "./patternStitchesRowsDiagramLabel";
 import { generateSleevelessBackPattern } from "./sleevelessPatternOutput";
 
 const srcRoot = join(dirname(fileURLToPath(import.meta.url)), "../..");
@@ -194,6 +198,16 @@ describe("buildSleevelessBackStsRowsDiagramSvg", () => {
     expect(svg).toContain(
       `viewBox="0 0 ${SLEEVELESS_BACK_STS_ROWS_VIEWBOX.width} ${SLEEVELESS_BACK_STS_ROWS_VIEWBOX.height}"`,
     );
+    const castOn = /data-measure="cast-on"[\s\S]*?<\/g>/.exec(svg)?.[0] ?? "";
+    expect(castOn).not.toBe("");
+    let lowest = 0;
+    for (const text of castOn.matchAll(/<text\b([^>]*)>/g)) {
+      const y = Number(/\by="([^"]+)"/.exec(text[1])?.[1]);
+      const size = Number(/font-size="([^"]+)"/.exec(text[1])?.[1] ?? 18);
+      if (Number.isFinite(y)) lowest = Math.max(lowest, y + size / 2);
+    }
+    expect(lowest).toBeGreaterThan(0);
+    expect(lowest).toBeLessThanOrEqual(SLEEVELESS_BACK_STS_ROWS_VIEWBOX.height - 8);
     expect(svg).toContain('data-sleeveless-back-sts-rows-generated="true"');
     expect(svg).toContain('data-supported="true"');
     expect(svg).toContain('data-piece="back"');
@@ -423,7 +437,12 @@ describe("buildSleevelessBackStsRowsDiagramSvg", () => {
     expect(lengthLabelRows(svg, "hem")).toBe(model.rows.hemRows);
     expect(lengthLabelRows(svg, "armhole")).toBe(model.rows.armholeRows);
     expect(lengthLabelRows(svg, "neck-depth")).toBe(model.neckline.depthRows);
-    expect(svg).toContain(formatPatternDiagramMeasurement(model.finished.hemWidthInches, "in"));
+    expect(svg).toContain(
+      formatKnittedDiagramMeasurement(
+        knittedWidthInches(model.widths.hemStitches, model.widths.stitchesPerInch),
+        "in",
+      ),
+    );
     expect(svg).toContain(formatPatternDiagramMeasurement(model.finished.bustWidthInches, "in"));
   });
 
@@ -496,7 +515,12 @@ describe("buildSleevelessBackStsRowsDiagramSvg", () => {
     expect(lengthLabelRows(svg, "body-length")).toBe(model.rows.rowsFromCastOnToArmholeStart);
     expect(lengthLabelRows(svg, "hem")).toBe(model.rows.hemRows);
     expect(lengthLabelRows(svg, "armhole")).toBe(model.rows.armholeRows);
-    expect(svg).toContain(formatPatternDiagramMeasurement(model.finished.hemWidthInches, "in"));
+    expect(svg).toContain(
+      formatKnittedDiagramMeasurement(
+        knittedWidthInches(model.widths.hemStitches, model.widths.stitchesPerInch),
+        "in",
+      ),
+    );
     expect(svg).toContain(formatPatternDiagramMeasurement(model.finished.bustWidthInches, "in"));
   });
 

@@ -10,6 +10,7 @@ import {
 } from "./sidewaysCardiganBodyCalc";
 import type { SidewaysCardiganBodyCalcInput } from "./sidewaysCardiganBodyCalc";
 import { fmtNum } from "./dropShoulderPatternDiagramSvgShared";
+import { castOnEdgeDiagramLabel } from "./patternStitchesRowsDiagramLabel";
 import { buildSidewaysVNeckSlopeSequence } from "./sidewaysCardiganBodyInstructions";
 import {
   buildSidewaysCardiganPatternDiagramFrame,
@@ -129,6 +130,13 @@ describe("Sideways Stitches & Rows diagram", () => {
     expect(svg).toContain(`${model.calc.frontRows} rows`);
     expect(svg).toContain(`${model.calc.backNeckOpeningRows} rows`);
     expect(svg).toContain(`CO ${sidewaysDiagramEdgeStitchCount(model.calc)} sts`);
+    expect(svg).toContain(
+      castOnEdgeDiagramLabel(
+        sidewaysDiagramEdgeStitchCount(model.calc),
+        model.stitchesPerInch,
+        model.displayUnit,
+      ).split("\n")[1],
+    );
     expect(svg).toContain(`BO ${sidewaysDiagramEdgeStitchCount(model.calc)} sts`);
   });
 

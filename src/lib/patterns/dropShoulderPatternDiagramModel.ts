@@ -14,7 +14,11 @@ import {
   shoulderSpanCaption,
   sweaterCrossShoulderSpans,
 } from "./legoBlocks/crossShoulderMeasurement";
-import { formatStitchesRowsDiagramLabel, formatPatternDiagramMeasurement } from "./patternStitchesRowsDiagramLabel";
+import {
+  castOnEdgeDiagramLabel,
+  formatPatternDiagramMeasurement,
+  formatStitchesRowsDiagramLabel,
+} from "./patternStitchesRowsDiagramLabel";
 import type { SleevelessBackPatternResult } from "./sleevelessPatternOutput";
 import { cardiganFrontNeckOpeningStitches } from "./roundNeckNotation";
 import {
@@ -159,7 +163,6 @@ export function buildDropShoulderBackStitchesRowsModel(
   const armholeEvenRows = Math.max(0, armholeRows - necklineRowsInsideArmhole);
   const backWidthInches = storedInches(d.finishedBustChest);
   const pieceWidthInches = backWidthInches !== undefined ? backWidthInches / 2 : undefined;
-  const hemWidthInches = hemStitches === bodyWidthStitches ? pieceWidthInches : undefined;
 
   return {
     unit,
@@ -178,7 +181,7 @@ export function buildDropShoulderBackStitchesRowsModel(
     armholeEvenRows,
     rowsFromCastOnToArmhole: positiveInt(d.rowsFromCastOnToArmholeStart),
     finalRC: positiveInt(d.finalRC || d.totalCalculatedRows),
-    hemStitchesLabel: formatStitchWidthLabel(hemStitches, hemWidthInches, unit),
+    hemStitchesLabel: castOnEdgeDiagramLabel(hemStitches, spi, unit),
     bodyWidthLabel: formatStitchWidthLabel(bodyWidthStitches, pieceWidthInches, unit),
     crossShoulderLabel: crossShoulderCaption(crossShoulderStitches, spi, unit),
     necklineWidthLabel: formatStitchWidthLabel(
@@ -248,7 +251,6 @@ export function buildDropShoulderFrontStitchesRowsModel(
   const neckWidthInches = storedInches(d.necklineWidthInches);
   const panelNeckInches =
     neckWidthInches === undefined ? undefined : isCardigan ? neckWidthInches / 2 : neckWidthInches;
-  const panelHemInches = panelHem === panelBody ? panelWidthInches : undefined;
   const rpi = base.rowsPerInch;
 
   return {
@@ -265,7 +267,7 @@ export function buildDropShoulderFrontStitchesRowsModel(
     necklineStitches: frontNecklineStitches,
     necklineRowsInsideArmhole: frontNeckDepthRows,
     armholeEvenRows,
-    hemStitchesLabel: formatStitchWidthLabel(panelHem, panelHemInches, unit),
+    hemStitchesLabel: castOnEdgeDiagramLabel(panelHem, base.stitchesPerInch, unit),
     bodyWidthLabel: formatStitchWidthLabel(panelBody, panelWidthInches, unit),
     crossShoulderLabel: isCardigan ? "" : crossShoulderCaption(panelTop, base.stitchesPerInch, unit),
     necklineWidthLabel: formatStitchWidthLabel(frontNecklineStitches, panelNeckInches, unit),
