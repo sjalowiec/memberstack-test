@@ -22,6 +22,7 @@ import {
   drawArmholeMarker,
   drawBodyLength,
   drawBodyWidth,
+  drawCrossShoulderWidth,
   drawHemDepth,
   drawHemWidth,
   drawNecklineDepthDim,
@@ -42,8 +43,8 @@ function drawShoulderStitches(frame: DropShoulderDiagramFrame, model: DropShould
   const label = escapeXml(model.shoulderStitchesLabel);
   return [
     `<g class="ds-back-diagram__shoulder-sts">`,
-    `<text x="${fmtNum(leftX)}" y="${fmtNum(y)}" text-anchor="middle" fill="${DS_STROKE}" ${textFont(DS_FS_MEASURE)}>${label}</text>`,
-    `<text x="${fmtNum(rightX)}" y="${fmtNum(y)}" text-anchor="middle" fill="${DS_STROKE}" ${textFont(DS_FS_MEASURE)}>${label}</text>`,
+    `<text data-measure="shoulder" x="${fmtNum(leftX)}" y="${fmtNum(y)}" text-anchor="middle" fill="${DS_STROKE}" ${textFont(DS_FS_MEASURE)}>${label}</text>`,
+    `<text data-measure="shoulder" x="${fmtNum(rightX)}" y="${fmtNum(y)}" text-anchor="middle" fill="${DS_STROKE}" ${textFont(DS_FS_MEASURE)}>${label}</text>`,
     `</g>`,
   ].join("");
 }
@@ -60,6 +61,7 @@ export function buildDropShoulderBackStitchesRowsSvg(
     drawArmholeMarker(frame, "both"),
     `<text x="${fmtNum(frame.midX)}" y="${fmtNum(frame.armholeMarkerY + (frame.hemTopY - frame.armholeMarkerY) * 0.62)}" text-anchor="middle" dominant-baseline="middle" fill="${DS_STROKE}" ${textFont(DS_FS_TITLE, DS_FW_TITLE)}>BACK</text>`,
     drawShoulderStitches(frame, model),
+    drawCrossShoulderWidth(frame, model.crossShoulderStitches, model.stitchesPerInch, model.unit),
     drawArmholeDepth(frame, model.armholeDepthLabel, "right"),
     drawBodyLength(frame, model.bodyLengthLabel, "left"),
     drawHemDepth(frame, model.hemDepthLabel),

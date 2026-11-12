@@ -3,7 +3,13 @@
  * Back and Front renderers use these helpers; they do not compute pattern math.
  */
 
+import {
+  placeCrossShoulderAboveNeck,
+  shoulderSpanCaption,
+  sweaterCrossShoulderSpans,
+} from "./legoBlocks/crossShoulderMeasurement";
 import { stitchesRowsLabelMarkup } from "./legoBlocks/stitchesRowsDiagramLabel";
+import type { MeasurementDisplayUnit } from "./patternMeasurementDisplayUnit";
 
 export const DS_VB_W = 430;
 export const DS_VB_H = 520;
@@ -752,6 +758,42 @@ export function drawHemDepth(frame: DropShoulderDiagramFrame, hemDepthLabel: str
   ].join("");
 }
 
+/**
+ * Finished width from one outer shoulder point to the other, including the neck.
+ * The line uses the shoulder span. The caption sits above the neck width label.
+ */
+export function drawCrossShoulderWidth(
+  frame: DropShoulderDiagramFrame,
+  stitches: number,
+  stitchesPerInch: number,
+  unit: MeasurementDisplayUnit,
+): string {
+  const span = sweaterCrossShoulderSpans({
+    stitchesPerInch,
+    spansBothShoulders: true,
+    fullShoulderStitches: stitches,
+  }).crossShoulder;
+  if (!span) return "";
+  const neckArrowY = frame.top - 14;
+  const placed = placeCrossShoulderAboveNeck({
+    neckLabelY: neckArrowY - 8,
+    neckArrowY,
+    shoulderLabelY: frame.top + 16,
+    top: 14,
+    gap: 22,
+  });
+  const caption = shoulderSpanCaption(span, unit);
+  const midX = (frame.left + frame.right) / 2;
+  return [
+    `<g data-cross-shoulder="true" data-sts="${fmtNum(span.stitches)}" data-inches="${fmtNum(span.inches)}">`,
+    `<line x1="${fmtNum(frame.left)}" y1="${fmtNum(placed.lineY)}" x2="${fmtNum(frame.right)}" y2="${fmtNum(placed.lineY)}" stroke="${DS_ARROW}" stroke-width="1.4" fill="none"/>`,
+    endCap(frame.left, placed.lineY, false),
+    endCap(frame.right, placed.lineY, false),
+    `<text data-role="width-measurement" data-measure="cross-shoulder" data-span="full" x="${fmtNum(midX)}" y="${fmtNum(placed.captionY)}" text-anchor="middle" dominant-baseline="middle" fill="${DS_MUTED}" ${textFont(DS_FS_MEASURE)}>${escapeXml(caption)}</text>`,
+    `</g>`,
+  ].join("");
+}
+
 export function drawBodyWidth(
   frame: DropShoulderDiagramFrame,
   bodyWidthLabel: string,
@@ -803,7 +845,7 @@ export function drawNecklineWidthDim(
     `<line x1="${fmtNum(x1)}" y1="${fmtNum(y)}" x2="${fmtNum(x2)}" y2="${fmtNum(y)}" stroke="${DS_ARROW}" stroke-width="1.4" fill="none"/>`,
     endCap(x1, y, false),
     endCap(x2, y, false),
-    countMeasureText(necklineWidthLabel, (x1 + x2) / 2, y - 8, "middle"),
+    countMeasureText(necklineWidthLabel, (x1 + x2) / 2, y - 8, "middle", ` data-measure="neck"`),
     `</g>`,
   ].join("");
 }

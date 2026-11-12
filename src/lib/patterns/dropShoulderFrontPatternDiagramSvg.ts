@@ -24,6 +24,7 @@ import {
   buildDropShoulderFrontFullWidthFrame,
   drawArmholeDepth,
   drawArmholeMarker,
+  drawCrossShoulderWidth,
   drawBodyLength,
   drawHemDepth,
   drawHemWidth,
@@ -49,7 +50,7 @@ function drawShoulderStitches(
     const x = (frame.left + frame.neckLeftX) / 2;
     return [
       `<g class="ds-front-diagram__shoulder-sts">`,
-      `<text x="${fmtNum(x)}" y="${fmtNum(y)}" text-anchor="middle" fill="${DS_STROKE}" ${textFont(DS_FS_MEASURE)}>${label}</text>`,
+      `<text data-measure="shoulder" x="${fmtNum(x)}" y="${fmtNum(y)}" text-anchor="middle" fill="${DS_STROKE}" ${textFont(DS_FS_MEASURE)}>${label}</text>`,
       `</g>`,
     ].join("");
   }
@@ -57,8 +58,8 @@ function drawShoulderStitches(
   const rightX = (frame.right + frame.neckRightX) / 2;
   return [
     `<g class="ds-front-diagram__shoulder-sts">`,
-    `<text x="${fmtNum(leftX)}" y="${fmtNum(y)}" text-anchor="middle" fill="${DS_STROKE}" ${textFont(DS_FS_MEASURE)}>${label}</text>`,
-    `<text x="${fmtNum(rightX)}" y="${fmtNum(y)}" text-anchor="middle" fill="${DS_STROKE}" ${textFont(DS_FS_MEASURE)}>${label}</text>`,
+    `<text data-measure="shoulder" x="${fmtNum(leftX)}" y="${fmtNum(y)}" text-anchor="middle" fill="${DS_STROKE}" ${textFont(DS_FS_MEASURE)}>${label}</text>`,
+    `<text data-measure="shoulder" x="${fmtNum(rightX)}" y="${fmtNum(y)}" text-anchor="middle" fill="${DS_STROKE}" ${textFont(DS_FS_MEASURE)}>${label}</text>`,
     `</g>`,
   ].join("");
 }
@@ -115,6 +116,9 @@ export function buildDropShoulderFrontStitchesRowsSvg(
     drawArmholeMarker(frame, markerSides),
     drawPieceLabel(frame, model),
     drawShoulderStitches(frame, model),
+    model.garment === "cardigan"
+      ? ""
+      : drawCrossShoulderWidth(frame, model.crossShoulderStitches, model.stitchesPerInch, model.unit),
     drawArmholeDepth(frame, model.armholeDepthLabel, armholeSide),
     drawBodyLength(frame, model.bodyLengthLabel, model.garment === "cardigan" ? "right" : "left"),
     drawHemDepth(frame, model.hemDepthLabel),

@@ -13,6 +13,7 @@ import {
   shouldGenerateSleevelessAlineStsRows,
 } from "./sleevelessDiagramBodyShapeSrc";
 import { isSleevelessCardiganGarmentStyle } from "./sleevelessFrontDiagramSrc";
+import { sweaterCrossShoulderSpans, type SweaterShoulderSpan } from "./legoBlocks/crossShoulderMeasurement";
 import { shoulderStitchesPerSideForDiagram } from "./sleevelessGarmentDiagramReplacements";
 import { resolveEffectiveFinishedBustInches } from "./customBuildEffectiveFinishedBust";
 import { resolveEffectiveHemDepthInches } from "./customBuildEffectiveHemDepth";
@@ -103,6 +104,10 @@ export type SleevelessBackStsRowsDiagramModel = {
   armhole: SleevelessBackStsRowsDiagramArmhole;
   shoulder: SleevelessBackStsRowsDiagramShoulder;
   bodyShaping: SleevelessBackStsRowsDiagramBodyShaping;
+  /** Outer shoulder to outer shoulder, including the neck. Null when this piece has no such span. */
+  crossShoulder: SweaterShoulderSpan | null;
+  /** Split-half width on the needles. Back pieces are drawn full width, so this stays null. */
+  halfPiece: SweaterShoulderSpan | null;
   finished: SleevelessStsRowsFinishedSpans;
 };
 
@@ -319,6 +324,11 @@ export function buildSleevelessBackStsRowsDiagramModel(
     d.backNeckRoundNecklineStrategy === "deep-round" ? "deep-round" : "shallow-round";
   const garmentStyle = isSleevelessCardiganGarmentStyle(patternData ?? {}) ? "cardigan" : "pullover";
   const unit = options?.unit === "cm" ? "cm" : "in";
+  const shoulderSpans = sweaterCrossShoulderSpans({
+    stitchesPerInch: d.stitchesPerInch,
+    spansBothShoulders: true,
+    fullShoulderStitches: stitchesAfterArmhole,
+  });
 
   return {
     piece: "back",
@@ -367,6 +377,8 @@ export function buildSleevelessBackStsRowsDiagramModel(
       points: backShoulderPoints(result),
     },
     bodyShaping,
+    crossShoulder: shoulderSpans.crossShoulder,
+    halfPiece: shoulderSpans.halfPiece,
     finished: sleevelessPieceFinishedSpans(d, patternData, garmentStyle, hemStitches, bustStitches, unit),
   };
 }

@@ -25,6 +25,10 @@ import {
   buildSleevelessBackStsRowsDiagramModel,
   type SleevelessBackStsRowsDiagramModel,
 } from "./sleevelessBackStsRowsDiagramModel";
+import {
+  placeCrossShoulderAboveNeck,
+  shoulderSpanCaption,
+} from "./legoBlocks/crossShoulderMeasurement";
 import type { MeasurementDisplayUnit } from "./patternMeasurementDisplayUnit";
 import {
   formatPatternDiagramMeasurement,
@@ -123,10 +127,11 @@ function measurementTexts(
   measure: string,
   anchor: "middle" | "start" | "end",
   lineGap = LINE_GAP,
+  labelSize?: number,
 ): string {
   return lines
     .map((line, i) => {
-      const size = i === 0 ? FS_STITCH : FS_SECONDARY;
+      const size = labelSize ?? (i === 0 ? FS_STITCH : FS_SECONDARY);
       const dy = (i - (lines.length - 1) / 2) * lineGap;
       return `<text data-role="${role}" data-measure="${measure}" x="${fmtNum(x)}" y="${fmtNum(y + dy)}" text-anchor="${anchor}" dominant-baseline="middle" fill="${MUTED}" ${textFont(size)}${line.extra ?? ""}>${escapeXml(line.text)}</text>`;
     })
@@ -171,16 +176,19 @@ function horizontalArrow(
   role: string,
   measure: string,
   lines: readonly { text: string; extra?: string }[],
+  options?: { labelSize?: number; lineGap?: number; endTicks?: boolean },
 ): string {
   const left = Math.min(x1, x2);
   const right = Math.max(x1, x2);
   const midX = (left + right) / 2;
+  const ends = options?.endTicks
+    ? `<line x1="${fmtNum(left)}" y1="${fmtNum(y - 2)}" x2="${fmtNum(left)}" y2="${fmtNum(y + 2)}" stroke="${ARROW}" stroke-width="1.5"/><line x1="${fmtNum(right)}" y1="${fmtNum(y - 2)}" x2="${fmtNum(right)}" y2="${fmtNum(y + 2)}" stroke="${ARROW}" stroke-width="1.5"/>`
+    : `${arrowHead(left, y, "left")}${arrowHead(right, y, "right")}`;
   return [
     `<g data-role="${role}" data-measure="${measure}">`,
     `<line x1="${fmtNum(left)}" y1="${fmtNum(y)}" x2="${fmtNum(right)}" y2="${fmtNum(y)}" stroke="${ARROW}" stroke-width="1.5" fill="none"/>`,
-    arrowHead(left, y, "left"),
-    arrowHead(right, y, "right"),
-    measurementTexts(lines, midX, labelY, role, measure, "middle"),
+    ends,
+    measurementTexts(lines, midX, labelY, role, measure, "middle", options?.lineGap ?? LINE_GAP, options?.labelSize),
     `</g>`,
   ].join("");
 }
@@ -352,13 +360,49 @@ function drawMeasurements(model: SleevelessBackStsRowsDiagramModel, frame: Frame
   );
 
   const neckArrowY = Math.min(frame.neckCornerY + 14, frame.neckStartY - 24);
-  const neckLabelY = Math.min(frame.shoulderTopY - 26, neckArrowY - 30);
+  const shoulderArrowY = frame.shoulderY + 16;
+  const shoulderLabelY = shoulderArrowY + 26;
+  const placed = placeCrossShoulderAboveNeck({
+    neckLabelY: Math.min(frame.shoulderTopY - 26, neckArrowY - 30),
+    neckArrowY,
+    shoulderLabelY,
+    neckRise: LINE_GAP / 2 + FS_STITCH / 2,
+  });
+  const neckTop = placed.neckLabelY - LINE_GAP / 2 - FS_STITCH / 2;
+  const tight = Boolean(model.crossShoulder) && neckTop < 40;
+  if (model.crossShoulder) {
+    const caption = shoulderSpanCaption(model.crossShoulder, unit);
+    const extra = ` data-sts="${fmtNum(model.crossShoulder.stitches)}" data-inches="${fmtNum(model.crossShoulder.inches)}" data-span="full"`;
+    parts.push(
+      tight
+        ? measurementTexts(
+            [{ text: caption, extra }],
+            (frame.afterLeft + frame.afterRight) / 2,
+            10,
+            "width-measurement",
+            "cross-shoulder",
+            "middle",
+            LINE_GAP,
+            13,
+          )
+        : horizontalArrow(
+            neckTop < placed.lineY + 12 ? 22 : placed.lineY,
+            frame.afterLeft,
+            frame.afterRight,
+            neckTop < placed.lineY + 12 ? 8 : placed.captionY,
+            "width-measurement",
+            "cross-shoulder",
+            [{ text: caption, extra }],
+            { labelSize: 15, endTicks: neckTop < placed.lineY + 12 },
+          ),
+    );
+  }
   parts.push(
     horizontalArrow(
       neckArrowY,
       frame.neckLeft,
       frame.neckRight,
-      neckLabelY,
+      placed.neckLabelY,
       "width-measurement",
       "neck",
       [
@@ -367,9 +411,7 @@ function drawMeasurements(model: SleevelessBackStsRowsDiagramModel, frame: Frame
     ),
   );
 
-  const shoulderArrowY = frame.shoulderY + 16;
   const shoulderMidX = (frame.afterRight + frame.neckRight) / 2;
-  const shoulderLabelY = shoulderArrowY + 26;
   parts.push(
     horizontalArrow(
       shoulderArrowY,

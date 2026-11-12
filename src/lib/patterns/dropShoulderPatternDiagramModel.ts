@@ -9,6 +9,10 @@
  */
 
 import {
+  shoulderSpanCaption,
+  sweaterCrossShoulderSpans,
+} from "./legoBlocks/crossShoulderMeasurement";
+import {
   formatPatternDiagramMeasurement,
   formatStitchesRowsDiagramLabel,
 } from "./patternStitchesRowsDiagramLabel";
@@ -85,6 +89,19 @@ function formatStitchWidthLabel(
   return formatStitchesRowsDiagramLabel(sts, "sts", formatPatternDiagramMeasurement(inches, unit));
 }
 
+function crossShoulderCaption(
+  stitches: number,
+  stitchesPerInch: number,
+  unit: DropShoulderDiagramUnit,
+): string {
+  const span = sweaterCrossShoulderSpans({
+    stitchesPerInch,
+    spansBothShoulders: true,
+    fullShoulderStitches: stitches,
+  }).crossShoulder;
+  return span ? shoulderSpanCaption(span, unit) : "";
+}
+
 function formatRowsLengthLabel(
   rows: number,
   inches: number | undefined,
@@ -151,11 +168,7 @@ export function buildDropShoulderBackStitchesRowsModel(
     finalRC: positiveInt(d.finalRC || d.totalCalculatedRows),
     hemStitchesLabel: formatStitchWidthLabel(hemStitches, hemWidthInches, unit),
     bodyWidthLabel: formatStitchWidthLabel(bodyWidthStitches, pieceWidthInches, unit),
-    crossShoulderLabel: formatStitchWidthLabel(
-      crossShoulderStitches,
-      storedInches(d.shoulderWidthInches),
-      unit,
-    ),
+    crossShoulderLabel: crossShoulderCaption(crossShoulderStitches, spi, unit),
     necklineWidthLabel: formatStitchWidthLabel(
       necklineStitches,
       storedInches(d.necklineWidthInches),
@@ -249,11 +262,7 @@ export function buildDropShoulderFrontStitchesRowsModel(
     armholeEvenRows,
     hemStitchesLabel: formatStitchWidthLabel(panelHem, panelHemInches, unit),
     bodyWidthLabel: formatStitchWidthLabel(panelBody, panelWidthInches, unit),
-    crossShoulderLabel: formatStitchWidthLabel(
-      panelTop,
-      isCardigan ? undefined : storedInches(d.shoulderWidthInches),
-      unit,
-    ),
+    crossShoulderLabel: isCardigan ? "" : crossShoulderCaption(panelTop, base.stitchesPerInch, unit),
     necklineWidthLabel: formatStitchWidthLabel(frontNecklineStitches, panelNeckInches, unit),
     necklineDepthLabel: formatRowsLengthLabel(
       frontNeckDepthRows,

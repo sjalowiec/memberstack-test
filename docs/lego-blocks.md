@@ -147,6 +147,19 @@ Example:
 
 ---------------------------------------------------
 
+CROSS SHOULDER MEASUREMENT
+
+Location:
+src/lib/patterns/legoBlocks/crossShoulderMeasurement.ts
+
+Purpose:
+Labels the finished width from one outer shoulder point to the other, including the neck opening, on sweater Stitches & Rows diagrams. The measurement is the knitted width of the generated shoulder stitches (stitches divided by gauge), in the selected units. A split half also labels that half’s width, including its seam stitch, so it is not read as the full cross shoulder.
+
+Use when:
+A sweater body diagram spans both outer shoulders, or a center-seam half needs the full width distinguished from the half on the needles. Sleeves, cardigan fronts, sideways bodies, hats, and socks do not use it.
+
+---------------------------------------------------
+
 GLOSSARY TOOLTIP
 
 Location:
