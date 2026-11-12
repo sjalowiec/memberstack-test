@@ -85,7 +85,7 @@ describe("buildDropShoulderBackStitchesRowsSvg", () => {
     expect(svg).toContain(`data-shoulder-stitches="${Math.round(result.debug.shoulderStitches ?? 0)}"`);
     expect(svg).toContain(`data-hem-rows="${Math.round(result.debug.hemRows)}"`);
     expect(svg).toContain(`data-body-rows="${Math.round(result.debug.bodyRows)}"`);
-    expect(svg).toContain(model.hemStitchesLabel);
+    for (const line of model.hemStitchesLabel.split("\n")) expect(svg).toContain(line);
     expect(svg).toContain(model.shoulderStitchesLabel);
     expect(svg).not.toMatch(/\bNaN\b/);
   });
@@ -113,8 +113,8 @@ describe("buildDropShoulderBackStitchesRowsSvg", () => {
     expect(svg).toContain('data-body-width="true"');
     expect(svg).toContain('data-neckline-width-dim="true"');
     expect(svg).toContain('data-neckline-depth-dim="true"');
-    expect(svg).toContain(model.bodyWidthLabel);
-    expect(svg).toContain(model.necklineWidthLabel);
+    for (const line of model.bodyWidthLabel.split("\n")) expect(svg).toContain(line);
+    for (const line of model.necklineWidthLabel.split("\n")) expect(svg).toContain(line);
     expect(svg).toContain(model.necklineDepthLabel);
     expect(svg).toContain('width="100%"');
     expect(svg).toContain('height="auto"');

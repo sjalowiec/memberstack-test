@@ -84,8 +84,8 @@ describe("generated Drop Shoulder sleeve Stitches & Rows", () => {
     expect(svg).toContain(`data-cuff-rows="${model.cuffRows}"`);
     expect(svg).toContain(`data-sleeve-body-rows="${model.sleeveBodyRows}"`);
     expect(svg).toContain(`data-sleeve-total-rows="${model.sleeveTotalRows}"`);
-    expect(svg).toContain(model.wristWidthLabel);
-    expect(svg).toContain(model.topWidthLabel);
+    for (const line of model.wristWidthLabel.split("\n")) expect(svg).toContain(line);
+    for (const line of model.topWidthLabel.split("\n")) expect(svg).toContain(line);
     expect(svg).toContain(model.cuffDepthLabel);
     expect(svg).toContain(model.sleeveBodyLengthLabel);
     expect(svg).toContain(model.sleeveTotalLengthLabel);
@@ -116,8 +116,8 @@ describe("generated Drop Shoulder sleeve Stitches & Rows", () => {
     expect(svg).toContain(`data-wrist-stitches="${model.wristStitches}"`);
     expect(svg).toContain(`data-top-stitches="${model.topStitches}"`);
     expect(svg).toContain(`data-sleeve-total-rows="${model.sleeveTotalRows}"`);
-    expect(svg).toContain(model.wristWidthLabel);
-    expect(svg).toContain(model.topWidthLabel);
+    for (const line of model.wristWidthLabel.split("\n")) expect(svg).toContain(line);
+    for (const line of model.topWidthLabel.split("\n")) expect(svg).toContain(line);
     expect(svg).toContain(model.cuffDepthLabel);
 
     const wristY = Number(attr(svg, "data-wrist-y"));

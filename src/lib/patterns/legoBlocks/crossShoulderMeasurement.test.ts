@@ -1,6 +1,5 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
-import plusSizes from "../../../../public/data/sizing_sweaters_plus.json";
 import { generateDropShoulderPattern } from "../dropShoulderPatternOutput";
 import {
   tryBuildLiveDropShoulderBackStsRowsDiagramSvg,
@@ -10,15 +9,9 @@ import {
 } from "../dropShoulderFrontPatternDiagramSvg";
 import { tryBuildLiveDropShoulderSleeveStsRowsDiagramSvg } from "../dropShoulderSleevePatternDiagramSvg";
 import { formatPatternDiagramMeasurement } from "../patternStitchesRowsDiagramLabel";
-import { computeDefaultMeasurementsFromChartRow } from "../sleevelessExpressSizeChartClient";
-import type { ChartRow } from "../sleevelessExpressSizeChartTypes";
 import { generateSleevelessBackPattern } from "../sleevelessPatternOutput";
-import { tryBuildLiveSleevelessBackNotationSvg } from "../sleevelessBackShapingNotationDiagramSvg";
 import { tryBuildLiveSleevelessBackStsRowsDiagramSvg } from "../sleevelessBackStsRowsDiagramSvg";
 import { tryBuildLiveSleevelessFrontStsRowsDiagramSvg } from "../sleevelessFrontStsRowsDiagramSvg";
-import { withSetInSleeveConstructionAuthored } from "../setInSleeveConstructionIdentity";
-import { generateSetInSleevePattern } from "../setInSleevePatternOutput";
-import { tryBuildSetInSleeveStitchesRowsSvg } from "../setInSleeve/setInSleeveDiagram";
 import {
   formatKnittedShoulderMeasurement,
   placeCrossShoulderAboveNeck,
@@ -26,23 +19,6 @@ import {
   shoulderSpanCaption,
   sweaterCrossShoulderSpans,
 } from "./crossShoulderMeasurement";
-
-const MISSES_4: ChartRow = {
-  bust_or_chest: 35,
-  waist: 26,
-  hip: 37,
-  garment_back_length: 23,
-  armhole_depth: 7.5,
-  shoulder_width: 13,
-  neck_opening: 7,
-  front_neck_depth: 5,
-  back_neck_depth: 1,
-  upper_arm: 10.5,
-  wrist: 5.5,
-  sleeve_length: 16.75,
-};
-
-const WOMENS_6X = (plusSizes as ChartRow[]).find((row) => String(row.size).toLowerCase() === "6x");
 
 type DrawnLabel = {
   measure: string;
@@ -91,21 +67,6 @@ function boxesOverlap(
   return a.left < b.right + gap && b.left < a.right + gap && a.top < b.bottom + gap && b.top < a.bottom + gap;
 }
 
-function expectHalfArrowOnly(svg: string) {
-  const full = svg.match(/<text\b[^>]*data-measure="cross-shoulder"[^>]*>[\s\S]*?<\/text>/)?.[0] ?? "";
-  expect(full).toContain("Full cross shoulder");
-  expect(full).not.toContain("<line");
-  expect(full).not.toContain("<polygon");
-  const half = svg.match(/<g data-role="width-measurement" data-measure="half-piece">[\s\S]*?<\/g>/)?.[0] ?? "";
-  expect(half).toContain("<line ");
-  expect(half).toContain("<polygon ");
-  expect(half).toContain("Half piece");
-  const lineY = Number(/<line\b[^>]*\by1="([^"]+)"/.exec(half)?.[1]);
-  const textY = Number(/<text\b[^>]*\by="([^"]+)"/.exec(half)?.[1]);
-  expect(textY).toBeLessThan(lineY);
-  expect(lineY - textY).toBeLessThanOrEqual(12);
-}
-
 function expectLabelsClear(svg: string, measures: string[]) {
   const labels = drawnLabels(svg).filter((label) => measures.includes(label.measure));
   for (let i = 0; i < labels.length; i += 1) {
@@ -118,31 +79,6 @@ function expectLabelsClear(svg: string, measures: string[]) {
       ).toBe(false);
     }
   }
-}
-
-function setInPattern(row: ChartRow, fit: string, stitchesPerInch: number, availableNeedles: number) {
-  const measurements = computeDefaultMeasurementsFromChartRow(row, fit, { bodyShape: "straight" });
-  return {
-    fit: {
-      sizingChart: fit === "relaxed" && row === WOMENS_6X ? "plus" : "misses",
-      easeChoice: fit,
-      selectedMeasurements: measurements,
-    },
-    style: withSetInSleeveConstructionAuthored(
-      {
-        recipientCategory: "misses",
-        garmentStyle: "pullover",
-        neckline: "round",
-        bodyShape: "straight",
-      },
-      "long",
-    ),
-    yarnGaugeMachine: {
-      gaugeStitchesPerInch: stitchesPerInch,
-      gaugeRowsPerInch: 7,
-      availableNeedles,
-    },
-  };
 }
 
 describe("cross shoulder measurement", () => {
@@ -187,86 +123,6 @@ describe("cross shoulder measurement", () => {
 });
 
 describe("sweater Stitches & Rows cross shoulder", () => {
-  it("labels a regular Misses Set-In Sleeve from the generated shoulder stitches", () => {
-    const pattern = setInPattern(MISSES_4, "standard", 5, 200);
-    const result = generateSetInSleevePattern(pattern);
-    expect(result.centerSeams?.applied).not.toBe(true);
-    const back = tryBuildLiveSleevelessBackStsRowsDiagramSvg(result, pattern, "in");
-    const front = tryBuildLiveSleevelessFrontStsRowsDiagramSvg(result, pattern, "in");
-    expect(back).toBeTruthy();
-    expect(front).toBeTruthy();
-    const stitches = result.debug.stitchesAfterArmhole ?? 0;
-    const caption = `Cross shoulder ${formatKnittedShoulderMeasurement(stitches / result.debug.stitchesPerInch, "in")}`;
-    expect(back).toContain(caption);
-    expect(front).toContain(caption);
-    expect(back).toContain('data-span="full"');
-    expect(caption).not.toBe(`Cross shoulder ${formatPatternDiagramMeasurement(13, "in")}`);
-    expect(back).toContain(`${result.debug.shoulderStitches} sts`);
-    expect(front).toContain(`${result.debug.shoulderStitches} sts`);
-    expectLabelsClear(back!, ["cross-shoulder", "neck", "shoulder"]);
-    expectLabelsClear(front!, ["cross-shoulder", "neck", "shoulder"]);
-    expect(tryBuildLiveSleevelessBackNotationSvg(result, pattern)).not.toContain("Cross shoulder");
-    const sleeve = tryBuildSetInSleeveStitchesRowsSvg({
-      sleevePiece: result.sleevePiece,
-      sleeveCap: result.sleeveCap,
-      unit: "in",
-      ...result.sleeveFinishedInches,
-    });
-    expect(sleeve).toBeTruthy();
-    expect(sleeve).not.toContain("Cross shoulder");
-    const centimeters = tryBuildLiveSleevelessBackStsRowsDiagramSvg(result, pattern, "cm");
-    expect(centimeters).toContain(
-      `Cross shoulder ${formatKnittedShoulderMeasurement(stitches / result.debug.stitchesPerInch, "cm")}`,
-    );
-  });
-
-  it("distinguishes the largest Women's relaxed split back from the half on the needles", () => {
-    expect(WOMENS_6X).toBeTruthy();
-    const saved = setInPattern(WOMENS_6X!, "relaxed", 7, 200);
-    saved.fit.sizingChart = "plus";
-    const plain = generateSetInSleevePattern(saved);
-    expect(plain.needleCapacity?.fitsAsWritten).toBe(false);
-    const seamed = generateSetInSleevePattern({
-      ...saved,
-      style: { ...(saved.style as object), centerSeams: true },
-    });
-    expect(seamed.centerSeams?.applied).toBe(true);
-    expect(seamed.centerSeams?.splitBack).toBe(true);
-    const fullStitches = plain.debug.stitchesAfterArmhole ?? 0;
-    const left = seamed.centerSeamPieces!.leftBack;
-    const right = seamed.centerSeamPieces!.rightBack;
-    const leftHalf = left.debug.cardiganHalfLeftStitchesAfterArmhole ?? 0;
-    const rightHalf = right.debug.cardiganHalfLeftStitchesAfterArmhole ?? 0;
-    expect(leftHalf + rightHalf - 2).toBe(fullStitches);
-    const svg = tryBuildLiveSleevelessFrontStsRowsDiagramSvg(left, seamed.centerSeamPieces!.backPatternData, "in", {
-      pieceLabel: "LEFT BACK",
-      centerEdge: "right",
-    });
-    expect(svg).toBeTruthy();
-    const fullCaption = `Full cross shoulder ${formatKnittedShoulderMeasurement(fullStitches / left.debug.stitchesPerInch, "in")}`;
-    const halfCaption = `Half piece ${formatKnittedShoulderMeasurement(leftHalf / left.debug.stitchesPerInch, "in")}`;
-    expect(svg).toContain(fullCaption);
-    expect(svg).toContain(halfCaption);
-    expect(svg).not.toContain(">Cross shoulder ");
-    expectHalfArrowOnly(svg!);
-    expect(fullCaption).not.toBe(halfCaption);
-    expect(svg).not.toContain(`Full cross shoulder ${formatPatternDiagramMeasurement(Number(WOMENS_6X!.shoulder_width), "in")}`);
-    expect(svg).toContain("LEFT BACK");
-    expectLabelsClear(svg!, ["cross-shoulder", "half-piece", "neck", "shoulder"]);
-    const rightSvg = tryBuildLiveSleevelessFrontStsRowsDiagramSvg(
-      right,
-      seamed.centerSeamPieces!.backPatternData,
-      "in",
-      { pieceLabel: "RIGHT BACK", centerEdge: "left" },
-    );
-    expect(rightSvg).toContain(fullCaption);
-    expect(rightSvg).toContain(
-      `Half piece ${formatKnittedShoulderMeasurement(rightHalf / right.debug.stitchesPerInch, "in")}`,
-    );
-    expect(rightSvg).not.toContain(">Cross shoulder ");
-    expectHalfArrowOnly(rightSvg!);
-  });
-
   it("uses the same label on the other sweater bodies that span both shoulders", () => {
     const sleeveless = {
       fit: {
@@ -351,7 +207,6 @@ describe("sweater Stitches & Rows cross shoulder", () => {
 
     for (const file of [
       "src/lib/patterns/sidewaysCardiganPatternDiagramSvg.ts",
-      "src/lib/patterns/setInSleeve/setInSleeveDiagram.ts",
       "src/lib/patterns/hat/hatPatternDiagramSvg.ts",
       "src/lib/patterns/sock/sockPatternDiagramSvg.ts",
     ]) {

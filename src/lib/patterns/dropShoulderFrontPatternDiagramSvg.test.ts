@@ -268,7 +268,7 @@ describe("Front Stitches & Rows neckline depth and cast-on placement", () => {
     const svg = buildDropShoulderFrontStitchesRowsSvg(model);
     const group = castOnGroup(svg);
     expect(group.length).toBeGreaterThan(0);
-    expect(group).toContain(model.hemStitchesLabel);
+    for (const line of model.hemStitchesLabel.split("\n")) expect(group).toContain(line);
     const y = Number(/data-cast-on-y="([^"]+)"/.exec(group)?.[1]);
     expect(y).toBeGreaterThan(frame.bottom);
     expect(svg).not.toContain('class="ds-diagram__body-width"');
@@ -336,7 +336,7 @@ describe("Front Stitches & Rows neckline depth and cast-on placement", () => {
     expect(neckDepthGroup(svg)).toContain(`data-neck-depth-bottom-y="${fmtNum(deepest)}"`);
     expect(neckDepthGroup(svg)).toContain("rotate(-90)");
     expect(neckDepthGroup(svg)).toContain(model.necklineDepthLabel);
-    expect(castOnGroup(svg)).toContain(model.hemStitchesLabel);
+    for (const line of model.hemStitchesLabel.split("\n")) expect(castOnGroup(svg)).toContain(line);
     expect(svg).not.toContain('data-body-width="true"');
   });
 
@@ -364,7 +364,7 @@ describe("Front Stitches & Rows neckline depth and cast-on placement", () => {
     const deepest = dropShoulderFrontNecklineDeepestY(frame, "cardigan", "round");
     expect(deepest).toBe(frame.neckBottomY);
     expect(neckDepthGroup(svg)).toContain(`data-neck-depth-bottom-y="${fmtNum(deepest)}"`);
-    expect(castOnGroup(svg)).toContain(model.hemStitchesLabel);
+    for (const line of model.hemStitchesLabel.split("\n")) expect(castOnGroup(svg)).toContain(line);
     expect(svg).not.toContain('data-body-width="true"');
   });
 
