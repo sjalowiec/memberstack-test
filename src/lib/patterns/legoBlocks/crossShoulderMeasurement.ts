@@ -13,9 +13,14 @@
 import type { MeasurementDisplayUnit } from "../patternMeasurementDisplayUnit";
 
 export const CROSS_SHOULDER_NAME = "Cross shoulder";
+/** Split half: the finished shoulder-to-shoulder width, with no dimension arrow. */
+export const FULL_CROSS_SHOULDER_NAME = "Full cross shoulder";
 export const HALF_PIECE_WIDTH_NAME = "Half piece";
 
-export type SweaterShoulderSpanName = typeof CROSS_SHOULDER_NAME | typeof HALF_PIECE_WIDTH_NAME;
+export type SweaterShoulderSpanName =
+  | typeof CROSS_SHOULDER_NAME
+  | typeof FULL_CROSS_SHOULDER_NAME
+  | typeof HALF_PIECE_WIDTH_NAME;
 
 export type SweaterShoulderSpan = {
   name: SweaterShoulderSpanName;
@@ -69,7 +74,11 @@ export function sweaterCrossShoulderSpans(input: {
   splitHalf?: boolean;
   halfPieceStitches?: number;
 }): SweaterCrossShoulderSpans {
-  const full = span(CROSS_SHOULDER_NAME, input.fullShoulderStitches, input.stitchesPerInch);
+  const full = span(
+    input.splitHalf ? FULL_CROSS_SHOULDER_NAME : CROSS_SHOULDER_NAME,
+    input.fullShoulderStitches,
+    input.stitchesPerInch,
+  );
   if (input.splitHalf) {
     return {
       crossShoulder: full,
@@ -145,25 +154,25 @@ export type SplitShoulderPlacement = CrossShoulderPlacement & {
 };
 
 /**
- * Split half: the full cross shoulder is a caption, and the half-piece width
- * is the dimension line across the drawn piece. Neither sits on the neck or
- * shoulder labels.
+ * Split half: “Full cross shoulder” is a caption with no arrow. The half-piece
+ * label sits just above the only dimension arrow, across the drawn half.
  */
 export function placeSplitShoulderLabels(input: {
   neckLabelY: number;
   neckArrowY: number;
   shoulderLabelY: number;
-  /** Top edge of the neck label. The half-piece caption stays above it. */
+  /** Top edge of the neck label. The half-piece arrow stays above it. */
   neckClearY?: number;
   top?: number;
 }): SplitShoulderPlacement {
-  const captionY = input.top ?? 14;
-  const halfLineY = captionY + 16;
-  const maxCaptionY =
-    input.neckClearY === undefined ? Number.POSITIVE_INFINITY : input.neckClearY - 14;
-  const halfCaptionY = Math.max(halfLineY + 12, Math.min(halfLineY + 16, maxCaptionY));
+  const captionY = input.top ?? 10;
+  let halfLineY = captionY + 36;
+  if (input.neckClearY !== undefined) {
+    halfLineY = Math.min(halfLineY, Math.max(captionY + 30, input.neckClearY - 12));
+  }
+  const halfCaptionY = halfLineY - 11;
   const lowestNeck = Math.min(input.neckArrowY - 12, input.shoulderLabelY - 28);
-  const wantedNeck = Math.max(input.neckLabelY, halfCaptionY + 28);
+  const wantedNeck = Math.max(input.neckLabelY, halfLineY + 18);
   const neckLabelY = wantedNeck <= lowestNeck ? wantedNeck : Math.max(input.neckLabelY, lowestNeck);
   return { captionY, lineY: halfLineY, halfLineY, halfCaptionY, neckLabelY };
 }
