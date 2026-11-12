@@ -91,6 +91,21 @@ function boxesOverlap(
   return a.left < b.right + gap && b.left < a.right + gap && a.top < b.bottom + gap && b.top < a.bottom + gap;
 }
 
+function expectHalfArrowOnly(svg: string) {
+  const full = svg.match(/<text\b[^>]*data-measure="cross-shoulder"[^>]*>[\s\S]*?<\/text>/)?.[0] ?? "";
+  expect(full).toContain("Full cross shoulder");
+  expect(full).not.toContain("<line");
+  expect(full).not.toContain("<polygon");
+  const half = svg.match(/<g data-role="width-measurement" data-measure="half-piece">[\s\S]*?<\/g>/)?.[0] ?? "";
+  expect(half).toContain("<line ");
+  expect(half).toContain("<polygon ");
+  expect(half).toContain("Half piece");
+  const lineY = Number(/<line\b[^>]*\by1="([^"]+)"/.exec(half)?.[1]);
+  const textY = Number(/<text\b[^>]*\by="([^"]+)"/.exec(half)?.[1]);
+  expect(textY).toBeLessThan(lineY);
+  expect(lineY - textY).toBeLessThanOrEqual(12);
+}
+
 function expectLabelsClear(svg: string, measures: string[]) {
   const labels = drawnLabels(svg).filter((label) => measures.includes(label.measure));
   for (let i = 0; i < labels.length; i += 1) {
@@ -153,6 +168,8 @@ describe("cross shoulder measurement", () => {
       fullShoulderStitches: 134,
       halfPieceStitches: 68,
     });
+    expect(split.crossShoulder?.name).toBe("Full cross shoulder");
+    expect(shoulderSpanCaption(split.crossShoulder!, "in")).toBe("Full cross shoulder 19.1 in");
     expect(split.crossShoulder?.inches).toBeCloseTo(134 / 7, 5);
     expect(split.halfPiece?.inches).toBeCloseTo(68 / 7, 5);
     expect(split.halfPiece?.name).toBe("Half piece");
@@ -163,8 +180,9 @@ describe("cross shoulder measurement", () => {
       50,
     );
     const splitPlace = placeSplitShoulderLabels({ neckLabelY: 50, neckArrowY: 80, shoulderLabelY: 130 });
-    expect(splitPlace.captionY).toBeLessThan(splitPlace.halfLineY);
-    expect(splitPlace.halfCaptionY).toBeGreaterThan(splitPlace.halfLineY);
+    expect(splitPlace.captionY).toBeLessThan(splitPlace.halfCaptionY);
+    expect(splitPlace.halfCaptionY).toBeLessThan(splitPlace.halfLineY);
+    expect(splitPlace.halfLineY - splitPlace.halfCaptionY).toBeLessThanOrEqual(12);
   });
 });
 
@@ -225,13 +243,14 @@ describe("sweater Stitches & Rows cross shoulder", () => {
       centerEdge: "right",
     });
     expect(svg).toBeTruthy();
-    const fullCaption = `Cross shoulder ${formatKnittedShoulderMeasurement(fullStitches / left.debug.stitchesPerInch, "in")}`;
+    const fullCaption = `Full cross shoulder ${formatKnittedShoulderMeasurement(fullStitches / left.debug.stitchesPerInch, "in")}`;
     const halfCaption = `Half piece ${formatKnittedShoulderMeasurement(leftHalf / left.debug.stitchesPerInch, "in")}`;
     expect(svg).toContain(fullCaption);
     expect(svg).toContain(halfCaption);
-    expect(svg).toContain('data-span="full"');
+    expect(svg).not.toContain(">Cross shoulder ");
+    expectHalfArrowOnly(svg!);
     expect(fullCaption).not.toBe(halfCaption);
-    expect(svg).not.toContain(`Cross shoulder ${formatPatternDiagramMeasurement(Number(WOMENS_6X!.shoulder_width), "in")}`);
+    expect(svg).not.toContain(`Full cross shoulder ${formatPatternDiagramMeasurement(Number(WOMENS_6X!.shoulder_width), "in")}`);
     expect(svg).toContain("LEFT BACK");
     expectLabelsClear(svg!, ["cross-shoulder", "half-piece", "neck", "shoulder"]);
     const rightSvg = tryBuildLiveSleevelessFrontStsRowsDiagramSvg(
@@ -244,6 +263,8 @@ describe("sweater Stitches & Rows cross shoulder", () => {
     expect(rightSvg).toContain(
       `Half piece ${formatKnittedShoulderMeasurement(rightHalf / right.debug.stitchesPerInch, "in")}`,
     );
+    expect(rightSvg).not.toContain(">Cross shoulder ");
+    expectHalfArrowOnly(rightSvg!);
   });
 
   it("uses the same label on the other sweater bodies that span both shoulders", () => {
