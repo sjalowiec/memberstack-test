@@ -119,13 +119,21 @@ function chartLabel(chart: HTMLElement, project: string, nameOverride?: string):
 }
 
 function stampChart(chart: HTMLElement, project: string, cleanups: Array<() => void>): void {
-  const banner = chart.ownerDocument.createElement("p");
-  banner.className = "pattern-print-chart-banner";
-  banner.textContent = chartLabel(chart, project);
-  chart.insertBefore(banner, chart.firstChild);
-  cleanups.push(() => banner.remove());
+  const tables = [...chart.querySelectorAll("table")].filter((table) => table.querySelector("thead"));
+  /**
+   * A checklist table repeats its title and counter sentence in the header.
+   * Cards without a table still need the one-line banner above the card.
+   */
+  if (tables.length === 0) {
+    const banner = chart.ownerDocument.createElement("p");
+    banner.className = "pattern-print-chart-banner";
+    banner.textContent = chartLabel(chart, project);
+    chart.insertBefore(banner, chart.firstChild);
+    cleanups.push(() => banner.remove());
+    return;
+  }
 
-  chart.querySelectorAll("table").forEach((table) => {
+  tables.forEach((table) => {
     const head = table.querySelector("thead");
     if (!head) return;
     const panel = table.closest(".ns-shaping-chart__tabpanel, .ns-shaping-chart--second-shoulder, .ns-shaping-chart__print-lead");

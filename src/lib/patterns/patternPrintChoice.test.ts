@@ -145,6 +145,12 @@ describe("pattern print choices", () => {
     expect(css).toContain('html[data-pattern-print-choice="both"]');
     expect(css).toContain("table-header-group");
     expect(css).toContain("break-inside: avoid");
+    expect(css).toContain('html[data-pattern-print-choice="charts"] .pattern-print-chart-break');
+    expect(css).toContain('html[data-pattern-print-choice="both"] .pattern-print-charts-appendix');
+    expect(css).toContain("page-break-before: auto");
+    expect(css).not.toContain(
+      'html[data-pattern-print-choice="both"] .pattern-print-charts-appendix,\n  html[data-pattern-print-choice="both"] .pattern-print-chart-unit + .pattern-print-chart-unit',
+    );
     expect(css).toContain("pattern-print-choice-dialog__page-range");
     expect(css).toContain("pattern-video-modal-link");
     expect(readFileSync("src/styles/print.css", "utf8")).toContain("pattern-print-choice.css");
