@@ -551,6 +551,8 @@ export type SleevelessBackPatternDebug = {
   frontArmholeNecklineOverlap?: FrontArmholeNecklineOverlap;
   /** Pullover V-neck Front written-instruction timing (presentation only). */
   frontVNeckShapingTimingCase?: FrontVNeckShapingTimingCase;
+  /** One seam stitch on the center edge. Set-In Sleeve center-seam halves only. */
+  centerSeamStitch?: boolean;
 };
 
 export type SleevelessPatternGenerationOptions = {
@@ -3990,11 +3992,14 @@ export function generateSleevelessBackPattern(
       });
     }
 
+    // A center-seam half is its own piece. Comparing it with the cardigan shoulder budget
+    // warns about a diagram this half does not use.
     if (
       backNeckShoulderTimeline &&
       frontNeckShoulderTimeline &&
       shoulderStitches !== undefined &&
-      shoulderStitches > 0
+      shoulderStitches > 0 &&
+      !(options?.useSetInArmhole === true && centerSeamStitch > 0)
     ) {
       const shoulderNotationSide = "right" as const;
       const frontShoulderBudget = isCardiganRoundHalfFront

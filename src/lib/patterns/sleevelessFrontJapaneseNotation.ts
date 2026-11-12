@@ -18,6 +18,10 @@ import {
   type JpBackNotationSvgTokenKey,
 } from "./sleevelessBackJapaneseNotation";
 import { resolveArmholeDiagramShaping } from "./setInSleeve/setInSleeveDiagramArmhole";
+import {
+  replaceSetInCenterSeamArmholeStraightRows,
+  setInCenterSeamHalfNotation,
+} from "./setInSleeve/setInCenterSeamHalfNotation";
 import { scaleAlineBodyShapingPlanForCardiganHalf } from "./sleevelessAlineShaping";
 import { shoulderStitchesPerSideForDiagram } from "./sleevelessGarmentDiagramReplacements";
 import { isSleevelessCardiganFrontNeckShoulderChart } from "./neckShoulderShapingChart";
@@ -517,27 +521,43 @@ export function buildFrontJapaneseNotationReplacements(
     );
   }
 
+  const pieceNotation = setInCenterSeamHalfNotation(result);
+  const armholeLines =
+    pieceNotation && armholeShaping.notationLines
+      ? replaceSetInCenterSeamArmholeStraightRows(
+          armholeShaping.notationLines,
+          pieceNotation.armholeStraightRows,
+        )
+      : armholeShaping.notationLines;
+  const neckBoToken = pieceNotation
+    ? pieceNotation.neckOpeningToken
+    : isVNeckFront
+      ? ""
+      : formatBindOffNotation(centerNeckBindOff ?? 0);
+  const neckLinesOut = pieceNotation ? pieceNotation.neckShapingLines : necklineShapingLines;
+  const shoulderLinesOut = pieceNotation ? pieceNotation.shoulderLines : shoulderShapingLines;
+  const neckRcOut = pieceNotation?.neckStartLocalRc ?? necklineStartRc;
+  const shoulderRcOut = pieceNotation?.shoulderStartLocalRc ?? shoulderStartLocalRc;
+
   return {
     "jp-caston": formatCastOnNotation(castOnSts),
     "jp-body-rows": formatBodyRowsNotation(bodyRows),
     "jp-body-shaping": bodyShapingJapaneseNotationFromAlinePlan(alineBodyPlan),
-    "jp-armhole-bo": armholeShaping.notationLines?.[0] ?? formatBindOffNotation(bindOffSts),
-    "jp-armhole-shaping": armholeShaping.notationLines
-      ? joinNotationLines(armholeShaping.notationLines.slice(1))
+    "jp-armhole-bo": armholeLines?.[0] ?? formatBindOffNotation(bindOffSts),
+    "jp-armhole-shaping": armholeLines
+      ? joinNotationLines(armholeLines.slice(1))
       : joinNotationLines(formatDecreaseNotationLines(armholeDecreasePoints)),
-    "jp-neckline-bo": isVNeckFront ? "" : formatBindOffNotation(centerNeckBindOff ?? 0),
-    "jp-neckline-shaping": joinNotationLines(necklineShapingLines),
-    "jp-shoulder-shaping": joinNotationLines(shoulderShapingLines),
+    "jp-neckline-bo": neckBoToken,
+    "jp-neckline-shaping": joinNotationLines(neckLinesOut),
+    "jp-shoulder-shaping": joinNotationLines(shoulderLinesOut),
     "rc-caston": formatRcNotation(0),
     "rc-hem": formatRcNotation(hemRows),
     "rc-armhole-bo":
       armholeStartGarmentRc !== undefined ? formatRcNotation(armholeStartGarmentRc) : "",
     rc_reset: rcReset,
     "rc-neckline-start":
-      necklineStartRc !== undefined && Number.isFinite(necklineStartRc)
-        ? formatRcNotation(necklineStartRc)
-        : "",
+      neckRcOut !== undefined && Number.isFinite(neckRcOut) ? formatRcNotation(neckRcOut) : "",
     "rc-shoulder-start":
-      shoulderStartLocalRc !== undefined ? formatRcNotation(shoulderStartLocalRc) : "",
+      shoulderRcOut !== undefined ? formatRcNotation(shoulderRcOut) : "",
   };
 }
