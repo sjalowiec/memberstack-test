@@ -403,12 +403,17 @@ function withBackNeckDepthOnFront(patternData: Record<string, unknown>): Record<
   const next = withCardiganHalfStyle(patternData, "round");
   const fit = { ...section(next.fit) };
   const measurements = { ...section(fit.selectedMeasurements) };
+  const overrides = { ...section(fit.cbMeasurementOverrides) };
   const backDepth = resolveEffectiveBackNeckDepthInches(patternData);
   if (backDepth !== undefined) {
     measurements.front_neck_depth = backDepth;
     measurements.frontNeckDepth = backDepth;
+    // The neck-depth editor override replaces front neck depth. A back half must
+    // use the back neck depth instead of that front override.
+    delete overrides.neckDepth;
   }
   fit.selectedMeasurements = measurements;
+  fit.cbMeasurementOverrides = overrides;
   return { ...next, fit };
 }
 

@@ -1210,6 +1210,47 @@ describe("set-in sleeve center seams", () => {
     expect(frontHtml).toContain('class="ns-shaping-chart');
   });
 
+  it("shapes the left back neckline from the back depth when the front neck depth is overridden", () => {
+    const saved = pattern({ availableNeedles: 80 });
+    const fit = saved.fit as Record<string, unknown>;
+    fit.cbMeasurementOverrides = { neckDepth: "5" };
+    const open = generateSetInSleevePattern(saved);
+    const seamed = generateSetInSleevePattern(withCenterSeams(saved));
+    const pieces = seamed.centerSeamPieces!;
+    expect(pieces.leftBack.debug.frontNeckDepth).toBeLessThanOrEqual(1);
+    expect(pieces.rightFront!.debug.frontNeckDepth).toBeGreaterThan(1);
+    expect(pieces.rightFront!.debug.frontNecklineStartLocalRC).toBe(open.debug.frontNecklineStartLocalRC);
+    expect(pieces.leftBack.debug.frontNecklineStartLocalRC).not.toBe(open.debug.frontNecklineStartLocalRC);
+    const backDistance = Math.abs(
+      (pieces.leftBack.debug.frontNecklineStartLocalRC ?? 0) - (open.debug.backNecklineStartLocalRC ?? 0),
+    );
+    const frontDistance = Math.abs(
+      (pieces.leftBack.debug.frontNecklineStartLocalRC ?? 0) - (open.debug.frontNecklineStartLocalRC ?? 0),
+    );
+    expect(backDistance).toBeLessThan(frontDistance);
+
+    const backHtml = renderSetInCenterSeamNeckChartHtml({
+      piece: "left-back",
+      chart: pieces.leftBack.frontNeckShoulderShapingChart,
+      armholeStartRow: pieces.leftBack.debug.armholeStartRow,
+    });
+    const frontHtml = renderSetInCenterSeamNeckChartHtml({
+      piece: "right-front",
+      chart: pieces.rightFront!.frontNeckShoulderShapingChart,
+      armholeStartRow: pieces.rightFront!.debug.armholeStartRow,
+    });
+    const plain = (html: string) => html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ");
+    const neckRc = (text: string, carriage: "Left" | "Right") =>
+      text.match(new RegExp(`(\\d{3}) \\(${carriage}\\) Bind off (\\d+) sts Neck`))?.[1];
+    const introRc = (text: string) =>
+      text.match(/When Armhole RC reaches (\d+), begin neckline shaping at the center edge/)?.[1];
+    const backText = plain(backHtml);
+    const frontText = plain(frontHtml);
+    expect(introRc(backText)).toBe(neckRc(backText, "Right"));
+    expect(introRc(frontText)).toBe(neckRc(frontText, "Left"));
+    expect(neckRc(backText, "Right")).not.toBe(neckRc(frontText, "Left"));
+  });
+
   it("names each center-seam body chart for the piece whose rows it prints", () => {
     const saved = pattern({
       bodyShape: "aline",
