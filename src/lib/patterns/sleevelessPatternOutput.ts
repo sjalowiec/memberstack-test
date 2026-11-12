@@ -3943,6 +3943,7 @@ export function generateSleevelessBackPattern(
     frontSvgLastRc: fb.last,
     backFirstShapingRowPassedToTimeline: neckStartRC,
     frontFirstShapingRowPassedToTimeline: frontNecklineStartRC,
+    ...(centerSeamStitch > 0 ? { centerSeamStitch: true as const } : {}),
     ...(isCardiganHalfFrontBody && cardiganHalfLeftCastOnSts !== undefined
       ? {
           cardiganHalfLeftCastOnSts: cardiganHalfLeftCastOnSts,
