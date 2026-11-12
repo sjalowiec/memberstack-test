@@ -743,7 +743,14 @@ function drawStitchesRowsDimensions(frame: SleeveFrame, model: SetInSleeveDiagra
     endCap(frame.upperRight, upperLineY, false),
     countMeasure(model.upperArmWidthLabel, frame.midX, upperLineY + 16, "middle"),
     `</g>`,
-    verticalLength(lengthX, frame.capTopY, frame.capStartY, model.capHeightLabel, "cap-height", "right"),
+    verticalLength(
+      frame.canvasWidth - 24,
+      frame.capTopY,
+      frame.capStartY,
+      model.capHeightLabel,
+      "cap-height",
+      "left",
+    ),
     verticalLength(lengthX, frame.capStartY, frame.cuffJoinY, model.sleeveBodyLengthLabel, "sleeve-body-length", "right"),
     verticalLength(lengthX, frame.cuffJoinY, frame.wristY, model.cuffDepthLabel, "cuff-depth", "right"),
   ].join("");
@@ -949,12 +956,12 @@ function stackNotationBaselines(labels: SleeveNotationLabel[]): void {
   }
   const unmatched = left.filter((label) => !rightY.has(notationOrder(label)));
   stackSide(unmatched);
-  const sideTop = Math.min(
-    ...labels.filter((label) => label.anchor !== "middle").map((label) => label.y),
-  );
+  const sideTops = labels.filter((label) => label.anchor !== "middle").map((label) => label.y);
+  let ceiling = (sideTops.length > 0 ? Math.min(...sideTops) : 0) - NOTATION_GAP;
   for (const label of labels) {
     if (label.role !== "cap-bind-off") continue;
-    label.y = Math.min(label.y, sideTop - NOTATION_GAP);
+    label.y = Math.min(label.y, ceiling);
+    ceiling = label.y - NOTATION_GAP;
   }
 }
 

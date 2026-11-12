@@ -1524,7 +1524,7 @@ describe("set-in sleeve center seams", () => {
     expect(left).toContain(
       "Shape only at the armhole edge. Keep the center seam stitch through the body and armhole shaping.",
     );
-    expect(left).toContain("Work with the carriage on the left.");
+    expect(left).toContain("Work the first armhole bind-off with the carriage on the left.");
     expect(left).toContain("Reset the row counter. Use Armhole RC from here.");
     expect(left).toContain(
       "Work the first center-edge action with the carriage on the right, including the seam stitch.",
@@ -1555,7 +1555,7 @@ describe("set-in sleeve center seams", () => {
     expect(print).toContain(SET_IN_SPLIT_BACK_TIP_TITLE);
     expect(printedLines).toContain("The count is for the left back only and includes one center seam stitch.");
     expect(printedLines).toContain("Reset the row counter. Use Armhole RC from here.");
-    expect(printedLines).toContain("Work with the carriage on the left.");
+    expect(printedLines).toContain("Work the first armhole bind-off with the carriage on the left.");
     expect(printedLines).toContain("The right back uses the same stitch counts and row numbers as the left back.");
     expect(printedLines).toContain("Bind off the armhole edge with the carriage on the right.");
     expect(printedLines).not.toContain(SET_IN_SPLIT_BACK_TIP_TITLE);

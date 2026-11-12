@@ -515,7 +515,7 @@ describe("set-in sleeve diagram presentation", () => {
         return [rc, ...paragraphs].filter((part) => part && part.length > 0).join(" ");
       })
       .join("\n");
-    expect(written).toContain(`${formatRcColon(piece.sleeveBodyRows)} Begin the sleeve cap.`);
+    expect(written).toContain(`${formatRcColon(piece.sleeveBodyRows)} Begin the sleeve cap with the carriage on the`);
     expect(written).toContain(
       `${formatRcColon(piece.sleeveBodyRows + cap.totals.capRows)} Bind off the remaining ${cap.totals.finalStitches}`,
     );

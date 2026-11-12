@@ -32,6 +32,10 @@ export const SLEEVELESS_DIAGRAM_TAB_LABELS: Record<SleevelessDiagramTabId, strin
 
 export const SLEEVELESS_DIAGRAM_PANEL_TITLE = "Garment Dimensions";
 
+/** Shown once on a center-seam diagram, not on each dimension label. */
+export const CENTER_SEAM_DIAGRAM_NOTE =
+  "Each half includes one center seam stitch. Full cross-shoulder measurements exclude the center seam stitches.";
+
 export const SLEEVELESS_SHAPING_NOTATION_HELP_LABEL = "How to Read Shaping Notation";
 export const SLEEVELESS_SHAPING_NOTATION_HELP_VIMEO_ID = SHAPING_NOTATION_CHART_HELP_VIMEO_ID;
 
@@ -163,8 +167,11 @@ export function buildSleevelessPatternDiagramTabsShellHtml(
         ? "Sleeve diagram view"
         : "Front diagram view";
   const helpHtml = buildSleevelessShapingNotationHelpHtml();
+  const seamNote = options.centerSeamDiagramKey
+    ? `<p class="sleeveless-pattern-diagram-seam-note">${escapeHtml(CENTER_SEAM_DIAGRAM_NOTE)}</p>`
+    : "";
 
-  return buildPatternDiagramTabsShellHtml({
+  return seamNote + buildPatternDiagramTabsShellHtml({
     idPrefix,
     tablistLabel,
     extraRootClass: "sleeveless-pattern-diagram-tabs",

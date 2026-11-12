@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { buildCustomBuildEffectivePatternInput } from "../buildCustomBuildEffectivePatternInput";
 import {
-  compressStitchDecreasePointsToNotationLines,
-  type StitchDecreasePoint,
-} from "../shapingNotationCompress";
+  setInActionNotationLines,
+  type SetInNotationActionKind,
+} from "./setInCenterSeamHalfNotation";
 import { tryBuildLiveSleevelessFrontCardiganRoundNotationSvg } from "../sleevelessFrontCardiganRoundShapingNotationDiagramSvg";
 import { tryBuildLiveSleevelessFrontStsRowsDiagramSvg } from "../sleevelessFrontStsRowsDiagramSvg";
 import { renderPatternDisplayRowsHtml } from "../sleevelessPatternDisplayHtml";
@@ -119,12 +119,21 @@ function svgAttr(svg: string, name: string): string {
   return svg.match(new RegExp(`\\b${name}="([^"]*)"`))?.[1] ?? "";
 }
 
+function notationKind(verb: string): SetInNotationActionKind {
+  if (verb === "Hold") return "hold";
+  if (verb === "Bind off") return "bindOff";
+  if (verb === "Bind off OR hold") return "bindOffOrHold";
+  return "decrease";
+}
+
 function notationLinesFromChecklist(actions: readonly ChecklistAction[]): string[] {
-  const points: StitchDecreasePoint[] = actions.map((action) => ({
-    row: action.rc,
-    amount: action.amount,
-  }));
-  return compressStitchDecreasePointsToNotationLines(points);
+  return setInActionNotationLines(
+    actions.map((action) => ({
+      row: action.rc,
+      amount: action.amount,
+      kind: notationKind(action.verb),
+    })),
+  );
 }
 
 describe("set-in center-seam half notation", () => {
@@ -182,7 +191,7 @@ describe("set-in center-seam half notation", () => {
     expect(svgAttr(svg, "data-neck-bo")).toBe("hold11");
     expect(svgAttr(svg, "data-cf-neck-bo-sts")).toBe("11");
     expect(svgAttr(svg, "data-cf-neck-bo-source")).toBe("center-seam-half-timeline");
-    expect(svgAttr(svg, "data-neck-shaping")).toBe("2s-2r-4x\n1s-2r-1x\n2s-2r-1x");
+    expect(svgAttr(svg, "data-neck-shaping")).toBe("hold2-2r-4x\nhold1\nbo2");
     expect(svgAttr(svg, "data-rc-neck-start")).toBe("rc065");
     expect(svgAttr(svg, "data-rc-shoulder-start")).toBe("rc066");
     expect(svgAttr(svg, "data-armhole-shaping")).toContain("44r");
@@ -267,8 +276,11 @@ describe("set-in center-seam half notation", () => {
       expect(svg).toContain('data-shoulder-sts="21"');
       expect(svg).toContain("14 in");
       expect(svg).toContain("8.9 in");
-      expect(svg).toContain("including 1 seam stitch");
-      expect(svg).toContain("excluding center seam stitches");
+      expect(svg).toContain("Full cross shoulder");
+      expect(svg).toContain("Half piece");
+      expect(svg).not.toContain("includes 1 seam stitch");
+      expect(svg).not.toContain("including 1 seam stitch");
+      expect(svg).not.toContain("excluding center seam stitches");
     }
 
     const backHtml = renderPatternDisplayRowsHtml(seamed.displayRows, { pieceSectionId: "back" });
@@ -278,7 +290,9 @@ describe("set-in center-seam half notation", () => {
     expect(frontHtml).toContain(counter);
     expect(backHtml).not.toContain("Row counter was reset to RC: 000 before this chart.");
     expect(frontHtml).not.toContain("Row counter was reset to RC: 000 before this chart.");
-    expect(backHtml).toMatch(/Knit \d+ rows even to RC: \d{3}/);
+    expect(backHtml).toMatch(/Knit \d+ rows even until the row counter shows RC: \d{3}/);
+    expect(backHtml).toContain("Do not mark");
+    expect(backHtml).toContain("set the carriage to hold for your machine");
   });
 
   it("keeps the one-piece armhole straight-row token on the full plan", () => {

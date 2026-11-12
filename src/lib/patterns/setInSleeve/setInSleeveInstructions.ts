@@ -240,7 +240,8 @@ function groupedBindOffLines(
     const where =
       groupRows === 1 ? "the next row" : `each of the next ${groupRows} ${rowWord(groupRows)}`;
     stitches -= group.stitches * groupRows;
-    const instruction = `Bind off ${group.stitches} ${stitchWord(group.stitches)} at the beginning of ${where}. The carriage is at the edge being bound off. Take those stitches off the needle. Knit across after this bind-off only when the next row is not also a bind-off.`;
+    const each = groupRows === 1 ? "this bind-off" : "each of these bind-offs";
+    const instruction = `Bind off ${group.stitches} ${stitchWord(group.stitches)} at the beginning of ${where}. The carriage is at the edge being bound off. Take those stitches off the needle. After ${each}, knit across to the opposite edge and work the next action there. Do not add a plain row.`;
     lines.push(`${formatRcColon(rc)} ${instruction} ${remain(stitches)}`);
     blocks.push({
       rc,
@@ -484,6 +485,11 @@ type SetInCuffUpSleevePresentation = {
   shapingRcs: number[];
 };
 
+function carriageAfterRows(start: "left" | "right", rows: number): "left" | "right" {
+  if (Math.abs(Math.floor(rows)) % 2 === 0) return start;
+  return start === "left" ? "right" : "left";
+}
+
 function knitEvenSentence(rows: number, endRc: number): string {
   if (rows <= 0) return "";
   const end = ` to ${formatRcColon(endRc)}`;
@@ -587,7 +593,8 @@ export function buildSetInCuffUpSleevePresentation(
   );
   const trustedShaping = writtenShaping.map(normalizeParentheticalRcLists);
   const taperRows = setInSleeveTaperChartRows(input);
-  const capModel = buildSleeveCapInstructionModel(input.cap, input.rowsCuffToUpperArm);
+  const capCarriage = firstSleeveCapCarriage(input.cuffRows, input.rowsCuffToUpperArm);
+  const capModel = buildSleeveCapInstructionModel(input.cap, input.rowsCuffToUpperArm, capCarriage);
   const capLines = capModel.lines.map((line) => line.text);
   const omitRibbing = sleeveCuffRibbingOmitted(input.cuffRows);
   const cuffChoiceHtml = omitRibbing
@@ -664,7 +671,10 @@ export function buildSetInCuffUpSleevePresentation(
           {
             kind: "block" as const,
             rc: formatRcColon(0),
-            paragraphs: [cuffChoicePlain.summary],
+            paragraphs: [
+              "Begin the first counted row with the carriage on the right.",
+              cuffChoicePlain.summary,
+            ],
             stitchCount: input.wristStitches > 0 ? input.wristStitches : undefined,
           },
         ]
@@ -673,12 +683,21 @@ export function buildSetInCuffUpSleevePresentation(
           {
             kind: "block" as const,
             rc: formatRcColon(0),
-            paragraphs: [cuffChoicePlain.summary],
+            paragraphs: [
+              "Begin the first counted row with the carriage on the right.",
+              cuffChoicePlain.summary,
+            ],
             trustedParagraphs: [cuffChoiceHtml.summary],
             stitchCount: input.wristStitches > 0 ? input.wristStitches : undefined,
             ...setInCuffMethodsTipFields(cuffChoiceHtml.methods),
           },
-          cuffUpSleeveBodyRowCounterResetBlock(),
+          {
+            ...cuffUpSleeveBodyRowCounterResetBlock(),
+            paragraphs: [
+              ...cuffUpSleeveBodyRowCounterResetBlock().paragraphs,
+              `The carriage is on the ${carriageAfterRows("right", input.cuffRows)}.`,
+            ],
+          },
         ]),
     { kind: "section", title: "SLEEVE BODY" },
   ];
@@ -890,13 +909,14 @@ function sleeveCapDecreaseSentence(
 function buildSleeveCapInstructionModel(
   cap: SetInSleeveCapSuccess,
   capStartRc: number,
+  firstBindOffCarriage: "left" | "right",
 ): { lines: CountLine[]; chartRows: SetInSleeveCapChartRow[] } {
   const lines: CountLine[] = [];
   const chartRows: SetInSleeveCapChartRow[] = [];
   let rc = capStartRc;
   let stitches = cap.sleeve.upperArmStitches;
   lines.push({
-    text: `${formatRcColon(rc)} Begin the sleeve cap. ${remain(stitches)}`,
+    text: `${formatRcColon(rc)} Begin the sleeve cap with the carriage on the ${firstBindOffCarriage}. That is the first bind-off side. The next bind-off is the other side. ${remain(stitches)}`,
     stitches,
     rows: 0,
   });
@@ -986,8 +1006,13 @@ function buildSleeveCapInstructionModel(
   return { lines, chartRows };
 }
 
-function sleeveCapLines(cap: SetInSleeveCapSuccess, capStartRc: number): CountLine[] {
-  return buildSleeveCapInstructionModel(cap, capStartRc).lines;
+function firstSleeveCapCarriage(cuffRows: number, bodyRows: number): "left" | "right" {
+  const afterCuff = carriageAfterRows("right", cuffRows);
+  return carriageAfterRows(afterCuff, bodyRows);
+}
+
+function sleeveCapLines(cap: SetInSleeveCapSuccess, capStartRc: number, cuffRows: number): CountLine[] {
+  return buildSleeveCapInstructionModel(cap, capStartRc, firstSleeveCapCarriage(cuffRows, capStartRc)).lines;
 }
 
 function sleeveBodyRowAccount(endRc: number, shapingRcs: readonly number[]): number {
@@ -1151,7 +1176,7 @@ export function generateSetInSleeveInstructions(
     direction: "cuff-up" as const,
   };
   const shapingRcs = dropShoulderSleeveShapingRcSequence(sleeveChartInput);
-  const capRecords = sleeveCapLines(result.sleeveCap, result.sleeve.rowsCuffToUpperArm);
+  const capRecords = sleeveCapLines(result.sleeveCap, result.sleeve.rowsCuffToUpperArm, result.sleeve.cuffRows);
   const sleeveBodyRows = sleeveBodyRowAccount(result.sleeve.rowsCuffToUpperArm, shapingRcs);
   const checks = validate(result, armholeText, capRecords, sleeveBodyRows);
   const finalCapLine = capRecords[capRecords.length - 1]?.text ?? "";

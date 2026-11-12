@@ -216,6 +216,35 @@
   }
 
   /*
+   * Neckline intro stays with the first checklist rows. Charts mode starts that
+   * section on a new page. Complete pattern does the same only for a chart that
+   * carries the neckline introduction, so body and sleeve charts still flow.
+   */
+  .pattern-shaping-intro,
+  .set-in-checklist-timing,
+  .set-in-operating-sequence {
+    break-after: avoid;
+    page-break-after: avoid;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .ns-shaping-chart__table-wrap {
+    break-before: avoid;
+    page-break-before: avoid;
+  }
+
+  html[data-pattern-print-choice="charts"] #pattern-content .pattern-section:has(.pattern-shaping-intro) {
+    break-before: page !important;
+    page-break-before: always !important;
+  }
+
+  html[data-pattern-print-choice="both"] .pattern-print-chart-unit:has(.pattern-shaping-intro) {
+    break-before: page !important;
+    page-break-before: always !important;
+  }
+
+  /*
    * The repeating header already names the chart and its row counter.
    * Hide the matching heading above the table so that line is printed once.
    * Disclosure summaries keep their own title; those charts are not checklists

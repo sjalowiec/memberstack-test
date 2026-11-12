@@ -4,6 +4,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { SHAPING_NOTATION_CHART_HELP_VIMEO_ID } from "../glossary/shapingNotationGlossary";
 import {
+  CENTER_SEAM_DIAGRAM_NOTE,
   SLEEVELESS_DIAGRAM_PANEL_TITLE,
   SLEEVELESS_DIAGRAM_TAB_SHAPING,
   SLEEVELESS_DIAGRAM_TAB_STS_ROWS,
@@ -261,6 +262,23 @@ describe("sleeveless pattern diagram tabs", () => {
 
     shapingTab.dispatchKey("Home");
     expect(stsTab.getAttribute("aria-selected")).toBe("true");
+  });
+
+  it("states the center-seam note once on a split-piece diagram", () => {
+    const plain = sampleTabsHtml();
+    expect(plain).not.toContain(CENTER_SEAM_DIAGRAM_NOTE);
+    const split = buildSleevelessPatternDiagramTabsShellHtml({
+      piece: "back",
+      stsRowsSrc: "/images/patterns/sleeveless/diagrams/diagram-back.svg",
+      stsRowsAlt: "Left back",
+      shapingSrc: "/images/patterns/sleeveless/diagrams/diagram-jp-back.svg",
+      shapingAlt: "Left back shaping notation",
+      centerSeamDiagramKey: "left-back",
+    });
+    expect(split.indexOf(CENTER_SEAM_DIAGRAM_NOTE)).toBe(split.lastIndexOf(CENTER_SEAM_DIAGRAM_NOTE));
+    expect(split.indexOf("sleeveless-pattern-diagram-seam-note")).toBeLessThan(
+      split.indexOf("data-sleeveless-diagram-tabs"),
+    );
   });
 
   it("places shaping-notation help only in the Shaping Notation panel", () => {

@@ -119,13 +119,11 @@ function knittedLines(
   perUnit: number | undefined,
   unit: MeasurementDisplayUnit,
   extra: string,
-  note?: string,
 ): { text: string; extra?: string }[] {
   const label = stitchesRowsDiagramLabel(count, kind, formatKnittedCountMeasurement(count, perUnit, unit));
   return [
     { text: label.count, extra },
     ...(label.measure ? [{ text: label.measure }] : []),
-    ...(note ? [{ text: note }] : []),
   ];
 }
 
@@ -386,8 +384,9 @@ function drawMeasurements(model: SleevelessFrontStsRowsDiagramModel, frame: Fram
   const hemArrowX = Math.max(totalArrowX + 12, frame.left - 10);
   const leftGutterLabelX = 58;
   const hemLineGap = 32;
-  const rightArrowX = Math.min(VB_W - 28, frame.right + 22);
-  const rightLabelX = Math.min(VB_W - 12, rightArrowX + 22);
+  const canvasRight = SLEEVELESS_FRONT_STS_ROWS_VIEWBOX.width;
+  const rightArrowX = Math.min(canvasRight - 124, frame.right + 18);
+  const rightLabelX = Math.min(canvasRight - 108, rightArrowX + 16);
   const cardigan = isCardiganFrontModel(model);
   const cardiganV = cardigan && model.neckline.style === "v-neck";
   const cardiganRound = cardigan && model.neckline.style === "round";
@@ -519,7 +518,6 @@ function drawMeasurements(model: SleevelessFrontStsRowsDiagramModel, frame: Fram
           model.widths.stitchesPerInch,
           unit,
           ` data-sts="${fmtNum(model.widths.bustStitches)}"`,
-          model.halfPiece ? "includes 1 seam stitch" : undefined,
         ),
       ],
     ),
@@ -567,8 +565,8 @@ function drawMeasurements(model: SleevelessFrontStsRowsDiagramModel, frame: Fram
     });
     neckLabelY = placed.neckLabelY;
     splitHalfLineY = placed.halfLineY;
-    const crossCaption = `${shoulderSpanCaption(model.crossShoulder, unit)}, excluding center seam stitches`;
-    const halfCaption = `${shoulderSpanCaption(model.halfPiece, unit)}, including 1 seam stitch`;
+    const crossCaption = shoulderSpanCaption(model.crossShoulder, unit);
+    const halfCaption = shoulderSpanCaption(model.halfPiece, unit);
     parts.push(
       measurementTexts(
         [
@@ -645,7 +643,6 @@ function drawMeasurements(model: SleevelessFrontStsRowsDiagramModel, frame: Fram
     model.widths.stitchesPerInch,
     unit,
     ` data-sts="${fmtNum(model.widths.necklineStitches)}"`,
-    model.halfPiece ? "includes 1 seam stitch" : undefined,
   );
   if (splitHalfLineY > 0) {
     neckLabelY = Math.max(neckLabelY, splitHalfLineY + 28 + (neckLines.length - 1) * (LINE_GAP / 2));
@@ -671,7 +668,7 @@ function drawMeasurements(model: SleevelessFrontStsRowsDiagramModel, frame: Fram
     ` data-sts="${fmtNum(model.widths.shoulderStitchesPerSide)}"`,
   );
   const shoulderCenterY =
-    Math.max(shoulderLabelY, splitHalfLineY > 0 ? Math.max(splitHalfLineY + 36, neckLabelY + 48) : shoulderLabelY) +
+    Math.max(shoulderLabelY, splitHalfLineY > 0 ? Math.max(splitHalfLineY + 52, neckLabelY + 84) : shoulderLabelY) +
     ((shoulderLines.length - 1) / 2) * LINE_GAP;
   parts.push(
     horizontalArrow(

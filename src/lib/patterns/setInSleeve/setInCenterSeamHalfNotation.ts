@@ -4,7 +4,7 @@
  */
 
 import {
-  compressStitchDecreasePointsToNotationLines,
+  formatShapingSegment,
   type StitchDecreasePoint,
 } from "../shapingNotationCompress";
 import {
@@ -31,6 +31,51 @@ export type SetInCenterSeamHalfNotation = {
 };
 
 type InnerPoint = StitchDecreasePoint & { kind: "bindOff" | "decrease" | "hold" };
+
+export type SetInNotationActionKind = InnerPoint["kind"] | "bindOffOrHold";
+
+export type SetInNotationAction = StitchDecreasePoint & { kind: SetInNotationActionKind };
+
+/**
+ * Grouped notation keeps the action. Decreases stay `Ns-Mr-Kx`.
+ * Holds and bind-offs stay `hold` and `bo`. Shoulder rows are `bo/hold`.
+ */
+export function setInActionNotationLines(points: readonly SetInNotationAction[]): string[] {
+  const lines: string[] = [];
+  let index = 0;
+  while (index < points.length) {
+    const first = points[index]!;
+    let end = index + 1;
+    let gap: number | null = null;
+    while (end < points.length) {
+      const next = points[end]!;
+      if (next.kind !== first.kind || next.amount !== first.amount) break;
+      const candidate = next.row - points[end - 1]!.row;
+      if (candidate <= 0) break;
+      if (gap === null) gap = candidate;
+      if (candidate !== gap) break;
+      end += 1;
+    }
+    const times = end - index;
+    const rows = Math.max(1, times > 1 ? (gap ?? 1) : 1);
+    if (first.kind === "decrease") {
+      lines.push(formatShapingSegment(first.amount, rows, times));
+    } else if (times === 1) {
+      lines.push(
+        first.kind === "hold"
+          ? formatHoldNotation(first.amount)
+          : first.kind === "bindOff"
+            ? formatBindOffNotation(first.amount)
+            : `bo/hold${first.amount}`,
+      );
+    } else {
+      const verb = first.kind === "hold" ? "hold" : first.kind === "bindOff" ? "bo" : "bo/hold";
+      lines.push(`${verb}${first.amount}-${rows}r-${times}x`);
+    }
+    index = end;
+  }
+  return lines;
+}
 
 function frontTimeline(result: SleevelessBackPatternResult): RowEntry[] {
   return result.frontNeckShoulderTimeline ?? result.frontNeckShoulderShapingChart.timeline ?? [];
@@ -110,8 +155,10 @@ export function setInCenterSeamHalfNotation(
     neckOpeningToken: openingToken(opening),
     neckOpeningStitches: opening?.amount ?? 0,
     ...(neck[0] ? { neckStartLocalRc: Math.max(0, localRc(neck[0].row, armholeStart)) } : {}),
-    neckShapingLines: compressStitchDecreasePointsToNotationLines(neckRest),
-    shoulderLines: compressStitchDecreasePointsToNotationLines(shoulderPoints),
+    neckShapingLines: setInActionNotationLines(neckRest),
+    shoulderLines: setInActionNotationLines(
+      shoulderPoints.map((point) => ({ ...point, kind: "bindOffOrHold" as const })),
+    ),
     ...(shoulderStartLocalRc !== undefined ? { shoulderStartLocalRc } : {}),
     armholeStraightRows:
       shoulderStartLocalRc !== undefined

@@ -52,6 +52,39 @@ export const SET_IN_NECKLINE_TECHNIQUE_NOTE =
 export const SET_IN_REVERSE_CARRIAGE_SWAP =
   "Swap Left and Right. Carriage on the right becomes carriage on the left, and carriage on the left becomes carriage on the right.";
 
+/**
+ * Operating sequence for bind-off and hold. The holding-cam control is named
+ * only as “for your machine”: Knit it Now uses the automatic wrap that happens
+ * when the next held needle is on the carriage side.
+ */
+export const SET_IN_HOLD_OPERATING_LINES = [
+  "Before each row, put the carriage on the side named for that row. The working yarn stays in the feeder on that side. Do not break the yarn.",
+  "To bind off, take the stated stitches off the needle at the carriage side. Then knit across to the side named for the next row. Do not add a plain row.",
+  "To hold, set the carriage to hold for your machine. With the carriage and working yarn on the named side, put the stated needles into hold. Pull the needle beside the working stitches into hold while the yarn is on that side so it wraps. Then knit across to the side named for the next row. Do not add a plain row.",
+  "Finish the two edges separately. Bind off held shoulder stitches from the shoulder edge. Scrap off or bind off held neck stitches from the neck edge. Return only the needles for the edge you are finishing.",
+  "Shoulder rows marked bo/hold, or written Bind off OR hold, are one choice. Use that same choice on every shoulder row of the piece.",
+  "On the mirrored piece, follow the carriage side named on that piece. Left and right are swapped.",
+] as const;
+
+export function setInChecklistTimingSentence(positionRc: number, shapingRc: number): string {
+  const position = formatRcColon(positionRc);
+  const shaping = formatRcColon(shapingRc);
+  return `When the row counter shows ${position}, the row named ${position} has not been knitted. Knit that row in pattern. That pass positions the carriage for the next row. The first neckline action is at ${shaping}. Do not mark ${position} complete before that pass.`;
+}
+
+function escapeOperatingHtml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
+export function setInHoldOperatingSequenceHtml(): string {
+  return `<div class="set-in-operating-sequence">${SET_IN_HOLD_OPERATING_LINES.map(
+    (line) => `<p>${escapeOperatingHtml(line)}</p>`,
+  ).join("")}</div>`;
+}
+
 export { SET_IN_SHOULDER_HOLD_FINISH_SENTENCE };
 
 /** Closing lines for a checklist that offers hold instead of an immediate bind-off. */
@@ -581,7 +614,16 @@ export function setInNecklinePrintShaping(
   const secondRows = singleSide ? [] : displayRowsForChecklist(opposite, !heldSide);
   const firstCondensed = condenseChecklistRows(firstRows);
   const secondCondensed = condenseChecklistRows(secondRows);
-  const paragraphs = [SET_IN_PRINT_CARRIAGE_DEFINITION, SET_IN_PRINT_INTERVENING_ROWS, SET_IN_NECKLINE_TECHNIQUE_NOTE];
+  const shapingRc = armholeLocalRcFirstActiveSideNecklineShapingAction(chart, armholeStartRow);
+  const paragraphs = [
+    SET_IN_PRINT_CARRIAGE_DEFINITION,
+    SET_IN_PRINT_INTERVENING_ROWS,
+    SET_IN_NECKLINE_TECHNIQUE_NOTE,
+    ...SET_IN_HOLD_OPERATING_LINES,
+  ];
+  if (rcStart !== undefined && shapingRc !== undefined && shapingRc !== rcStart) {
+    paragraphs.push(setInChecklistTimingSentence(rcStart, shapingRc));
+  }
   if (!singleSide) paragraphs.push("First shoulder.");
   paragraphs.push(...firstCondensed.lines);
   const firstBindOff = bindOffLine(active);
@@ -700,7 +742,16 @@ export function renderSetInCenterSeamNeckChartHtml(args: {
   });
   const neckRc = armholeLocalRcFirstActiveSideNecklineShapingAction(args.chart, args.armholeStartRow);
   const label = `RC:${String(Math.max(0, Math.floor(neckRc ?? 0))).padStart(3, "0")}`;
-  const intro = renderActiveShoulderChartIntroHtml({
+  const rcStartForTiming = armholeLocalRcActiveShoulderChecklistStart(
+    args.chart,
+    args.armholeStartRow,
+    CENTER_SETUP_RC_OPTIONS,
+  );
+  const timing =
+    rcStartForTiming !== undefined && neckRc !== undefined && neckRc !== rcStartForTiming
+      ? `<p class="set-in-checklist-timing">${escapeOperatingHtml(setInChecklistTimingSentence(rcStartForTiming, neckRc))}</p>`
+      : "";
+  const intro = `${renderActiveShoulderChartIntroHtml({
     localStartRcLabel: label,
     centerBindOffStitches: centerBindOffStitchesFromNeckShoulderChart(args.chart),
     chart: args.chart,
@@ -709,7 +760,7 @@ export function renderSetInCenterSeamNeckChartHtml(args: {
     wrapperClass: "pattern-shaping-intro",
     layout: "labeled",
     includeWorkflowSteps: true,
-  });
+  })}${timing}${setInHoldOperatingSequenceHtml()}`;
   const help = typeof args.helpCardHtml === "string" && args.helpCardHtml.trim() ? `\n${args.helpCardHtml}` : "";
   const rcStart = armholeLocalRcActiveShoulderChecklistStart(args.chart, args.armholeStartRow, CENTER_SETUP_RC_OPTIONS);
   const closingParagraphs = centerSeamChecklistFinishLines(

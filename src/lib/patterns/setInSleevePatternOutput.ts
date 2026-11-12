@@ -323,13 +323,18 @@ function knitEvenBridgeBlock(fromRc: number, untilRc: number, stitches: number):
   const rows = untilRc - fromRc;
   if (rows <= 0) return null;
   const endRc = fromRc + rows;
-  const knit = rows === 1 ? `Knit 1 row even to ${formatRcColon(endRc)}.` : `Knit ${rows} rows even to ${formatRcColon(endRc)}.`;
+  const shown = formatRcColon(endRc);
+  const knit =
+    rows === 1
+      ? `Knit 1 row even until the row counter shows ${shown}.`
+      : `Knit ${rows} rows even until the row counter shows ${shown}.`;
+  const timing = `That reading is before the row named ${shown}. Knit that row next. Do not mark ${shown} complete before that pass.`;
   const noun = stitches === 1 ? "stitch" : "stitches";
   return {
     rc: fromRc,
-    paragraphs: [knit],
+    paragraphs: [knit, timing],
     stitchCount: stitches,
-    plainText: `${formatRcColon(fromRc)} ${knit} ${stitches} ${noun} remain.`,
+    plainText: `${formatRcColon(fromRc)} ${knit} ${timing} ${stitches} ${noun} remain.`,
   };
 }
 
@@ -641,7 +646,7 @@ function withoutRightFrontMirror(
  * The right back is not written out again when it matches the left back.
  * This stays an ordinary instruction, so Hide Pattern Tips does not remove it.
  */
-function rightBackReverseRows(): SleevelessPatternDisplayRow[] {
+function rightBackReverseRows(startCarriage: "left" | "right"): SleevelessPatternDisplayRow[] {
   return [
     { kind: "section", title: SET_IN_RIGHT_BACK_REVERSE_TITLE },
     {
@@ -649,8 +654,9 @@ function rightBackReverseRows(): SleevelessPatternDisplayRow[] {
       paragraphs: [
         "The right back uses the same stitch counts and row numbers as the left back.",
         "The center seam edge goes on the left and the armhole edge goes on the right.",
+        `Begin the first counted row with the carriage on the ${startCarriage}.`,
         "Work body shaping at the armhole edge.",
-        "Bind off the armhole edge with the carriage on the right.",
+        "After the row-counter reset, the carriage is on the right. Bind off the armhole edge with the carriage on the right.",
         "At the start of the neckline, work the center edge with the carriage on the left, including the seam stitch. Use the same hold, bind-off, or decrease as the left back.",
         "Work the neckline and shoulder shaping with the same row numbers as the left back. Keep neckline shaping on the center edge and shoulder shaping on the armhole edge, with the carriage on the opposite side.",
         "Swap Left and Right. Carriage on the right in the left back is carriage on the left here. Carriage on the left in the left back is carriage on the right here.",
@@ -663,12 +669,13 @@ function rightBackReverseRows(): SleevelessPatternDisplayRow[] {
  * The left front is not written out again when it matches the right front.
  * This stays an ordinary instruction, so Hide Pattern Tips does not remove it.
  */
-function leftFrontReverseRows(includeBustDart: boolean): SleevelessPatternDisplayRow[] {
+function leftFrontReverseRows(includeBustDart: boolean, startCarriage: "left" | "right"): SleevelessPatternDisplayRow[] {
   const paragraphs = [
     "The left front uses the same stitch counts and row numbers as the right front.",
     "The center seam edge goes on the right and the armhole edge goes on the left.",
+    `Begin the first counted row with the carriage on the ${startCarriage}.`,
     "Work body shaping at the armhole edge.",
-    "Bind off the armhole edge with the carriage on the left.",
+    "After the row-counter reset, the carriage is on the left. Bind off the armhole edge with the carriage on the left.",
     "At the start of the neckline, work the center edge with the carriage on the right, including the seam stitch. Use the same hold, bind-off, or decrease as the right front.",
     "Work the neckline and shoulder shaping with the same row numbers as the right front. Keep neckline shaping on the center edge and shoulder shaping on the armhole edge, with the carriage on the opposite side.",
     "Swap Left and Right. Carriage on the right in the right front is carriage on the left here. Carriage on the left in the right front is carriage on the right here.",
@@ -708,7 +715,20 @@ function isSplitBackIntroParagraph(paragraph: string): boolean {
   );
 }
 
-function splitBackStepCues(side: "left" | "right"): {
+function carriageAfterRows(start: "left" | "right", rows: number): "left" | "right" {
+  if (Math.abs(Math.floor(rows)) % 2 === 0) return start;
+  return start === "left" ? "right" : "left";
+}
+
+/** Carriage side for the first counted row so the first armhole bind-off begins on `armholeSide`. */
+export function setInStartingCarriage(armholeSide: "left" | "right", rowsBeforeArmholeAction: number): "left" | "right" {
+  return carriageAfterRows(armholeSide, rowsBeforeArmholeAction);
+}
+
+function splitBackStepCues(
+  side: "left" | "right",
+  startCarriage: "left" | "right",
+): {
   castOn: string;
   armhole: string;
   neck: string;
@@ -719,8 +739,8 @@ function splitBackStepCues(side: "left" | "right"): {
   const armholeCarriage = side === "left" ? "left" : "right";
   const neckCarriage = side === "left" ? "right" : "left";
   return {
-    castOn: `The count is for the ${pieceName} only and includes one center seam stitch. Place the center edge on the ${centerBed} side of the needle bed and the armhole edge on the ${armholeBed}.`,
-    armhole: `Work with the carriage on the ${armholeCarriage}.`,
+    castOn: `The count is for the ${pieceName} only and includes one center seam stitch. Place the center edge on the ${centerBed} side of the needle bed and the armhole edge on the ${armholeBed}. Begin the first counted row with the carriage on the ${startCarriage}.`,
+    armhole: `After the row-counter reset, the carriage is on the ${armholeCarriage}. Work the first armhole bind-off with the carriage on the ${armholeCarriage}.`,
     neck: `Work the first center-edge action with the carriage on the ${neckCarriage}, including the seam stitch. A decrease moves the number of stitches named in that row. A bind-off takes stitches off the needle. Hold leaves stitches on the machine.`,
   };
 }
@@ -765,8 +785,9 @@ function isSplitBackBodyShapingBlock(
 function applySplitBackInstructionCues(
   rows: readonly SleevelessPatternDisplayRow[],
   side: "left" | "right",
+  startCarriage: "left" | "right",
 ): SleevelessPatternDisplayRow[] {
-  const cues = splitBackStepCues(side);
+  const cues = splitBackStepCues(side, startCarriage);
   const out: SleevelessPatternDisplayRow[] = [];
   let section = "";
   let tipPlaced = false;
@@ -944,6 +965,30 @@ function applySetInBackOpening(
   return out;
 }
 
+function applyCastOnCarriageCue(
+  rows: readonly SleevelessPatternDisplayRow[],
+  startCarriage: "left" | "right",
+  armholeSide: "left" | "right",
+): SleevelessPatternDisplayRow[] {
+  const castOn = `Begin the first counted row with the carriage on the ${startCarriage}.`;
+  const reset = `After the row-counter reset, the carriage is on the ${armholeSide}. Work the first armhole bind-off with the carriage on the ${armholeSide}.`;
+  let castOnPlaced = false;
+  let resetPlaced = false;
+  return rows.map((row) => {
+    if (row.kind !== "block") return row;
+    const paragraphs = row.paragraphs ?? [];
+    if (!castOnPlaced && paragraphs.some((paragraph) => /^Cast on \d+ stitches\b/.test(paragraph))) {
+      castOnPlaced = true;
+      return withCue(row, castOn, "end");
+    }
+    if (!resetPlaced && (row.rowCounterReset === true || paragraphs.some((paragraph) => /reset the row counter|reset row counter/i.test(paragraph)))) {
+      resetPlaced = true;
+      return withCue(row, reset, "end");
+    }
+    return row;
+  });
+}
+
 function prepareCenterSeamHalf(
   half: SetInSleevePatternResult,
   piece: "front" | "back",
@@ -956,9 +1001,13 @@ function prepareCenterSeamHalf(
     rows = withoutChartMount(rows);
     rows = replaceNecklineSection(rows, vNeckHalfLines(half, side, fullNeckStitches));
   }
+  const armholeSide = side === "left" ? "left" : "right";
+  const startCarriage = setInStartingCarriage(armholeSide, half.debug.armholeStartRow ?? 0);
   if (piece === "back") {
     rows = applySetInBackOpening(rows, half.debug.hemRows);
-    rows = applySplitBackInstructionCues(rows, side);
+    rows = applySplitBackInstructionCues(rows, side, startCarriage);
+  } else {
+    rows = applyCastOnCarriageCue(rows, startCarriage, armholeSide);
   }
   const chart = half.frontNeckShoulderShapingChart;
   const armholeStart = half.debug.armholeStartRow;
@@ -1041,7 +1090,7 @@ function generateSetInSleeveWithCenterSeams(patternData: Record<string, unknown>
   const leftBackRows = prepareCenterSeamHalf(leftBack, "back", "left", false, fullNeck);
   const rightBackRows = prepareCenterSeamHalf(rightBack, "back", "right", false, fullNeck);
   const backRows = splitHalvesMatch(leftBackRows, rightBackRows)
-    ? [...leftBackRows, ...rightBackReverseRows()]
+    ? [...leftBackRows, ...rightBackReverseRows(setInStartingCarriage("right", leftBack.debug.armholeStartRow ?? 0))]
     : [...leftBackRows, ...rightBackRows];
 
   let frontRows = base.frontDisplayRows;
@@ -1060,7 +1109,13 @@ function generateSetInSleeveWithCenterSeams(patternData: Record<string, unknown>
     rightFrontRows = withoutRightFrontMirror(prepareCenterSeamHalf(rightFront, "front", "right", vNeck, fullNeck));
     const frontsMatch = splitHalvesMatch(rightFrontRows, leftFrontRows);
     frontRows = frontsMatch
-      ? [...rightFrontRows, ...leftFrontReverseRows(halfHasActiveBustDart(rightFrontRows))]
+      ? [
+          ...rightFrontRows,
+          ...leftFrontReverseRows(
+            halfHasActiveBustDart(rightFrontRows),
+            setInStartingCarriage("left", rightFront.debug.armholeStartRow ?? 0),
+          ),
+        ]
       : [...rightFrontRows, ...leftFrontRows];
     frontChart = rightFront.frontNeckShoulderShapingChart;
     frontTimeline = rightFront.frontNeckShoulderTimeline;
