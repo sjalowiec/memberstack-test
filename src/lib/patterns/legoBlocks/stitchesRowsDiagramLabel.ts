@@ -1,9 +1,14 @@
 /**
  * Stitches & Rows diagram labels.
  *
- * Line 1 is the stitch or row count. Line 2, when a finished measurement
- * exists, is that measurement in smaller type. Counts stay alone when the
- * span has no measurement. This block does not divide by gauge.
+ * Line 1 is the stitch or row count. Line 2, when a measurement exists, is
+ * that measurement in smaller type. Counts stay alone when the span has no
+ * measurement.
+ *
+ * Cast-on edges use {@link castOnEdgeDiagramLabel}: the generated stitch
+ * count divided by stitch gauge, in the selected units. A split piece passes
+ * the stitch count already drawn for that piece, including its seam stitch.
+ * This label does not change sizing or shaping.
  */
 
 import {
@@ -47,6 +52,58 @@ export function stitchesRowsDiagramLabel(
     count: formatPatternDiagramCountLabel(count, kind),
     measure: measurement?.trim() ?? "",
   };
+}
+
+/**
+ * Knitted inches of a generated stitch count: stitches divided by stitch gauge.
+ * Returns undefined when either number cannot produce a width.
+ */
+export function knittedWidthInches(
+  stitches: number,
+  stitchesPerInch: number | undefined,
+): number | undefined {
+  if (
+    stitchesPerInch === undefined ||
+    !Number.isFinite(stitches) ||
+    !Number.isFinite(stitchesPerInch) ||
+    !(stitchesPerInch > 0)
+  ) {
+    return undefined;
+  }
+  const sts = Math.round(stitches);
+  if (!(sts > 0)) return undefined;
+  const inches = sts / stitchesPerInch;
+  return Number.isFinite(inches) && inches > 0 ? inches : undefined;
+}
+
+/**
+ * One-decimal knitted width in the selected unit.
+ * Quarter-inch chart snap is not used; this is the width the stitch count actually knits.
+ */
+export function formatKnittedDiagramMeasurement(
+  inches: number | undefined,
+  unit: MeasurementDisplayUnit,
+): string {
+  if (inches === undefined || !Number.isFinite(inches) || !(inches > 0)) return "";
+  const converted = unit === "cm" ? inches * 2.54 : inches;
+  const tenth = Math.round(converted * 10) / 10;
+  if (!Number.isFinite(tenth) || !(tenth > 0)) return "";
+  const shown =
+    Math.abs(tenth - Math.round(tenth)) < 1e-9 ? String(Math.round(tenth)) : String(tenth);
+  return `${shown} ${unit}`;
+}
+
+/** Cast-on edge: stitch count, then the knitted width of that count. */
+export function castOnEdgeDiagramLabel(
+  stitches: number,
+  stitchesPerInch: number | undefined,
+  unit: MeasurementDisplayUnit,
+): string {
+  return formatStitchesRowsDiagramLabel(
+    stitches,
+    "sts",
+    formatKnittedDiagramMeasurement(knittedWidthInches(stitches, stitchesPerInch), unit),
+  );
 }
 
 export function stitchesRowsDiagramLabelFromInches(

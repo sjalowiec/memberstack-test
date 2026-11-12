@@ -4139,6 +4139,7 @@ table {
       sleevePiece: result?.sleevePiece,
       sleeveCap: result?.sleeveCap,
       unit: setInSleeveDiagramHydrateContext?.unit === "cm" ? "cm" : "in",
+      stitchesPerInch: result?.debug?.stitchesPerInch,
       wristInches: finished?.wristInches,
       cuffDepthInches: finished?.cuffDepthInches,
       sleeveLengthInches: finished?.sleeveLengthInches,

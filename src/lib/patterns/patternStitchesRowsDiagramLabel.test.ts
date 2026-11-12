@@ -7,6 +7,7 @@ import {
 import { formatInchesWithUnit } from "./sidewaysCardiganDisplayFormat";
 import { formatMeasurementDisplayFromInches } from "./patternMeasurementDisplayUnit";
 import {
+  castOnEdgeDiagramLabel,
   formatPatternDiagramCountLabel,
   formatPatternDiagramMeasurement,
   formatStitchesRowsDiagramLabel,
@@ -72,7 +73,14 @@ describe("Sideways Stitches & Rows measurement labels", () => {
     expect(diagram).toContain(`sts</tspan><tspan`);
     expect(diagram).toContain('data-role="dim-finished-length"');
     expect(finished).toContain(length);
-    expect(castOn).not.toContain(length);
+    const castOnSts = Number(/data-sts="(\d+)"/.exec(castOn)?.[1]);
+    const [castOnCount, castOnWidth] = castOnEdgeDiagramLabel(
+      castOnSts,
+      input.stitchesPerInch,
+      "in",
+    ).split("\n");
+    expect(castOn).toContain(`CO ${castOnCount}`);
+    expect(castOn).toContain(castOnWidth);
     expect(bindOff).not.toContain(length);
     expect(diagram).not.toContain(`sts (${length})`);
     expect(diagram).toContain(`CO `);

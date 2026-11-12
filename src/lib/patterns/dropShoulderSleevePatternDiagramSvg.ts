@@ -15,6 +15,7 @@ import type { SleevelessBackPatternResult } from "./sleevelessPatternOutput";
 import {
   DS_FILL,
   DS_FS_TITLE,
+  DS_STS_ROWS_VIEWBOX_H,
   DS_FW_TITLE,
   DS_STROKE,
   fmtNum,
@@ -73,6 +74,7 @@ export function buildDropShoulderSleeveStitchesRowsSvg(
       "data-cuff-join-y": fmtNum(frame.cuffJoinY),
     },
     title: "Drop Shoulder Sleeve - Stitches & Rows",
+    viewBoxHeight: DS_STS_ROWS_VIEWBOX_H,
     body,
   });
 }

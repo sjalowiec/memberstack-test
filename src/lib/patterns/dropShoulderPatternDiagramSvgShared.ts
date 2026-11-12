@@ -13,6 +13,9 @@ import type { MeasurementDisplayUnit } from "./patternMeasurementDisplayUnit";
 
 export const DS_VB_W = 430;
 export const DS_VB_H = 520;
+/** Extra viewBox below the garment so the cast-on width line is not clipped. */
+export const DS_CAST_ON_VIEWBOX_PAD = 40;
+export const DS_STS_ROWS_VIEWBOX_H = DS_VB_H + DS_CAST_ON_VIEWBOX_PAD;
 export const DS_FONT = "Poppins, system-ui, Arial, sans-serif";
 export const DS_ARROW = "#52682d";
 export const DS_STROKE = "#1a1a1a";
@@ -815,12 +818,8 @@ export function drawBodyWidth(
 export function drawHemWidth(
   frame: DropShoulderDiagramFrame,
   hemStitchesLabel: string,
-  hemStitches: number,
-  bodyWidthStitches: number,
-  options?: { evenWhenEqual?: boolean },
 ): string {
   if (!hemStitchesLabel) return "";
-  if (!options?.evenWhenEqual && hemStitches === bodyWidthStitches) return "";
   const y = frame.bottom + 22;
   return [
     `<g class="ds-diagram__hem-width" data-cast-on-width="true" data-cast-on-y="${fmtNum(y)}">`,

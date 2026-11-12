@@ -58,6 +58,7 @@ import {
   type ShapingNotationRcLeaderLandmark,
 } from "../legoBlocks/shapingNotationRcLeaders";
 import {
+  castOnEdgeDiagramLabel,
   formatPatternDiagramMeasurement,
   formatStitchesRowsDiagramLabel,
   stitchesRowsLabelMarkup,
@@ -338,6 +339,8 @@ export function buildSetInSleeveDiagramModel(input: {
   sleevePiece: DropShoulderSleevePieceNumbers | null | undefined;
   sleeveCap: SetInSleeveCapSuccess | null | undefined;
   unit?: MeasurementDisplayUnit;
+  /** Swatch stitch gauge. The cast-on width is wrist stitches divided by this. */
+  stitchesPerInch?: number;
   wristInches?: number;
   cuffDepthInches?: number;
   sleeveLengthInches?: number;
@@ -369,6 +372,10 @@ export function buildSetInSleeveDiagramModel(input: {
   const upperArmInches = storedInches(cap.sleeve.finishedUpperArmInches) ?? 1;
   const capHeightInches = storedInches(cap.totals.capHeightInches) ?? 1;
   const stitchesPerInch = upperArmInches > 0 ? piece.topSts / upperArmInches : 0;
+  const castOnGauge =
+    typeof input.stitchesPerInch === "number" && input.stitchesPerInch > 0
+      ? input.stitchesPerInch
+      : stitchesPerInch;
   const rowsPerInch = capHeightInches > 0 ? cap.totals.capRows / capHeightInches : 0;
   const wristInches = storedInches(input.wristInches) ?? piece.wristSts / stitchesPerInch;
   const cuffDepthInches =
@@ -393,11 +400,7 @@ export function buildSetInSleeveDiagramModel(input: {
     cuffDepthInches,
     sleeveBodyInches: bodyInches,
     sleeveLengthInches: cuffDepthInches + bodyInches,
-    wristWidthLabel: formatStitchesRowsDiagramLabel(
-      piece.wristSts,
-      "sts",
-      formatPatternDiagramMeasurement(wristInches, unit),
-    ),
+    wristWidthLabel: castOnEdgeDiagramLabel(piece.wristSts, castOnGauge, unit),
     upperArmWidthLabel: formatStitchesRowsDiagramLabel(
       piece.topSts,
       "sts",
@@ -460,7 +463,7 @@ type SleeveFrame = {
 /** Room for stitch/row labels beside the laid-open sleeve. Not used to scale the piece. */
 const SLEEVE_PAD_LEFT = 136;
 const SLEEVE_PAD_RIGHT = 176;
-const SLEEVE_PAD_BOTTOM = 96;
+const SLEEVE_PAD_BOTTOM = 128;
 /**
  * Stitches & Rows stacks the sleeve-length caption, its note, then the cap-width
  * label above the shape. This is the minimum space for that stack.
@@ -1127,6 +1130,7 @@ export function tryBuildSetInSleeveStitchesRowsSvg(input: {
   sleevePiece: DropShoulderSleevePieceNumbers | null | undefined;
   sleeveCap: SetInSleeveCapSuccess | null | undefined;
   unit?: MeasurementDisplayUnit;
+  stitchesPerInch?: number;
   wristInches?: number;
   cuffDepthInches?: number;
   sleeveLengthInches?: number;
@@ -1141,6 +1145,7 @@ export function tryBuildSetInSleeveShapingNotationSvg(input: {
   sleevePiece: DropShoulderSleevePieceNumbers | null | undefined;
   sleeveCap: SetInSleeveCapSuccess | null | undefined;
   unit?: MeasurementDisplayUnit;
+  stitchesPerInch?: number;
   wristInches?: number;
   cuffDepthInches?: number;
   sleeveLengthInches?: number;

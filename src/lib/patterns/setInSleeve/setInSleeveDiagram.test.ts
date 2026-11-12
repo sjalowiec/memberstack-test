@@ -11,7 +11,10 @@ import type { ChartRow } from "../sleevelessExpressSizeChartTypes";
 import { computeDefaultMeasurementsFromChartRow } from "../sleevelessExpressSizeChartClient";
 import { generateSetInSleevePattern } from "../setInSleevePatternOutput";
 import { withSetInSleeveConstructionAuthored } from "../setInSleeveConstructionIdentity";
-import { formatPatternDiagramMeasurement } from "../patternStitchesRowsDiagramLabel";
+import {
+  castOnEdgeDiagramLabel,
+  formatPatternDiagramMeasurement,
+} from "../patternStitchesRowsDiagramLabel";
 import { formatRcColon } from "../sleevelessPatternOutput";
 import { DROP_SHOULDER_USER_EDITED_SLEEVE_FIELDS_KEY } from "../dropShoulderUserEditedSleeveFields";
 import {
@@ -247,6 +250,7 @@ function diagramInputFor(result: ReturnType<typeof generateSetInSleevePattern>, 
     sleevePiece: result.sleevePiece,
     sleeveCap: result.sleeveCap,
     unit,
+    stitchesPerInch: result.debug.stitchesPerInch,
     ...result.sleeveFinishedInches,
   };
 }
@@ -310,7 +314,6 @@ describe("set-in sleeve diagram presentation", () => {
     );
     expect(sts).toContain('fill="#52682d"');
     for (const inches of [
-      finished.wristInches,
       cap.sleeve.finishedUpperArmInches,
       cap.totals.finalWidthInches,
       finished.cuffDepthInches,
@@ -318,6 +321,13 @@ describe("set-in sleeve diagram presentation", () => {
       cap.totals.capHeightInches,
     ]) {
       expect(sts).toContain(formatPatternDiagramMeasurement(inches, "in"));
+    }
+    for (const line of castOnEdgeDiagramLabel(
+      Number(diagramAttr(sts, "data-wrist-stitches")),
+      result.debug.stitchesPerInch,
+      "in",
+    ).split("\n")) {
+      expect(sts).toContain(line);
     }
     expect(sts).toContain('width="100%"');
     expect(sts).toContain('preserveAspectRatio="xMidYMid meet"');
@@ -479,9 +489,12 @@ describe("set-in sleeve diagram presentation", () => {
     const cm = tryBuildSetInSleeveStitchesRowsSvg(diagramInputFor(result, "cm"))!;
     const inches = tryBuildSetInSleeveStitchesRowsSvg(diagramInputFor(result, "in"))!;
     expect(cm).toContain('data-display-unit="cm"');
-    expect(cm).toContain(formatPatternDiagramMeasurement(result.sleeveFinishedInches?.wristInches, "cm"));
-    expect(cm).not.toContain(formatPatternDiagramMeasurement(result.sleeveFinishedInches?.wristInches, "in"));
-    expect(inches).toContain(formatPatternDiagramMeasurement(result.sleeveFinishedInches?.wristInches, "in"));
+    const wristSts = result.sleevePiece?.wristSts ?? 0;
+    const wristCm = castOnEdgeDiagramLabel(wristSts, result.debug.stitchesPerInch, "cm");
+    const wristIn = castOnEdgeDiagramLabel(wristSts, result.debug.stitchesPerInch, "in");
+    for (const line of wristCm.split("\n")) expect(cm).toContain(line);
+    for (const line of wristIn.split("\n")) expect(inches).toContain(line);
+    expect(cm).not.toContain(wristIn.split("\n")[1] ?? " in");
   });
 
   it("follows a customized upper arm, cuff, and sleeve length without changing the written sleeve", () => {

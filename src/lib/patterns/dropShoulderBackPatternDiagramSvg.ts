@@ -14,6 +14,7 @@ import type { SleevelessBackPatternResult } from "./sleevelessPatternOutput";
 import {
   DS_FILL,
   DS_FS_MEASURE,
+  DS_STS_ROWS_VIEWBOX_H,
   DS_FS_TITLE,
   DS_FW_TITLE,
   DS_STROKE,
@@ -70,7 +71,7 @@ export function buildDropShoulderBackStitchesRowsSvg(
     drawNecklineWidthDim(frame, model.necklineWidthLabel),
     drawNecklineDepthDim(frame, model.necklineDepthLabel),
     `</g>`,
-    drawHemWidth(frame, model.hemStitchesLabel, model.hemStitches, model.bodyWidthStitches),
+    drawHemWidth(frame, model.hemStitchesLabel),
   ].join("");
 
   return wrapGeneratedDiagramSvg({
@@ -91,6 +92,7 @@ export function buildDropShoulderBackStitchesRowsSvg(
       "data-body-rows": model.bodyRowsToArmhole,
     },
     title: "Drop Shoulder Back - Stitches & Rows",
+    viewBoxHeight: DS_STS_ROWS_VIEWBOX_H,
     body,
   });
 }

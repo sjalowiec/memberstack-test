@@ -6,6 +6,7 @@
  */
 
 import {
+  castOnEdgeDiagramLabel,
   formatPatternDiagramMeasurement,
   formatStitchesRowsDiagramLabel,
 } from "./patternStitchesRowsDiagramLabel";
@@ -42,28 +43,6 @@ function positiveInt(n: unknown): number {
 
 function storedInches(n: unknown): number | undefined {
   return typeof n === "number" && Number.isFinite(n) && n > 0 ? n : undefined;
-}
-
-/**
- * Production Stitches & Rows width: the knitted size of the rounded stitch count.
- * This is stitches divided by gauge. It is not the finished measurement in the editor.
- */
-function formatKnittedStitchWidthLabel(
-  stitches: number,
-  stitchesPerInch: number,
-  unit: DropShoulderDiagramUnit,
-): string {
-  const sts = positiveInt(stitches);
-  if (sts <= 0) return "";
-  if (!(stitchesPerInch > 0)) return `${sts} sts`;
-  const inches = sts / stitchesPerInch;
-  const converted = unit === "cm" ? inches * 2.54 : inches;
-  const rounded = Math.round(converted);
-  const shown =
-    Math.abs(converted - rounded) < 1e-9
-      ? String(rounded)
-      : String(Math.round(converted * 10) / 10).replace(/\.0$/, "");
-  return `${sts} sts / ${shown} ${unit}`;
 }
 
 function formatRowsLengthLabel(
@@ -126,8 +105,8 @@ export function buildDropShoulderSleeveStitchesRowsModel(
     cuffRows,
     sleeveBodyRows,
     sleeveTotalRows,
-    wristWidthLabel: formatKnittedStitchWidthLabel(wristStitches, spi, unit),
-    topWidthLabel: formatKnittedStitchWidthLabel(topStitches, spi, unit),
+    wristWidthLabel: castOnEdgeDiagramLabel(wristStitches, spi, unit),
+    topWidthLabel: castOnEdgeDiagramLabel(topStitches, spi, unit),
     cuffDepthLabel: formatRowsLengthLabel(cuffRows, storedInches(d.dropShoulderCuffDepthInches), unit),
     sleeveBodyLengthLabel: formatRowsLengthLabel(sleeveBodyRows, undefined, unit),
     sleeveTotalLengthLabel: formatRowsLengthLabel(
