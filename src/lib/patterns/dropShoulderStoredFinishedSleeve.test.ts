@@ -151,10 +151,10 @@ describe("Drop shoulder generation consumes stored finished cuff and upper arm",
     expect(print).toContain(`${wristSts} stitches`);
 
     const diagram = buildDropShoulderSleeveStitchesRowsModel(result, "cuff-up", "cm");
-    expect(diagram?.wristWidthLabel).toBe("38 sts / 19.5 cm");
-    expect(diagram?.topWidthLabel).toBe("84 sts / 43.1 cm");
+    expect(diagram?.wristWidthLabel).toBe("38 sts\n19.5 cm");
+    expect(diagram?.topWidthLabel).toBe("84 sts\n43.1 cm");
     const inches = buildDropShoulderSleeveStitchesRowsModel(result, "cuff-up", "in");
-    expect(inches?.wristWidthLabel).toBe("38 sts / 7.7 in");
+    expect(inches?.wristWidthLabel).toBe("38 sts\n7.7 in");
   });
 
   it("keeps a hand-edited cuff and does not add ease or taper it", () => {
@@ -300,7 +300,7 @@ describe("Screenshot cuff label", () => {
     );
     const bodyDiagram = buildDropShoulderSleeveStitchesRowsModel(body, "cuff-up", "cm");
     const bodySvg = buildDropShoulderSleeveDiagramReplacements(body, "cm");
-    expect(bodyDiagram?.wristWidthLabel).toBe("34 sts / 17.4 cm");
+    expect(bodyDiagram?.wristWidthLabel).toBe("34 sts\n17.4 cm");
     expect(bodySvg.WRIST_STS).toBe("34");
     expect(bodySvg.WRIST_WIDTH).toBe("17.1");
 
@@ -316,6 +316,6 @@ describe("Screenshot cuff label", () => {
     const typedDiagram = buildDropShoulderSleeveStitchesRowsModel(typed, "cuff-up", "cm");
     expect(typed.debug.dropShoulderWristInches).toBe(6.75);
     expect(typed.debug.dropShoulderSleeveWristStitches).toBe(34);
-    expect(typedDiagram?.wristWidthLabel).toBe("34 sts / 17.4 cm");
+    expect(typedDiagram?.wristWidthLabel).toBe("34 sts\n17.4 cm");
   });
 });

@@ -59,6 +59,7 @@ import {
 import type { SidewaysCardiganSleeveCalc } from "./sidewaysCardiganSleeveCalc";
 import type { MeasurementDisplayUnit } from "./patternMeasurementDisplayUnit";
 import {
+  castOnEdgeDiagramLabel,
   formatPatternDiagramMeasurement,
   formatStitchesRowsDiagramLabel,
   stitchesRowsLabelMarkup,
@@ -79,7 +80,7 @@ export type SidewaysCardiganSleeveDiagramArgs = {
 const MIN_READABLE_FONT = DS_FS_SMALL;
 
 /** Space outside the silhouette for stitch/row dimension labels. Same for both knit directions. */
-const STS_ROWS_PAD: SidewaysSleeveAnnotationPadding = { top: 80, right: 88, bottom: 88, left: 104 };
+const STS_ROWS_PAD: SidewaysSleeveAnnotationPadding = { top: 80, right: 88, bottom: 120, left: 104 };
 /** Space outside the silhouette for shaping tokens and left-side row counters. */
 const SHAPING_PAD: SidewaysSleeveAnnotationPadding = { top: 64, right: 148, bottom: 64, left: 120 };
 
@@ -335,11 +336,15 @@ export function buildSidewaysCardiganSleeveStitchesRowsSvg(
     workingDirectionArrow(frame, knitToward),
     drawSleeveWristWidth(
       frame,
-      stitchDimensionLabel(calc.wristSts, calc.finished.wristInches, unit),
+      castOnEdge === "wrist"
+        ? castOnEdgeDiagramLabel(calc.wristSts, args.stitchesPerInch, unit)
+        : stitchDimensionLabel(calc.wristSts, calc.finished.wristInches, unit),
     ),
     drawSleeveUpperArmWidth(
       frame,
-      stitchDimensionLabel(calc.topSts, calc.finished.upperArmInches, unit),
+      castOnEdge === "upper-arm"
+        ? castOnEdgeDiagramLabel(calc.topSts, args.stitchesPerInch, unit)
+        : stitchDimensionLabel(calc.topSts, calc.finished.upperArmInches, unit),
     ),
     drawSleeveTotalLength(
       frame,

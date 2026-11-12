@@ -147,6 +147,32 @@ Example:
 
 ---------------------------------------------------
 
+CROSS SHOULDER MEASUREMENT
+
+Location:
+src/lib/patterns/legoBlocks/crossShoulderMeasurement.ts
+
+Purpose:
+Labels the finished width from one outer shoulder point to the other, including the neck opening, on sweater Stitches & Rows diagrams. The measurement is the knitted width of the generated shoulder stitches (stitches divided by gauge), in the selected units. A split half shows that finished width as “Full cross shoulder” with no arrow, and puts the dimension arrow on the half on the needles, including its seam stitch.
+
+Use when:
+A sweater body diagram spans both outer shoulders, or a center-seam half needs the full width distinguished from the half on the needles. Sleeves, cardigan fronts, sideways bodies, hats, and socks do not use it.
+
+---------------------------------------------------
+
+CAST-ON EDGE LABEL
+
+Location:
+src/lib/patterns/legoBlocks/stitchesRowsDiagramLabel.ts
+
+Purpose:
+Labels every cast-on edge on body and sleeve Stitches & Rows diagrams with the generated stitch count and the knitted width of that count. The width is the stitch count divided by stitch gauge, in the selected units, to one decimal. A split piece uses the stitch count already drawn for that piece, including its seam stitch. A-line hems use the hem stitch count. This label does not change sizing or shaping. The diagram leaves room below the cast-on edge so the width stays visible on screen and in print.
+
+Use when:
+A Stitches & Rows diagram draws a cast-on edge for a sweater body or sleeve. Bind-off edges, neck widths, and body lengths keep their own measurements.
+
+---------------------------------------------------
+
 GLOSSARY TOOLTIP
 
 Location:

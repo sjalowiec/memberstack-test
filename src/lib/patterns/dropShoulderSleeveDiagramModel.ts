@@ -6,6 +6,7 @@
  */
 
 import { lengthFromRowsForDiagram } from "./sleevelessRowAccounting";
+import { castOnEdgeDiagramLabel } from "./patternStitchesRowsDiagramLabel";
 import type { SleevelessBackPatternResult } from "./sleevelessPatternOutput";
 import type { DropShoulderSleeveDirection } from "./dropShoulderSleeveConstruction";
 import { resolveDropShoulderSleeveBodyRowsForDiagram } from "./sleevelessGarmentDiagramReplacements";
@@ -46,19 +47,6 @@ function formatLengthNumber(n: number): string {
 
 function formatLength(inchesOrCm: number, unit: DropShoulderDiagramUnit): string {
   return `${formatLengthNumber(inchesOrCm)} ${unit}`;
-}
-
-function formatStitchWidthLabel(
-  stitches: number,
-  stitchesPerInch: number,
-  unit: DropShoulderDiagramUnit,
-): string {
-  const sts = positiveInt(stitches);
-  if (sts <= 0) return "";
-  if (!(stitchesPerInch > 0)) return `${sts} sts`;
-  const inches = sts / stitchesPerInch;
-  const converted = unit === "cm" ? inches * 2.54 : inches;
-  return `${sts} sts / ${formatLength(converted, unit)}`;
 }
 
 function formatRowsLengthLabel(
@@ -119,8 +107,8 @@ export function buildDropShoulderSleeveStitchesRowsModel(
     cuffRows,
     sleeveBodyRows,
     sleeveTotalRows,
-    wristWidthLabel: formatStitchWidthLabel(wristStitches, spi, unit),
-    topWidthLabel: formatStitchWidthLabel(topStitches, spi, unit),
+    wristWidthLabel: castOnEdgeDiagramLabel(wristStitches, spi, unit),
+    topWidthLabel: castOnEdgeDiagramLabel(topStitches, spi, unit),
     cuffDepthLabel: formatRowsLengthLabel(cuffRows, rpi, unit),
     sleeveBodyLengthLabel: formatRowsLengthLabel(sleeveBodyRows, rpi, unit),
     sleeveTotalLengthLabel: formatRowsLengthLabel(sleeveTotalRows, rpi, unit),

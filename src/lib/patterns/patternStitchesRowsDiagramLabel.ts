@@ -4,10 +4,13 @@
  */
 
 export {
+  castOnEdgeDiagramLabel,
   escapeDiagramText,
+  formatKnittedDiagramMeasurement,
   formatPatternDiagramCountLabel,
   formatPatternDiagramMeasurement,
   formatStitchesRowsDiagramLabel,
+  knittedWidthInches,
   parseStitchesRowsDiagramLabel,
   stitchesRowsDiagramLabel,
   stitchesRowsDiagramLabelFromInches,

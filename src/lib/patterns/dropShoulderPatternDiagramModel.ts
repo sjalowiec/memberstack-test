@@ -10,6 +10,15 @@
  */
 
 import { lengthFromRowsForDiagram } from "./sleevelessRowAccounting";
+import {
+  shoulderSpanCaption,
+  sweaterCrossShoulderSpans,
+} from "./legoBlocks/crossShoulderMeasurement";
+import {
+  castOnEdgeDiagramLabel,
+  formatPatternDiagramMeasurement,
+  formatStitchesRowsDiagramLabel,
+} from "./patternStitchesRowsDiagramLabel";
 import type { SleevelessBackPatternResult } from "./sleevelessPatternOutput";
 import { cardiganFrontNeckOpeningStitches } from "./roundNeckNotation";
 import {
@@ -80,22 +89,31 @@ function formatLength(inchesOrCm: number, unit: DropShoulderDiagramUnit): string
   return `${formatLengthNumber(inchesOrCm)} ${unit}`;
 }
 
-function stitchWidthInches(stitches: number, stitchesPerInch: number): number | undefined {
-  if (!(stitches > 0) || !(stitchesPerInch > 0)) return undefined;
-  return stitches / stitchesPerInch;
+function storedInches(n: unknown): number | undefined {
+  return typeof n === "number" && Number.isFinite(n) && n > 0 ? n : undefined;
 }
 
 function formatStitchWidthLabel(
   stitches: number,
-  stitchesPerInch: number,
+  inches: number | undefined,
   unit: DropShoulderDiagramUnit,
 ): string {
   const sts = positiveInt(stitches);
   if (sts <= 0) return "";
-  const inches = stitchWidthInches(sts, stitchesPerInch);
-  if (inches === undefined) return `${sts} sts`;
-  const converted = unit === "cm" ? inches * 2.54 : inches;
-  return `${sts} sts / ${formatLength(converted, unit)}`;
+  return formatStitchesRowsDiagramLabel(sts, "sts", formatPatternDiagramMeasurement(inches, unit));
+}
+
+function crossShoulderCaption(
+  stitches: number,
+  stitchesPerInch: number,
+  unit: DropShoulderDiagramUnit,
+): string {
+  const span = sweaterCrossShoulderSpans({
+    stitchesPerInch,
+    spansBothShoulders: true,
+    fullShoulderStitches: stitches,
+  }).crossShoulder;
+  return span ? shoulderSpanCaption(span, unit) : "";
 }
 
 function formatRowsLengthLabel(
@@ -143,6 +161,8 @@ export function buildDropShoulderBackStitchesRowsModel(
 
   const necklineRowsInsideArmhole = Math.min(backNeckDepthRows, armholeRows);
   const armholeEvenRows = Math.max(0, armholeRows - necklineRowsInsideArmhole);
+  const backWidthInches = storedInches(d.finishedBustChest);
+  const pieceWidthInches = backWidthInches !== undefined ? backWidthInches / 2 : undefined;
 
   return {
     unit,
@@ -161,10 +181,14 @@ export function buildDropShoulderBackStitchesRowsModel(
     armholeEvenRows,
     rowsFromCastOnToArmhole: positiveInt(d.rowsFromCastOnToArmholeStart),
     finalRC: positiveInt(d.finalRC || d.totalCalculatedRows),
-    hemStitchesLabel: formatStitchWidthLabel(hemStitches, spi, unit),
-    bodyWidthLabel: formatStitchWidthLabel(bodyWidthStitches, spi, unit),
-    crossShoulderLabel: formatStitchWidthLabel(crossShoulderStitches, spi, unit),
-    necklineWidthLabel: formatStitchWidthLabel(necklineStitches, spi, unit),
+    hemStitchesLabel: castOnEdgeDiagramLabel(hemStitches, spi, unit),
+    bodyWidthLabel: formatStitchWidthLabel(bodyWidthStitches, pieceWidthInches, unit),
+    crossShoulderLabel: crossShoulderCaption(crossShoulderStitches, spi, unit),
+    necklineWidthLabel: formatStitchWidthLabel(
+      necklineStitches,
+      storedInches(d.necklineWidthInches),
+      unit,
+    ),
     shoulderStitchesLabel:
       shoulderStitchesEach > 0 ? `${shoulderStitchesEach} sts` : "",
     hemDepthLabel: formatRowsLengthLabel(hemRows, rpi, unit),
@@ -221,7 +245,12 @@ export function buildDropShoulderFrontStitchesRowsModel(
     : base.crossShoulderStitches;
   if (panelHem <= 0 || panelBody <= 0) return null;
 
-  const spi = base.stitchesPerInch;
+  const finishedBust = storedInches(d.finishedBustChest);
+  const panelWidthInches =
+    finishedBust === undefined ? undefined : finishedBust / (isCardigan ? 4 : 2);
+  const neckWidthInches = storedInches(d.necklineWidthInches);
+  const panelNeckInches =
+    neckWidthInches === undefined ? undefined : isCardigan ? neckWidthInches / 2 : neckWidthInches;
   const rpi = base.rowsPerInch;
 
   return {
@@ -238,10 +267,10 @@ export function buildDropShoulderFrontStitchesRowsModel(
     necklineStitches: frontNecklineStitches,
     necklineRowsInsideArmhole: frontNeckDepthRows,
     armholeEvenRows,
-    hemStitchesLabel: formatStitchWidthLabel(panelHem, spi, unit),
-    bodyWidthLabel: formatStitchWidthLabel(panelBody, spi, unit),
-    crossShoulderLabel: formatStitchWidthLabel(panelTop, spi, unit),
-    necklineWidthLabel: formatStitchWidthLabel(frontNecklineStitches, spi, unit),
+    hemStitchesLabel: castOnEdgeDiagramLabel(panelHem, base.stitchesPerInch, unit),
+    bodyWidthLabel: formatStitchWidthLabel(panelBody, panelWidthInches, unit),
+    crossShoulderLabel: isCardigan ? "" : crossShoulderCaption(panelTop, base.stitchesPerInch, unit),
+    necklineWidthLabel: formatStitchWidthLabel(frontNecklineStitches, panelNeckInches, unit),
     necklineDepthLabel: formatRowsLengthLabel(frontNeckDepthRows, rpi, unit),
   };
 }

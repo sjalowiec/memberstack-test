@@ -7,6 +7,7 @@
  */
 
 import { pulloverArmholeEvents, type FrontArmholeEvent } from "./frontArmholeNecklineComposition";
+import { sweaterCrossShoulderSpans, type SweaterShoulderSpan } from "./legoBlocks/crossShoulderMeasurement";
 import { resolveEffectiveFrontNeckDepthInches } from "./customBuildEffectiveNeckDepth";
 import {
   sleevelessPieceFinishedSpans,
@@ -155,6 +156,10 @@ export type SleevelessFrontStsRowsDiagramModel = {
   armhole: SleevelessFrontStsRowsDiagramArmhole;
   shoulder: SleevelessFrontStsRowsDiagramShoulder;
   bodyShaping: SleevelessFrontStsRowsDiagramBodyShaping;
+  /** Outer shoulder to outer shoulder, including the neck. Null on a cardigan front. */
+  crossShoulder: SweaterShoulderSpan | null;
+  /** Split-half width on the needles, including the seam stitch. */
+  halfPiece: SweaterShoulderSpan | null;
   frontBand?: SleevelessFrontStsRowsFrontBand;
   finished: SleevelessStsRowsFinishedSpans;
 };
@@ -551,6 +556,11 @@ export function buildSleevelessFrontStsRowsDiagramModel(
       points: shoulderPoints,
     },
     bodyShaping,
+    ...sweaterCrossShoulderSpans({
+      stitchesPerInch: d.stitchesPerInch,
+      spansBothShoulders: true,
+      fullShoulderStitches: stitchesAfterArmhole,
+    }),
     finished: frontFinishedSpans(result, patternData, "pullover", hemStitches, bustStitches),
   };
 }
@@ -726,6 +736,13 @@ function buildCardiganFrontStsRowsDiagramModel(
       points: frontShoulderPoints(result, widths.shoulderStitchesPerSide),
     },
     bodyShaping,
+    ...sweaterCrossShoulderSpans({
+      stitchesPerInch: d.stitchesPerInch,
+      spansBothShoulders: false,
+      splitHalf: d.centerSeamStitch === true,
+      fullShoulderStitches: d.stitchesAfterArmhole,
+      halfPieceStitches: widths.stitchesAfterArmhole,
+    }),
     frontBand: cardiganFrontBand(result, patternData),
     finished: frontFinishedSpans(
       result,

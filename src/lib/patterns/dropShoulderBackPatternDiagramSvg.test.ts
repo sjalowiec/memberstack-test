@@ -11,6 +11,8 @@ import {
 } from "./dropShoulderDiagramReviewFixtures";
 import { generateDropShoulderPattern } from "./dropShoulderPatternOutput";
 import { buildDropShoulderBackStitchesRowsModel } from "./dropShoulderPatternDiagramModel";
+import { DS_STS_ROWS_VIEWBOX_H, DS_VB_W } from "./dropShoulderPatternDiagramSvgShared";
+import { castOnEdgeDiagramLabel } from "./patternStitchesRowsDiagramLabel";
 import { lengthFromRowsForDiagram } from "./sleevelessRowAccounting";
 
 const WOMEN_STRAIGHT = {
@@ -83,7 +85,7 @@ describe("buildDropShoulderBackStitchesRowsSvg", () => {
     expect(svg).toContain(`data-shoulder-stitches="${Math.round(result.debug.shoulderStitches ?? 0)}"`);
     expect(svg).toContain(`data-hem-rows="${Math.round(result.debug.hemRows)}"`);
     expect(svg).toContain(`data-body-rows="${Math.round(result.debug.bodyRows)}"`);
-    expect(svg).toContain(model.hemStitchesLabel);
+    for (const line of model.hemStitchesLabel.split("\n")) expect(svg).toContain(line);
     expect(svg).toContain(model.shoulderStitchesLabel);
     expect(svg).not.toMatch(/\bNaN\b/);
   });
@@ -111,13 +113,29 @@ describe("buildDropShoulderBackStitchesRowsSvg", () => {
     expect(svg).toContain('data-body-width="true"');
     expect(svg).toContain('data-neckline-width-dim="true"');
     expect(svg).toContain('data-neckline-depth-dim="true"');
-    expect(svg).toContain(model.bodyWidthLabel);
-    expect(svg).toContain(model.necklineWidthLabel);
+    for (const line of model.bodyWidthLabel.split("\n")) expect(svg).toContain(line);
+    for (const line of model.necklineWidthLabel.split("\n")) expect(svg).toContain(line);
     expect(svg).toContain(model.necklineDepthLabel);
     expect(svg).toContain('width="100%"');
     expect(svg).toContain('height="auto"');
     expect(svg).toContain('preserveAspectRatio="xMidYMid meet"');
-    expect(svg).toContain('viewBox="0 0 430 520"');
+    expect(svg).toContain(`viewBox="0 0 ${DS_VB_W} ${DS_STS_ROWS_VIEWBOX_H}"`);
+    expect(svg).toContain('data-cast-on-width="true"');
+    const castOn = /data-cast-on-width="true"[\s\S]*?<\/g>/.exec(svg)?.[0] ?? "";
+    const textY = Number(/<text\b[^>]*\by="([^"]+)"/.exec(castOn)?.[1]);
+    let y = textY;
+    let lowest = textY;
+    for (const span of castOn.matchAll(/<tspan\b([^>]*)>/g)) {
+      y += Number(/\bdy="([^"]+)"/.exec(span[1])?.[1] ?? 0);
+      const size = Number(/font-size="([^"]+)"/.exec(span[1])?.[1] ?? 14);
+      lowest = Math.max(lowest, y + size * 0.3);
+    }
+    expect(lowest).toBeGreaterThan(textY);
+    expect(lowest).toBeLessThanOrEqual(DS_STS_ROWS_VIEWBOX_H - 8);
+    expect(model.hemStitchesLabel).toBe(
+      castOnEdgeDiagramLabel(model.hemStitches, model.stitchesPerInch, "in"),
+    );
+    expect(model.hemStitchesLabel).toContain("\n");
     expect(svg).toContain('data-ds-back-sts-rows-generated="true"');
     expect(svg).toContain('data-supported="true"');
     expect(svg).not.toContain("generated preview");

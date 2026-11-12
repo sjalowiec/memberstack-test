@@ -6,9 +6,16 @@
  * no Japanese notation, no Illustrator geometry.
  */
 
+import {
+  placeCrossShoulderAboveNeck,
+  placeSplitShoulderLabels,
+  shoulderSpanCaption,
+} from "./legoBlocks/crossShoulderMeasurement";
 import type { MeasurementDisplayUnit } from "./patternMeasurementDisplayUnit";
 import {
+  castOnEdgeDiagramLabel,
   formatPatternDiagramMeasurement,
+  parseStitchesRowsDiagramLabel,
   stitchesRowsDiagramLabel,
 } from "./patternStitchesRowsDiagramLabel";
 import {
@@ -105,6 +112,24 @@ function countLines(
   ];
 }
 
+function castOnLines(stitches: number, stitchesPerInch: number, unit: MeasurementDisplayUnit, extra: string) {
+  const label = parseStitchesRowsDiagramLabel(castOnEdgeDiagramLabel(stitches, stitchesPerInch, unit));
+  return [
+    { text: label.count, extra },
+    ...(label.measure ? [{ text: label.measure }] : []),
+  ];
+}
+
+/** Puts the stitch count and knitted width below the cast-on edge, inside the viewBox. */
+function castOnPlacement(bottomY: number, lineCount: number): { arrowY: number; labelY: number } {
+  const viewBottom = SLEEVELESS_FRONT_STS_ROWS_VIEWBOX.height;
+  const arrowY = bottomY + 16;
+  const half = labelBlockHalfHeight(lineCount);
+  const preferred = arrowY + 14 + half;
+  const maxY = viewBottom - 12 - half;
+  return { arrowY, labelY: Math.min(maxY, preferred) };
+}
+
 function arrowHead(x: number, y: number, dir: "up" | "down" | "left" | "right"): string {
   const s = 4;
   if (dir === "up") {
@@ -127,10 +152,11 @@ function measurementTexts(
   measure: string,
   anchor: "middle" | "start" | "end",
   lineGap = LINE_GAP,
+  labelSize?: number,
 ): string {
   return lines
     .map((line, i) => {
-      const size = i === 0 ? FS_STITCH : FS_SECONDARY;
+      const size = labelSize ?? (i === 0 ? FS_STITCH : FS_SECONDARY);
       const dy = (i - (lines.length - 1) / 2) * lineGap;
       return `<text data-role="${role}" data-measure="${measure}" x="${fmtNum(x)}" y="${fmtNum(y + dy)}" text-anchor="${anchor}" dominant-baseline="middle" fill="${MUTED}" ${textFont(size)}${line.extra ?? ""}>${escapeXml(line.text)}</text>`;
     })
@@ -175,18 +201,26 @@ function horizontalArrow(
   role: string,
   measure: string,
   lines: readonly { text: string; extra?: string }[],
-  options?: { labelX?: number; labelAnchor?: "middle" | "start" | "end" },
+  options?: {
+    labelX?: number;
+    labelAnchor?: "middle" | "start" | "end";
+    labelSize?: number;
+    lineGap?: number;
+    endTicks?: boolean;
+  },
 ): string {
   const left = Math.min(x1, x2);
   const right = Math.max(x1, x2);
   const midX = options?.labelX ?? (left + right) / 2;
   const anchor = options?.labelAnchor ?? "middle";
+  const ends = options?.endTicks
+    ? `<line x1="${fmtNum(left)}" y1="${fmtNum(y - 2)}" x2="${fmtNum(left)}" y2="${fmtNum(y + 2)}" stroke="${ARROW}" stroke-width="1.5"/><line x1="${fmtNum(right)}" y1="${fmtNum(y - 2)}" x2="${fmtNum(right)}" y2="${fmtNum(y + 2)}" stroke="${ARROW}" stroke-width="1.5"/>`
+    : `${arrowHead(left, y, "left")}${arrowHead(right, y, "right")}`;
   return [
     `<g data-role="${role}" data-measure="${measure}">`,
     `<line x1="${fmtNum(left)}" y1="${fmtNum(y)}" x2="${fmtNum(right)}" y2="${fmtNum(y)}" stroke="${ARROW}" stroke-width="1.5" fill="none"/>`,
-    arrowHead(left, y, "left"),
-    arrowHead(right, y, "right"),
-    measurementTexts(lines, midX, labelY, role, measure, anchor),
+    ends,
+    measurementTexts(lines, midX, labelY, role, measure, anchor, options?.lineGap ?? LINE_GAP, options?.labelSize),
     `</g>`,
   ].join("");
 }
@@ -467,17 +501,22 @@ function drawMeasurements(model: SleevelessFrontStsRowsDiagramModel, frame: Fram
     ),
   );
 
+  const castOn = castOnLines(
+    model.widths.hemStitches,
+    model.widths.stitchesPerInch,
+    unit,
+    ` data-sts="${fmtNum(model.widths.hemStitches)}"`,
+  );
+  const castOnPlace = castOnPlacement(frame.bottomY, castOn.length);
   parts.push(
     horizontalArrow(
-      Math.min(VB_H - 22, frame.bottomY + 18),
+      castOnPlace.arrowY,
       frame.hemLeft,
       frame.hemRight,
-      Math.min(VB_H - 8, frame.bottomY + 34),
+      castOnPlace.labelY,
       "width-measurement",
       "cast-on",
-      [
-        ...countLines(model.widths.hemStitches, "sts", finished.hemWidthInches, unit, ` data-sts="${fmtNum(model.widths.hemStitches)}"`),
-      ],
+      castOn,
     ),
   );
 
@@ -486,11 +525,94 @@ function drawMeasurements(model: SleevelessFrontStsRowsDiagramModel, frame: Fram
     : cardiganRound
       ? frame.shoulderTopY - 10
       : Math.min(frame.neckCornerY + 14, frame.neckStartY - 24);
-  const neckLabelY = cardiganV
+  const shoulderArrowY = frame.shoulderY + 16;
+  const shoulderLabelY = shoulderArrowY + 26;
+  let neckLabelY = cardiganV
     ? neckArrowY - 24
     : cardiganRound
       ? neckArrowY - 24
       : Math.min(frame.shoulderTopY - 26, neckArrowY - 30);
+  const spanMidX = (frame.afterLeft + frame.afterRight) / 2;
+  if (model.crossShoulder && model.halfPiece) {
+    const placed = placeSplitShoulderLabels({
+      neckLabelY,
+      neckArrowY,
+      shoulderLabelY,
+      neckClearY: neckLabelY - LINE_GAP / 2 - FS_STITCH / 2,
+    });
+    neckLabelY = placed.neckLabelY;
+    const crossCaption = shoulderSpanCaption(model.crossShoulder, unit);
+    const halfCaption = shoulderSpanCaption(model.halfPiece, unit);
+    parts.push(
+      measurementTexts(
+        [
+          {
+            text: crossCaption,
+            extra: ` data-sts="${fmtNum(model.crossShoulder.stitches)}" data-inches="${fmtNum(model.crossShoulder.inches)}" data-span="full"`,
+          },
+        ],
+        spanMidX,
+        placed.captionY,
+        "width-measurement",
+        "cross-shoulder",
+        "middle",
+        LINE_GAP,
+        15,
+      ),
+    );
+    parts.push(
+      horizontalArrow(
+        placed.halfLineY,
+        frame.afterLeft,
+        frame.afterRight,
+        placed.halfCaptionY,
+        "width-measurement",
+        "half-piece",
+        [
+          {
+            text: halfCaption,
+            extra: ` data-sts="${fmtNum(model.halfPiece.stitches)}" data-inches="${fmtNum(model.halfPiece.inches)}"`,
+          },
+        ],
+        { labelSize: 15 },
+      ),
+    );
+  } else if (model.crossShoulder) {
+    const placed = placeCrossShoulderAboveNeck({
+      neckLabelY,
+      neckArrowY,
+      shoulderLabelY,
+      neckRise: LINE_GAP / 2 + FS_STITCH / 2,
+    });
+    neckLabelY = placed.neckLabelY;
+    const neckTop = neckLabelY - LINE_GAP / 2 - FS_STITCH / 2;
+    const tight = neckTop < 40;
+    const caption = shoulderSpanCaption(model.crossShoulder, unit);
+    const extra = ` data-sts="${fmtNum(model.crossShoulder.stitches)}" data-inches="${fmtNum(model.crossShoulder.inches)}" data-span="full"`;
+    parts.push(
+      tight
+        ? measurementTexts(
+            [{ text: caption, extra }],
+            spanMidX,
+            10,
+            "width-measurement",
+            "cross-shoulder",
+            "middle",
+            LINE_GAP,
+            13,
+          )
+        : horizontalArrow(
+            neckTop < placed.lineY + 12 ? 22 : placed.lineY,
+            frame.afterLeft,
+            frame.afterRight,
+            neckTop < placed.lineY + 12 ? 8 : placed.captionY,
+            "width-measurement",
+            "cross-shoulder",
+            [{ text: caption, extra }],
+            { labelSize: 15, endTicks: neckTop < placed.lineY + 12 },
+          ),
+    );
+  }
   parts.push(
     horizontalArrow(
       neckArrowY,
@@ -505,9 +627,7 @@ function drawMeasurements(model: SleevelessFrontStsRowsDiagramModel, frame: Fram
     ),
   );
 
-  const shoulderArrowY = frame.shoulderY + 16;
   const shoulderMidX = (frame.afterRight + frame.neckRight) / 2;
-  const shoulderLabelY = shoulderArrowY + 26;
   parts.push(
     horizontalArrow(
       shoulderArrowY,

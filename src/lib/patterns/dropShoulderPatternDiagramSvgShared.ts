@@ -3,8 +3,19 @@
  * Back and Front renderers use these helpers; they do not compute pattern math.
  */
 
+import {
+  placeCrossShoulderAboveNeck,
+  shoulderSpanCaption,
+  sweaterCrossShoulderSpans,
+} from "./legoBlocks/crossShoulderMeasurement";
+import { stitchesRowsLabelMarkup } from "./legoBlocks/stitchesRowsDiagramLabel";
+import type { MeasurementDisplayUnit } from "./patternMeasurementDisplayUnit";
+
 export const DS_VB_W = 430;
 export const DS_VB_H = 520;
+/** Extra viewBox below the garment so the cast-on width line is not clipped. */
+export const DS_CAST_ON_VIEWBOX_PAD = 40;
+export const DS_STS_ROWS_VIEWBOX_H = DS_VB_H + DS_CAST_ON_VIEWBOX_PAD;
 export const DS_FONT = "Poppins, system-ui, Arial, sans-serif";
 export const DS_ARROW = "#52682d";
 export const DS_STROKE = "#1a1a1a";
@@ -65,6 +76,32 @@ export function fmtNum(n: number): string {
 export function textFont(size: number, weight?: number): string {
   const w = weight != null ? ` font-weight="${weight}"` : "";
   return `font-family="${DS_FONT}" font-size="${size}"${w}`;
+}
+
+const DS_LABEL_COUNT = 17;
+const DS_LABEL_MEASURE = 14;
+
+function countMeasureText(
+  label: string,
+  x: number,
+  y: number,
+  anchor: "start" | "middle" | "end",
+  extra = "",
+  transform?: string,
+): string {
+  return stitchesRowsLabelMarkup({
+    label,
+    x,
+    y,
+    anchor,
+    fill: DS_MUTED,
+    countSize: DS_LABEL_COUNT,
+    measureSize: DS_LABEL_MEASURE,
+    fontFamily: DS_FONT,
+    extra,
+    transform,
+    fmt: fmtNum,
+  });
 }
 
 export function endCap(x: number, y: number, vertical: boolean): string {
@@ -719,6 +756,42 @@ export function drawHemDepth(frame: DropShoulderDiagramFrame, hemDepthLabel: str
   ].join("");
 }
 
+/**
+ * Finished width from one outer shoulder point to the other, including the neck.
+ * The line uses the shoulder span. The caption sits above the neck width label.
+ */
+export function drawCrossShoulderWidth(
+  frame: DropShoulderDiagramFrame,
+  stitches: number,
+  stitchesPerInch: number,
+  unit: MeasurementDisplayUnit,
+): string {
+  const span = sweaterCrossShoulderSpans({
+    stitchesPerInch,
+    spansBothShoulders: true,
+    fullShoulderStitches: stitches,
+  }).crossShoulder;
+  if (!span) return "";
+  const neckArrowY = frame.top - 14;
+  const placed = placeCrossShoulderAboveNeck({
+    neckLabelY: neckArrowY - 8,
+    neckArrowY,
+    shoulderLabelY: frame.top + 16,
+    top: 14,
+    gap: 22,
+  });
+  const caption = shoulderSpanCaption(span, unit);
+  const midX = (frame.left + frame.right) / 2;
+  return [
+    `<g data-cross-shoulder="true" data-sts="${fmtNum(span.stitches)}" data-inches="${fmtNum(span.inches)}">`,
+    `<line x1="${fmtNum(frame.left)}" y1="${fmtNum(placed.lineY)}" x2="${fmtNum(frame.right)}" y2="${fmtNum(placed.lineY)}" stroke="${DS_ARROW}" stroke-width="1.4" fill="none"/>`,
+    endCap(frame.left, placed.lineY, false),
+    endCap(frame.right, placed.lineY, false),
+    `<text data-role="width-measurement" data-measure="cross-shoulder" data-span="full" x="${fmtNum(midX)}" y="${fmtNum(placed.captionY)}" text-anchor="middle" dominant-baseline="middle" fill="${DS_MUTED}" ${textFont(DS_FS_MEASURE)}>${escapeXml(caption)}</text>`,
+    `</g>`,
+  ].join("");
+}
+
 export function drawBodyWidth(
   frame: DropShoulderDiagramFrame,
   bodyWidthLabel: string,
@@ -732,7 +805,7 @@ export function drawBodyWidth(
     `<line x1="${fmtNum(left)}" y1="${fmtNum(y)}" x2="${fmtNum(right)}" y2="${fmtNum(y)}" stroke="${DS_ARROW}" stroke-width="1.4" fill="none"/>`,
     endCap(left, y, false),
     endCap(right, y, false),
-    `<text x="${fmtNum(labelX)}" y="${fmtNum(y - 6)}" text-anchor="middle" fill="${DS_MUTED}" ${textFont(DS_FS_SMALL)}>${escapeXml(bodyWidthLabel)}</text>`,
+    countMeasureText(bodyWidthLabel, labelX, y - 8, "middle"),
     `</g>`,
   ].join("");
 }
@@ -740,19 +813,15 @@ export function drawBodyWidth(
 export function drawHemWidth(
   frame: DropShoulderDiagramFrame,
   hemStitchesLabel: string,
-  hemStitches: number,
-  bodyWidthStitches: number,
-  options?: { evenWhenEqual?: boolean },
 ): string {
   if (!hemStitchesLabel) return "";
-  if (!options?.evenWhenEqual && hemStitches === bodyWidthStitches) return "";
   const y = frame.bottom + 22;
   return [
     `<g class="ds-diagram__hem-width" data-cast-on-width="true" data-cast-on-y="${fmtNum(y)}">`,
     `<line x1="${fmtNum(frame.hemLeft)}" y1="${fmtNum(y)}" x2="${fmtNum(frame.hemRight)}" y2="${fmtNum(y)}" stroke="${DS_ARROW}" stroke-width="1.4" fill="none"/>`,
     endCap(frame.hemLeft, y, false),
     endCap(frame.hemRight, y, false),
-    `<text data-cast-on-width-label="true" x="${fmtNum((frame.hemLeft + frame.hemRight) / 2)}" y="${fmtNum(y + 16)}" text-anchor="middle" fill="${DS_MUTED}" ${textFont(DS_FS_SMALL)}>${escapeXml(hemStitchesLabel)}</text>`,
+    countMeasureText(hemStitchesLabel, (frame.hemLeft + frame.hemRight) / 2, y + 16, "middle", ` data-cast-on-width-label="true"`),
     `</g>`,
   ].join("");
 }
@@ -770,7 +839,7 @@ export function drawNecklineWidthDim(
     `<line x1="${fmtNum(x1)}" y1="${fmtNum(y)}" x2="${fmtNum(x2)}" y2="${fmtNum(y)}" stroke="${DS_ARROW}" stroke-width="1.4" fill="none"/>`,
     endCap(x1, y, false),
     endCap(x2, y, false),
-    `<text x="${fmtNum((x1 + x2) / 2)}" y="${fmtNum(y - 6)}" text-anchor="middle" fill="${DS_MUTED}" ${textFont(DS_FS_SMALL)}>${escapeXml(necklineWidthLabel)}</text>`,
+    countMeasureText(necklineWidthLabel, (x1 + x2) / 2, y - 8, "middle", ` data-measure="neck"`),
     `</g>`,
   ].join("");
 }
@@ -826,20 +895,24 @@ export function wrapGeneratedDiagramSvg(attrs: {
   dataAttrs: Record<string, string | number>;
   title: string;
   body: string;
+  viewBoxWidth?: number;
+  viewBoxHeight?: number;
 }): string {
+  const width = attrs.viewBoxWidth && attrs.viewBoxWidth > 0 ? attrs.viewBoxWidth : DS_VB_W;
+  const height = attrs.viewBoxHeight && attrs.viewBoxHeight > 0 ? attrs.viewBoxHeight : DS_VB_H;
   const data = Object.entries(attrs.dataAttrs)
     .map(([k, v]) => ` ${k}="${escapeXml(String(v))}"`)
     .join("");
   const safeBody = attrs.body.replace(/\bNaN\b/g, "0").replace(/\bInfinity\b/g, "0");
   return (
-    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${DS_VB_W} ${DS_VB_H}"` +
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${fmtNum(width)} ${fmtNum(height)}"` +
     ` width="100%" height="auto" preserveAspectRatio="xMidYMid meet" role="img"` +
     ` aria-label="${escapeXml(attrs.ariaLabel)}"` +
     ` class="${escapeXml(attrs.className)}"` +
     data +
     `>` +
     `<title>${escapeXml(attrs.title)}</title>` +
-    `<rect x="0" y="0" width="${DS_VB_W}" height="${DS_VB_H}" fill="#fff"/>` +
+    `<rect x="0" y="0" width="${fmtNum(width)}" height="${fmtNum(height)}" fill="#fff"/>` +
     safeBody +
     `</svg>`
   );

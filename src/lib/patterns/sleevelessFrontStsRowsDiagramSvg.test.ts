@@ -11,7 +11,11 @@ import {
 import { cardiganFrontNeckOpeningStitches } from "./roundNeckNotation";
 import { sleevelessCardiganFrontEdgeFinishingMode } from "./sleevelessPatternFinishing";
 import { resolveSleevelessFrontDiagramSrc } from "./sleevelessFrontJapaneseNotation";
-import { formatPatternDiagramMeasurement } from "./patternStitchesRowsDiagramLabel";
+import {
+  formatKnittedDiagramMeasurement,
+  formatPatternDiagramMeasurement,
+  knittedWidthInches,
+} from "./patternStitchesRowsDiagramLabel";
 import { buildSleevelessFrontStsRowsDiagramModel } from "./sleevelessFrontStsRowsDiagramModel";
 import {
   buildSleevelessFrontStsRowsDiagramSvg,
@@ -476,6 +480,20 @@ function expectValidSvg(svg: string): void {
   expect(svg).not.toMatch(/RC:\d/);
   expect(svg).not.toContain('data-role="armhole-event"');
   expect(svg).not.toContain('data-role="neck-event"');
+  expectCastOnLabelInsideViewBox(svg, SLEEVELESS_FRONT_STS_ROWS_VIEWBOX.height);
+}
+
+function expectCastOnLabelInsideViewBox(svg: string, viewHeight: number): void {
+  const group = /data-measure="cast-on"[\s\S]*?<\/g>/.exec(svg)?.[0] ?? "";
+  expect(group).not.toBe("");
+  let lowest = 0;
+  for (const text of group.matchAll(/<text\b([^>]*)>/g)) {
+    const y = Number(/\by="([^"]+)"/.exec(text[1])?.[1]);
+    const size = Number(/font-size="([^"]+)"/.exec(text[1])?.[1] ?? 18);
+    if (Number.isFinite(y)) lowest = Math.max(lowest, y + size / 2);
+  }
+  expect(lowest).toBeGreaterThan(0);
+  expect(lowest).toBeLessThanOrEqual(viewHeight - 8);
 }
 
 describe("buildSleevelessFrontStsRowsDiagramSvg", () => {
@@ -1129,7 +1147,12 @@ describe("buildSleevelessFrontStsRowsDiagramSvg", () => {
     expect(lengthLabelRows(svg, "body-length")).toBe(model.rows.rowsFromCastOnToArmholeStart);
     expect(lengthLabelRows(svg, "hem")).toBe(model.rows.hemRows);
     expect(lengthLabelRows(svg, "armhole")).toBe(model.rows.armholeRows);
-    expect(svg).toContain(formatPatternDiagramMeasurement(model.finished.hemWidthInches, "in"));
+    expect(svg).toContain(
+      formatKnittedDiagramMeasurement(
+        knittedWidthInches(model.widths.hemStitches, model.widths.stitchesPerInch),
+        "in",
+      ),
+    );
     expect(svg).toContain(formatPatternDiagramMeasurement(model.finished.bustWidthInches, "in"));
     expect(svg).toContain(formatPatternDiagramMeasurement(model.finished.garmentLengthInches, "in"));
   });
@@ -1200,7 +1223,12 @@ describe("buildSleevelessFrontStsRowsDiagramSvg", () => {
     expect(lengthLabelRows(svg, "body-length")).toBe(model.rows.rowsFromCastOnToArmholeStart);
     expect(lengthLabelRows(svg, "hem")).toBe(model.rows.hemRows);
     expect(lengthLabelRows(svg, "armhole")).toBe(model.rows.armholeRows);
-    expect(svg).toContain(formatPatternDiagramMeasurement(model.finished.hemWidthInches, "in"));
+    expect(svg).toContain(
+      formatKnittedDiagramMeasurement(
+        knittedWidthInches(model.widths.hemStitches, model.widths.stitchesPerInch),
+        "in",
+      ),
+    );
     expect(svg).toContain(formatPatternDiagramMeasurement(model.finished.bustWidthInches, "in"));
   });
 
@@ -1599,7 +1627,12 @@ describe("buildSleevelessFrontStsRowsDiagramSvg", () => {
       expect(lengthLabelRows(svg, "neck-depth")).toBe(model.neckline.depthRows);
 
       expect(svg).toContain(formatPatternDiagramMeasurement(model.finished.bustWidthInches, "in"));
-      expect(svg).toContain(formatPatternDiagramMeasurement(model.finished.hemWidthInches, "in"));
+      expect(svg).toContain(
+        formatKnittedDiagramMeasurement(
+          knittedWidthInches(model.widths.hemStitches, model.widths.stitchesPerInch),
+          "in",
+        ),
+      );
       expect(svg).toContain(formatPatternDiagramMeasurement(model.finished.neckWidthInches, "in"));
       expect(svg).toContain(formatPatternDiagramMeasurement(model.finished.garmentLengthInches, "in"));
       expect(svg).toContain(formatPatternDiagramMeasurement(model.finished.armholeDepthInches, "in"));

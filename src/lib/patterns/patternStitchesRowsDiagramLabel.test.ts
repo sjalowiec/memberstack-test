@@ -1,0 +1,99 @@
+import { describe, expect, it } from "vitest";
+import { calculateSidewaysCardiganBody } from "./sidewaysCardiganBodyCalc";
+import {
+  buildSidewaysCardiganPatternDiagramModel,
+  buildSidewaysCardiganPatternDiagramSvg,
+} from "./sidewaysCardiganPatternDiagramSvg";
+import { formatInchesWithUnit } from "./sidewaysCardiganDisplayFormat";
+import { formatMeasurementDisplayFromInches } from "./patternMeasurementDisplayUnit";
+import {
+  castOnEdgeDiagramLabel,
+  formatPatternDiagramCountLabel,
+  formatPatternDiagramMeasurement,
+  formatStitchesRowsDiagramLabel,
+} from "./patternStitchesRowsDiagramLabel";
+
+describe("Stitches & Rows measurement labels", () => {
+  it("keeps a count and a finished measurement on separate lines", () => {
+    expect(formatStitchesRowsDiagramLabel(162, "sts", "27 in")).toBe("162 sts\n27 in");
+    expect(formatStitchesRowsDiagramLabel(98, "rows", "14 in")).toBe("98 rows\n14 in");
+    expect(formatPatternDiagramCountLabel(162, "sts")).toBe("162 sts");
+  });
+
+  it("switches units with the Summary / Edit display rounding", () => {
+    expect(formatPatternDiagramMeasurement(27, "in")).toBe("27 in");
+    expect(formatPatternDiagramMeasurement(27, "cm")).toBe(
+      `${formatMeasurementDisplayFromInches(27, "cm")} cm`,
+    );
+    expect(formatStitchesRowsDiagramLabel(162, "sts", formatPatternDiagramMeasurement(27, "cm"))).toBe(
+      `162 sts\n${formatMeasurementDisplayFromInches(27, "cm")} cm`,
+    );
+  });
+
+  it("omits a measurement that was not supplied", () => {
+    expect(formatStitchesRowsDiagramLabel(40, "sts")).toBe("40 sts");
+    expect(formatStitchesRowsDiagramLabel(12, "rows", "")).toBe("12 rows");
+    expect(formatStitchesRowsDiagramLabel(12, "rows", "   ")).toBe("12 rows");
+    expect(formatPatternDiagramMeasurement(undefined, "in")).toBe("");
+    expect(formatPatternDiagramMeasurement(Number.NaN, "cm")).toBe("");
+  });
+});
+
+describe("Sideways Stitches & Rows measurement labels", () => {
+  const input = {
+    garmentLengthInches: 22,
+    vNeckDepthInches: 8,
+    finishedBustCircumferenceInches: 40,
+    finishedUpperArmInches: 14,
+    neckOpeningWidthInches: 7,
+    backNeckDepthInches: 1,
+    stitchesPerInch: 5,
+    rowsPerInch: 7,
+  };
+
+  function svg(unit: "in" | "cm" = "in") {
+    const result = calculateSidewaysCardiganBody(input);
+    if (!result.ok) throw new Error(result.error.message);
+    const model = buildSidewaysCardiganPatternDiagramModel({
+      garmentStyle: "cardigan",
+      calc: result.calc,
+      input,
+      sleeveCalc: null,
+      displayUnit: unit,
+    });
+    return buildSidewaysCardiganPatternDiagramSvg(model);
+  }
+
+  it("places finished length on the hem-to-shoulder span, not the straight front", () => {
+    const diagram = svg("in");
+    const length = formatPatternDiagramMeasurement(input.garmentLengthInches, "in");
+    const castOn = /data-role="cast-on-sts"[\s\S]*?<\/text>/.exec(diagram)?.[0] ?? "";
+    const bindOff = /data-role="bind-off-sts"[\s\S]*?<\/text>/.exec(diagram)?.[0] ?? "";
+    const finished = /data-role="finished-length"[\s\S]*?<\/text>/.exec(diagram)?.[0] ?? "";
+    expect(diagram).toContain(`sts</tspan><tspan`);
+    expect(diagram).toContain('data-role="dim-finished-length"');
+    expect(finished).toContain(length);
+    const castOnSts = Number(/data-sts="(\d+)"/.exec(castOn)?.[1]);
+    const [castOnCount, castOnWidth] = castOnEdgeDiagramLabel(
+      castOnSts,
+      input.stitchesPerInch,
+      "in",
+    ).split("\n");
+    expect(castOn).toContain(`CO ${castOnCount}`);
+    expect(castOn).toContain(castOnWidth);
+    expect(bindOff).not.toContain(length);
+    expect(diagram).not.toContain(`sts (${length})`);
+    expect(diagram).toContain(`CO `);
+    expect(diagram).toContain(`BO `);
+    expect(diagram).toContain(formatInchesWithUnit(input.garmentLengthInches).replace(" in", ""));
+  });
+
+  it("uses centimeters when that is the selected unit", () => {
+    const diagram = svg("cm");
+    const length = formatPatternDiagramMeasurement(input.garmentLengthInches, "cm");
+    expect(diagram).toContain(`sts</tspan><tspan`);
+    expect(diagram).toContain(length);
+    expect(diagram).not.toContain(`sts (${length})`);
+    expect(diagram).not.toContain(`sts (${formatPatternDiagramMeasurement(input.garmentLengthInches, "in")})`);
+  });
+});

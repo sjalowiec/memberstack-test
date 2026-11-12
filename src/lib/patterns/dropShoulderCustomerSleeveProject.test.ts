@@ -125,8 +125,8 @@ describe("Customer's saved Drop Shoulder project", () => {
     expect(print).not.toContain("Cast on 34 stitches");
 
     const diagram = buildDropShoulderSleeveStitchesRowsModel(result, "cuff-up", "cm");
-    expect(diagram?.wristWidthLabel).toBe("38 sts / 19.5 cm");
-    expect(diagram?.topWidthLabel).toBe("84 sts / 43.1 cm");
+    expect(diagram?.wristWidthLabel).toBe("38 sts\n19.5 cm");
+    expect(diagram?.topWidthLabel).toBe("84 sts\n43.1 cm");
   });
 
   it("shows the sleeve correction for this project and stays quiet for unaffected projects", () => {
