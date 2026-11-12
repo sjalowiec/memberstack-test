@@ -14,6 +14,7 @@ import {
 import type { MeasurementDisplayUnit } from "./patternMeasurementDisplayUnit";
 import {
   castOnEdgeDiagramLabel,
+  formatKnittedCountMeasurement,
   formatPatternDiagramMeasurement,
   parseStitchesRowsDiagramLabel,
   stitchesRowsDiagramLabel,
@@ -109,6 +110,22 @@ function countLines(
   return [
     { text: label.count, extra },
     ...(label.measure ? [{ text: label.measure }] : []),
+  ];
+}
+
+function knittedLines(
+  count: number,
+  kind: "sts" | "rows",
+  perUnit: number | undefined,
+  unit: MeasurementDisplayUnit,
+  extra: string,
+  note?: string,
+): { text: string; extra?: string }[] {
+  const label = stitchesRowsDiagramLabel(count, kind, formatKnittedCountMeasurement(count, perUnit, unit));
+  return [
+    { text: label.count, extra },
+    ...(label.measure ? [{ text: label.measure }] : []),
+    ...(note ? [{ text: note }] : []),
   ];
 }
 
@@ -427,10 +444,10 @@ function drawMeasurements(model: SleevelessFrontStsRowsDiagramModel, frame: Fram
       "length-measurement",
       "body-length",
       [
-        ...countLines(
+        ...knittedLines(
           model.rows.rowsFromCastOnToArmholeStart,
           "rows",
-          finished.bodyToArmholeInches,
+          model.rows.rowsPerInch,
           unit,
           ` data-rows="${fmtNum(model.rows.rowsFromCastOnToArmholeStart)}"`,
         ),
@@ -496,7 +513,14 @@ function drawMeasurements(model: SleevelessFrontStsRowsDiagramModel, frame: Fram
       "width-measurement",
       "bust",
       [
-        ...countLines(model.widths.bustStitches, "sts", finished.bustWidthInches, unit, ` data-sts="${fmtNum(model.widths.bustStitches)}"`),
+        ...knittedLines(
+          model.widths.bustStitches,
+          "sts",
+          model.widths.stitchesPerInch,
+          unit,
+          ` data-sts="${fmtNum(model.widths.bustStitches)}"`,
+          model.halfPiece ? "includes 1 seam stitch" : undefined,
+        ),
       ],
     ),
   );
@@ -520,6 +544,7 @@ function drawMeasurements(model: SleevelessFrontStsRowsDiagramModel, frame: Fram
     ),
   );
 
+  let splitHalfLineY = 0;
   const neckArrowY = cardiganV
     ? frame.shoulderTopY - 12
     : cardiganRound
@@ -541,8 +566,9 @@ function drawMeasurements(model: SleevelessFrontStsRowsDiagramModel, frame: Fram
       neckClearY: neckLabelY - LINE_GAP / 2 - FS_STITCH / 2,
     });
     neckLabelY = placed.neckLabelY;
-    const crossCaption = shoulderSpanCaption(model.crossShoulder, unit);
-    const halfCaption = shoulderSpanCaption(model.halfPiece, unit);
+    splitHalfLineY = placed.halfLineY;
+    const crossCaption = `${shoulderSpanCaption(model.crossShoulder, unit)}, excluding center seam stitches`;
+    const halfCaption = `${shoulderSpanCaption(model.halfPiece, unit)}, including 1 seam stitch`;
     parts.push(
       measurementTexts(
         [
@@ -613,6 +639,17 @@ function drawMeasurements(model: SleevelessFrontStsRowsDiagramModel, frame: Fram
           ),
     );
   }
+  const neckLines = knittedLines(
+    model.widths.necklineStitches,
+    "sts",
+    model.widths.stitchesPerInch,
+    unit,
+    ` data-sts="${fmtNum(model.widths.necklineStitches)}"`,
+    model.halfPiece ? "includes 1 seam stitch" : undefined,
+  );
+  if (splitHalfLineY > 0) {
+    neckLabelY = Math.max(neckLabelY, splitHalfLineY + 28 + (neckLines.length - 1) * (LINE_GAP / 2));
+  }
   parts.push(
     horizontalArrow(
       neckArrowY,
@@ -621,27 +658,30 @@ function drawMeasurements(model: SleevelessFrontStsRowsDiagramModel, frame: Fram
       neckLabelY,
       "width-measurement",
       "neck",
-      [
-        ...countLines(model.widths.necklineStitches, "sts", finished.neckWidthInches, unit, ` data-sts="${fmtNum(model.widths.necklineStitches)}"`),
-      ],
+      neckLines,
     ),
   );
 
   const shoulderMidX = (frame.afterRight + frame.neckRight) / 2;
+  const shoulderLines = knittedLines(
+    model.widths.shoulderStitchesPerSide,
+    "sts",
+    model.widths.stitchesPerInch,
+    unit,
+    ` data-sts="${fmtNum(model.widths.shoulderStitchesPerSide)}"`,
+  );
+  const shoulderCenterY =
+    Math.max(shoulderLabelY, splitHalfLineY > 0 ? Math.max(splitHalfLineY + 36, neckLabelY + 48) : shoulderLabelY) +
+    ((shoulderLines.length - 1) / 2) * LINE_GAP;
   parts.push(
     horizontalArrow(
       shoulderArrowY,
       frame.afterRight,
       frame.neckRight,
-      shoulderLabelY,
+      shoulderCenterY,
       "width-measurement",
       "shoulder",
-      [
-        {
-          text: stitchesRowsDiagramLabel(model.widths.shoulderStitchesPerSide, "sts").count,
-          extra: ` data-sts="${fmtNum(model.widths.shoulderStitchesPerSide)}"`,
-        },
-      ],
+      shoulderLines,
     ),
   );
   parts.push(

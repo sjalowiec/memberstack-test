@@ -522,6 +522,16 @@ function setInWrittenRcLabel(raw: string | undefined): string {
 export const SET_IN_HELD_NECKLINE_FINISH_SENTENCE =
   "Scrap off or bind off all remaining held neckline stitches.";
 
+export const SET_IN_SHOULDER_HOLD_FINISH_SENTENCE =
+  "If you held the shoulder stitches, bind off those held shoulder stitches.";
+
+export function checklistHoldFinishLines(rows: readonly { action: string }[]): string[] {
+  const lines: string[] = [];
+  if (rows.some((row) => /^Hold\b/.test(row.action))) lines.push(SET_IN_HELD_NECKLINE_FINISH_SENTENCE);
+  if (rows.some((row) => /^Bind off OR hold\b/.test(row.action))) lines.push(SET_IN_SHOULDER_HOLD_FINISH_SENTENCE);
+  return lines;
+}
+
 function heldNecklineFinishHtml(enabled: boolean): string {
   if (!enabled) return "";
   return `<p class="ns-shaping-chart__held-neckline-finish" data-held-neckline-finish>${escapeHtml(SET_IN_HELD_NECKLINE_FINISH_SENTENCE)}</p>`;
@@ -1156,6 +1166,8 @@ export type NeckShoulderChartRenderOptions = {
    * the repeated print header. Does not change row numbers or shaping.
    */
   counterNote?: string;
+  /** Sentences after the checklist, such as the hold-option bind-off. */
+  closingParagraphs?: readonly string[];
 };
 
 const SECOND_SHOULDER_CHECKLIST_HEADING = "Second Shoulder Checklist";
@@ -1355,6 +1367,7 @@ function renderShoulderTabsHtml(args: {
   secondExtraHtml: string;
   secondTableHtml: string;
   counterNoteHtml?: string;
+  finishHtml?: string;
 }): string {
   const firstTabId = `${args.idPrefix}-tab-first`;
   const secondTabId = `${args.idPrefix}-tab-second`;
@@ -1385,6 +1398,7 @@ function renderShoulderTabsHtml(args: {
       `${args.secondExtraHtml}${args.secondTableHtml}`,
     )}
   </div>
+  ${args.finishHtml ?? ""}
   ${checklistInnerCloseHtml()}
 </section>`;
 }
@@ -1732,6 +1746,17 @@ ${collapsible ? secondShoulderCollapsibleHtml : secondShoulderLegacyHtml}`
         : "";
 
   const firstBindoffHtml = activeSideOnly ? renderActiveSideBindoffRemainingHtml(activeRowsRaw) : "";
+  const providedFinish = new Set((options?.closingParagraphs ?? []).map((line) => line.trim()));
+  const autoFinishLines = checklistHoldFinishLines([...activeRowsRaw, ...oppositeRowsPrep]).filter(
+    (line) => !providedFinish.has(line),
+  );
+  const finishLines = [...(options?.closingParagraphs ?? []).map((line) => line.trim()).filter((line) => line.length > 0), ...autoFinishLines];
+  const closingHtml = finishLines
+    .map(
+      (line) =>
+        `<p class="ns-shaping-chart__held-neckline-finish" data-held-neckline-finish>${escapeHtml(line)}</p>`,
+    )
+    .join("");
 
   if (useShoulderTabs) {
     const secondSideLeadHtml =
@@ -1749,6 +1774,7 @@ ${collapsible ? secondShoulderCollapsibleHtml : secondShoulderLegacyHtml}`
       secondExtraHtml: secondShoulderExtra,
       secondTableHtml: `${secondSideLeadHtml}${secondShoulderTableHtml}`,
       counterNoteHtml: chartCounterNoteHtml(options?.counterNote, "visible"),
+      finishHtml: closingHtml,
     });
   }
 
@@ -1760,6 +1786,7 @@ ${collapsible ? secondShoulderCollapsibleHtml : secondShoulderLegacyHtml}`
   ${intro}
   ${primaryTableForBody}
   ${firstBindoffHtml}
+  ${closingHtml}
   ${activeSideTailHtml}`;
 
   if (collapsible) {

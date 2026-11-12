@@ -322,7 +322,8 @@ function stitchesAfterSetInShaping(start: number, plan: SetInArmholePlan, edge: 
 function knitEvenBridgeBlock(fromRc: number, untilRc: number, stitches: number): SetInArmholeDisplayBlock | null {
   const rows = untilRc - fromRc;
   if (rows <= 0) return null;
-  const knit = rows === 1 ? "Knit 1 row even." : `Knit ${rows} rows even.`;
+  const endRc = fromRc + rows;
+  const knit = rows === 1 ? `Knit 1 row even to ${formatRcColon(endRc)}.` : `Knit ${rows} rows even to ${formatRcColon(endRc)}.`;
   const noun = stitches === 1 ? "stitch" : "stitches";
   return {
     rc: fromRc,
@@ -650,8 +651,9 @@ function rightBackReverseRows(): SleevelessPatternDisplayRow[] {
         "The center seam edge goes on the left and the armhole edge goes on the right.",
         "Work body shaping at the armhole edge.",
         "Bind off the armhole edge with the carriage on the right.",
-        "At the start of the neckline, bind off at the center edge with the carriage on the left, including the seam stitch.",
+        "At the start of the neckline, work the center edge with the carriage on the left, including the seam stitch. Use the same hold, bind-off, or decrease as the left back.",
         "Work the neckline and shoulder shaping with the same row numbers as the left back. Keep neckline shaping on the center edge and shoulder shaping on the armhole edge, with the carriage on the opposite side.",
+        "Swap Left and Right. Carriage on the right in the left back is carriage on the left here. Carriage on the left in the left back is carriage on the right here.",
       ],
     },
   ];
@@ -667,8 +669,9 @@ function leftFrontReverseRows(includeBustDart: boolean): SleevelessPatternDispla
     "The center seam edge goes on the right and the armhole edge goes on the left.",
     "Work body shaping at the armhole edge.",
     "Bind off the armhole edge with the carriage on the left.",
-    "At the start of the neckline, bind off at the center edge with the carriage on the right, including the seam stitch.",
+    "At the start of the neckline, work the center edge with the carriage on the right, including the seam stitch. Use the same hold, bind-off, or decrease as the right front.",
     "Work the neckline and shoulder shaping with the same row numbers as the right front. Keep neckline shaping on the center edge and shoulder shaping on the armhole edge, with the carriage on the opposite side.",
+    "Swap Left and Right. Carriage on the right in the right front is carriage on the left here. Carriage on the left in the right front is carriage on the right here.",
   ];
   if (includeBustDart) {
     paragraphs.push(
@@ -688,7 +691,7 @@ function splitBackOverviewTipRow(): SleevelessPatternDisplayRow {
     tipHtml: buildPatternQuickTipInnerHtml({
       summaryLabel: SET_IN_SPLIT_BACK_TIP_TITLE,
       bodyHtml:
-        "<p>This piece is half the body width. One seam stitch is included on the center edge. It stays on that edge through the body and armhole, and it is bound off at the start of the center neckline.</p>" +
+        "<p>This piece is half the body width. One seam stitch is included on the center edge. It stays on that edge through the body and armhole, and the first center neckline action includes it. Hold leaves it on the machine. A bind-off takes it off the needle. A decrease moves it in.</p>" +
         "<p>Body shaping is worked only on the armhole edge.</p>",
     }),
     tipHtmlIsFull: true,
@@ -718,7 +721,7 @@ function splitBackStepCues(side: "left" | "right"): {
   return {
     castOn: `The count is for the ${pieceName} only and includes one center seam stitch. Place the center edge on the ${centerBed} side of the needle bed and the armhole edge on the ${armholeBed}.`,
     armhole: `Work with the carriage on the ${armholeCarriage}.`,
-    neck: `Bind off at the center edge with the carriage on the ${neckCarriage}. Include the center seam stitch in this bind-off.`,
+    neck: `Work the first center-edge action with the carriage on the ${neckCarriage}, including the seam stitch. A decrease moves the number of stitches named in that row. A bind-off takes stitches off the needle. Hold leaves stitches on the machine.`,
   };
 }
 
@@ -1028,11 +1031,11 @@ function generateSetInSleeveWithCenterSeams(patternData: Record<string, unknown>
   const fullNeck = base.debug.necklineStitches ?? 0;
   const backPattern = withBackNeckDepthOnFront(patternData);
   const leftBack = generateSetInSleevePattern(backPattern, {
-    halfPiece: { side: "left", seamStitch: true },
+    halfPiece: { side: "left", seamStitch: true, matchBackNeckPlan: true },
     omitBustDart: true,
   });
   const rightBack = generateSetInSleevePattern(backPattern, {
-    halfPiece: { side: "right", seamStitch: true },
+    halfPiece: { side: "right", seamStitch: true, matchBackNeckPlan: true },
     omitBustDart: true,
   });
   const leftBackRows = prepareCenterSeamHalf(leftBack, "back", "left", false, fullNeck);
@@ -1147,7 +1150,10 @@ function generateSetInSleeveWithCenterSeams(patternData: Record<string, unknown>
 
 export function generateSetInSleevePattern(
   patternData: Record<string, unknown>,
-  options?: { halfPiece?: { side: "left" | "right"; seamStitch: boolean }; omitBustDart?: boolean },
+  options?: {
+    halfPiece?: { side: "left" | "right"; seamStitch: boolean; matchBackNeckPlan?: boolean };
+    omitBustDart?: boolean;
+  },
 ): SetInSleevePatternResult {
   if (readCenterSeams(section(patternData.style)) && !options?.halfPiece) {
     return generateSetInSleeveWithCenterSeams(patternData);
@@ -1161,6 +1167,7 @@ export function generateSetInSleevePattern(
       ? {
           cardiganHalfSide: options.halfPiece.side,
           centerSeamStitch: options.halfPiece.seamStitch,
+          ...(options.halfPiece.matchBackNeckPlan ? { centerSeamBackHalf: true as const } : {}),
         }
       : {}),
   });

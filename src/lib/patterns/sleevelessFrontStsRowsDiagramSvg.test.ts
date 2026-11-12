@@ -21,6 +21,7 @@ import {
   tryBuildSleevelessFrontStsRowsDiagramSvg,
 } from "./sleevelessFrontStsRowsDiagramSvg";
 import {
+  formatKnittedCountMeasurement,
   formatKnittedDiagramMeasurement,
   formatPatternDiagramMeasurement,
   knittedWidthInches,
@@ -1135,6 +1136,13 @@ describe("buildSleevelessFrontStsRowsDiagramSvg", () => {
     expect(widthLabelSts(svg, "shoulder")).toBe(model.widths.shoulderStitchesPerSide);
     expect(lengthLabelRows(svg, "garment-length")).toBe(model.rows.expectedGarmentRows);
     expect(lengthLabelRows(svg, "body-length")).toBe(model.rows.rowsFromCastOnToArmholeStart);
+    expect(svg).toContain(
+      formatKnittedCountMeasurement(
+        model.rows.rowsFromCastOnToArmholeStart,
+        model.rows.rowsPerInch,
+        "in",
+      ),
+    );
     expect(lengthLabelRows(svg, "hem")).toBe(model.rows.hemRows);
     expect(lengthLabelRows(svg, "armhole")).toBe(model.rows.armholeRows);
     expect(svg).toContain(
@@ -1143,7 +1151,9 @@ describe("buildSleevelessFrontStsRowsDiagramSvg", () => {
         "in",
       ),
     );
-    expect(svg).toContain(formatPatternDiagramMeasurement(model.finished.bustWidthInches, "in"));
+    expect(svg).toContain(
+      formatKnittedCountMeasurement(model.widths.bustStitches, model.widths.stitchesPerInch, "in"),
+    );
     expect(svg).toContain(formatPatternDiagramMeasurement(model.finished.garmentLengthInches, "in"));
   });
 
@@ -1219,7 +1229,9 @@ describe("buildSleevelessFrontStsRowsDiagramSvg", () => {
         "in",
       ),
     );
-    expect(svg).toContain(formatPatternDiagramMeasurement(model.finished.bustWidthInches, "in"));
+    expect(svg).toContain(
+      formatKnittedCountMeasurement(model.widths.bustStitches, model.widths.stitchesPerInch, "in"),
+    );
   });
 
   it("maps garment widths from model stitch counts", () => {
@@ -1616,14 +1628,18 @@ describe("buildSleevelessFrontStsRowsDiagramSvg", () => {
       expect(lengthLabelRows(svg, "armhole")).toBe(model.rows.armholeRows);
       expect(lengthLabelRows(svg, "neck-depth")).toBe(model.neckline.depthRows);
 
-      expect(svg).toContain(formatPatternDiagramMeasurement(model.finished.bustWidthInches, "in"));
+      expect(svg).toContain(
+      formatKnittedCountMeasurement(model.widths.bustStitches, model.widths.stitchesPerInch, "in"),
+    );
       expect(svg).toContain(
         formatKnittedDiagramMeasurement(
           knittedWidthInches(model.widths.hemStitches, model.widths.stitchesPerInch),
           "in",
         ),
       );
-      expect(svg).toContain(formatPatternDiagramMeasurement(model.finished.neckWidthInches, "in"));
+      expect(svg).toContain(
+        formatKnittedCountMeasurement(model.widths.necklineStitches, model.widths.stitchesPerInch, "in"),
+      );
       expect(svg).toContain(formatPatternDiagramMeasurement(model.finished.garmentLengthInches, "in"));
       expect(svg).toContain(formatPatternDiagramMeasurement(model.finished.armholeDepthInches, "in"));
       expect(svg).toContain(formatPatternDiagramMeasurement(model.finished.neckDepthInches, "in"));

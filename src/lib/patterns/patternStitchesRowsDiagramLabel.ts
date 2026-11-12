@@ -6,6 +6,7 @@
 export {
   castOnEdgeDiagramLabel,
   escapeDiagramText,
+  formatKnittedCountMeasurement,
   formatKnittedDiagramMeasurement,
   formatPatternDiagramCountLabel,
   formatPatternDiagramMeasurement,

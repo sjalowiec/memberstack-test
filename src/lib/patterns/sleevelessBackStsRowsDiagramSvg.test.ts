@@ -12,6 +12,7 @@ import {
   tryBuildSleevelessBackStsRowsDiagramSvg,
 } from "./sleevelessBackStsRowsDiagramSvg";
 import {
+  formatKnittedCountMeasurement,
   formatKnittedDiagramMeasurement,
   formatPatternDiagramMeasurement,
   knittedWidthInches,
@@ -217,7 +218,9 @@ describe("buildSleevelessBackStsRowsDiagramSvg", () => {
     expect(lengthLabelRows(svg, "hem")).toBe(model.rows.hemRows);
     expect(lengthLabelRows(svg, "armhole")).toBe(model.rows.armholeRows);
     expect(lengthLabelRows(svg, "neck-depth")).toBe(model.neckline.depthRows);
-    expect(svg).toContain(formatPatternDiagramMeasurement(model.finished.bustWidthInches, "in"));
+    expect(svg).toContain(
+      formatKnittedCountMeasurement(model.widths.bustStitches, model.widths.stitchesPerInch, "in"),
+    );
     expect(svg).toContain(formatPatternDiagramMeasurement(model.finished.garmentLengthInches, "in"));
     const castOnYs = [...svg.matchAll(/data-role="width-measurement" data-measure="cast-on"[^>]* y="([^"]+)"/g)].map(
       (match) => Number(match[1]),
@@ -432,7 +435,9 @@ describe("buildSleevelessBackStsRowsDiagramSvg", () => {
         "in",
       ),
     );
-    expect(svg).toContain(formatPatternDiagramMeasurement(model.finished.bustWidthInches, "in"));
+    expect(svg).toContain(
+      formatKnittedCountMeasurement(model.widths.bustStitches, model.widths.stitchesPerInch, "in"),
+    );
   });
 
   it("generates an outward A-line Back when hem stitches are narrower than bust", () => {
@@ -510,7 +515,9 @@ describe("buildSleevelessBackStsRowsDiagramSvg", () => {
         "in",
       ),
     );
-    expect(svg).toContain(formatPatternDiagramMeasurement(model.finished.bustWidthInches, "in"));
+    expect(svg).toContain(
+      formatKnittedCountMeasurement(model.widths.bustStitches, model.widths.stitchesPerInch, "in"),
+    );
   });
 
   it("returns null so shaped Back keeps the static fallback", () => {

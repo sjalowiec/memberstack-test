@@ -1168,7 +1168,7 @@ describe("set-in sleeve center seams", () => {
 
     const introRc = (text: string) => text.match(/When Armhole RC reaches (\d+), begin neckline shaping at the center edge/)?.[1];
     const neck = (text: string, carriage: "Left" | "Right") =>
-      text.match(new RegExp(`(\\d{3}) \\(${carriage}\\) Bind off (\\d+) sts Neck (\\d+)`));
+      text.match(new RegExp(`(\\d{3}) \\(${carriage}\\) (?:Bind off|Hold) (\\d+) sts Neck (\\d+)`));
     const backNeck = neck(backText, "Right");
     const frontNeck = neck(frontText, "Left");
     expect(backNeck).toBeTruthy();
@@ -1241,7 +1241,7 @@ describe("set-in sleeve center seams", () => {
     });
     const plain = (html: string) => html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ");
     const neckRc = (text: string, carriage: "Left" | "Right") =>
-      text.match(new RegExp(`(\\d{3}) \\(${carriage}\\) Bind off (\\d+) sts Neck`))?.[1];
+      text.match(new RegExp(`(\\d{3}) \\(${carriage}\\) (?:Bind off|Hold) (\\d+) sts Neck`))?.[1];
     const introRc = (text: string) =>
       text.match(/When Armhole RC reaches (\d+), begin neckline shaping at the center edge/)?.[1];
     const backText = plain(backHtml);
@@ -1281,6 +1281,8 @@ describe("set-in sleeve center seams", () => {
     const frontHtml = renderPatternDisplayRowsHtml(seamed.frontDisplayRows, { pieceSectionId: "front" });
     expect(backHtml).toContain("Left back body shaping");
     expect(frontHtml).toContain("Right front body shaping");
+    expect(backHtml).toContain("RC continues from the start of this piece. Do not reset the counter for this chart.");
+    expect(frontHtml).toContain("RC continues from the start of this piece. Do not reset the counter for this chart.");
     expect(backHtml).toContain('class="ns-shaping-chart');
     expect(frontHtml).toContain('class="ns-shaping-chart');
   });
@@ -1311,8 +1313,9 @@ describe("set-in sleeve center seams", () => {
     expect(rightBack).toContain("The center seam edge goes on the left and the armhole edge goes on the right.");
     expect(rightBack).toContain("Bind off the armhole edge with the carriage on the right.");
     expect(rightBack).toContain(
-      "At the start of the neckline, bind off at the center edge with the carriage on the left, including the seam stitch.",
+      "At the start of the neckline, work the center edge with the carriage on the left, including the seam stitch. Use the same hold, bind-off, or decrease as the left back.",
     );
+    expect(rightBack).toContain("Swap Left and Right.");
     expect(back).toContain("BACK NECKLINE");
     expect(back).not.toContain("FRONT NECKLINE");
     const leftFront = front.slice(front.indexOf(SET_IN_LEFT_FRONT_REVERSE_TITLE));
@@ -1324,8 +1327,9 @@ describe("set-in sleeve center seams", () => {
     expect(leftFront).toContain("The center seam edge goes on the right and the armhole edge goes on the left.");
     expect(leftFront).toContain("Bind off the armhole edge with the carriage on the left.");
     expect(leftFront).toContain(
-      "At the start of the neckline, bind off at the center edge with the carriage on the right, including the seam stitch.",
+      "At the start of the neckline, work the center edge with the carriage on the right, including the seam stitch. Use the same hold, bind-off, or decrease as the right front.",
     );
+    expect(leftFront).toContain("Swap Left and Right.");
     expect(leftFront).not.toContain("Cast on");
     expect(front).not.toContain("Work the RIGHT FRONT to match");
     expect(textOf(seamed.sleeveDisplayRows)).toContain("Bind off");
@@ -1523,14 +1527,15 @@ describe("set-in sleeve center seams", () => {
     expect(left).toContain("Work with the carriage on the left.");
     expect(left).toContain("Reset the row counter. Use Armhole RC from here.");
     expect(left).toContain(
-      "Bind off at the center edge with the carriage on the right. Include the center seam stitch in this bind-off.",
+      "Work the first center-edge action with the carriage on the right, including the seam stitch.",
     );
     expect(right).toContain("The center seam edge goes on the left and the armhole edge goes on the right.");
     expect(right).toContain("Work body shaping at the armhole edge.");
     expect(right).toContain("Bind off the armhole edge with the carriage on the right.");
     expect(right).toContain(
-      "At the start of the neckline, bind off at the center edge with the carriage on the left, including the seam stitch.",
+      "At the start of the neckline, work the center edge with the carriage on the left, including the seam stitch. Use the same hold, bind-off, or decrease as the left back.",
     );
+    expect(right).toContain("Swap Left and Right.");
     expect(right).not.toContain("Cast on");
     expect(back).not.toContain("Work the piece from the hem up");
     expect(back).not.toContain("After the armhole reset, use Armhole RC");

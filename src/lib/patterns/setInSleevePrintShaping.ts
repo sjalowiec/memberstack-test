@@ -23,8 +23,10 @@ import {
 import {
   compactActiveSideInstructionRowsForPrint,
   renderActiveShoulderChartIntroHtml,
+  checklistHoldFinishLines,
   renderNeckShoulderShapingChartTableOnlyHtml,
   SET_IN_HELD_NECKLINE_FINISH_SENTENCE,
+  SET_IN_SHOULDER_HOLD_FINISH_SENTENCE,
 } from "./neckShoulderShapingChartHtml";
 import { setInNecklineChartCounterNote } from "./chartCounterHeader";
 import { resolveFrontVNeckRowCounterDisplayPolicy } from "./frontArmholeNecklineComposition";
@@ -39,9 +41,23 @@ import {
 export { SET_IN_HELD_NECKLINE_FINISH_SENTENCE };
 
 export const SET_IN_PRINT_CARRIAGE_DEFINITION =
-  "COR means carriage on the right. COL means carriage on the left.";
+  "COR means carriage on the right. COL means carriage on the left. Before each shaping row, put the carriage on the side named for that row.";
 
-export const SET_IN_PRINT_INTERVENING_ROWS = "Knit the intervening rows in pattern.";
+export const SET_IN_PRINT_INTERVENING_ROWS =
+  "After a shaping row, knit the next row in pattern when that row has no shaping. When the next row shapes the other edge, work that shaping. Do not add an extra knit row.";
+
+export const SET_IN_NECKLINE_TECHNIQUE_NOTE =
+  "A decrease moves the stated number of stitches in at the edge. Do not bind those stitches off. A bind-off takes the stitches off the needle. Hold leaves the stitches on the machine.";
+
+export const SET_IN_REVERSE_CARRIAGE_SWAP =
+  "Swap Left and Right. Carriage on the right becomes carriage on the left, and carriage on the left becomes carriage on the right.";
+
+export { SET_IN_SHOULDER_HOLD_FINISH_SENTENCE };
+
+/** Closing lines for a checklist that offers hold instead of an immediate bind-off. */
+export function centerSeamChecklistFinishLines(rows: readonly { action: string }[]): string[] {
+  return checklistHoldFinishLines(rows);
+}
 
 export type SetInNecklinePrintShapingOptions = {
   /** Passed to the checklist builder. The row-counter start is always computed with the center row included. */
@@ -328,7 +344,75 @@ function frequencyPhrase(interval: number, times: number): string {
   return ` every ${interval} rows ${times} times`;
 }
 
-function groupLine(group: ShapingGroup): string {
+function carriageBefore(code: string): string {
+  if (code === "COR") return "with the carriage on the right (COR)";
+  if (code === "COL") return "with the carriage on the left (COL)";
+  return "with the carriage at the named edge";
+}
+
+function techniqueAfter(action: string): string {
+  const verb = action.trim().toLowerCase();
+  const decrease = verb.match(/^decrease (\d+) stitch/);
+  if (decrease) {
+    const count = Number(decrease[1]);
+    if (count === 1) return " This is a decrease: move 1 stitch in. Do not bind it off.";
+    return ` This is a decrease of ${count} stitches: move ${count} stitches in. Do not bind them off.`;
+  }
+  if (verb.startsWith("bind off or hold")) {
+    return " Bind off takes the stitches off the needle. Hold leaves them on the machine.";
+  }
+  if (verb.startsWith("bind off")) return " Take those stitches off the needle.";
+  if (verb.startsWith("hold")) return " Leave those stitches on the machine.";
+  return "";
+}
+
+function nextShapingAtom(atoms: readonly Atom[], afterRc: number): Atom | undefined {
+  return atoms.find((atom) => atom.rc > afterRc && atom.kind !== "knit");
+}
+
+function oppositeEdgeBetween(group: ShapingGroup, atoms: readonly Atom[]): boolean {
+  const edge = group.members[0]!.edge;
+  for (let index = 0; index < group.members.length - 1; index += 1) {
+    const from = group.members[index]!.rc;
+    const to = group.members[index + 1]!.rc;
+    if (atoms.some((atom) => atom.kind === "shaping" && atom.edge !== edge && atom.rc > from && atom.rc < to)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function knitAfterward(group: ShapingGroup, atoms: readonly Atom[]): string {
+  const last = group.members[group.members.length - 1]!;
+  const next = nextShapingAtom(atoms, last.rc);
+  const oppositeNext =
+    next !== undefined && next.kind === "shaping" && next.edge !== last.edge && next.rc === last.rc + 1;
+  const oppositeBetween = group.atSameTime || oppositeEdgeBetween(group, atoms);
+  const parts: string[] = [];
+  if (group.members.length > 1 && group.interval === 2 && oppositeBetween) {
+    parts.push(
+      oppositeNext && last.stitchesRemaining > 0
+        ? "After each of these rows, the next row shapes the opposite edge. Knit across by working that shaping. Do not add a plain row."
+        : "After each of these rows except the last, the next row shapes the opposite edge. Knit across by working that shaping. Do not add a plain row.",
+    );
+  } else if (group.members.length > 1 && group.interval === 2) {
+    parts.push("After each of these rows, knit 1 row across in pattern before shaping this edge again.");
+  } else if (group.members.length > 1 && group.interval > 2) {
+    parts.push("Knit across in pattern on the rows between these shaping rows.");
+  }
+  if (last.stitchesRemaining <= 0) {
+    parts.push("After the last row, no stitches remain. Do not knit another row.");
+  } else if (oppositeNext && !oppositeBetween) {
+    parts.push("The next row shapes the opposite edge. Knit across by working that shaping. Do not add a plain row.");
+  } else if (!oppositeBetween && next) {
+    parts.push("Then knit across in pattern before the next shaping row.");
+  } else if (!oppositeBetween) {
+    parts.push("Then knit across in pattern.");
+  }
+  return ` ${parts.join(" ")}`;
+}
+
+function groupLine(group: ShapingGroup, atoms: readonly Atom[]): string {
   const first = group.members[0]!;
   const last = group.members[group.members.length - 1]!;
   const times = group.members.length;
@@ -336,18 +420,26 @@ function groupLine(group: ShapingGroup): string {
   const edge = edgePhrase(first.edge);
   const prefix = group.atSameTime ? "At the same time, " : "";
   const remain = `${remainText(last.stitchesRemaining)} at ${formatRcColon(last.rc)}.`;
+  const detail = `${techniqueAfter(action)}${knitAfterward(group, atoms)}`;
   if (times === 1) {
     const lead = group.atSameTime ? "At the same time, at" : "At";
-    return `${lead} ${formatRcColon(first.rc)}, ${first.carriage}, ${action} at the ${edge}. ${remain}`;
+    return `${lead} ${formatRcColon(first.rc)}, ${carriageBefore(first.carriage)}, ${action} at the ${edge}.${detail} ${remain}`;
   }
   const beginning = group.atSameTime ? "beginning" : "Beginning";
-  return `${prefix}${beginning} at ${formatRcColon(first.rc)}, ${first.carriage}, ${action} at the ${edge}${frequencyPhrase(group.interval, times)}. ${remain}`;
+  return `${prefix}${beginning} at ${formatRcColon(first.rc)}, ${carriageBefore(first.carriage)}, ${action} at the ${edge}${frequencyPhrase(group.interval, times)}.${detail} ${remain}`;
 }
 
-function specialLine(atom: Atom): string {
+function specialLine(atom: Atom, atoms: readonly Atom[]): string {
   const action = lowerFirst(writtenAction(atom.action).replace(/\.$/, ""));
-  const carriage = atom.carriage ? `${atom.carriage}, ` : "";
-  let sentence = `At ${formatRcColon(atom.rc)}, ${carriage}${action}.`;
+  const where = atom.carriage ? `${carriageBefore(atom.carriage)}, ` : "";
+  const afterward =
+    atom.stitchesRemaining <= 0
+      ? " Do not knit another row."
+      : nextShapingAtom(atoms, atom.rc)?.edge !== atom.edge &&
+          nextShapingAtom(atoms, atom.rc)?.rc === atom.rc + 1
+        ? " The next row shapes the opposite edge. Knit across by working that shaping. Do not add a plain row."
+        : " Then knit across in pattern before the next shaping row.";
+  let sentence = `At ${formatRcColon(atom.rc)}, ${where}${action}.${techniqueAfter(action)}${afterward}`;
   if (atom.rowCounterReset) {
     const garment =
       atom.rowCounterResetGarmentRc !== undefined
@@ -368,7 +460,7 @@ function plainSpans(atoms: readonly Atom[], intervening: readonly number[]): { r
   const skip = new Set(intervening);
   const rcs: number[] = [];
   for (const atom of atoms) {
-    if (atom.kind !== "knit") continue;
+    if (atom.kind !== "knit" || atom.stitchesRemaining <= 0) continue;
     for (let rc = atom.rc; rc <= atom.rcEnd; rc += 1) {
       if (!skip.has(rc)) rcs.push(rc);
     }
@@ -394,7 +486,7 @@ export function condenseChecklistRows(rows: readonly ActiveSideInstructionTableR
     times: group.members.length,
     interval: group.interval,
     rcs: group.members.map((member) => member.rc),
-    line: groupLine(group),
+    line: groupLine(group, atoms),
   }));
   const events: { rc: number; line: string }[] = [
     ...plains.map((span) => ({
@@ -404,7 +496,7 @@ export function condenseChecklistRows(rows: readonly ActiveSideInstructionTableR
     ...described.map((group) => ({ rc: group.rcs[0]!, line: group.line })),
     ...atoms
       .filter((atom) => atom.kind === "special")
-      .map((atom) => ({ rc: atom.rc, line: specialLine(atom) })),
+      .map((atom) => ({ rc: atom.rc, line: specialLine(atom, atoms) })),
   ];
   events.sort((a, b) => a.rc - b.rc);
   const shapingRcs = [
@@ -445,14 +537,14 @@ function secondShoulderLead(
       options.resetRowCounterForSecondShoulder && startRc !== undefined
         ? `Free Pass the carriage to the side with the working yarn. This does not add a knitted row. Set the row counter to ${formatRcColon(startRc)} before beginning the Second Side. `
         : "";
-    return `${reset}Neckline shaping remains at the neck edge and shoulder shaping remains at the shoulder edge.`;
+    return `${reset}${SET_IN_REVERSE_CARRIAGE_SWAP} Neckline shaping remains at the neck edge and shoulder shaping remains at the shoulder edge.`;
   }
   const held = heldShoulderStitches(chart, false);
   const reset =
     options.resetRowCounterForSecondShoulder && startRc !== undefined
       ? ` Free Pass the carriage to the side with the working yarn. This does not add a knitted row. Set the row counter to ${formatRcColon(startRc)} before beginning the Second Shoulder.`
       : "";
-  return `Once this side is complete, cut yarn and return the ${held} held stitches for the second shoulder to working position.${reset} Work the second shoulder with the steps below. Neckline shaping stays on the neck edge and shoulder shaping stays on the shoulder edge.`;
+  return `Once this side is complete, cut yarn and return the ${held} held stitches for the second shoulder to working position.${reset} Work the second shoulder with the steps below. ${SET_IN_REVERSE_CARRIAGE_SWAP} Neckline shaping stays on the neck edge and shoulder shaping stays on the shoulder edge.`;
 }
 
 function bindOffLine(rows: readonly ActiveSideInstructionTableRow[]): string | null {
@@ -489,10 +581,7 @@ export function setInNecklinePrintShaping(
   const secondRows = singleSide ? [] : displayRowsForChecklist(opposite, !heldSide);
   const firstCondensed = condenseChecklistRows(firstRows);
   const secondCondensed = condenseChecklistRows(secondRows);
-  const paragraphs = [SET_IN_PRINT_CARRIAGE_DEFINITION];
-  if (firstCondensed.interveningKnitRcs.length > 0 || secondCondensed.interveningKnitRcs.length > 0) {
-    paragraphs.push(SET_IN_PRINT_INTERVENING_ROWS);
-  }
+  const paragraphs = [SET_IN_PRINT_CARRIAGE_DEFINITION, SET_IN_PRINT_INTERVENING_ROWS, SET_IN_NECKLINE_TECHNIQUE_NOTE];
   if (!singleSide) paragraphs.push("First shoulder.");
   paragraphs.push(...firstCondensed.lines);
   const firstBindOff = bindOffLine(active);
@@ -501,20 +590,30 @@ export function setInNecklinePrintShaping(
   if (singleSide) {
     if (cardigan && !options.singleSide) {
       paragraphs.push(
-        `${CARDIGAN_FRONT_OPPOSITE_FRONT_SENTENCE} Use the same row numbers. Keep neckline shaping on the neck edge and shoulder shaping on the shoulder edge, with the carriage on the opposite side.`,
+        `${CARDIGAN_FRONT_OPPOSITE_FRONT_SENTENCE} Use the same row numbers. Keep neckline shaping on the neck edge and shoulder shaping on the shoulder edge, with the carriage on the opposite side. ${SET_IN_REVERSE_CARRIAGE_SWAP}`,
       );
     }
+    if (options.singleSide) paragraphs.push(...centerSeamChecklistFinishLines(active));
     return { paragraphs, firstRows, secondRows: [] };
   }
 
-  if (secondRows.length === 0) return { paragraphs, firstRows, secondRows };
-  const startRc = options.resetRowCounterForSecondShoulder ? secondRows[0]?.rc : undefined;
-  paragraphs.push(secondShoulderLead(chart, startRc, options, heldSide));
-  paragraphs.push(heldSide ? "Second side." : "Second shoulder.");
-  paragraphs.push(...secondCondensed.lines);
-  const secondBindOff = bindOffLine(opposite);
-  if (secondBindOff) paragraphs.push(secondBindOff);
-  if (options.finishHeldNecklineAfterSecondShoulder) paragraphs.push(SET_IN_HELD_NECKLINE_FINISH_SENTENCE);
+  if (secondRows.length > 0) {
+    const startRc = options.resetRowCounterForSecondShoulder ? secondRows[0]?.rc : undefined;
+    paragraphs.push(secondShoulderLead(chart, startRc, options, heldSide));
+    paragraphs.push(heldSide ? "Second side." : "Second shoulder.");
+    paragraphs.push(...secondCondensed.lines);
+    const secondBindOff = bindOffLine(opposite);
+    if (secondBindOff) paragraphs.push(secondBindOff);
+  }
+  for (const line of centerSeamChecklistFinishLines([...active, ...opposite])) {
+    if (!paragraphs.includes(line)) paragraphs.push(line);
+  }
+  if (
+    options.finishHeldNecklineAfterSecondShoulder &&
+    !paragraphs.includes(SET_IN_HELD_NECKLINE_FINISH_SENTENCE)
+  ) {
+    paragraphs.push(SET_IN_HELD_NECKLINE_FINISH_SENTENCE);
+  }
   return { paragraphs, firstRows, secondRows };
 }
 
@@ -613,6 +712,12 @@ export function renderSetInCenterSeamNeckChartHtml(args: {
   });
   const help = typeof args.helpCardHtml === "string" && args.helpCardHtml.trim() ? `\n${args.helpCardHtml}` : "";
   const rcStart = armholeLocalRcActiveShoulderChecklistStart(args.chart, args.armholeStartRow, CENTER_SETUP_RC_OPTIONS);
+  const closingParagraphs = centerSeamChecklistFinishLines(
+    buildActiveSideInstructionTableRows(args.chart, rcStart, {
+      includeCenterNecklineSetupRow: false,
+      invertCarriageParity: copy.invertCarriageParity,
+    }),
+  );
   return renderNeckShoulderShapingChartTableOnlyHtml(
     args.chart,
     `ns-shaping-chart-${args.piece}`,
@@ -627,6 +732,7 @@ export function renderSetInCenterSeamNeckChartHtml(args: {
       invertCarriageParity: copy.invertCarriageParity,
       collapsible: false,
       counterNote,
+      closingParagraphs,
     },
   );
 }

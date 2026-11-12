@@ -765,26 +765,38 @@ function buildSideInstructionTableRows(
         checklistIdx += 1;
         continue;
       }
+      if (stitchesRemaining <= 0) break;
       pushArmholeResetIfNeeded(checklistIdx, stitchesRemaining);
       addActiveSideKnitEvenRow(out, toDisplay(checklistIdx), stitchesRemaining, invertCarriage);
       checklistIdx += 1;
     }
+    if (stitchesRemaining <= 0) break;
     let displayRc = toDisplay(checklistIdx);
     if (source.alignDisplayRcToTimeline) {
       displayRc = toDisplay(action.sourceRelativeRow);
     } else {
       while (displayRc % 2 !== requiredParityForActiveSideEdge(action.edge)) {
+        if (stitchesRemaining <= 0) break;
         pushArmholeResetIfNeeded(checklistIdx, stitchesRemaining);
         addActiveSideKnitEvenRow(out, displayRc, stitchesRemaining, invertCarriage);
         checklistIdx += 1;
         displayRc = toDisplay(checklistIdx);
       }
     }
+    if (stitchesRemaining <= 0) break;
     pushArmholeResetIfNeeded(
       source.alignDisplayRcToTimeline ? action.sourceRelativeRow : checklistIdx,
       stitchesRemaining,
     );
-    stitchesRemaining = Math.max(0, stitchesRemaining - action.amount);
+    const beforeAction = stitchesRemaining;
+    const worked =
+      action.kind === "decrease" &&
+      action.amount >= beforeAction &&
+      beforeAction > 0 &&
+      beforeAction <= 2
+        ? { ...action, kind: "bindOff" as const, amount: beforeAction }
+        : action;
+    stitchesRemaining = Math.max(0, beforeAction - worked.amount);
     const sameRowPartner = source.actions.find(
       (other) =>
         other !== action &&
@@ -797,22 +809,22 @@ function buildSideInstructionTableRows(
         ? simultaneousShapingPassNote({
             localRc: displayRc,
             side: noteSide,
-            outerKind: (action.edge === "Neck" ? sameRowPartner.kind : action.kind) as
+            outerKind: (worked.edge === "Neck" ? sameRowPartner.kind : worked.kind) as
               | "bindOff"
               | "decrease"
               | "hold",
-            innerKind: (action.edge === "Neck" ? action.kind : sameRowPartner.kind) as
+            innerKind: (worked.edge === "Neck" ? worked.kind : sameRowPartner.kind) as
               | "bindOff"
               | "decrease"
               | "hold",
-            role: action.edge === "Neck" ? "inner" : "outer",
+            role: worked.edge === "Neck" ? "inner" : "outer",
           })
         : null;
     out.push({
       rc: displayRc,
       carriagePosition: carriageFor(displayRc),
-      action: activeSideActionText(action),
-      edge: action.edge,
+      action: activeSideActionText(worked),
+      edge: worked.edge,
       stitchesRemaining,
       ...(passNote ? { passNote } : {}),
     });
@@ -826,6 +838,7 @@ function buildSideInstructionTableRows(
       checklistIdx += 1;
       continue;
     }
+    if (stitchesRemaining <= 0) break;
     pushArmholeResetIfNeeded(checklistIdx, stitchesRemaining);
     addActiveSideKnitEvenRow(out, toDisplay(checklistIdx), stitchesRemaining, invertCarriage);
     checklistIdx += 1;

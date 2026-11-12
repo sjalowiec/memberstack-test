@@ -10,6 +10,7 @@ import { withSetInSleeveConstructionAuthored } from "./setInSleeveConstructionId
 import { generateSetInSleevePattern, SET_IN_LEFT_FRONT_REVERSE_TITLE, SET_IN_RIGHT_BACK_REVERSE_TITLE } from "./setInSleevePatternOutput";
 import {
   SET_IN_HELD_NECKLINE_FINISH_SENTENCE,
+  SET_IN_NECKLINE_TECHNIQUE_NOTE,
   SET_IN_PRINT_CARRIAGE_DEFINITION,
   SET_IN_PRINT_INTERVENING_ROWS,
   condenseChecklistRows,
@@ -153,15 +154,21 @@ describe("set-in instructions-only neckline shaping", () => {
     expect(front.join("\n")).toMatch(/\bCOR\b/);
     expect(front.join("\n")).toContain(SET_IN_PRINT_INTERVENING_ROWS);
     expect(back.join("\n")).toContain(
-      "bind off or hold 4 stitches at the shoulder edge every other row 4 times",
+      "with the carriage on the left (COL), bind off or hold 4 stitches at the shoulder edge every other row 4 times",
     );
     expect(back.join("\n")).toContain("hold 3 stitches at the neck edge every other row 2 times");
-    expect(back.join("\n")).toContain("At the same time, at RC: 053, COL, hold 4 stitches at the neck edge.");
+    expect(back.join("\n")).toContain(
+      "At the same time, at RC: 053, with the carriage on the left (COL), hold 4 stitches at the neck edge.",
+    );
+    expect(back.join("\n")).toContain("Leave those stitches on the machine.");
+    expect(back.join("\n")).toContain(SET_IN_NECKLINE_TECHNIQUE_NOTE);
+    expect(back.join("\n")).toContain("Swap Left and Right.");
     expect(back.join("\n")).not.toContain("hold 3 stitches at the neck edge every other row 3 times");
     expect(front.join("\n")).toContain("decrease 1 stitch at the neck edge every other row 6 times");
+    expect(front.join("\n")).toContain("This is a decrease: move 1 stitch in. Do not bind it off.");
     expect(front.join("\n")).toContain("Knit in pattern to RC: 047.");
     expect(front.join("\n")).toContain(
-      "At the same time, beginning at RC: 019, COL, bind off 3 stitches at the neck edge every other row 2 times.",
+      "At the same time, beginning at RC: 019, with the carriage on the left (COL), bind off 3 stitches at the neck edge every other row 2 times.",
     );
     const backShaping = setInNecklinePrintShaping(
       result.neckShoulderShapingChart,
@@ -234,10 +241,12 @@ describe("set-in instructions-only neckline shaping", () => {
     expect(back.join("\n")).toMatch(/\bCOR\b/);
     expect(front.join("\n")).toMatch(/\bCOL\b/);
     expect(front.join("\n")).toContain("decrease 1 stitch at the neck edge every 4 rows 5 times");
-    expect(back.join("\n")).toContain("bind off 14 stitches at the neck edge");
-    expect(back.join("\n")).toContain("decrease 2 stitches at the neck edge every other row 5 times");
-    expect(back.join("\n")).toContain("At the same time, at RC: 075, COR, bind off 10 stitches at the neck edge.");
-    expect(back.join("\n")).not.toContain(SET_IN_HELD_NECKLINE_FINISH_SENTENCE);
+    expect(back.join("\n")).toContain("hold 14 stitches at the neck edge");
+    expect(back.join("\n")).toContain("hold 2 stitches at the neck edge every other row 5 times");
+    expect(back.join("\n")).toContain("bind off 3 stitches at the neck edge");
+    expect(back.join("\n")).not.toContain("decrease 2 stitches");
+    expect(back.join("\n")).toContain(SET_IN_HELD_NECKLINE_FINISH_SENTENCE);
+    expect(back.join("\n")).toContain("If you held the shoulder stitches, bind off those held shoulder stitches.");
     const backShaping = setInNecklinePrintShaping(
       result.neckShoulderShapingChart,
       result.debug.armholeStartRow,

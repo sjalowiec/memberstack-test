@@ -32,6 +32,7 @@ import {
 import type { MeasurementDisplayUnit } from "./patternMeasurementDisplayUnit";
 import {
   castOnEdgeDiagramLabel,
+  formatKnittedCountMeasurement,
   formatPatternDiagramMeasurement,
   parseStitchesRowsDiagramLabel,
   stitchesRowsDiagramLabel,
@@ -101,6 +102,20 @@ function countLines(
   extra: string,
 ): { text: string; extra?: string }[] {
   const label = stitchesRowsDiagramLabel(count, kind, formatPatternDiagramMeasurement(inches, unit));
+  return [
+    { text: label.count, extra },
+    ...(label.measure ? [{ text: label.measure }] : []),
+  ];
+}
+
+function knittedLines(
+  count: number,
+  kind: "sts" | "rows",
+  perUnit: number | undefined,
+  unit: MeasurementDisplayUnit,
+  extra: string,
+): { text: string; extra?: string }[] {
+  const label = stitchesRowsDiagramLabel(count, kind, formatKnittedCountMeasurement(count, perUnit, unit));
   return [
     { text: label.count, extra },
     ...(label.measure ? [{ text: label.measure }] : []),
@@ -284,10 +299,10 @@ function drawMeasurements(model: SleevelessBackStsRowsDiagramModel, frame: Frame
       "length-measurement",
       "body-length",
       [
-        ...countLines(
+        ...knittedLines(
           model.rows.rowsFromCastOnToArmholeStart,
           "rows",
-          finished.bodyToArmholeInches,
+          model.rows.rowsPerInch,
           unit,
           ` data-rows="${fmtNum(model.rows.rowsFromCastOnToArmholeStart)}"`,
         ),
@@ -360,7 +375,13 @@ function drawMeasurements(model: SleevelessBackStsRowsDiagramModel, frame: Frame
       "width-measurement",
       "bust",
       [
-        ...countLines(model.widths.bustStitches, "sts", finished.bustWidthInches, unit, ` data-sts="${fmtNum(model.widths.bustStitches)}"`),
+        ...knittedLines(
+          model.widths.bustStitches,
+          "sts",
+          model.widths.stitchesPerInch,
+          unit,
+          ` data-sts="${fmtNum(model.widths.bustStitches)}"`,
+        ),
       ],
     ),
   );
@@ -431,7 +452,13 @@ function drawMeasurements(model: SleevelessBackStsRowsDiagramModel, frame: Frame
       "width-measurement",
       "neck",
       [
-        ...countLines(model.widths.necklineStitches, "sts", finished.neckWidthInches, unit, ` data-sts="${fmtNum(model.widths.necklineStitches)}"`),
+        ...knittedLines(
+          model.widths.necklineStitches,
+          "sts",
+          model.widths.stitchesPerInch,
+          unit,
+          ` data-sts="${fmtNum(model.widths.necklineStitches)}"`,
+        ),
       ],
     ),
   );
@@ -446,10 +473,13 @@ function drawMeasurements(model: SleevelessBackStsRowsDiagramModel, frame: Frame
       "width-measurement",
       "shoulder",
       [
-        {
-          text: stitchesRowsDiagramLabel(model.widths.shoulderStitchesPerSide, "sts").count,
-          extra: ` data-sts="${fmtNum(model.widths.shoulderStitchesPerSide)}"`,
-        },
+        ...knittedLines(
+          model.widths.shoulderStitchesPerSide,
+          "sts",
+          model.widths.stitchesPerInch,
+          unit,
+          ` data-sts="${fmtNum(model.widths.shoulderStitchesPerSide)}"`,
+        ),
       ],
     ),
   );

@@ -114,6 +114,7 @@ export function renderPatternDisplayBlockHtml(
           `sleeveless-body-shaping-chart-${pieceSectionId}`,
         ...(row.bodyShapingChartTitle ? { title: row.bodyShapingChartTitle } : {}),
         completedRowsSwitchLabel: row.bodyShapingChartCompletedRowsLabel,
+        counterNote: row.chartCounterNote,
       }),
     );
   }

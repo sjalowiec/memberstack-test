@@ -93,6 +93,20 @@ export function formatKnittedDiagramMeasurement(
   return `${shown} ${unit}`;
 }
 
+/**
+ * Knitted size of a generated count: count divided by its gauge.
+ * Stitch widths use stitches per inch. Row lengths use rows per inch.
+ * Quarter-inch chart snap is not used.
+ */
+export function formatKnittedCountMeasurement(
+  count: number,
+  perUnit: number | undefined,
+  unit: MeasurementDisplayUnit,
+): string {
+  if (!Number.isFinite(count) || count <= 0 || perUnit === undefined || !(perUnit > 0)) return "";
+  return formatKnittedDiagramMeasurement(count / perUnit, unit);
+}
+
 /** Cast-on edge: stitch count, then the knitted width of that count. */
 export function castOnEdgeDiagramLabel(
   stitches: number,

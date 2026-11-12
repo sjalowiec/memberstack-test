@@ -326,8 +326,9 @@ function cardiganLeftFrontWidths(
     finiteOr(d.cardiganFrontPostArmholeSts, finiteOr(d.cardiganHalfLeftStitchesAfterArmhole, 0)),
   );
   const fullNeck = Math.max(0, Math.round(finiteOr(d.necklineStitches, 0)));
-  const necklineStitches = cardiganFrontNeckOpeningStitches(fullNeck);
-  const shoulderStitchesPerSide = Math.max(1, stitchesAfterArmhole - necklineStitches);
+  const seamStitch = d.centerSeamStitch === true ? 1 : 0;
+  const necklineStitches = cardiganFrontNeckOpeningStitches(fullNeck) + seamStitch;
+  const shoulderStitchesPerSide = Math.max(0, stitchesAfterArmhole - necklineStitches);
   if (
     !(hemStitches > 0) ||
     !(bustStitches > 0) ||

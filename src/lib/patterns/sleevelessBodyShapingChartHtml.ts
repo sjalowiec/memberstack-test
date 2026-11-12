@@ -11,6 +11,7 @@
  * helper with a Checkbox / Row Counter / Action layout.
  */
 
+import { chartCounterNoteHtml } from "./chartCounterHeader";
 import type {
   SleevelessAlineShapingEdgeScope,
   SleevelessAlineShapingType,
@@ -108,6 +109,8 @@ export type SleevelessBodyShapingChartRenderOptions = {
   title?: string;
   /** Completed-rows switch label. Defaults to `Show Completed Rows`. */
   completedRowsSwitchLabel?: string;
+  /** Names the row counter. Keeps a later piece's reset from being copied onto this chart. */
+  counterNote?: string;
 };
 
 /**
@@ -146,6 +149,7 @@ export function renderSleevelessBodyShapingChartHtml(
   <h3 id="${escapeHtml(headingId)}" class="ns-shaping-chart__title ns-shaping-chart__title--body">${escapeHtml(
     title,
   )}</h3>
+  ${chartCounterNoteHtml(options.counterNote)}
   <div class="ns-shaping-chart__progress-section" data-chart-id="${escapeHtml(chartId)}">
     ${renderBodyShapingProgressToolbarHtml(options.completedRowsSwitchLabel)}
     <div class="ns-shaping-chart__table-wrap">

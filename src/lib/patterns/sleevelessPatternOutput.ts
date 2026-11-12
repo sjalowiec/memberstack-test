@@ -20,6 +20,7 @@ import {
   sweaterBodyHemFrontDisplay,
   sweaterBodyHemTechniqueTipFields,
 } from "./sweaterBodyHemInstructions";
+import { CONTINUOUS_PIECE_CHART_COUNTER_NOTE } from "./chartCounterHeader";
 import { formatRowCounterResetGarmentRcLabel, RESET_ROW_COUNTER_TEXT } from "./rowCounterReset";
 import { parseInlineMarkedLine } from "./inlineRcHeading";
 import {
@@ -570,6 +571,11 @@ export type SleevelessPatternGenerationOptions = {
    * cardigan fronts stay unchanged. Set-In Sleeve sets this only for a new center seam.
    */
   centerSeamStitch?: boolean;
+  /**
+   * Set-In back halves are generated through the front writer. Use the back neck plan
+   * so the short back depth stays shallow, matching the full back.
+   */
+  centerSeamBackHalf?: boolean;
   /**
    * Set-In back halves are generated through the front writer. Skip the front bust-dart
    * slot so that control stays on the real front.
@@ -2060,7 +2066,12 @@ export function buildSleevelessBackDisplayRows(args: {
         ...(useTrusted
           ? { trustedParagraphs: beforeChartLines, paragraphs: [plainShapingLine] }
           : { paragraphs: beforeChartLines }),
-        ...(chartRows.length > 0 ? { bodyShapingChartRows: chartRows } : {}),
+        ...(chartRows.length > 0
+          ? {
+              bodyShapingChartRows: chartRows,
+              chartCounterNote: CONTINUOUS_PIECE_CHART_COUNTER_NOTE,
+            }
+          : {}),
         stitchCount: A > 0 ? A : undefined,
       });
       // "N sts remain after shaping." stays AFTER the chart (decrease / waist-shaped only).
@@ -3607,6 +3618,14 @@ export function generateSleevelessBackPattern(
           ...(isCardiganRoundHalfFront ? {} : provisionalMinFinalOpts),
           ...(options?.useSetInArmhole === true && isCardiganRoundHalfFront
             ? { cardiganMatchesPulloverShoulderLine: true as const }
+            : {}),
+          ...(options?.useSetInArmhole === true && centerSeamStitch > 0 && necklineStitches !== undefined
+            ? {
+                centerSeamOneEdgeNeck: {
+                  fullNecklineStitches: necklineStitches,
+                  matchBackPlan: options?.centerSeamBackHalf === true,
+                },
+              }
             : {}),
         });
     frontTimeline = builtFront.timeline;

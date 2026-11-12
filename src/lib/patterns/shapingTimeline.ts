@@ -1,10 +1,13 @@
 import {
+  calculateBackRoundNecklinePlan,
   calculateDocumentedShallowRoundNecklineShaping,
   calculateRoundNecklinePlan,
   calculateRoundNecklineShaping,
   isShallowHoldRoundPlan,
   normalizeRoundNecklineDepthRows,
+  type RoundNecklinePlanResult,
   type RoundNecklineShapingResult,
+  type RoundNecklineSidePlan,
 } from "./legoBlocks/roundNeckline";
 import { distributeTotalAcrossRows } from "./distributeTotalAcrossRows";
 
@@ -304,6 +307,123 @@ function neckInnerRowSpanForPlan(neckPlan: RoundNecklineShapingResult, stairRowC
   return 2 * (stairRowCount + maxSingles);
 }
 
+function sideNeckStitches(side: RoundNecklineSidePlan, shallow: boolean): number {
+  if (shallow) return side.holdGroups.reduce((sum, group) => sum + group, 0);
+  return side.stairSteps.reduce((sum, step) => sum + step, 0) + side.singleDecreaseCount;
+}
+
+/** Drop stitches from the end of one neck edge until it totals `keep`. */
+function trimSideToBudget(
+  side: RoundNecklineSidePlan,
+  shallow: boolean,
+  keep: number,
+): RoundNecklineSidePlan {
+  const next: RoundNecklineSidePlan = {
+    stairSteps: [...side.stairSteps],
+    singleDecreaseCount: side.singleDecreaseCount,
+    holdGroups: [...side.holdGroups],
+  };
+  let extra = sideNeckStitches(next, shallow) - Math.max(0, keep);
+  if (shallow) {
+    while (extra > 0 && next.holdGroups.length > 0) {
+      const last = next.holdGroups.length - 1;
+      const group = next.holdGroups[last] ?? 0;
+      const drop = Math.min(group, extra);
+      next.holdGroups[last] = group - drop;
+      if ((next.holdGroups[last] ?? 0) <= 0) next.holdGroups.pop();
+      extra -= drop;
+    }
+    return next;
+  }
+  while (extra > 0 && next.singleDecreaseCount > 0) {
+    next.singleDecreaseCount -= 1;
+    extra -= 1;
+  }
+  while (extra > 0 && next.stairSteps.length > 0) {
+    const last = next.stairSteps.length - 1;
+    const step = next.stairSteps[last] ?? 0;
+    const drop = Math.min(step, extra);
+    const left = step - drop;
+    if (left >= 2) next.stairSteps[last] = left;
+    else next.stairSteps.pop();
+    extra -= drop;
+  }
+  return next;
+}
+
+type OneEdgeNeckAction = { kind: "bindOff" | "decrease" | "hold"; amount: number };
+
+/**
+ * One center edge for a set-in center-seam half.
+ * The opening plus one side of the full-garment plan equals the half neck budget,
+ * so a deeper front neck cannot spend shoulder stitches.
+ */
+function centerSeamOneEdgeNeckByRow(
+  workRows: number,
+  neckBudget: number,
+  spec: { fullNecklineStitches: number; matchBackPlan: boolean },
+  neckDepthRows: number,
+): OneEdgeNeckAction[] {
+  const rows = Array.from({ length: Math.max(0, workRows) }, () => ({
+    kind: "bindOff" as const,
+    amount: 0,
+  }));
+  if (workRows <= 0 || neckBudget <= 0) return rows;
+
+  const full = Math.max(0, Math.round(spec.fullNecklineStitches));
+  const plan: RoundNecklinePlanResult = spec.matchBackPlan
+    ? calculateBackRoundNecklinePlan({ necklineStitches: full, necklineDepthRows: neckDepthRows })
+    : calculateRoundNecklinePlan({ necklineStitches: full, necklineDepthRows: neckDepthRows });
+  const shallow = plan.strategy === "shallow-round";
+  const heavier = sideNeckStitches(plan.right, shallow) >= sideNeckStitches(plan.left, shallow)
+    ? plan.right
+    : plan.left;
+  let side = heavier;
+  let sideTotal = sideNeckStitches(side, shallow);
+  let opening = neckBudget - sideTotal;
+  if (opening < 1) {
+    const sideKeep = Math.max(0, neckBudget - 1);
+    side = trimSideToBudget(side, shallow, sideKeep);
+    sideTotal = sideNeckStitches(side, shallow);
+    opening = neckBudget - sideTotal;
+  }
+  if (opening > neckBudget) opening = neckBudget;
+
+  const actions: OneEdgeNeckAction[] = [];
+  if (shallow) {
+    for (const group of side.holdGroups) {
+      if (group > 0) actions.push({ kind: "hold", amount: group });
+    }
+  } else {
+    for (const step of side.stairSteps) {
+      if (step > 0) actions.push({ kind: "bindOff", amount: step });
+    }
+    for (let index = 0; index < side.singleDecreaseCount; index += 1) {
+      actions.push({ kind: "decrease", amount: 1 });
+    }
+  }
+
+  const slots: number[] = [];
+  for (let index = 2; index < workRows; index += 2) slots.push(index);
+  if (actions.length > slots.length) {
+    const kept = actions.slice(0, Math.max(0, slots.length - 1));
+    const folded = actions.slice(kept.length).reduce((sum, action) => sum + action.amount, 0);
+    actions.length = 0;
+    actions.push(...kept);
+    if (folded > 0) actions.push({ kind: "bindOff", amount: folded });
+  }
+  const placed = Math.min(actions.length, slots.length);
+  let unplaced = actions.slice(placed).reduce((sum, action) => sum + action.amount, 0);
+  if (unplaced > 0) opening += unplaced;
+
+  rows[0] = { kind: shallow ? "hold" : "bindOff", amount: opening };
+  for (let index = 0; index < placed; index += 1) {
+    const slot = slots[index]!;
+    rows[slot] = actions[index]!;
+  }
+  return rows;
+}
+
 /**
  * Round-neck cardigan half front: one panel (no center divide). All {@link stitchesAfterArmhole}
  * stitches start on the active side; CF neck shaping is right-inner only; shoulder bind-offs are
@@ -344,6 +464,9 @@ export function buildCardiganHalfFrontTimeline(
     return [];
   }
 
+  const oneEdgeNeck = options?.centerSeamOneEdgeNeck
+    ? centerSeamOneEdgeNeckByRow(workRows, N, options.centerSeamOneEdgeNeck, neckDepthRows)
+    : null;
   const neckPlanResult = calculateRoundNecklinePlan({
     necklineStitches: N,
     necklineDepthRows: neckDepthRows,
@@ -355,10 +478,9 @@ export function buildCardiganHalfFrontTimeline(
     right: neckPlanResult.right,
     totalCheck: neckPlanResult.totalCheck,
   };
-  const cfInitialBindOff = Math.max(
-    0,
-    Math.floor(inputs.cardiganCfInitialBindOff ?? neckPlan.centerBindOff),
-  );
+  const cfInitialBindOff = oneEdgeNeck
+    ? 0
+    : Math.max(0, Math.floor(inputs.cardiganCfInitialBindOff ?? neckPlan.centerBindOff));
   const leftStair = neckPlan.left.stairSteps;
   const rightStair = neckPlan.right.stairSteps;
   const stairRowCount = Math.max(leftStair.length, rightStair.length);
@@ -416,6 +538,10 @@ export function buildCardiganHalfFrontTimeline(
   const rows: RowEntry[] = [];
   const plannedInnerRPerRow: number[] = [];
   for (let i = 0; i < workRows; i++) {
+    if (oneEdgeNeck) {
+      plannedInnerRPerRow.push(Math.max(0, oneEdgeNeck[i]?.amount ?? 0));
+      continue;
+    }
     const planned = cardiganCfInnerNeckRow(
       i,
       neckPlan,
@@ -439,25 +565,46 @@ export function buildCardiganHalfFrontTimeline(
     let shoulderBoR = 0;
     let innerNetR = 0;
 
-    const inner = cardiganCfInnerNeckRow(
-      i,
-      neckPlan,
-      stairRowCount,
-      neckInnerRowSpan,
-      cfInitialBindOff,
-      shallowHold,
-    );
-    events.push(...inner.events);
-    innerNetR = inner.innerNetR;
+    const inner = oneEdgeNeck
+      ? null
+      : cardiganCfInnerNeckRow(
+          i,
+          neckPlan,
+          stairRowCount,
+          neckInnerRowSpan,
+          cfInitialBindOff,
+          shallowHold,
+        );
+    if (oneEdgeNeck) {
+      const planned = oneEdgeNeck[i] ?? { kind: "bindOff" as const, amount: 0 };
+      let amount = planned.amount;
+      let kind = planned.kind;
+      if (kind === "decrease" && amount >= rightCount && rightCount > 0) {
+        kind = "bindOff";
+        amount = rightCount;
+      }
+      amount = Math.min(amount, rightCount);
+      if (amount > 0) {
+        events.push({ kind, side: "right", edge: "inner", amount });
+        innerNetR = amount;
+      }
+    } else if (inner) {
+      events.push(...inner.events);
+      innerNetR = inner.innerNetR;
+    }
     if (innerNetR > 0) {
-      const stairIndex = cfInitialBindOff > 0 ? i - 1 : i;
-      if (stairIndex >= 0 && stairIndex < stairRowCount) {
-        const rb = (neckPlan.right.stairSteps[stairIndex] ?? 0) + (neckPlan.left.stairSteps[stairIndex] ?? 0);
-        if (rb > 0) {
-          rightInnerEdge += rb;
-        }
-      } else {
+      if (oneEdgeNeck) {
         rightInnerEdge += innerNetR;
+      } else {
+        const stairIndex = cfInitialBindOff > 0 ? i - 1 : i;
+        if (stairIndex >= 0 && stairIndex < stairRowCount) {
+          const rb = (neckPlan.right.stairSteps[stairIndex] ?? 0) + (neckPlan.left.stairSteps[stairIndex] ?? 0);
+          if (rb > 0) {
+            rightInnerEdge += rb;
+          }
+        } else {
+          rightInnerEdge += innerNetR;
+        }
       }
       rightCount -= innerNetR;
     }
@@ -577,6 +724,16 @@ export type BuildTimelineOptions = {
    * last RC as a pullover timeline with the same neck depth, so the shoulder line matches the back.
    */
   cardiganMatchesPulloverShoulderLine?: boolean;
+  /**
+   * Set-in center-seam half. The neck budget `N` already includes the seam stitch.
+   * Shape that budget on the one center edge, using one side of the full-garment plan.
+   * Neck depth changes the groups, not the neck or shoulder stitch totals.
+   */
+  centerSeamOneEdgeNeck?: {
+    fullNecklineStitches: number;
+    /** Back halves use the back's always-shallow plan. Front halves follow the depth. */
+    matchBackPlan: boolean;
+  };
 };
 
 /**

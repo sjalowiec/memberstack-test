@@ -5,6 +5,8 @@ import {
   type StitchDecreasePoint,
 } from "../shapingNotationCompress";
 import { tryBuildLiveSleevelessFrontCardiganRoundNotationSvg } from "../sleevelessFrontCardiganRoundShapingNotationDiagramSvg";
+import { tryBuildLiveSleevelessFrontStsRowsDiagramSvg } from "../sleevelessFrontStsRowsDiagramSvg";
+import { renderPatternDisplayRowsHtml } from "../sleevelessPatternDisplayHtml";
 import { tryBuildLiveSleevelessFrontRoundNotationSvg } from "../sleevelessFrontRoundShapingNotationDiagramSvg";
 import {
   renderSetInCenterSeamNeckChartHtml,
@@ -156,15 +158,14 @@ describe("set-in center-seam half notation", () => {
     const left = chart("left-back");
     const neck = left.actions.filter((action) => action.edge === "Neck");
     const shoulder = left.actions.filter((action) => action.edge === "Shoulder");
-    expect(neck[0]).toMatchObject({ rc: 65, carriage: "Right", verb: "Bind off", amount: 11 });
-    expect(neck.slice(1, 3).map((action) => action.amount)).toEqual([4, 4]);
-    expect(neck.slice(1, 3).every((action) => action.verb === "Bind off")).toBe(true);
-    expect(neck.slice(3).map((action) => `${action.verb} ${action.amount}`)).toEqual([
-      "Decrease 2",
-      "Decrease 2",
-      "Decrease 2",
-      "Decrease 2",
-    ]);
+    expect(neck[0]).toMatchObject({ rc: 65, carriage: "Right", verb: "Hold", amount: 11 });
+    expect(neck.reduce((sum, action) => sum + action.amount, 0)).toBe(22);
+    expect(shoulder.reduce((sum, action) => sum + action.amount, 0)).toBe(21);
+    expect(neck.at(-1)).toMatchObject({ rc: 77, verb: "Bind off", amount: 2 });
+    expect(neck.some((action) => action.verb === "Decrease")).toBe(false);
+    expect(left.html).toContain("If you held the shoulder stitches, bind off those held shoulder stitches.");
+    expect(left.html).toContain("Scrap off or bind off all remaining held neckline stitches.");
+    expect(left.html).not.toMatch(/Knit in pattern<\/td>\s*<td>[^<]*<\/td>\s*<td[^>]*>0</);
     expect(shoulder[0]).toMatchObject({ rc: 66, carriage: "Left", verb: "Bind off OR hold" });
     const shapingEnd =
       (left.half.setInArmholePlan?.matchedBindOffRows ?? 0) +
@@ -178,10 +179,10 @@ describe("set-in center-seam half notation", () => {
     const left = chart("left-back");
     expect(left.svg).toBeTruthy();
     const svg = left.svg!;
-    expect(svgAttr(svg, "data-neck-bo")).toBe("bo11");
+    expect(svgAttr(svg, "data-neck-bo")).toBe("hold11");
     expect(svgAttr(svg, "data-cf-neck-bo-sts")).toBe("11");
     expect(svgAttr(svg, "data-cf-neck-bo-source")).toBe("center-seam-half-timeline");
-    expect(svgAttr(svg, "data-neck-shaping")).toBe("4s-2r-2x\n2s-2r-4x");
+    expect(svgAttr(svg, "data-neck-shaping")).toBe("2s-2r-4x\n1s-2r-1x\n2s-2r-1x");
     expect(svgAttr(svg, "data-rc-neck-start")).toBe("rc065");
     expect(svgAttr(svg, "data-rc-shoulder-start")).toBe("rc066");
     expect(svgAttr(svg, "data-armhole-shaping")).toContain("44r");
@@ -206,12 +207,19 @@ describe("set-in center-seam half notation", () => {
     expect(svgAttr(right.svg!, "data-rc-neck-start")).toBe("rc065");
     expect(svgAttr(right.svg!, "data-rc-shoulder-start")).toBe("rc066");
     const rightNeck = right.actions.find((action) => action.edge === "Neck");
-    expect(rightNeck).toMatchObject({ rc: 65, carriage: "Left", verb: "Bind off", amount: 11 });
+    expect(rightNeck).toMatchObject({ rc: 65, carriage: "Left", verb: "Hold", amount: 11 });
 
     for (const front of [leftFront, rightFront]) {
       const neck = front.actions.filter((action) => action.edge === "Neck");
       const shoulder = front.actions.filter((action) => action.edge === "Shoulder");
       const opening = neck[0]!;
+      expect(neck.reduce((sum, action) => sum + action.amount, 0)).toBe(22);
+      expect(shoulder.reduce((sum, action) => sum + action.amount, 0)).toBe(21);
+      expect(shoulder.reduce((sum, action) => sum + action.amount, 0)).toBe(
+        left.actions.filter((action) => action.edge === "Shoulder").reduce((sum, action) => sum + action.amount, 0),
+      );
+      expect(front.html).toContain("If you held the shoulder stitches, bind off those held shoulder stitches.");
+      expect(front.html).not.toMatch(/Decrease 2/);
       expect(front.svg).toBeTruthy();
       const svg = front.svg!;
       expect(svgAttr(svg, "data-neck-bo")).toBe(`bo${opening.amount}`);
@@ -230,6 +238,47 @@ describe("set-in center-seam half notation", () => {
 
     expect(svgAttr(leftFront.svg!, "data-neck-bo")).toBe(svgAttr(rightFront.svg!, "data-neck-bo"));
     expect(leftFront.actions[0]?.rc).not.toBe(65);
+  });
+
+  it("keeps the saved-test wording, widths, length, and counter header", () => {
+    const left = chart("left-back");
+    const front = chart("right-front");
+    const written = [...seamed.displayRows, ...seamed.frontDisplayRows]
+      .flatMap((row) =>
+        row.kind === "block" ? [...(row.paragraphs ?? []), ...(row.printInstructionParagraphs ?? [])] : [],
+      )
+      .join("\n");
+    expect(written).toContain("The next row shapes the opposite edge.");
+    expect(written).toContain("Knit across by working that shaping. Do not add a plain row.");
+    expect(written).toContain("After the last row, no stitches remain. Do not knit another row.");
+    expect(written).toContain("Scrap off or bind off all remaining held neckline stitches.");
+    expect(written).toContain("If you held the shoulder stitches, bind off those held shoulder stitches.");
+    expect(written).toContain("Swap Left and Right.");
+    expect(written).toContain("This is a decrease: move 1 stitch in. Do not bind it off.");
+    expect(written).not.toMatch(/knit 1 row across in pattern before shaping this edge again\. The next row shapes the opposite edge/);
+    expect(written).not.toMatch(/0 stitches remain at RC: \d{3}\.\nKnit in pattern to/);
+    expect(left.html).not.toMatch(/Knit in pattern<\/td>[\s\S]{0,80}>0</);
+    expect(front.html).not.toMatch(/Knit in pattern<\/td>[\s\S]{0,80}>0</);
+
+    const backSvg = tryBuildLiveSleevelessFrontStsRowsDiagramSvg(left.half, pieces.backPatternData);
+    const frontSvg = tryBuildLiveSleevelessFrontStsRowsDiagramSvg(front.half, pieces.frontPatternData);
+    for (const svg of [backSvg, frontSvg]) {
+      expect(svg).toContain('data-neck-sts="22"');
+      expect(svg).toContain('data-shoulder-sts="21"');
+      expect(svg).toContain("14 in");
+      expect(svg).toContain("8.9 in");
+      expect(svg).toContain("including 1 seam stitch");
+      expect(svg).toContain("excluding center seam stitches");
+    }
+
+    const backHtml = renderPatternDisplayRowsHtml(seamed.displayRows, { pieceSectionId: "back" });
+    const frontHtml = renderPatternDisplayRowsHtml(seamed.frontDisplayRows, { pieceSectionId: "front" });
+    const counter = "RC continues from the start of this piece. Do not reset the counter for this chart.";
+    expect(backHtml).toContain(counter);
+    expect(frontHtml).toContain(counter);
+    expect(backHtml).not.toContain("Row counter was reset to RC: 000 before this chart.");
+    expect(frontHtml).not.toContain("Row counter was reset to RC: 000 before this chart.");
+    expect(backHtml).toMatch(/Knit \d+ rows even to RC: \d{3}/);
   });
 
   it("keeps the one-piece armhole straight-row token on the full plan", () => {

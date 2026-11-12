@@ -240,7 +240,7 @@ function groupedBindOffLines(
     const where =
       groupRows === 1 ? "the next row" : `each of the next ${groupRows} ${rowWord(groupRows)}`;
     stitches -= group.stitches * groupRows;
-    const instruction = `Bind off ${group.stitches} ${stitchWord(group.stitches)} at the beginning of ${where}.`;
+    const instruction = `Bind off ${group.stitches} ${stitchWord(group.stitches)} at the beginning of ${where}. The carriage is at the edge being bound off. Take those stitches off the needle. Knit across after this bind-off only when the next row is not also a bind-off.`;
     lines.push(`${formatRcColon(rc)} ${instruction} ${remain(stitches)}`);
     blocks.push({
       rc,
@@ -278,7 +278,7 @@ function decreaseScheduleBlock(args: {
       ? Math.max(0, Math.min(fullRows, args.stopBeforeLocalRc - args.startRc))
       : fullRows;
   const stitches = args.startStitches - actionRows.length * args.stitchesPerAction * args.edges;
-  const sentence =
+  const repeated =
     actionRows.length === 0
       ? null
       : formatRepeatedShapingInstruction({
@@ -288,6 +288,10 @@ function decreaseScheduleBlock(args: {
           interval: args.everyRows,
           actionRows,
         });
+  const sentence =
+    repeated === null
+      ? null
+      : `${repeated} The carriage is at the edge you are decreasing. Knit 1 row in pattern after each decrease row when the next row is not a bind-off. This is a decrease, not a bind-off.`;
   const block =
     sentence === null
       ? null
@@ -416,7 +420,7 @@ export function setInOneEdgeArmholeInstructionBlocks(
       break;
     }
     stitches -= amount;
-    const instruction = `Bind off ${amount} ${stitchWord(amount)} at the armhole edge. Knit across.`;
+    const instruction = `Bind off ${amount} ${stitchWord(amount)} at the armhole edge. The carriage is at the armhole edge before this bind-off. Knit across.`;
     blocks.push({
       rc,
       paragraphs: [instruction],
@@ -480,9 +484,10 @@ type SetInCuffUpSleevePresentation = {
   shapingRcs: number[];
 };
 
-function knitEvenSentence(rows: number): string {
+function knitEvenSentence(rows: number, endRc: number): string {
   if (rows <= 0) return "";
-  return rows === 1 ? "Knit 1 row even." : `Knit ${rows} rows even.`;
+  const end = ` to ${formatRcColon(endRc)}`;
+  return rows === 1 ? `Knit 1 row even${end}.` : `Knit ${rows} rows even${end}.`;
 }
 
 function stripInstructionTags(line: string): string {
@@ -620,13 +625,15 @@ export function buildSetInCuffUpSleevePresentation(
           input.rowsCuffToUpperArm,
         );
   if (shapingRcs.length === 0) {
-    const straight = knitEvenSentence(input.rowsCuffToUpperArm);
+    const straight = knitEvenSentence(input.rowsCuffToUpperArm, input.rowsCuffToUpperArm);
     sleeveBodyLines.push(
       `${formatRcColon(0)} ${straight ? `${straight} ` : ""}${remain(input.upperArmStitches)}`.trim(),
     );
   } else {
     if (preShaping.straightRows > 0) {
-      sleeveBodyLines.push(`${formatRcColon(preShaping.bodyStartRc)} ${knitEvenSentence(preShaping.straightRows)}`);
+      sleeveBodyLines.push(
+        `${formatRcColon(preShaping.bodyStartRc)} ${knitEvenSentence(preShaping.straightRows, preShaping.bodyStartRc + preShaping.straightRows)}`,
+      );
     }
     sleeveBodyLines.push(
       `${formatRcColon(preShaping.firstShapingRc ?? 0)} ${DROP_SHOULDER_SLEEVE_BEGIN_SHAPING_LINE}`,
@@ -677,7 +684,7 @@ export function buildSetInCuffUpSleevePresentation(
   ];
 
   if (shapingRcs.length === 0) {
-    const straight = knitEvenSentence(input.rowsCuffToUpperArm);
+    const straight = knitEvenSentence(input.rowsCuffToUpperArm, input.rowsCuffToUpperArm);
     displayRows.push({
       kind: "block",
       rc: formatRcColon(0),
@@ -689,7 +696,7 @@ export function buildSetInCuffUpSleevePresentation(
       displayRows.push({
         kind: "block",
         rc: formatRcColon(preShaping.bodyStartRc),
-        paragraphs: [knitEvenSentence(preShaping.straightRows)],
+        paragraphs: [knitEvenSentence(preShaping.straightRows, preShaping.bodyStartRc + preShaping.straightRows)],
         stitchCount: input.wristStitches > 0 ? input.wristStitches : undefined,
       });
     }

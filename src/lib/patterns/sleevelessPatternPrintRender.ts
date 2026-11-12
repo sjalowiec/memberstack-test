@@ -106,6 +106,7 @@ function renderPrintBlockRow(
       renderSleevelessBodyShapingChartHtml(row.bodyShapingChartRows, {
         chartId: row.bodyShapingChartId || `sleeveless-body-shaping-chart-${pieceKey}`,
         ...(row.bodyShapingChartTitle ? { title: row.bodyShapingChartTitle } : {}),
+        counterNote: row.chartCounterNote,
       }),
     );
   }
