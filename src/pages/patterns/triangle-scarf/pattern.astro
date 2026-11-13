@@ -1,0 +1,398 @@
+---
+/**
+ * Finished Weekend Triangle Scarf.
+ * Share links and the local draft both render with buildTriangleScarfPatternHtml.
+ * That same HTML is what prints.
+ */
+import Layout from "../../../layouts/Layout.astro";
+import PatternPrintFooter from "../../../components/common/PatternPrintFooter.astro";
+import PatternPrintPersonalization from "../../../components/common/PatternPrintPersonalization.astro";
+import PatternProjectOnlineNotes from "../../../components/patterns/PatternProjectOnlineNotes.astro";
+import SavedPatternHeader from "../../../components/patterns/SavedPatternHeader.astro";
+import SavedPatternStickyNav from "../../../components/patterns/SavedPatternStickyNav.astro";
+import SleevelessPatternPrintNotice from "../../../components/patterns/SleevelessPatternPrintNotice.astro";
+import GarmentPatternYarnDrawer from "../../../components/patterns/GarmentPatternYarnDrawer.astro";
+import {
+  buildTriangleScarfPatternHtml,
+  calculateTriangleScarf,
+  parseTriangleScarfSearchParams,
+  TRIANGLE_SCARF_THUMBNAIL_SRC,
+} from "../../../lib/patterns/triangleScarfMath";
+import {
+  TRIANGLE_SCARF_BUILDER_HREF,
+  TRIANGLE_SCARF_PATTERN_NAME,
+  TRIANGLE_SCARF_SUMMARY_FROM_PATTERN_HREF,
+} from "../../../lib/patterns/triangleScarf/triangleScarfNavigation";
+import { TRIANGLE_SCARF_TIPS_STORAGE_KEY } from "../../../lib/patterns/triangleScarf/triangleScarfPatternView";
+import {
+  TRIANGLE_SCARF_MEMBERSHIP_CTA_CLASS,
+  TRIANGLE_SCARF_MEMBERSHIP_CTA_HREF,
+  TRIANGLE_SCARF_MEMBERSHIP_CTA_LABEL,
+  TRIANGLE_SCARF_PERSIST_MEMBERSHIP_PITCH,
+  TRIANGLE_SCARF_PERSIST_NOTICE_TITLE,
+  TRIANGLE_SCARF_PERSIST_WARNING_EMPHASIS,
+  TRIANGLE_SCARF_PERSIST_WARNING_LEAD,
+} from "../../../lib/patterns/triangleScarf/triangleScarfPatternPersistNotice";
+import { TRIANGLE_SCARF_PATTERN_MY_PATTERNS_DISABLED_TITLE } from "../../../lib/patterns/triangleScarf/triangleScarfPatternMyPatternsAccess";
+
+import "../../../styles/wizard.css";
+import "../../../styles/glossary-tooltip.css";
+import "../../../styles/pattern-tips.css";
+import "../../../styles/pattern-quick-tip.css";
+import "../../../styles/pattern-help-card.css";
+import "../../../styles/patterns/sleeveless-pattern-shared.css";
+import "../../../styles/patterns/pattern-app-shell.css";
+import "../../../styles/tools/yarn-requirement-drawer-shell.css";
+import "../../../styles/patterns/triangle-scarf-thumbnail.css";
+
+const parsed = parseTriangleScarfSearchParams(Astro.url.searchParams);
+const initial = parsed ? calculateTriangleScarf(parsed) : null;
+const initialHtml = initial?.ok === true ? buildTriangleScarfPatternHtml(initial) : "";
+const thumbnailAlt = "Triangle scarf wrapped at the neck";
+---
+
+<Layout
+  title={`${TRIANGLE_SCARF_PATTERN_NAME} | Knit it Now`}
+  description="Your point-to-point triangle scarf pattern: left-edge shaping from 3 stitches to the widest section and back to 3."
+  bodyClass="pattern-print-global-footer"
+  patternWorkspace={true}
+>
+  <PatternPrintFooter footerBottomLeftExtra=" · KnitItNow.com/patterns/triangle-scarf" />
+  <main
+    class="wizard-page sleeveless-pattern-page sleeveless-workspace-subpage pattern-app-shell triangle-scarf-workspace triangle-scarf-pattern-page"
+    data-pattern-print-skip-modal
+    data-triangle-scarf-pattern-page
+    data-testid="triangle-scarf-pattern-page"
+  >
+    <div id="triangle-scarf-pattern-top" class="wizard-container scroll-mt-[96px]">
+      <div class="calculator-card">
+        <SavedPatternHeader part="actions">
+          <Fragment slot="actions-start">
+            <div data-ms-content="members">
+              <button
+                type="button"
+                class="sleeveless-pattern-edit-action no-print is-disabled"
+                data-triangle-scarf-pattern-my-patterns
+                data-testid="pattern-workspace-library-trigger"
+                aria-haspopup="dialog"
+                aria-controls="pattern-workspace-library-drawer-panel"
+                aria-expanded="false"
+                aria-disabled="true"
+                title={TRIANGLE_SCARF_PATTERN_MY_PATTERNS_DISABLED_TITLE}
+              >
+                <i class="fa-solid fa-folder-open" aria-hidden="true"></i> My Patterns
+              </button>
+            </div>
+            <button
+              type="button"
+              class="sleeveless-pattern-edit-action no-print"
+              data-triangle-scarf-new-pattern
+              data-testid="pattern-workspace-new-pattern-trigger"
+            >
+              <i class="fa-solid fa-plus" aria-hidden="true"></i> New Pattern
+            </button>
+          </Fragment>
+          <button
+            slot="actions-end"
+            type="button"
+            id="express-yarn-drawer-open"
+            class="sleeveless-pattern-edit-action no-print"
+            data-testid="triangle-scarf-how-much-yarn"
+            hidden
+            aria-haspopup="dialog"
+            aria-controls="express-yarn-drawer-panel"
+            aria-expanded="false"
+          >
+            How Much Yarn?
+          </button>
+        </SavedPatternHeader>
+
+        <div class="hat-pattern-empty" data-triangle-scarf-pattern-empty role="status" hidden>
+          <h1 class="hat-pattern-empty__title">{TRIANGLE_SCARF_PATTERN_NAME}</h1>
+          <p class="hat-pattern-empty__message" data-triangle-scarf-pattern-empty-message>
+            Create a triangle scarf pattern first, then come back to view your instructions.
+          </p>
+          <a
+            href={TRIANGLE_SCARF_BUILDER_HREF}
+            class="kbm-btn kbm-btn-accent"
+            data-triangle-scarf-pattern-empty-cta
+          >
+            Go to Triangle Scarf Builder
+          </a>
+        </div>
+
+        <div
+          id="sg-triangle-scarf-results"
+          class="sg-sleeveless-results"
+          data-triangle-scarf-pattern-results
+          hidden={!initialHtml}
+        >
+          <div id="triangle-scarf-pattern-tips-scope" class="pattern-tips-scope" data-show-tips="true">
+            <aside
+              class="hat-pattern-persist-notice"
+              data-triangle-scarf-pattern-persist-notice
+              data-testid="triangle-scarf-pattern-persist-notice"
+              role="region"
+              aria-label={TRIANGLE_SCARF_PERSIST_NOTICE_TITLE}
+            >
+              <p class="hat-pattern-persist-notice__title">{TRIANGLE_SCARF_PERSIST_NOTICE_TITLE}</p>
+              <p class="hat-pattern-persist-notice__warning">{TRIANGLE_SCARF_PERSIST_WARNING_LEAD}</p>
+              <p class="hat-pattern-persist-notice__warning">
+                <button
+                  type="button"
+                  class="hat-pattern-print-inline-link print-visible"
+                  data-triangle-scarf-pattern-print-link
+                  data-testid="triangle-scarf-pattern-print-inline-link"
+                >
+                  {TRIANGLE_SCARF_PERSIST_WARNING_EMPHASIS}
+                </button>
+              </p>
+              <div
+                class="hat-pattern-persist-notice__membership no-print"
+                data-triangle-scarf-pattern-persist-membership
+              >
+                <p class="hat-pattern-persist-notice__pitch">{TRIANGLE_SCARF_PERSIST_MEMBERSHIP_PITCH}</p>
+                <a
+                  href={TRIANGLE_SCARF_MEMBERSHIP_CTA_HREF}
+                  class:list={[
+                    TRIANGLE_SCARF_MEMBERSHIP_CTA_CLASS.split(" "),
+                    "hat-pattern-persist-notice__cta",
+                  ]}
+                  data-testid="triangle-scarf-pattern-membership-cta"
+                >
+                  {TRIANGLE_SCARF_MEMBERSHIP_CTA_LABEL}
+                </a>
+              </div>
+            </aside>
+            <SavedPatternHeader
+              part="intro"
+              title={TRIANGLE_SCARF_PATTERN_NAME}
+              titleAttr="data-triangle-scarf-pattern-heading"
+              hideTitleOnPrint
+              thumbnailSrc={TRIANGLE_SCARF_THUMBNAIL_SRC}
+              thumbnailAlt={thumbnailAlt}
+              thumbnailWidth={1254}
+              thumbnailHeight={1254}
+              tipsStorageKey={TRIANGLE_SCARF_TIPS_STORAGE_KEY}
+              tipsScopeSelector="#triangle-scarf-pattern-tips-scope"
+              printOriginLabel="Created with the Knit It Now Triangle Scarf Pattern Builder"
+              printOriginUrl="KnitItNow.com/patterns/triangle-scarf"
+            >
+              <PatternProjectOnlineNotes
+                slot="notes"
+                wrapAttr="data-triangle-scarf-pattern-online-notes-wrap"
+                blockAttr="data-triangle-scarf-pattern-online-notes"
+                textAttr="data-triangle-scarf-pattern-online-notes-text"
+              />
+              <PatternPrintPersonalization slot="print-personalization">
+                <div
+                  slot="print-summary"
+                  class="sg-pattern-print-at-a-glance"
+                  data-sg-pattern-print-at-a-glance
+                >
+                  <h2 class="print-heading-major print-heading-major--hero">At a glance</h2>
+                  <div data-sg-pattern-print-basics-body></div>
+                </div>
+              </PatternPrintPersonalization>
+            </SavedPatternHeader>
+
+            <SleevelessPatternPrintNotice />
+
+            <div id="pattern-content" data-pattern-content>
+              <SavedPatternStickyNav
+                actionsAttrs={["data-triangle-scarf-pattern-actions"]}
+                includePrint
+              >
+                <a
+                  href={TRIANGLE_SCARF_SUMMARY_FROM_PATTERN_HREF}
+                  class="sleeveless-pattern-edit-action no-print"
+                  data-triangle-scarf-edit
+                  data-testid="button-edit-pattern"
+                >
+                  <i class="fas fa-pen" aria-hidden="true"></i> Edit Pattern
+                </a>
+                <button
+                  type="button"
+                  class="sleeveless-pattern-edit-action no-print"
+                  data-triangle-scarf-share
+                  data-testid="button-share-pattern"
+                >
+                  <i class="fas fa-link" aria-hidden="true"></i> Share
+                </button>
+                <span class="triangle-scarf-share-status" data-triangle-scarf-share-status role="status"></span>
+              </SavedPatternStickyNav>
+              <div class="pattern-layout triangle-scarf-pattern-reading">
+                <div class="pattern-layout__content" data-triangle-scarf-pattern-mount>
+                  {initialHtml ? <Fragment set:html={initialHtml} /> : <p class="sleeveless-pattern-boot-msg">Loading pattern…</p>}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+  <GarmentPatternYarnDrawer
+    lede="Quick estimate from a weighed swatch using this scarf’s point-to-point length and depth. The area is half that rectangle."
+    note="This is an estimate. Actual yarn use may vary with stitch pattern, ribbing, and finishing."
+    resultsSubline="Includes a 10% buffer. Uses your swatch and this scarf’s length and depth."
+  />
+</Layout>
+
+<script>
+  import "/src/scripts/triangle-scarf-pattern-page.ts";
+</script>
+
+<style>
+  .hat-pattern-persist-notice {
+    margin: 0 0 1.25rem;
+    padding: 0.9rem 1.1rem;
+    border-radius: 8px;
+    border: 0;
+    border-left: 4px solid var(--kbm-accent, #c2614e);
+    background: #f7f6f4;
+    color: #1f2937;
+  }
+
+  .hat-pattern-persist-notice__title {
+    margin: 0 0 0.4rem;
+    font-size: 0.95rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    line-height: 1.35;
+    color: #374151;
+  }
+
+  .hat-pattern-persist-notice__warning {
+    margin: 0;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    color: #1f2937;
+  }
+
+  .hat-pattern-persist-notice__warning + .hat-pattern-persist-notice__warning {
+    margin-top: 0.45rem;
+  }
+
+  .hat-pattern-persist-notice__membership {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.65rem;
+    margin-top: 0.7rem;
+  }
+
+  .hat-pattern-persist-notice__pitch {
+    margin: 0;
+    font-size: 0.92rem;
+    line-height: 1.45;
+    color: #4b5563;
+  }
+
+  .hat-pattern-persist-notice__cta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    max-width: 100%;
+    text-decoration: none;
+  }
+
+  .hat-pattern-print-inline-link {
+    display: inline;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: none;
+    font: inherit;
+    font-weight: 700;
+    color: #52682d;
+    text-decoration: underline;
+    text-underline-offset: 0.12em;
+    cursor: pointer;
+  }
+
+  @media print {
+    .hat-pattern-persist-notice__membership {
+      display: none !important;
+    }
+  }
+
+  .hat-pattern-empty {
+    max-width: 36rem;
+    margin: 1.5rem auto;
+    padding: 1.5rem 1rem;
+    text-align: center;
+  }
+
+  .hat-pattern-empty__title {
+    margin: 0 0 0.65rem;
+    font-size: 1.45rem;
+    font-weight: 700;
+    color: var(--kbm-green, #52682d);
+  }
+
+  .hat-pattern-empty__message {
+    margin: 0 0 1.1rem;
+    line-height: 1.5;
+    color: #4b5563;
+  }
+
+  :global(.sleeveless-pattern-inpage-nav__actions) .triangle-scarf-share-status {
+    flex: 1 0 100%;
+    margin: 0;
+    font-size: 0.85rem;
+    line-height: 1.4;
+    color: #374151;
+    overflow-wrap: anywhere;
+  }
+
+  :global(.sleeveless-pattern-inpage-nav__actions) .triangle-scarf-share-status:empty {
+    display: none;
+  }
+
+  .triangle-scarf-pattern-reading {
+    min-width: 0;
+  }
+
+  :global(#pattern-content .ts-shaping-checklist) {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0.75rem 0 0.25rem;
+    font-size: 0.95rem;
+  }
+
+  :global(#pattern-content .ts-shaping-checklist caption) {
+    caption-side: top;
+    text-align: left;
+    font-weight: 700;
+    margin-bottom: 0.35rem;
+  }
+
+  :global(#pattern-content .ts-shaping-checklist th),
+  :global(#pattern-content .ts-shaping-checklist td) {
+    border-bottom: 1px solid #e5e7eb;
+    text-align: left;
+    padding: 0.28rem 0.45rem;
+    vertical-align: top;
+  }
+
+  :global(#pattern-content .ts-pattern-summary__list) {
+    margin: 0 0 1rem;
+    padding-left: 1.15rem;
+  }
+
+  :global(.triangle-scarf-workspace .sg-pattern-intro-metadata .print-summary-dl) {
+    display: grid;
+    grid-template-columns: max-content minmax(0, 1fr);
+    gap: 0.2rem 0.75rem;
+    margin: 0;
+  }
+
+  :global(.triangle-scarf-workspace .sg-pattern-intro-metadata .print-summary-dl dt) {
+    font-weight: 600;
+  }
+
+  :global(.triangle-scarf-workspace .sg-pattern-intro-metadata .print-summary-dl dd) {
+    margin: 0;
+  }
+</style>

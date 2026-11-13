@@ -13,6 +13,8 @@
  */
 import { clearHatDraftStorage } from "./hat/hatDraft";
 import { clearHatSavedProjectIdentity } from "./hat/hatSavedProject";
+import { clearTriangleScarfDraft } from "./triangleScarf/triangleScarfDraft";
+import { clearTriangleScarfSavedProjectIdentity } from "./triangleScarf/triangleScarfSavedProject";
 import { clearSleevelessExpressSession } from "./patternStorage";
 import { clearSockDraftStorage } from "./sock/sockDraft";
 import { clearSockSavedProjectIdentity } from "./sock/sockSavedProject";
@@ -82,6 +84,8 @@ export function enforcePatternDraftOwner(
   clearSleevelessExpressSession();
   clearHatDraftStorage();
   clearHatSavedProjectIdentity();
+  clearTriangleScarfDraft();
+  clearTriangleScarfSavedProjectIdentity();
   clearSockDraftStorage();
   clearSockSavedProjectIdentity();
   clearChristmasStockingDraftStorage();

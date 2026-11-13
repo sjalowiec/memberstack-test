@@ -1,0 +1,149 @@
+---
+/**
+ * Triangle Scarf Summary/Edit.
+ * From the builder (`?generated=1`): View My Pattern opens the finished pattern.
+ * From Edit Pattern: Update Pattern writes the same local draft and returns to the pattern.
+ */
+import Layout from "../../../../layouts/Layout.astro";
+import PatternPhoneWorkspaceNotice from "../../../../components/patterns/PatternPhoneWorkspaceNotice.astro";
+import PatternProjectDetails from "../../../../components/patterns/PatternProjectDetails.astro";
+import PatternSummaryEditWorkspace from "../../../../components/patterns/PatternSummaryEditWorkspace.astro";
+import TriangleScarfSetupFields from "../../../../components/patterns/TriangleScarfSetupFields.astro";
+import UnitToggle from "../../../../components/wizards/UnitToggle.astro";
+import {
+  TRIANGLE_SCARF_BUILDER_HREF,
+  TRIANGLE_SCARF_PATTERN_NAME,
+  TRIANGLE_SCARF_SUMMARY_CANCEL_FROM_EDIT_LABEL,
+  TRIANGLE_SCARF_SUMMARY_HINT_FROM_EDIT,
+  TRIANGLE_SCARF_SUMMARY_PRIMARY_FROM_EDIT_LABEL,
+} from "../../../../lib/patterns/triangleScarf/triangleScarfNavigation";
+import { TRIANGLE_SCARF_THUMBNAIL_SRC } from "../../../../lib/patterns/triangleScarfMath";
+import { TRIANGLE_SCARF_UNIT_TOGGLE_ID } from "../../../../lib/patterns/triangleScarf/triangleScarfForm";
+
+import "../../../../styles/wizard.css";
+import "../../../../styles/patterns/sleeveless-pattern-shared.css";
+import "../../../../styles/patterns/pattern-app-shell.css";
+import "../../../../styles/patterns/triangle-scarf-thumbnail.css";
+
+const thumbnailAlt = "Triangle scarf wrapped at the neck";
+---
+
+<Layout
+  title={`Edit ${TRIANGLE_SCARF_PATTERN_NAME} | Knit it Now`}
+  description="Edit triangle scarf depth, point-to-point length, available needles, and gauge."
+  patternWorkspace={true}
+>
+  <main
+    class="wizard-page sleeveless-pattern-page sleeveless-workspace-subpage pattern-app-shell triangle-scarf-workspace triangle-scarf-summary-page"
+    data-triangle-scarf-summary-page
+    data-testid="triangle-scarf-summary-edit-page"
+  >
+    <div class="wizard-container">
+      <div class="calculator-card">
+        <PatternPhoneWorkspaceNotice />
+        <div class="hat-pattern-empty" data-triangle-scarf-summary-empty role="status" hidden>
+          <h1 class="hat-pattern-empty__title">{TRIANGLE_SCARF_PATTERN_NAME}</h1>
+          <p class="hat-pattern-empty__message" data-triangle-scarf-summary-empty-message>
+            Create a triangle scarf pattern first, then come back to edit your measurements.
+          </p>
+          <a href={TRIANGLE_SCARF_BUILDER_HREF} class="kbm-btn kbm-btn-accent">Go to Triangle Scarf Builder</a>
+        </div>
+
+        <div data-triangle-scarf-summary-workspace hidden>
+          <PatternSummaryEditWorkspace testId="triangle-scarf-summary-workspace">
+            <Fragment slot="quick">
+              <div data-triangle-scarf-edit-title-field hidden>
+                <PatternProjectDetails
+                  titleId="triangle-scarf-edit-title"
+                  notesId="triangle-scarf-edit-notes"
+                  notesRegionId="triangle-scarf-edit-notes-region"
+                  titlePlaceholder={TRIANGLE_SCARF_PATTERN_NAME}
+                  titleInputAttr="data-triangle-scarf-edit-title"
+                  titleTestId="triangle-scarf-edit-title"
+                  notesInputAttr="data-triangle-scarf-edit-notes"
+                  notesTestId="triangle-scarf-edit-notes"
+                />
+              </div>
+              <section class="sl-edit-section" aria-labelledby="triangle-scarf-edit-units-heading">
+                <h3 class="sl-edit-section__title" id="triangle-scarf-edit-units-heading">Units</h3>
+                <UnitToggle id={TRIANGLE_SCARF_UNIT_TOGGLE_ID} />
+              </section>
+              <TriangleScarfSetupFields part="all" />
+              <p class="triangle-scarf-form-error" data-triangle-scarf-form-error role="alert" hidden></p>
+            </Fragment>
+
+            <Fragment slot="actions">
+              <a
+                class="sl-edit-btn sl-edit-btn--ghost"
+                data-triangle-scarf-summary-cancel
+                data-testid="button-edit-cancel"
+                href={TRIANGLE_SCARF_BUILDER_HREF}
+              >
+                {TRIANGLE_SCARF_SUMMARY_CANCEL_FROM_EDIT_LABEL}
+              </a>
+              <button
+                type="button"
+                class="sl-edit-btn sl-edit-btn--primary"
+                data-triangle-scarf-summary-primary
+                data-testid="button-edit-update"
+              >
+                {TRIANGLE_SCARF_SUMMARY_PRIMARY_FROM_EDIT_LABEL}
+              </button>
+            </Fragment>
+
+            <span slot="hint" data-triangle-scarf-summary-hint>
+              {TRIANGLE_SCARF_SUMMARY_HINT_FROM_EDIT}
+            </span>
+
+            <Fragment slot="diagram">
+              <figure class="triangle-scarf-thumb">
+                <img
+                  class="triangle-scarf-thumb__image"
+                  src={TRIANGLE_SCARF_THUMBNAIL_SRC}
+                  alt={thumbnailAlt}
+                  width="1254"
+                  height="1254"
+                />
+              </figure>
+            </Fragment>
+          </PatternSummaryEditWorkspace>
+        </div>
+      </div>
+    </div>
+  </main>
+</Layout>
+
+<script>
+  import "/src/scripts/triangle-scarf-summary-page.ts";
+</script>
+
+<style>
+  .hat-pattern-empty {
+    max-width: 36rem;
+    margin: 1.5rem auto;
+    padding: 1.5rem 1rem;
+    text-align: center;
+  }
+
+  .hat-pattern-empty__title {
+    margin: 0 0 0.65rem;
+    font-size: 1.45rem;
+    font-weight: 700;
+    color: var(--kbm-green, #52682d);
+  }
+
+  .hat-pattern-empty__message {
+    margin: 0 0 1.1rem;
+    line-height: 1.5;
+    color: #4b5563;
+  }
+
+  .triangle-scarf-summary-page [data-triangle-scarf-summary-workspace][hidden] {
+    display: none;
+  }
+
+  .triangle-scarf-form-error {
+    margin: 0.75rem 0 0;
+    color: #7f1d1d;
+  }
+</style>

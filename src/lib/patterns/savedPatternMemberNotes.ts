@@ -7,6 +7,7 @@
 import { readActiveCustomPatternProjectId } from "./customPatternProjectActiveId";
 import { readSockActiveProjectId as readStockingActiveProjectId } from "./christmasStocking/sockSavedProject";
 import { readHatActiveProjectId } from "./hat/hatSavedProject";
+import { readTriangleScarfActiveProjectId } from "./triangleScarf/triangleScarfSavedProject";
 import { pathnameFromHref } from "./savedPatternViewRoute";
 import { readSavedPatternProjectIdFromUrl } from "./savedPatternViewUrl";
 import { readSockActiveProjectId } from "./sock/sockSavedProject";
@@ -20,6 +21,7 @@ export type SavedPatternMemberNotesTarget = {
 
 export type SavedPatternMemberNotesActiveIds = {
   hat: string;
+  triangleScarf: string;
   socks: string;
   stocking: string;
   sweater: string;
@@ -39,10 +41,11 @@ export type MemberNotesFeedback = {
   tone: "neutral" | "error" | "saved";
 };
 
-type NotesViewKind = "hat" | "socks" | "stocking" | "sweater";
+type NotesViewKind = "hat" | "triangle-scarf" | "socks" | "stocking" | "sweater";
 
 function notesViewKind(pathname: string): NotesViewKind | null {
   if (/^\/patterns\/hat\/pattern\/?$/.test(pathname)) return "hat";
+  if (/^\/patterns\/triangle-scarf\/pattern\/?$/.test(pathname)) return "triangle-scarf";
   if (/^\/patterns\/socks\/pattern\/?$/.test(pathname)) return "socks";
   if (/^\/patterns\/christmas-stocking\/pattern\/?$/.test(pathname)) return "stocking";
   if (
@@ -180,7 +183,9 @@ export function resolveSavedPatternMemberNotesTarget(
   const fallback =
     kind === "hat"
       ? activeIds.hat
-      : kind === "socks"
+      : kind === "triangle-scarf"
+        ? activeIds.triangleScarf
+        : kind === "socks"
         ? activeIds.socks
         : kind === "stocking"
           ? activeIds.stocking
@@ -196,6 +201,7 @@ export function readSavedPatternMemberNotesTarget(
   if (!href) return null;
   return resolveSavedPatternMemberNotesTarget(href, {
     hat: readHatActiveProjectId(),
+    triangleScarf: readTriangleScarfActiveProjectId(),
     socks: readSockActiveProjectId(),
     stocking: readStockingActiveProjectId(),
     sweater: readActiveCustomPatternProjectId(),

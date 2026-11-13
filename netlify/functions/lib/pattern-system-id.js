@@ -71,14 +71,22 @@ function isSockPatternBlob(pattern) {
   return o.patternType === "socks" || o.patternType === "sock" || o.patternSystem === "socks";
 }
 
+function isTriangleScarfPatternBlob(pattern) {
+  const o = asRecord(pattern);
+  return o.patternType === "triangle-scarf" || o.patternSystem === "triangle-scarf";
+}
+
 /**
  * @param {{ pattern?: unknown, customOverrides?: unknown }} project
- * @returns {"sleeveless" | "drop-shoulder" | "set-in-sleeve" | "sideways-cardigan" | "hat" | "socks" | "christmas-stocking"}
+ * @returns {"sleeveless" | "drop-shoulder" | "set-in-sleeve" | "sideways-cardigan" | "hat" | "socks" | "christmas-stocking" | "triangle-scarf"}
  */
 export function resolvePatternSystemFromProject(project) {
   const pattern = asRecord(project?.pattern);
   if (isHatPatternBlob(pattern)) {
     return "hat";
+  }
+  if (isTriangleScarfPatternBlob(pattern)) {
+    return "triangle-scarf";
   }
   if (isChristmasStockingPatternBlob(pattern)) {
     return "christmas-stocking";
@@ -111,6 +119,7 @@ export const PATTERN_SYSTEM_DISPLAY_NAMES = {
   raglan: "Raglan",
   socks: "Socks",
   "christmas-stocking": "Christmas Stocking",
+  "triangle-scarf": "Weekend Triangle Scarf",
 };
 
 /** @param {string} systemId */

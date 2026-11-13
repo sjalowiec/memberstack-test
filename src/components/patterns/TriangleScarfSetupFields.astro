@@ -1,0 +1,216 @@
+---
+/**
+ * Shared Triangle Scarf measurements, available needles, and gauge.
+ * Builder steps pass one part. Summary/Edit passes `all`.
+ */
+import GaugeInput from "../wizards/GaugeInput.astro";
+import FloatingInput from "../lego/FloatingInput.astro";
+import {
+  AVAILABLE_NEEDLES_HELPER_TEXT,
+  AVAILABLE_NEEDLES_LABEL,
+  AVAILABLE_NEEDLES_REQUIRED_MESSAGE,
+} from "../../lib/patterns/sleevelessExpressAvailableNeedles";
+import {
+  TRIANGLE_SCARF_DEPTH_ID,
+  TRIANGLE_SCARF_DEPTH_LABEL_ID,
+  TRIANGLE_SCARF_GAUGE_ID,
+  TRIANGLE_SCARF_LENGTH_ID,
+  TRIANGLE_SCARF_LENGTH_LABEL_ID,
+  TRIANGLE_SCARF_NEEDLES_ID,
+  TRIANGLE_SCARF_SIZE_PRESETS,
+} from "../../lib/patterns/triangleScarf/triangleScarfForm";
+
+interface Props {
+  part?: "size" | "needles" | "gauge" | "all";
+}
+
+const { part = "all" } = Astro.props;
+const showSize = part === "size" || part === "all";
+const showNeedles = part === "needles" || part === "all";
+const showGauge = part === "gauge" || part === "all";
+---
+
+<div class="triangle-scarf-fields" data-triangle-scarf-fields={part}>
+  {
+    showSize && (
+      <div class:list={[part === "all" && "sl-edit-section"]}>
+        {part === "all" && (
+          <h3 class="sl-edit-section__title" id="triangle-scarf-size-heading">
+            Measurements
+          </h3>
+        )}
+        <div class="triangle-scarf-presets no-print">
+          <span class="triangle-scarf-presets__label">Quick sizes (point-to-point length × depth)</span>
+          {TRIANGLE_SCARF_SIZE_PRESETS.map((preset) => (
+            <button
+              type="button"
+              class="triangle-scarf-preset"
+              data-triangle-scarf-preset
+              data-length={preset.length}
+              data-depth={preset.depth}
+            >
+              {preset.label}
+            </button>
+          ))}
+        </div>
+        <p class="triangle-scarf-note">
+          Point-to-point length runs in the knitting direction. Scarf depth is measured perpendicular to the straight edge at the widest section.
+        </p>
+        <div class="triangle-scarf-fields__row">
+          <FloatingInput
+            id={TRIANGLE_SCARF_LENGTH_ID}
+            name="pointToPointLength"
+            label="Point-to-point length (in)"
+            labelId={TRIANGLE_SCARF_LENGTH_LABEL_ID}
+            type="number"
+            min={0}
+            step={0.01}
+            inputMode="decimal"
+            testId="input-triangle-scarf-length"
+          />
+          <FloatingInput
+            id={TRIANGLE_SCARF_DEPTH_ID}
+            name="scarfDepth"
+            label="Scarf depth (in)"
+            labelId={TRIANGLE_SCARF_DEPTH_LABEL_ID}
+            type="number"
+            min={0}
+            step={0.01}
+            inputMode="decimal"
+            testId="input-triangle-scarf-depth"
+          />
+        </div>
+      </div>
+    )
+  }
+
+  {
+    showNeedles && (
+      <div class:list={[part === "all" && "sl-edit-section"]}>
+        {part === "all" && (
+          <h3 class="sl-edit-section__title" id="triangle-scarf-needles-heading">
+            Needles
+          </h3>
+        )}
+        <div class="triangle-scarf-needles">
+          <div class="triangle-scarf-needles__count">
+            <FloatingInput
+              id={TRIANGLE_SCARF_NEEDLES_ID}
+              name="availableNeedles"
+              label={AVAILABLE_NEEDLES_LABEL}
+              type="number"
+              inputMode="numeric"
+              min={50}
+              max={400}
+              step={1}
+              required
+              errorId="express-available-needles-error"
+              errorText={AVAILABLE_NEEDLES_REQUIRED_MESSAGE}
+              testId="input-triangle-scarf-needles"
+            />
+            <p class="triangle-scarf-note" id="express-available-needles-help">
+              {AVAILABLE_NEEDLES_HELPER_TEXT}
+            </p>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  {
+    showGauge && (
+      <div class:list={[part === "all" && "sl-edit-section"]}>
+        {part === "all" && (
+          <h3 class="sl-edit-section__title" id="triangle-scarf-gauge-heading">
+            Gauge
+          </h3>
+        )}
+        <p class="express-gauge-intro">Enter the gauge from your swatch over 4 inches / 10 cm.</p>
+        <div class="express-gauge-block">
+          <GaugeInput
+            id={TRIANGLE_SCARF_GAUGE_ID}
+            showTitle={false}
+            showGaugeSubLabel={false}
+            showToggle={false}
+            toggleId={TRIANGLE_SCARF_GAUGE_ID}
+            formFields={true}
+          />
+        </div>
+      </div>
+    )
+  }
+</div>
+
+<style>
+  .triangle-scarf-fields__row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+    margin-top: 0.75rem;
+  }
+
+  .triangle-scarf-note {
+    margin: 0.75rem 0 0;
+    max-width: 42rem;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    color: #374151;
+  }
+
+  .triangle-scarf-presets {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 0.75rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .triangle-scarf-presets__label {
+    width: 100%;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #6b7280;
+  }
+
+  .triangle-scarf-preset {
+    padding: 0.35rem 0.75rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    background: #f9fafb;
+    color: #374151;
+    cursor: pointer;
+  }
+
+  .triangle-scarf-preset:hover,
+  .triangle-scarf-preset.active {
+    border-color: var(--kbm-green, #52682d);
+    color: var(--kbm-green, #52682d);
+  }
+
+  .triangle-scarf-preset.active {
+    background: rgba(82, 104, 45, 0.12);
+  }
+
+  .triangle-scarf-needles {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .triangle-scarf-needles__count {
+    width: min(100%, 16rem);
+  }
+
+  .sl-edit-section .triangle-scarf-fields__row {
+    margin-top: 0.35rem;
+  }
+
+  @media (max-width: 640px) {
+    .triangle-scarf-fields__row {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

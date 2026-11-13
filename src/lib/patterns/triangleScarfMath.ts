@@ -1,10 +1,49 @@
+/**
+ * Point-to-point triangle scarf.
+ *
+ * One construction: cast on 3 stitches at the far right of the needlebed,
+ * keep that right edge straight, increase at the left edge to the widest
+ * section, then decrease at the left edge until 3 stitches remain.
+ *
+ * Point-to-point length runs in the knitting direction and sets the row count.
+ * Scarf depth, perpendicular to the straight edge at the widest section, sets
+ * the maximum stitch count. That rounded count must fit on the needle bed.
+ * A saved `method` or `construction` query value is ignored.
+ */
+import videosPublic from "../../data/videos-public.json";
+import type { PublicVideoRow } from "../lessonVideo";
+import { buildPatternQuickTipInnerHtml } from "./patternQuickTip";
+import { sleevelessHelpVideoFromCatalog } from "./sleevelessCatalogHelpVideo";
+
 export type TriangleUnit = "in" | "cm";
 
+/** Shown beside the cast-on. Gauge and stitch counts stay as entered. */
+export const TRIANGLE_SCARF_NEEDLE_ARRANGEMENT_GUIDANCE =
+  "You can knit this scarf on every needle or every other needle, in your chosen stitch pattern. Enter the gauge measured from your swatch. Stitch counts always mean actual stitches. If using every other needle, check that your working stitches fit across your needlebed.";
+
+export const TRIANGLE_SCARF_EVERY_OTHER_NEEDLE_HELP_HREF = "/help-hub/swatching-every-other-needle";
+
+export const TRIANGLE_SCARF_START_STITCHES = 3;
+
+export const TRIANGLE_SCARF_CONSTRUCTION_SUMMARY =
+  "Cast on 3 stitches at the far right of the needlebed. Increase as instructed until you reach the specified number of stitches. Then decrease as instructed until 3 stitches remain. Bind off the remaining 3 stitches.";
+
+/** Learning Library “Basic Increasing and Decreasing”. */
+export const TRIANGLE_SCARF_SHAPING_VIDEO_CONTENT_ID = 525;
+
+/** Learning Library “Knit-in I-Cord”. Optional edge. Its stitches are already inside the stitch count. */
+export const TRIANGLE_SCARF_ICORD_VIDEO_CONTENT_ID = 679;
+
+export const TRIANGLE_SCARF_THUMBNAIL_SRC = "/images/patterns/triangle-scarf.png";
+
 export interface TriangleScarfInputs {
-  width: number;
+  /** Scarf depth, perpendicular to the straight edge. Share param `w`. */
+  depth: number;
+  /** Point-to-point length in the knitting direction. Share param `l`. */
   length: number;
   stitchGauge: number;
   rowGauge: number;
+  /** Full needle-bed count. Share param `n`. */
   needles: number;
   unit: TriangleUnit;
 }
@@ -12,31 +51,31 @@ export interface TriangleScarfInputs {
 export interface ShapingPhaseResult {
   action: "increase" | "decrease";
   stitches: number;
+  /** Rows between shaping actions, including the action row. */
   rows: number;
   times: number;
-  side: string;
-  leftoverRows: number;
+  side: "left edge";
 }
 
 export interface TriangleScarfOk {
   ok: true;
-  method: "wide-to-point" | "point-wide-point";
-  /** Widest stitch count used in instructions (cast-on or center width). */
-  widestStitches: number;
+  construction: "point-to-point";
+  startStitches: 3;
+  endStitches: 3;
+  maxStitches: number;
   totalRows: number;
-  castOnStitches?: number;
-  centerStitches?: number;
-  /** Method 2: min(width, needles) before forcing odd for paired-edge repeats. */
-  centerRawStitches?: number;
-  /** Method 2: true when center was reduced by 1 to stay odd for paired-edge math. */
-  centerAdjusted?: boolean;
-  castOnAdjusted: boolean;
+  increaseRows: number;
+  decreaseRows: number;
+  /** Increase count and decrease count. Both equal maxStitches - 3. */
+  shapingTimes: number;
+  requestedDepth: number;
+  requestedLength: number;
+  knittedDepth: number;
+  knittedLength: number;
+  unit: TriangleUnit;
+  /** Full needle-bed count. The maximum stitch count is checked against this. */
+  needles: number;
   phases: ShapingPhaseResult[];
-  summary: {
-    widestStitchCount: number;
-    totalRows: number;
-    knittingMethodLabel: string;
-  };
 }
 
 export interface TriangleScarfErr {
@@ -46,26 +85,47 @@ export interface TriangleScarfErr {
 
 export type TriangleScarfResult = TriangleScarfOk | TriangleScarfErr;
 
-/** Parse shareable URL query (?w=&l=&sg=&rg=&n=&u=in|cm). */
+const LEGACY_METHOD_KEYS = ["method", "construction", "na"];
+
+/** Parse a shareable URL. `w` is depth, `l` is point-to-point length. Legacy method keys are ignored. */
 export function parseTriangleScarfSearchParams(searchParams: URLSearchParams): TriangleScarfInputs | null {
-  const w = parseFloat(String(searchParams.get("w") ?? ""));
-  const l = parseFloat(String(searchParams.get("l") ?? ""));
-  const sg = parseFloat(String(searchParams.get("sg") ?? ""));
-  const rg = parseFloat(String(searchParams.get("rg") ?? ""));
-  const n = parseInt(String(searchParams.get("n") ?? ""), 10);
+  const depth = parseFloat(String(searchParams.get("w") ?? ""));
+  const length = parseFloat(String(searchParams.get("l") ?? ""));
+  const stitchGauge = parseFloat(String(searchParams.get("sg") ?? ""));
+  const rowGauge = parseFloat(String(searchParams.get("rg") ?? ""));
+  const needles = parseInt(String(searchParams.get("n") ?? ""), 10);
   const uRaw = String(searchParams.get("u") ?? "in").toLowerCase();
   const unit: TriangleUnit = uRaw === "cm" ? "cm" : "in";
 
-  if (!Number.isFinite(w) || !Number.isFinite(l) || !Number.isFinite(sg) || !Number.isFinite(rg)) {
+  if (
+    !Number.isFinite(depth) ||
+    !Number.isFinite(length) ||
+    !Number.isFinite(stitchGauge) ||
+    !Number.isFinite(rowGauge)
+  ) {
     return null;
   }
-  if (!Number.isFinite(n)) {
-    return null;
-  }
-  return { width: w, length: l, stitchGauge: sg, rowGauge: rg, needles: n, unit };
+  if (!Number.isFinite(needles)) return null;
+  return { depth, length, stitchGauge, rowGauge, needles, unit };
 }
 
-const LEFTOVER_LINE = "Then work remaining rows as established.";
+/** Drop a saved construction flag or every-other-needle choice from a share URL. */
+export function triangleScarfShareParams(input: TriangleScarfInputs): URLSearchParams {
+  const sp = new URLSearchParams();
+  sp.set("w", String(input.depth));
+  sp.set("l", String(input.length));
+  sp.set("sg", String(input.stitchGauge));
+  sp.set("rg", String(input.rowGauge));
+  sp.set("n", String(input.needles));
+  sp.set("u", input.unit);
+  return sp;
+}
+
+export function stripLegacyTriangleScarfMethodParams(searchParams: URLSearchParams): URLSearchParams {
+  const next = new URLSearchParams(searchParams);
+  for (const key of LEGACY_METHOD_KEYS) next.delete(key);
+  return next;
+}
 
 function escapeHtml(s: string): string {
   return s
@@ -73,102 +133,6 @@ function escapeHtml(s: string): string {
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;");
-}
-
-export function buildTriangleScarfPatternHtml(result: TriangleScarfOk): string {
-  const summary = `
-<div class="ts-pattern-summary">
-  <h3 class="ts-pattern-summary__title">Summary</h3>
-  <ul class="ts-pattern-summary__list">
-    <li><strong>Widest stitch count:</strong> ${result.summary.widestStitchCount}</li>
-    <li><strong>Total rows:</strong> ${result.summary.totalRows}</li>
-    <li><strong>Knitting method:</strong> ${escapeHtml(result.summary.knittingMethodLabel)}</li>
-  </ul>
-</div>`;
-
-  if (result.method === "wide-to-point") {
-    const cast = result.castOnStitches ?? result.widestStitches;
-    const p0 = result.phases[0];
-    const adj =
-      result.castOnAdjusted && result.castOnStitches
-        ? `<p class="ts-cast-note">The cast-on was adjusted to <strong>${result.castOnStitches}</strong> stitches (odd count) so paired edge decreases can end at one stitch.</p>`
-        : "";
-
-    const leftover =
-      p0.leftoverRows > 0 ? `<p class="ts-leftover-line">${escapeHtml(LEFTOVER_LINE)}</p>` : "";
-
-    return `
-<div class="ts-pattern-body">
-  ${summary}
-  <div class="ts-instructions-block ts-big-picture">
-    <p>This scarf is worked from the widest edge down to a point.</p>
-    <p>Decreases are worked on both edges to shape the triangle.</p>
-  </div>
-  <div class="ts-instructions-block ts-pattern-steps">
-    <p>Cast on <strong>${cast}</strong> stitches across the needle bed.</p>
-    <p>Decrease on each edge as directed.</p>
-    <p>Continue until 1 stitch remains.</p>
-    <p>Bind off.</p>
-    ${adj}
-  </div>
-  ${renderShapingInstructionHtml({
-    action: "decrease",
-    stitches: 1,
-    rows: p0.rows,
-    times: p0.times,
-    side: "each edge",
-  })}
-  ${leftover}
-</div>`.trim();
-  }
-
-  const center = result.centerStitches ?? result.widestStitches;
-  const inc = result.phases[0];
-  const dec = result.phases[1];
-
-  const centerNote =
-    result.centerAdjusted && result.centerRawStitches !== undefined
-      ? `<p class="ts-cast-note">The widest stitch count was set to <strong>${center}</strong> stitches (odd) so paired edge increases/decreases match the shaping repeats. Target from gauge and needles was <strong>${result.centerRawStitches}</strong>.</p>`
-      : "";
-
-  const afterInc =
-    inc.leftoverRows > 0 ? `<p class="ts-leftover-line">${escapeHtml(LEFTOVER_LINE)}</p>` : "";
-  const afterDec =
-    dec.leftoverRows > 0 ? `<p class="ts-leftover-line">${escapeHtml(LEFTOVER_LINE)}</p>` : "";
-
-  return `
-<div class="ts-pattern-body">
-  ${summary}
-  <div class="ts-instructions-block ts-big-picture">
-    <p>This scarf is worked from one point to the center, then back to a point.</p>
-    <p>Increases shape the first half of the scarf, then decreases complete the second half.</p>
-  </div>
-  <div class="ts-instructions-block ts-pattern-steps">
-    <p>Start with <strong>1</strong> stitch.</p>
-    <p>Increase on <strong>each edge</strong> as directed until you reach <strong>${center}</strong> stitches at the wide row.</p>
-    <p>Then decrease on <strong>each edge</strong> as directed until <strong>1</strong> stitch remains.</p>
-    <p>Bind off.</p>
-    ${centerNote}
-  </div>
-  ${renderShapingInstructionHtml({
-    action: "increase",
-    stitches: 1,
-    rows: inc.rows,
-    times: inc.times,
-    side: "each edge",
-    label: "Shaping Instructions (first half)",
-  })}
-  ${afterInc}
-  ${renderShapingInstructionHtml({
-    action: "decrease",
-    stitches: 1,
-    rows: dec.rows,
-    times: dec.times,
-    side: "each edge",
-    label: "Shaping Instructions (second half)",
-  })}
-  ${afterDec}
-</div>`.trim();
 }
 
 function stitchesPerUnit(stitchGauge: number, unit: TriangleUnit): number {
@@ -179,24 +143,100 @@ function rowsPerUnit(rowGauge: number, unit: TriangleUnit): number {
   return rowGauge / (unit === "cm" ? 10 : 4);
 }
 
-/** Uniform spacing: same interval every time; remainder rows worked even afterward. */
-export function uniformShaping(totalRowsForPhase: number, times: number): { interval: number; leftoverRows: number } {
-  if (times <= 0) {
-    return { interval: 1, leftoverRows: Math.max(0, totalRowsForPhase) };
+/**
+ * Yarn area for this scarf, in square inches.
+ * A point-to-point triangle's fabric is half the rectangle of its length and depth.
+ */
+export function triangleScarfYarnAreaSquareInches(
+  length: number,
+  depth: number,
+  unit: TriangleUnit,
+): number {
+  if (!(length > 0) || !(depth > 0)) return 0;
+  const toInches = (value: number) => (unit === "cm" ? value / 2.54 : value);
+  return (toInches(length) * toInches(depth)) / 2;
+}
+
+export function formatTriangleMeasure(value: number, unit: TriangleUnit): string {
+  const rounded = Math.round(value * 10) / 10;
+  const text = Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(1);
+  return unit === "cm" ? `${text} cm` : `${text} in`;
+}
+
+/** Yarn drawer heading for the size the knitter is making. */
+export function triangleScarfYarnHeading(length: number, depth: number, unit: TriangleUnit): string {
+  if (!(length > 0) || !(depth > 0)) return "How much yarn do I need?";
+  const mark = unit === "cm" ? " cm" : "″";
+  const format = (value: number) => {
+    const rounded = Math.round(value * 100) / 100;
+    return Number.isInteger(rounded) ? String(rounded) : String(rounded);
+  };
+  return `How much yarn do I need for my ${format(length)}${mark} × ${format(depth)}${mark} project?`;
+}
+
+/**
+ * One interval per left-edge shaping row, mixed through the half.
+ * When two intervals are needed, the longer gaps are spread among the shorter
+ * ones. They are not worked as one block of each rate.
+ * The intervals add up to `phaseRows`, and there is one entry per shaping.
+ */
+export function triangleScarfShapingIntervals(phaseRows: number, times: number): number[] {
+  if (times <= 0 || phaseRows <= 0 || times > phaseRows) return [];
+  const base = Math.floor(phaseRows / times);
+  const extra = phaseRows - base * times;
+  const intervals: number[] = [];
+  let debt = 0;
+  for (let index = 0; index < times; index++) {
+    debt += extra;
+    if (debt >= times) {
+      intervals.push(base + 1);
+      debt -= times;
+    } else {
+      intervals.push(base);
+    }
   }
-  const interval = Math.max(1, Math.floor(totalRowsForPhase / times));
-  const leftoverRows = Math.max(0, totalRowsForPhase - interval * times);
-  return { interval, leftoverRows };
+  return intervals;
+}
+
+function phaseSegments(
+  action: "increase" | "decrease",
+  phaseRows: number,
+  times: number,
+): ShapingPhaseResult[] {
+  const phases: ShapingPhaseResult[] = [];
+  for (const interval of triangleScarfShapingIntervals(phaseRows, times)) {
+    const last = phases[phases.length - 1];
+    if (last && last.rows === interval) {
+      last.times += 1;
+    } else {
+      phases.push({
+        action,
+        stitches: 1,
+        rows: interval,
+        times: 1,
+        side: "left edge",
+      });
+    }
+  }
+  return phases;
+}
+
+function rowsInPhases(phases: ShapingPhaseResult[]): number {
+  return phases.reduce((sum, phase) => sum + phase.rows * phase.times, 0);
+}
+
+function timesInPhases(phases: ShapingPhaseResult[]): number {
+  return phases.reduce((sum, phase) => sum + phase.times, 0);
 }
 
 export function calculateTriangleScarf(input: TriangleScarfInputs): TriangleScarfResult {
-  const { width, length, stitchGauge, rowGauge, needles, unit } = input;
+  const { depth, length, stitchGauge, rowGauge, needles, unit } = input;
 
-  if (!Number.isFinite(width) || width <= 0) {
-    return { ok: false, message: "Enter a finished width greater than zero." };
+  if (!Number.isFinite(depth) || depth <= 0) {
+    return { ok: false, message: "Enter a scarf depth greater than zero." };
   }
   if (!Number.isFinite(length) || length <= 0) {
-    return { ok: false, message: "Enter a finished length (depth) greater than zero." };
+    return { ok: false, message: "Enter a point-to-point length greater than zero." };
   }
   if (!Number.isFinite(stitchGauge) || stitchGauge <= 0) {
     return { ok: false, message: "Enter stitch gauge (stitches per 4″ or per 10 cm)." };
@@ -210,218 +250,346 @@ export function calculateTriangleScarf(input: TriangleScarfInputs): TriangleScar
 
   const su = stitchesPerUnit(stitchGauge, unit);
   const ru = rowsPerUnit(rowGauge, unit);
+  const maxStitches = Math.round(depth * su);
+  const totalRows = Math.round(length * ru);
 
-  const widthStitches = Math.round(width * su);
-  const totalRows = Math.max(1, Math.round(length * ru));
-
-  if (widthStitches < 2) {
-    return { ok: false, message: "Finished width is too small for this stitch gauge." };
-  }
-
-  // Method 1 — Wide → Point (full width fits on the bed at cast-on).
-  if (widthStitches <= needles) {
-    let castOn = widthStitches;
-    let adjusted = false;
-    if (castOn > 1 && castOn % 2 === 0) {
-      castOn -= 1;
-      adjusted = true;
-    }
-
-    const times = Math.floor((castOn - 1) / 2);
-    if (times < 1) {
-      return { ok: false, message: "Could not derive shaping from these dimensions." };
-    }
-    if (times > totalRows) {
-      return {
-        ok: false,
-        message:
-          "Not enough rows for this width at your gauge. Increase finished length or reduce width.",
-      };
-    }
-
-    const { interval, leftoverRows } = uniformShaping(totalRows, times);
-
+  if (maxStitches <= TRIANGLE_SCARF_START_STITCHES) {
+    const noun = maxStitches === 1 ? "stitch" : "stitches";
     return {
-      ok: true,
-      method: "wide-to-point",
-      widestStitches: castOn,
-      totalRows,
-      castOnStitches: castOn,
-      castOnAdjusted: adjusted,
-      phases: [
-        {
-          action: "decrease",
-          stitches: 1,
-          rows: interval,
-          times,
-          side: "each edge",
-          leftoverRows,
-        },
-      ],
-      summary: {
-        widestStitchCount: castOn,
-        totalRows,
-        knittingMethodLabel: "Wide → Point",
-      },
+      ok: false,
+      message: `Scarf depth rounds to ${maxStitches} ${noun}. This pattern starts and ends with 3 stitches and must increase beyond that. Increase the scarf depth. The point-to-point length was not changed.`,
     };
   }
 
-  // Method 2 — Point → Wide → Point (widest row needs more needles than the bed holds at once).
-  //
-  // NOTATION (same as Wide→Point): ShapingInstructionBlock uses stitches=1, side="each edge".
-  // That means one stitch changed at each edge per repeat → net Δ = ±2 stitches on the piece per repeat.
-  //
-  // Increase half: start = 1. After k paired-edge repeats: stitchCount = 1 + 2*k.
-  // So target center C must be odd, and k = (C - 1) / 2 paired repeats (shown as `times` in notation).
-  //
-  // Decrease half: from C to 1 requires the same k repeats (−2 stitches per repeat).
-  //
-  // DEV sanity (inline):
-  //   startStitches = 1
-  //   stitchesAddedPerRepeat = 2   (1 at each edge)
-  //   pairedRepeats = (center - 1) / 2
-  //   resultingCenter = 1 + 2 * pairedRepeats === center (odd)
-
-  const rawCenter = Math.min(widthStitches, needles);
-  let center = rawCenter;
-  let centerAdjusted = false;
-  if (center > 1 && center % 2 === 0) {
-    center -= 1;
-    centerAdjusted = true;
+  if (maxStitches > needles) {
+    return {
+      ok: false,
+      message: `Not enough needles to knit this size. Reduce the scarf depth or use a machine with more available needles. Required needles: ${maxStitches}. Available needles: ${needles}.`,
+    };
   }
 
-  if (center < 3) {
+  if (totalRows < 2) {
+    const noun = totalRows === 1 ? "row" : "rows";
+    return {
+      ok: false,
+      message: `Point-to-point length rounds to ${totalRows} ${noun}. This construction needs rows in both halves: one half to increase from 3 stitches to the widest section, and one half to decrease back to 3. Increase the point-to-point length. The scarf depth was not changed.`,
+    };
+  }
+
+  const shapingTimes = maxStitches - TRIANGLE_SCARF_START_STITCHES;
+  const increaseRows = Math.floor(totalRows / 2);
+  const decreaseRows = totalRows - increaseRows;
+
+  if (shapingTimes > increaseRows || shapingTimes > decreaseRows) {
+    return {
+      ok: false,
+      message: `The scarf depth works out to ${maxStitches} stitches, so this pattern needs ${shapingTimes} increases on the way out and ${shapingTimes} decreases on the way back. The point-to-point length works out to ${totalRows} rows: ${increaseRows} to increase and ${decreaseRows} to decrease. Each shaping needs its own row, and these rows cannot hold that many. Make the scarf longer from point to point, or reduce the scarf depth. These measurements were not changed.`,
+    };
+  }
+
+  const increasePhases = phaseSegments("increase", increaseRows, shapingTimes);
+  const decreasePhases = phaseSegments("decrease", decreaseRows, shapingTimes);
+  const phases = [...increasePhases, ...decreasePhases];
+
+  if (
+    timesInPhases(increasePhases) !== shapingTimes ||
+    timesInPhases(decreasePhases) !== shapingTimes ||
+    rowsInPhases(increasePhases) !== increaseRows ||
+    rowsInPhases(decreasePhases) !== decreaseRows ||
+    increaseRows + decreaseRows !== totalRows
+  ) {
     return {
       ok: false,
       message:
-        "Center stitch count is too small for paired-edge shaping. Widen the finished width or use more needles.",
+        "These measurements could not be turned into one increase half and one decrease half. The scarf depth and point-to-point length were not changed.",
     };
   }
-
-  const pairedRepeats = (center - 1) / 2;
-
-  if (typeof import.meta !== "undefined" && import.meta.env?.DEV) {
-    const startStitches = 1;
-    const stitchesDeltaPerRepeat = 2;
-    console.assert(
-      Number.isInteger(pairedRepeats) && pairedRepeats >= 1,
-      "[triangle scarf] pairedRepeats must be a positive integer"
-    );
-    console.assert(
-      startStitches + stitchesDeltaPerRepeat * pairedRepeats === center,
-      `[triangle scarf] Point→Wide→Point: 1 + 2*${pairedRepeats} must equal center ${center}`
-    );
-  }
-
-  const rInc = Math.floor(totalRows / 2);
-  const rDec = totalRows - rInc;
-
-  if (pairedRepeats > rInc || pairedRepeats > rDec) {
-    return {
-      ok: false,
-      message:
-        "Not enough rows for this width at your gauge. Increase finished length or reduce width.",
-    };
-  }
-
-  const uInc = uniformShaping(rInc, pairedRepeats);
-  const uDec = uniformShaping(rDec, pairedRepeats);
 
   return {
     ok: true,
-    method: "point-wide-point",
-    widestStitches: center,
+    construction: "point-to-point",
+    startStitches: TRIANGLE_SCARF_START_STITCHES,
+    endStitches: TRIANGLE_SCARF_START_STITCHES,
+    maxStitches,
     totalRows,
-    centerStitches: center,
-    centerRawStitches: rawCenter,
-    centerAdjusted,
-    castOnAdjusted: false,
-    phases: [
-      {
-        action: "increase",
-        stitches: 1,
-        rows: uInc.interval,
-        times: pairedRepeats,
-        side: "each edge",
-        leftoverRows: uInc.leftoverRows,
-      },
-      {
-        action: "decrease",
-        stitches: 1,
-        rows: uDec.interval,
-        times: pairedRepeats,
-        side: "each edge",
-        leftoverRows: uDec.leftoverRows,
-      },
-    ],
-    summary: {
-      widestStitchCount: center,
-      totalRows,
-      knittingMethodLabel: "Point → Wide → Point",
-    },
+    increaseRows,
+    decreaseRows,
+    shapingTimes,
+    requestedDepth: depth,
+    requestedLength: length,
+    knittedDepth: maxStitches / su,
+    knittedLength: totalRows / ru,
+    unit,
+    needles,
+    phases,
   };
 }
 
-/** Mirrors ShapingInstructionBlock.astro markup for dynamic results. */
-export function renderShapingInstructionHtml(props: {
-  action: "increase" | "decrease";
-  stitches: number;
+/** Row-by-row check used by tests and the dev assertion. */
+export function simulateTriangleScarf(result: TriangleScarfOk): {
   rows: number;
-  times: number;
-  side: string;
-  label?: string;
-  compact?: boolean;
-}): string {
-  const label = props.label ?? "Shaping Instructions";
+  startStitches: number;
+  stitchesAfterIncreases: number;
+  endStitches: number;
+  maxSeen: number;
+} {
+  let stitches = result.startStitches;
+  let rows = 0;
+  let stitchesAfterIncreases = result.startStitches;
+  let maxSeen = stitches;
+  let increasesDone = false;
 
-  function formatEdgeClause(sideInput: string): string {
-    let raw = sideInput.trim();
-    if (raw.toLowerCase().startsWith("the ")) {
-      raw = raw.slice(4).trim();
+  for (const phase of result.phases) {
+    if (phase.action === "decrease" && !increasesDone) {
+      stitchesAfterIncreases = stitches;
+      increasesDone = true;
     }
-    const lower = raw.toLowerCase();
-    if (lower === "each edge" || lower === "both edges") {
-      return "on each edge";
+    for (let time = 0; time < phase.times; time++) {
+      rows += phase.rows;
+      stitches += phase.action === "increase" ? phase.stitches : -phase.stitches;
+      if (stitches > maxSeen) maxSeen = stitches;
     }
-    return `on the ${raw}`;
   }
+  if (!increasesDone) stitchesAfterIncreases = stitches;
 
-  const edgeClause = formatEdgeClause(props.side);
-  const stitchWord = props.stitches === 1 ? "stitch" : "stitches";
-  const rowClause = props.rows === 1 ? "every row" : `every ${props.rows} rows`;
-  const timeWord = props.times === 1 ? "time" : "times";
-  const verb = props.action === "increase" ? "Increase" : "Decrease";
-  const instructionSentence = `${verb} ${props.stitches} ${stitchWord} ${edgeClause} ${rowClause}, ${props.times} ${timeWord}`;
-  const actionVerbLower = props.action === "increase" ? "increase" : "decrease";
-  const tooltipText = [
-    "Shaping format (stitches, rows, times).",
-    `Example: (${props.stitches}, ${props.rows}, ${props.times}) = ${actionVerbLower} ${props.stitches} ${stitchWord} ${rowClause}, ${props.times} ${timeWord}.`,
-  ].join(" ");
-  const notation = `(${props.stitches}, ${props.rows}, ${props.times})`;
+  return {
+    rows,
+    startStitches: result.startStitches,
+    stitchesAfterIncreases,
+    endStitches: stitches,
+    maxSeen,
+  };
+}
 
-  const rootClass = ["shaping-instruction-block", props.compact ? "shaping-instruction-block--compact" : ""]
-    .filter(Boolean)
-    .join(" ");
+function catalogVideoButton(contentId: number, hook: string): string {
+  const video = sleevelessHelpVideoFromCatalog(contentId, videosPublic as PublicVideoRow[]);
+  if (!video) return "";
+  return (
+    `<span class="pattern-help-link">` +
+    `<button type="button" class="kbm-kin-catalog-video pattern-help-link__button"` +
+    ` data-vimeo-id="${escapeHtml(video.id)}"` +
+    ` data-video-title="${escapeHtml(video.title)}"` +
+    ` data-content-id="${contentId}"` +
+    ` data-video-autoplay="false"` +
+    ` data-vimeo-defer` +
+    ` ${hook}` +
+    ` aria-haspopup="dialog">` +
+    `<i class="fa-solid fa-play" aria-hidden="true"></i> ` +
+    `${escapeHtml(`Watch: ${video.title}`)}</button></span>`
+  );
+}
 
-  const labelHtml =
-    label.trim().length > 0
-      ? `<div class="shaping-instruction-block__label">${escapeHtml(label)}</div>`
-      : "";
+export type TriangleScarfChecklistRow = {
+  row: number;
+  action: "increase" | "decrease";
+  stitchesAfter: number;
+  interval: number;
+};
 
-  const svgIcon = `<svg class="shaping-instruction-block__help-icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a.75.75 0 01.75.75v4.5a.75.75 0 01-1.5 0v-4.5A.75.75 0 0110 7zm0 8a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" /></svg>`;
+/** Row-by-row schedule shared by the written instructions, checklist, and print. */
+export function triangleScarfChecklist(result: TriangleScarfOk): TriangleScarfChecklistRow[] {
+  const rows: TriangleScarfChecklistRow[] = [];
+  let stitches = result.startStitches;
+  let cursor = 1;
+
+  const append = (intervals: number[], action: "increase" | "decrease") => {
+    for (const interval of intervals) {
+      const row = cursor + interval - 1;
+      stitches += action === "increase" ? 1 : -1;
+      rows.push({ row, action, stitchesAfter: stitches, interval });
+      cursor = row + 1;
+    }
+  };
+
+  append(triangleScarfShapingIntervals(result.increaseRows, result.shapingTimes), "increase");
+  append(triangleScarfShapingIntervals(result.decreaseRows, result.shapingTimes), "decrease");
+  return rows;
+}
+
+function describeRates(intervals: number[]): string {
+  const counts = new Map<number, number>();
+  for (const interval of intervals) counts.set(interval, (counts.get(interval) ?? 0) + 1);
+  return [...counts.entries()]
+    .sort((left, right) => left[0] - right[0])
+    .map(([interval, times]) => {
+      const rowClause = interval === 1 ? "every row" : `every ${interval} rows`;
+      const timeWord = times === 1 ? "time" : "times";
+      return `${rowClause} ${times} ${timeWord}`;
+    })
+    .join(" and ");
+}
+
+function renderHalfSchedule(
+  action: "increase" | "decrease",
+  intervals: number[],
+  phaseRows: number,
+  checklistRows: TriangleScarfChecklistRow[],
+): string {
+  const verb = action === "increase" ? "Increase" : "Decrease";
+  const distinct = new Set(intervals);
+  const lead =
+    distinct.size <= 1
+      ? `${verb} 1 stitch on the left edge ${describeRates(intervals)}.`
+      : `${verb} 1 stitch on the left edge ${intervals.length} times across these ${phaseRows} rows. Use ${describeRates(intervals)}, spread through the half in the checklist order.`;
+  const tableRows = checklistRows
+    .map(
+      (entry) =>
+        `<tr data-ts-shaping-row="${entry.row}" data-ts-shaping-action="${entry.action}" data-ts-shaping-interval="${entry.interval}">` +
+        `<td>Row ${entry.row}</td>` +
+        `<td>${verb} 1 stitch on the left edge</td>` +
+        `<td>${entry.stitchesAfter} stitches</td>` +
+        `</tr>`,
+    )
+    .join("");
 
   return `
-<div class="${rootClass}">
-  ${labelHtml}
-  <p class="shaping-instruction-block__sentence">${escapeHtml(instructionSentence)}</p>
-  <p class="shaping-instruction-block__notation-row">
-    <code class="shaping-instruction-block__notation">${escapeHtml(notation)}</code>
-    <span class="tooltip tooltip-term tooltip--top" tabindex="0">
-      <span class="tooltip-trigger">
-        <span class="shaping-instruction-block__help" tabindex="0" aria-label="About shaping notation">${svgIcon}</span>
-      </span>
-      <span class="tooltip-text" role="tooltip">${escapeHtml(tooltipText)}</span>
-    </span>
-  </p>
+<div class="ts-instructions-block ts-pattern-steps">
+  <p>${lead}</p>
+  <table class="ts-shaping-checklist">
+    <caption>${verb} checklist</caption>
+    <thead><tr><th>Row</th><th>Shaping</th><th>Stitches after</th></tr></thead>
+    <tbody>${tableRows}</tbody>
+  </table>
+</div>`;
+}
+
+function wrapTriangleScarfSection(id: string, title: string, contentHtml: string): string {
+  return `<section id="${id}" class="pattern-section" data-section-id="${id}">
+  <div class="pattern-section__header">
+    <label class="pattern-section__collapse-label">
+      <input type="checkbox" class="pattern-section__collapse" data-section-id="${id}" aria-label="Collapse ${escapeHtml(title)}" />
+    </label>
+    <div class="pattern-section__heading"><h2>${escapeHtml(title)}</h2></div>
+  </div>
+  <div class="pattern-section__content">${contentHtml}</div>
+</section>`;
+}
+
+function triangleScarfPatternTip(id: string, bodyHtml: string): string {
+  return `<div class="pattern-tip" data-tip data-tip-id="${id}">${bodyHtml}</div>`;
+}
+
+function triangleScarfWiderScarfTip(): string {
+  const body =
+    `<p>${escapeHtml(TRIANGLE_SCARF_NEEDLE_ARRANGEMENT_GUIDANCE)}</p>` +
+    `<p><a href="${TRIANGLE_SCARF_EVERY_OTHER_NEEDLE_HELP_HREF}">Swatching on every other needle</a></p>`;
+  return (
+    `<div class="pattern-tip pattern-quick-tip" data-tip data-tip-id="triangle-scarf-wider-scarf">` +
+    buildPatternQuickTipInnerHtml({
+      summaryLabel: "Want a wider scarf?",
+      bodyHtml: body,
+    }) +
+    `</div>`
+  );
+}
+
+/** Print “At a glance” and the on-screen header use the same facts as the instructions. */
+export function buildTriangleScarfAtAGlanceHtml(result: TriangleScarfOk): string {
+  const unit = result.unit;
+  const rows: Array<[string, string]> = [
+    ["Construction", "Point to widest section to point"],
+    ["Cast on and bind off", "3 stitches"],
+    ["Maximum stitches", `${result.maxStitches} (needle limit ${result.needles})`],
+    [
+      "Scarf depth",
+      `requested ${formatTriangleMeasure(result.requestedDepth, unit)}, knits to ${formatTriangleMeasure(result.knittedDepth, unit)}`,
+    ],
+    [
+      "Point-to-point length",
+      `requested ${formatTriangleMeasure(result.requestedLength, unit)}, knits to ${formatTriangleMeasure(result.knittedLength, unit)}`,
+    ],
+    ["Total rows", String(result.totalRows)],
+    [
+      "Shaping",
+      `${result.increaseRows} increase rows and ${result.decreaseRows} decrease rows at the left edge`,
+    ],
+  ];
+  return `<dl class="print-summary-dl">${rows
+    .map(([label, value]) => `<dt>${escapeHtml(label)}</dt><dd>${escapeHtml(value)}</dd>`)
+    .join("")}</dl>`;
+}
+
+export function buildTriangleScarfPatternHtml(result: TriangleScarfOk): string {
+  const unit = result.unit;
+  const requestedDepth = formatTriangleMeasure(result.requestedDepth, unit);
+  const knittedDepth = formatTriangleMeasure(result.knittedDepth, unit);
+  const requestedLength = formatTriangleMeasure(result.requestedLength, unit);
+  const knittedLength = formatTriangleMeasure(result.knittedLength, unit);
+  const checklist = triangleScarfChecklist(result);
+  const increaseRows = checklist.filter((entry) => entry.action === "increase");
+  const decreaseRows = checklist.filter((entry) => entry.action === "decrease");
+  const increaseIntervals = triangleScarfShapingIntervals(result.increaseRows, result.shapingTimes);
+  const decreaseIntervals = triangleScarfShapingIntervals(result.decreaseRows, result.shapingTimes);
+  const midpointNote =
+    result.increaseRows === result.decreaseRows
+      ? ""
+      : `<p class="ts-midpoint-note">The two halves differ by one row. That extra row is only in the decrease half, so the widest stitch count is shaped once.</p>`;
+
+  const shapingVideo = catalogVideoButton(
+    TRIANGLE_SCARF_SHAPING_VIDEO_CONTENT_ID,
+    `data-triangle-scarf-video="shaping"`,
+  );
+  const icordVideo = catalogVideoButton(
+    TRIANGLE_SCARF_ICORD_VIDEO_CONTENT_ID,
+    `data-triangle-scarf-video="i-cord"`,
+  );
+  const shapingTip = shapingVideo
+    ? triangleScarfPatternTip(
+        "triangle-scarf-shaping-video",
+        `<p><strong>Tip:</strong> See how increases and decreases are worked on the machine.</p><p class="pattern-tip-media-no-print no-print">${shapingVideo}</p>`,
+      )
+    : "";
+  const icordTip = icordVideo
+    ? triangleScarfPatternTip(
+        "triangle-scarf-icord-video",
+        `<p class="pattern-tip-media-no-print no-print">${icordVideo}</p>`,
+      )
+    : "";
+
+  const capacity = `needle limit ${result.needles}`;
+
+  return `
+<div class="ts-pattern-body">
+  ${wrapTriangleScarfSection(
+    "construction",
+    "Your scarf",
+    `<ul class="ts-pattern-summary__list">
+      <li><strong>Construction:</strong> Point → widest section → point</li>
+      <li><strong>Cast on and bind off:</strong> 3 stitches</li>
+      <li><strong>Maximum stitches:</strong> ${result.maxStitches} (${capacity})</li>
+      <li><strong>Scarf depth:</strong> requested ${escapeHtml(requestedDepth)}, knits to ${escapeHtml(knittedDepth)}</li>
+      <li><strong>Total rows:</strong> ${result.totalRows}</li>
+      <li><strong>Point-to-point length:</strong> requested ${escapeHtml(requestedLength)}, knits to ${escapeHtml(knittedLength)}</li>
+      <li><strong>Increase half:</strong> ${result.increaseRows} rows, ${result.shapingTimes} increases at the left edge</li>
+      <li><strong>Decrease half:</strong> ${result.decreaseRows} rows, ${result.shapingTimes} decreases at the left edge</li>
+    </ul>
+    <p>${escapeHtml(TRIANGLE_SCARF_CONSTRUCTION_SUMMARY)}</p>
+    <p>Cast on <strong>3</strong> stitches at the far right of the needlebed. Keep the right edge straight.</p>
+    ${triangleScarfWiderScarfTip()}
+    <p>Increase at the <strong>left edge</strong> until you have <strong>${result.maxStitches}</strong> stitches.</p>`,
+  )}
+  ${wrapTriangleScarfSection(
+    "increase",
+    "Increase",
+    `${renderHalfSchedule("increase", increaseIntervals, result.increaseRows, increaseRows)}${shapingTip}`,
+  )}
+  ${wrapTriangleScarfSection(
+    "decrease",
+    "Decrease",
+    `<p>Decrease at the <strong>left edge</strong> until <strong>3</strong> stitches remain.</p>
+    ${midpointNote}
+    ${renderHalfSchedule("decrease", decreaseIntervals, result.decreaseRows, decreaseRows)}`,
+  )}
+  ${wrapTriangleScarfSection(
+    "bind-off",
+    "Bind off",
+    `<p>Bind off the remaining 3 stitches.</p>`,
+  )}
+  ${wrapTriangleScarfSection(
+    "optional-edge",
+    "Optional edge",
+    `<p>Optional edge: Knit-in I-cord. The I-cord stitches are included in the stitch count and in the maximum needle requirement. They are not added stitches. When you use the knit-in I-cord, work the increases and decreases a few stitches in from the left edge so those I-cord stitches stay at the edge. The increase total, the decrease total, and the widest stitch count stay the same.</p>
+    ${icordTip}`,
+  )}
 </div>`.trim();
 }

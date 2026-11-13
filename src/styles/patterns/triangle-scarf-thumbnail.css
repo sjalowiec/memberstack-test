@@ -1,0 +1,55 @@
+/*
+ * Triangle scarf artwork sits inside a transparent canvas.
+ * Center it on the same paper background the pattern catalog and builder heroes use.
+ */
+
+.triangle-scarf-thumb,
+.triangle-scarf-workspace .saved-pattern-header__thumb .saved-pattern-header__thumb-frame {
+  position: relative;
+  width: min(100%, 360px);
+  aspect-ratio: 1 / 1;
+  margin: 0 auto;
+  overflow: hidden;
+  border-radius: 12px;
+  border: 1px solid #d6dbc9;
+  background-color: transparent;
+  background-image: url("/images/patterns/background.webp");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.triangle-scarf-workspace .saved-pattern-header__thumb {
+  width: min(100%, 360px);
+  max-width: 100%;
+}
+
+.triangle-scarf-thumb__image,
+.triangle-scarf-workspace .saved-pattern-header__thumb .saved-pattern-header__image {
+  position: absolute;
+  width: calc(100% * 1254 / 1150 * 0.92);
+  height: auto;
+  max-width: none;
+  max-height: none;
+  left: 50%;
+  top: 50%;
+  transform: translate(-49.8006%, -50.5981%);
+  object-fit: fill;
+  background: none;
+  border-radius: 0;
+}
+
+@media print {
+  .triangle-scarf-workspace .saved-pattern-header__thumb .saved-pattern-header__thumb-frame,
+  .triangle-scarf-thumb {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}
+
+#express-yarn-drawer .triangle-scarf-yarn-heading {
+  margin: 0 0 0.85rem;
+  font-size: 1.15rem;
+  line-height: 1.35;
+  color: #243015;
+}

@@ -77,6 +77,11 @@ function isHatPatternBlob(pattern: unknown): boolean {
   return o?.patternType === "hat" || o?.patternSystem === "hat";
 }
 
+function isTriangleScarfPatternBlob(pattern: unknown): boolean {
+  const o = record(pattern);
+  return o?.patternType === "triangle-scarf" || o?.patternSystem === "triangle-scarf";
+}
+
 function readHatGaugeSlot(slots: unknown, unit: "inches" | "cm"): { stitch: number; row: number } | null {
   const root = record(slots);
   const slot = record(root?.[unit]);
@@ -114,6 +119,28 @@ export function extractSavedHatGauge(pattern: unknown): SavedPatternGauge | null
   };
 }
 
+/** Swatch counts over 4 inches or 10 cm, stored on the Triangle Scarf draft. */
+export function extractSavedTriangleScarfGauge(pattern: unknown): SavedPatternGauge | null {
+  const direct = record(pattern);
+  const nested = record(direct?.triangleScarfDraft);
+  const draft = isTriangleScarfPatternBlob(direct)
+    ? direct
+    : isTriangleScarfPatternBlob(nested)
+      ? nested
+      : null;
+  if (!draft) return null;
+  const stitch = toPositiveNumber(draft.stitchGauge);
+  const row = toPositiveNumber(draft.rowGauge);
+  if (stitch === null || row === null) return null;
+  const swatchUnit: "in" | "cm" = draft.unit === "cm" ? "cm" : "in";
+  return {
+    stitchesPerInch: perInchFromIncompleteRaw(stitch, swatchUnit),
+    rowsPerInch: perInchFromIncompleteRaw(row, swatchUnit),
+    displayStitches: stitch,
+    displayRows: row,
+  };
+}
+
 /**
  * Gauge for a saved Custom Pattern project. Hats read `gaugeSlots`; sweaters read `yarnGauge`.
  */
@@ -123,6 +150,9 @@ export function extractSavedProjectGauge(project: {
 }): SavedPatternGauge | null {
   if (project.patternSystem === "hat" || isHatPatternBlob(project.pattern)) {
     return extractSavedHatGauge(project.pattern);
+  }
+  if (project.patternSystem === "triangle-scarf" || isTriangleScarfPatternBlob(project.pattern)) {
+    return extractSavedTriangleScarfGauge(project.pattern);
   }
   const pattern = record(project.pattern);
   return extractSavedPatternGauge(pattern?.yarnGauge);

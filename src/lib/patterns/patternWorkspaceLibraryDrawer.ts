@@ -41,6 +41,7 @@ export const PATTERN_WORKSPACE_LIBRARY_DRAWER_INIT_ATTR =
 export function formatCustomPatternProjectType(project: CustomPatternProjectSummary): string {
   const system = project.patternSystem?.trim();
   if (system === "hat") return "Hat";
+  if (system === "triangle-scarf") return patternSystemDisplayName("triangle-scarf");
   if (system === "socks") return "Socks";
   if (system === "christmas-stocking") return patternSystemDisplayName("christmas-stocking");
   if (system === "sideways-cardigan") return patternSystemDisplayName("sideways-cardigan");

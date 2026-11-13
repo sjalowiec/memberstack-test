@@ -13,6 +13,7 @@ import {
   isChristmasStockingPatternPrintPage,
   isHatPatternPrintPage,
   isSockPatternPrintPage,
+  isTriangleScarfPatternPrintPage,
   resolvePatternPrintPersonalizationFields,
 } from "../lib/patterns/patternPrintPersonalizationFields";
 import { syncPatternTipDismissBeforePrint } from "../lib/patterns/patternTipDismiss";
@@ -98,6 +99,13 @@ function readStoredPrintPersonalization(): { title: string; notes: string } {
   if (isHatPatternPrintPage(document)) {
     return resolvePatternPrintPersonalizationFields({
       isHatPatternPage: true,
+      sleevelessFields: { title: "", notes: "" },
+    });
+  }
+  if (isTriangleScarfPatternPrintPage(document)) {
+    return resolvePatternPrintPersonalizationFields({
+      isHatPatternPage: false,
+      isTriangleScarfPatternPage: true,
       sleevelessFields: { title: "", notes: "" },
     });
   }

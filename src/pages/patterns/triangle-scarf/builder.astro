@@ -1,0 +1,288 @@
+---
+/**
+ * Weekend Triangle Scarf builder.
+ * Same express shell as the Hat builder: measurements, needles, gauge, then Summary/Edit.
+ */
+import Layout from "../../../layouts/Layout.astro";
+import PatternPhoneWorkspaceNotice from "../../../components/patterns/PatternPhoneWorkspaceNotice.astro";
+import UnitToggle from "../../../components/wizards/UnitToggle.astro";
+import TriangleScarfSetupFields from "../../../components/patterns/TriangleScarfSetupFields.astro";
+import {
+  TRIANGLE_SCARF_BUILDER_REVIEW_LABEL,
+  TRIANGLE_SCARF_PATTERN_NAME,
+} from "../../../lib/patterns/triangleScarf/triangleScarfNavigation";
+import { TRIANGLE_SCARF_THUMBNAIL_SRC } from "../../../lib/patterns/triangleScarfMath";
+import { TRIANGLE_SCARF_UNIT_TOGGLE_ID } from "../../../lib/patterns/triangleScarf/triangleScarfForm";
+
+import "../../../styles/sleeveless-express-builder-cards.css";
+import "../../../styles/sleeveless-express-wizard-layout.css";
+import "../../../styles/wizard.css";
+import "../../../styles/patterns/triangle-scarf-thumbnail.css";
+
+const expressNavSteps = [
+  { step: 1, label: "Size" },
+  { step: 2, label: "Needles" },
+  { step: 3, label: "Gauge" },
+] as const;
+
+const thumbnailAlt = "Triangle scarf wrapped at the neck";
+---
+
+<Layout
+  title={`${TRIANGLE_SCARF_PATTERN_NAME} Builder | Knit it Now`}
+  description="Create a point-to-point triangle scarf pattern from your gauge, scarf depth, and point-to-point length."
+  patternWorkspace={true}
+>
+  <main
+    class="express-page wizard-page sleeveless-express-page triangle-scarf-workspace triangle-scarf-builder-page"
+    data-express-page="triangle-scarf-builder"
+    data-triangle-scarf-builder
+  >
+    <div id="triangle-scarf-builder-top" class="wizard-container express-wizard scroll-mt-[96px]">
+      <div class="calculator-card">
+        <PatternPhoneWorkspaceNotice />
+        <div class="sg-tab-build">
+          <div class="sg-builder-nav-row express-builder-nav-row no-print">
+            <nav class="express-step-nav sg-builder-nav" aria-label="Triangle scarf pattern steps">
+              <ol class="express-step-nav__list sg-builder-nav__list" role="list">
+                {
+                  expressNavSteps.map((s, i) => (
+                    <li
+                      class:list={[
+                        "express-step-nav__item",
+                        "sg-builder-nav__item",
+                        { active: s.step === 1 },
+                      ]}
+                    >
+                      <button
+                        type="button"
+                        class:list={[
+                          "express-step-nav__btn",
+                          "sg-builder-nav__link",
+                          {
+                            "is-current": s.step === 1,
+                            "is-upcoming": s.step > 1,
+                          },
+                        ]}
+                        data-pill-step={s.step}
+                        data-pill-label={s.label}
+                        aria-current={s.step === 1 ? "page" : undefined}
+                        aria-disabled={s.step > 1 ? "true" : undefined}
+                      >
+                        <span class="express-step-nav__track">
+                          <span
+                            class:list={[
+                              "express-step-nav__seg",
+                              "express-step-nav__seg--before",
+                              { "express-step-nav__seg--empty": i === 0 },
+                            ]}
+                            aria-hidden="true"
+                          />
+                          <span class="express-step-nav__circle">
+                            <span class="express-step-nav__num">{s.step}</span>
+                            <span class="express-pill__check" aria-hidden="true">
+                              ✓
+                            </span>
+                          </span>
+                          <span
+                            class:list={[
+                              "express-step-nav__seg",
+                              "express-step-nav__seg--after",
+                              {
+                                "express-step-nav__seg--empty": i === expressNavSteps.length - 1,
+                              },
+                            ]}
+                            aria-hidden="true"
+                          />
+                        </span>
+                        <span class="express-step-nav__label">{s.label}</span>
+                      </button>
+                    </li>
+                  ))
+                }
+              </ol>
+            </nav>
+          </div>
+
+          <header class="pattern-header page-header">
+            <figure class="triangle-scarf-thumb">
+              <img
+                class="triangle-scarf-thumb__image"
+                src={TRIANGLE_SCARF_THUMBNAIL_SRC}
+                alt={thumbnailAlt}
+                width="1254"
+                height="1254"
+                decoding="async"
+              />
+            </figure>
+            <div class="pattern-header__title-row">
+              <h1 class="pattern-title">{TRIANGLE_SCARF_PATTERN_NAME}</h1>
+            </div>
+            <p class="pattern-subtext">
+              Knit from point to point. Start at the far right of the needlebed, increase along the left edge to the widest section, then decrease back to 3 stitches.
+            </p>
+          </header>
+
+          <div class="express-panel">
+            <div class="express-builder-root" data-express-builder data-triangle-scarf-builder-root>
+              <div class="express-builder-toolbar no-print">
+                <button
+                  type="button"
+                  id="triangle-scarf-start-over"
+                  class="btn btn-outline-secondary btn-sm"
+                  data-testid="triangle-scarf-builder-start-over"
+                >
+                  Start over
+                </button>
+              </div>
+              <div class="express-builder-units no-print">
+                <UnitToggle id={TRIANGLE_SCARF_UNIT_TOGGLE_ID} />
+              </div>
+
+              <div class="express-accordions" id="express-accordions">
+                <section class="express-acc express-acc--open" data-express-step="1" data-express-field="size">
+                  <div
+                    class="express-acc__header"
+                    data-express-header
+                    role="button"
+                    tabindex="0"
+                    aria-expanded="true"
+                    aria-controls="express-acc-panel-1"
+                  >
+                    <button type="button" class="express-acc__chevron" tabindex="-1" aria-label="Toggle size">
+                      ▾
+                    </button>
+                    <div class="express-acc__header-main">
+                      <span class="express-acc__check" aria-hidden="true">✓</span>
+                      <h2 class="express-acc__title" id="express-step-1-title">Scarf size</h2>
+                      <span class="express-acc__value" data-express-summary="size"></span>
+                    </div>
+                  </div>
+                  <div class="express-acc__body" id="express-acc-panel-1" role="region" aria-labelledby="express-step-1-title">
+                    <TriangleScarfSetupFields part="size" />
+                  </div>
+                </section>
+
+                <section class="express-acc express-acc--locked" data-express-step="2" data-express-field="needles">
+                  <div
+                    class="express-acc__header"
+                    data-express-header
+                    role="button"
+                    tabindex="-1"
+                    aria-expanded="false"
+                    aria-controls="express-acc-panel-2"
+                  >
+                    <button type="button" class="express-acc__chevron" tabindex="-1" aria-hidden="true">
+                      ▾
+                    </button>
+                    <div class="express-acc__header-main">
+                      <span class="express-acc__check" aria-hidden="true">✓</span>
+                      <h2 class="express-acc__title" id="express-step-2-title">Needles</h2>
+                      <span class="express-acc__value" data-express-summary="needles"></span>
+                    </div>
+                  </div>
+                  <p class="express-acc__locked-feedback" data-express-locked-feedback hidden role="status">
+                    <span class="express-acc__locked-arrow" aria-hidden="true">↑</span>
+                    <span class="express-acc__locked-msg">Finish the previous step to continue.</span>
+                  </p>
+                  <div
+                    class="express-acc__body"
+                    id="express-acc-panel-2"
+                    role="region"
+                    aria-labelledby="express-step-2-title"
+                    hidden
+                  >
+                    <TriangleScarfSetupFields part="needles" />
+                  </div>
+                </section>
+
+                <section
+                  class="express-acc express-acc--locked scroll-mt-[96px]"
+                  id="express-gauge-section"
+                  data-express-step="3"
+                  data-express-field="gauge"
+                >
+                  <div
+                    class="express-acc__header"
+                    data-express-header
+                    role="button"
+                    tabindex="-1"
+                    aria-expanded="false"
+                    aria-controls="express-acc-panel-3"
+                  >
+                    <button type="button" class="express-acc__chevron" tabindex="-1" aria-hidden="true">
+                      ▾
+                    </button>
+                    <div class="express-acc__header-main">
+                      <span class="express-acc__check" aria-hidden="true">✓</span>
+                      <h2 class="express-acc__title" id="express-step-3-title">Enter your gauge</h2>
+                      <span class="express-acc__value" data-express-summary="gauge"></span>
+                    </div>
+                  </div>
+                  <p class="express-acc__locked-feedback" data-express-locked-feedback hidden role="status">
+                    <span class="express-acc__locked-arrow" aria-hidden="true">↑</span>
+                    <span class="express-acc__locked-msg">Finish the previous step to continue.</span>
+                  </p>
+                  <div
+                    class="express-acc__body"
+                    id="express-acc-panel-3"
+                    role="region"
+                    aria-labelledby="express-step-3-title"
+                    hidden
+                  >
+                    <TriangleScarfSetupFields part="gauge" />
+                  </div>
+                  <div class="express-generate-wrap express-generate-wrap--footer" id="build-pattern-cta" hidden>
+                    <button
+                      type="button"
+                      class="express-generate button-disabled"
+                      id="create-pattern-btn"
+                      data-testid="create-pattern-btn"
+                      aria-disabled="true"
+                    >
+                      {TRIANGLE_SCARF_BUILDER_REVIEW_LABEL}
+                    </button>
+                    <p
+                      class="create-pattern-feedback triangle-scarf-form-error"
+                      data-triangle-scarf-form-error
+                      role="alert"
+                      hidden
+                    >
+                    </p>
+                  </div>
+                </section>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</Layout>
+
+<script>
+  import "/src/scripts/triangle-scarf-builder-page.ts";
+</script>
+
+<style>
+  .triangle-scarf-builder-page .triangle-scarf-thumb {
+    margin: 0 auto 1rem;
+  }
+
+  .triangle-scarf-builder-page .pattern-subtext {
+    max-width: 40rem;
+  }
+
+  .triangle-scarf-builder-page #create-pattern-btn.button-disabled,
+  .triangle-scarf-builder-page #create-pattern-btn[aria-disabled="true"] {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .triangle-scarf-form-error {
+    margin: 0.75rem 0 0;
+    max-width: 36rem;
+    text-align: left;
+    color: #7f1d1d;
+  }
+</style>

@@ -7,6 +7,7 @@ import {
   isChristmasStockingCustomPatternProject,
   isHatCustomPatternProject,
   isSockCustomPatternProject,
+  isTriangleScarfCustomPatternProject,
 } from "./patternSystemId";
 import { PATTERN_WORKSPACE_BUILDER_HANDOFF_QUERY } from "./patternWorkspaceBuilderGenerationHandoff";
 import { withSavedPatternProjectId } from "./savedPatternViewUrl";
@@ -26,6 +27,8 @@ export const SIDEWAYS_CARDIGAN_OPEN_PATTERN_HREF = "/patterns/sideways-cardigan/
 export const SIDEWAYS_CARDIGAN_SUMMARY_EDIT_HREF = "/patterns/sideways-cardigan/summary/";
 export const HAT_OPEN_PATTERN_HREF = "/patterns/hat/pattern/";
 export const HAT_SUMMARY_EDIT_HREF = "/patterns/hat/summary/";
+export const TRIANGLE_SCARF_OPEN_PATTERN_HREF = "/patterns/triangle-scarf/pattern/";
+export const TRIANGLE_SCARF_SUMMARY_EDIT_HREF = "/patterns/triangle-scarf/summary/";
 export const SOCK_OPEN_PATTERN_HREF = "/patterns/socks/pattern/";
 export const SOCK_SUMMARY_EDIT_HREF = "/patterns/socks/edit/";
 export const CHRISTMAS_STOCKING_OPEN_PATTERN_HREF = "/patterns/christmas-stocking/pattern/";
@@ -54,6 +57,9 @@ export const SIDEWAYS_CARDIGAN_OPEN_PATTERN_EDIT_WORKSPACE_HREF =
 /** Saved hat Summary/Edit workspace (hat uses a dedicated summary page, not an overlay drawer). */
 export const HAT_OPEN_PATTERN_EDIT_WORKSPACE_HREF =
   `${HAT_SUMMARY_EDIT_HREF}?${PATTERN_WORKSPACE_EDIT_QUERY}`;
+
+export const TRIANGLE_SCARF_OPEN_PATTERN_EDIT_WORKSPACE_HREF =
+  `${TRIANGLE_SCARF_SUMMARY_EDIT_HREF}?${PATTERN_WORKSPACE_EDIT_QUERY}`;
 
 /** Saved socks Edit workspace (socks uses a dedicated Summary/Edit page, not an overlay drawer). */
 export const SOCK_OPEN_PATTERN_EDIT_WORKSPACE_HREF =
@@ -118,6 +124,15 @@ function hatEditHrefForProject(
     : HAT_OPEN_PATTERN_EDIT_WORKSPACE_HREF;
 }
 
+function triangleScarfEditHrefForProject(
+  project: Pick<CustomPatternProject, "pattern" | "customOverrides"> & { id?: string },
+): string {
+  const id = project.id?.trim() ?? "";
+  return id
+    ? withSavedPatternProjectId(TRIANGLE_SCARF_OPEN_PATTERN_EDIT_WORKSPACE_HREF, id)
+    : TRIANGLE_SCARF_OPEN_PATTERN_EDIT_WORKSPACE_HREF;
+}
+
 function christmasStockingEditHrefForProject(
   project: Pick<CustomPatternProject, "pattern" | "customOverrides"> & { id?: string },
 ): string {
@@ -145,6 +160,9 @@ export function getContinueEditingHref(
   // route, regardless of the stored source.
   if (project && isHatCustomPatternProject(project)) {
     return hatEditHrefForProject(project);
+  }
+  if (project && isTriangleScarfCustomPatternProject(project)) {
+    return triangleScarfEditHrefForProject(project);
   }
   if (project && isChristmasStockingCustomPatternProject(project)) {
     return christmasStockingEditHrefForProject(project);
@@ -202,6 +220,7 @@ export function getOpenPatternHrefForProject(
   project: Pick<CustomPatternProject, "pattern" | "customOverrides">,
 ): string {
   if (isHatCustomPatternProject(project)) return HAT_OPEN_PATTERN_HREF;
+  if (isTriangleScarfCustomPatternProject(project)) return TRIANGLE_SCARF_OPEN_PATTERN_HREF;
   if (isChristmasStockingCustomPatternProject(project)) return CHRISTMAS_STOCKING_OPEN_PATTERN_HREF;
   if (isSockCustomPatternProject(project)) return SOCK_OPEN_PATTERN_HREF;
   if (isSidewaysCardiganCustomPatternProject(project)) return SIDEWAYS_CARDIGAN_OPEN_PATTERN_HREF;
@@ -234,6 +253,9 @@ export function getSavedCustomPatternOpenHref(
   // route, regardless of the stored source.
   if (project && isHatCustomPatternProject(project)) {
     return hatEditHrefForProject(project);
+  }
+  if (project && isTriangleScarfCustomPatternProject(project)) {
+    return triangleScarfEditHrefForProject(project);
   }
   if (project && isChristmasStockingCustomPatternProject(project)) {
     return christmasStockingEditHrefForProject(project);

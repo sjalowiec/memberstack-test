@@ -31,6 +31,7 @@ export function resolvePatternSystemFromHandoffHref(href?: string): PatternSyste
     );
     if (/\/patterns\/drop-shoulder(?:\/|$)/.test(url.pathname)) return "drop-shoulder";
     if (/\/patterns\/hat(?:\/|$)/.test(url.pathname)) return "hat";
+    if (/\/patterns\/triangle-scarf(?:\/|$)/.test(url.pathname)) return "triangle-scarf";
   } catch {
     /* fall through */
   }

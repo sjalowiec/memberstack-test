@@ -42,6 +42,7 @@ describe("pattern activity pattern summary", () => {
         event({ eventType: "pattern_opened", userId: "mem_setin", patternSystem: "set-in-sleeve" }),
         event({ eventType: "pattern_printed", userId: "mem_side", patternSystem: "sideways-cardigan" }),
         event({ eventType: "pattern_generated", userId: "mem_rag", patternSystem: "raglan" }),
+        event({ eventType: "pattern_opened", userId: "mem_scarf", patternSystem: "triangle-scarf" }),
         event({
           eventType: "pattern_generated",
           userId: "mem_mystery",

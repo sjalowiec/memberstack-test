@@ -21,6 +21,12 @@ export const HAT_PATTERN_ONLINE_NOTES_SELECTORS: PatternProjectOnlineNotesSelect
   text: "[data-hat-pattern-online-notes-text]",
 };
 
+export const TRIANGLE_SCARF_PATTERN_ONLINE_NOTES_SELECTORS: PatternProjectOnlineNotesSelectors = {
+  wrap: "[data-triangle-scarf-pattern-online-notes-wrap]",
+  block: "[data-triangle-scarf-pattern-online-notes]",
+  text: "[data-triangle-scarf-pattern-online-notes-text]",
+};
+
 export function applyPatternProjectOnlineNotes(
   notes: string | null | undefined,
   options: {

@@ -68,6 +68,8 @@ function readBuilder(pattern: Record<string, unknown>, customOverrides: Record<s
   if (
     patternType === "hat" ||
     patternSystem === "hat" ||
+    patternType === "triangle-scarf" ||
+    patternSystem === "triangle-scarf" ||
     patternType === "socks" ||
     patternType === "sock" ||
     patternSystem === "socks"

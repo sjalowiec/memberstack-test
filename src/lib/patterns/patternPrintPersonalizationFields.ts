@@ -14,6 +14,7 @@ import {
 } from "./hat/hatPatternPrintTitle";
 import { resolveSockPatternPrintFields } from "./sock/sockPatternPrintTitle";
 import { resolveSockPatternPrintFields as resolveChristmasStockingPatternPrintFields } from "./christmasStocking/sockPatternPrintTitle";
+import { resolveTriangleScarfPatternPrintFields } from "./triangleScarf/triangleScarfPatternPrintTitle";
 
 export type PatternPrintPersonalizationFields = HatPatternPrintFields;
 
@@ -35,6 +36,12 @@ export function isChristmasStockingPatternPrintPage(
   return Boolean(root?.querySelector("[data-christmas-stocking-pattern-page]"));
 }
 
+export function isTriangleScarfPatternPrintPage(
+  root: { querySelector: (selectors: string) => unknown } | null | undefined,
+): boolean {
+  return Boolean(root?.querySelector("[data-triangle-scarf-pattern-page]"));
+}
+
 /**
  * Pattern-type-aware print fields. Hat and Socks pages always use their own
  * draft title; sweater pages keep the sleeveless/drop-shoulder project name unchanged.
@@ -43,10 +50,14 @@ export function resolvePatternPrintPersonalizationFields(input: {
   isHatPatternPage: boolean;
   isSockPatternPage?: boolean;
   isChristmasStockingPatternPage?: boolean;
+  isTriangleScarfPatternPage?: boolean;
   sleevelessFields: PatternPrintPersonalizationFields;
 }): PatternPrintPersonalizationFields {
   if (input.isHatPatternPage) {
     return resolveHatPatternPrintFields();
+  }
+  if (input.isTriangleScarfPatternPage) {
+    return resolveTriangleScarfPatternPrintFields();
   }
   if (input.isChristmasStockingPatternPage) {
     return resolveChristmasStockingPatternPrintFields();

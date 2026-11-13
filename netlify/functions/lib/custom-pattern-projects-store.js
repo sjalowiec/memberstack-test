@@ -77,11 +77,17 @@ export function gaugeFromProject(project) {
   const isChristmasStocking =
     pattern.patternType === "christmas-stocking" ||
     pattern.patternSystem === "christmas-stocking";
+  const isTriangleScarf =
+    pattern.patternType === "triangle-scarf" ||
+    pattern.patternSystem === "triangle-scarf";
   if (isHat) {
     return gaugeFromHatPattern(nestedHat && !pattern.gaugeSlots ? nestedHat : pattern);
   }
   if (isSocks || isChristmasStocking) {
     return gaugeFromHatPattern(pattern);
+  }
+  if (isTriangleScarf) {
+    return gaugeFromTriangleScarfPattern(pattern);
   }
 
   const yarnGauge =
@@ -112,6 +118,24 @@ export function gaugeFromProject(project) {
   }
 
   return null;
+}
+
+/**
+ * Triangle Scarf gauge is the swatch count over 4 inches or 10 cm.
+ * @param {Record<string, unknown>} pattern
+ */
+function gaugeFromTriangleScarfPattern(pattern) {
+  const stitch = gaugePositiveNumber(pattern.stitchGauge);
+  const row = gaugePositiveNumber(pattern.rowGauge);
+  if (stitch === null || row === null) return null;
+  const swatchUnit = pattern.unit === "cm" ? "cm" : "in";
+  const perInch = (raw) => (swatchUnit === "cm" ? (raw / 10) * 2.54 : raw / 4);
+  return {
+    stitchesPerInch: perInch(stitch),
+    rowsPerInch: perInch(row),
+    displayStitches: stitch,
+    displayRows: row,
+  };
 }
 
 /**
@@ -526,13 +550,13 @@ export function isSupportedCustomPatternProjectType(pattern) {
   if (!pattern || typeof pattern !== "object" || Array.isArray(pattern)) return false;
   if (pattern.patternType === "hat" || pattern.patternSystem === "hat") return true;
   const system = resolvePatternSystemFromProject({ pattern });
-  if (system === "hat" || system === "socks" || system === "christmas-stocking") return true;
+  if (system === "hat" || system === "socks" || system === "christmas-stocking" || system === "triangle-scarf") return true;
   return pattern.patternType === "sleeveless";
 }
 
-/** Rejected types only — never shown for sleeveless, hat, socks, or Christmas stocking saves. */
+/** Rejected types only — never shown for sleeveless, hat, socks, Christmas stocking, or Weekend Triangle Scarf saves. */
 export const UNSUPPORTED_CUSTOM_PATTERN_TYPE_ERROR =
-  "Only sleeveless, hat, socks, and Christmas stocking pattern projects are supported in this phase.";
+  "Only sleeveless, hat, socks, Christmas stocking, and Weekend Triangle Scarf pattern projects are supported in this phase.";
 
 /**
  * Private "My Notes" text stored on the saved project.
