@@ -44,6 +44,7 @@ describe("customerIdentifier", () => {
     // Regression: without this column the Memberstack profile fell back to a
     // stale legacy_subscriptions timeline event after a paid-through edit.
     expect(MEMBER_BY_EMAIL_SQL).toContain("subscriptionexpiring");
+    expect(MEMBER_BY_EMAIL_SQL).toContain("subscriptionid_fk");
   });
 
   it("normalizes emails for exact legacy linking", () => {

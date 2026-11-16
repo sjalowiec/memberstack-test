@@ -17,6 +17,7 @@ type StubEl = {
   disabled: boolean;
   textContent: string;
   attrs: Map<string, string>;
+  classes: Set<string>;
   classList: { add: (name: string) => void; remove: (name: string) => void };
   setAttribute: (name: string, value: string) => void;
   getAttribute: (name: string) => string | null;
@@ -32,6 +33,7 @@ function el(matchers: string[]): StubEl {
     disabled: false,
     textContent: "",
     attrs,
+    classes,
     classList: {
       add: (name) => {
         classes.add(name);
@@ -97,11 +99,15 @@ describe("membershipStatusCta overlay", () => {
     expect(checkout.disabled).toBe(true);
     expect(contact.hidden).toBe(false);
     expect(salesCta.textContent).toBe("Contact us");
+    expect(salesCta.getAttribute("href")).toBe("/contact/");
+    expect(salesCta.classes.has("contact-modal-trigger")).toBe(true);
 
     applyMembershipStatusCtaMode("wait", root);
     expect(checkout.disabled).toBe(true);
     expect(retry.hidden).toBe(false);
     expect(renew.hidden).toBe(true);
+    expect(salesCta.getAttribute("href")).toBe("/contact/");
+    expect(salesCta.classes.has("contact-modal-trigger")).toBe(true);
   });
 
   it("shows Renew My Membership to /join for future legacy paid-through", () => {

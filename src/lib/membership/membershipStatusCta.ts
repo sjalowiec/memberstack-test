@@ -149,7 +149,7 @@ export function applyMembershipStatusCtaMode(
   } else if (mode === "contact_support" || mode === "wait") {
     root.querySelectorAll<HTMLAnchorElement>("[data-membership-sales-cta]").forEach((el) => {
       el.textContent = "Contact us";
-      el.setAttribute("href", "#");
+      el.setAttribute("href", "/contact/");
       el.setAttribute("data-membership-sales-cta-kind", "contact");
       el.setAttribute("aria-disabled", "false");
       el.classList.add("contact-modal-trigger");

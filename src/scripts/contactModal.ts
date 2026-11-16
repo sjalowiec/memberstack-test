@@ -33,10 +33,6 @@ export function initContactModal() {
     "contact-modal-submit-btn",
   ) as HTMLButtonElement | null;
 
-  const triggers = document.querySelectorAll(
-    "#contact-modal-trigger, .contact-modal-trigger",
-  );
-
   function clearFieldErrors() {
     if (imageErrorEl) {
       imageErrorEl.textContent = "";
@@ -98,13 +94,20 @@ export function initContactModal() {
     return;
   }
 
-  triggers.forEach((trigger) => {
-    trigger.addEventListener("click", (e) => {
-      e.preventDefault();
-      const source =
-        trigger.getAttribute("data-contact-source") || "unknown";
-      openModal(source);
-    });
+  if (modal.getAttribute("data-contact-modal-bound") === "true") {
+    return;
+  }
+  modal.setAttribute("data-contact-modal-bound", "true");
+
+  // Delegate so a Contact us control created after this script runs still opens
+  // the modal. The href stays /contact/ when JavaScript does not run.
+  document.addEventListener("click", (event) => {
+    const target = event.target;
+    if (!(target instanceof Element)) return;
+    const trigger = target.closest("#contact-modal-trigger, .contact-modal-trigger");
+    if (!(trigger instanceof HTMLElement)) return;
+    event.preventDefault();
+    openModal(trigger.getAttribute("data-contact-source") || "unknown");
   });
 
   overlay.addEventListener("click", closeModal);

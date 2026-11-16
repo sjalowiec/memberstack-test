@@ -30,6 +30,7 @@ export const MEMBER_BY_EMAIL_SQL = `
     birthdayinfo,
     datejoined,
     subscriptionexpiring,
+    subscriptionid_fk,
     active,
     betaactive,
     currentsubscriber
