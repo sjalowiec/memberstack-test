@@ -151,6 +151,21 @@ describe("Watson What's New page", () => {
     expect(page).toContain("watson-wn__badge--featured");
   });
 
+  it("gives the public page its own wide container without the shared main cap", () => {
+    expect(publicPage).toContain("page--whats-new");
+    expect(publicPage).toMatch(
+      /body\.page--whats-new main\.site-content\)\s*\{[^}]*max-width:\s*none/,
+    );
+    expect(publicPage).toMatch(
+      /\.whats-new\.page-wrap\s*\{[^}]*max-width:\s*1400px/,
+    );
+    expect(publicPage).toMatch(
+      /\.whats-new\.page-wrap\s*\{[^}]*width:\s*min\(1400px,\s*100%\)/,
+    );
+    expect(publicPage).toContain("repeat(3, minmax(0, 1fr))");
+    expect(publicPage).toMatch(/\.whats-new__card-desc\s*:global\(img\[width\]\)/);
+  });
+
   it("public page stacks board columns without horizontal scroll affordances", () => {
     expect(publicPage).toContain('export const prerender = false');
     expect(publicPage).toContain("whats-new__board");

@@ -66,7 +66,7 @@ const description =
 <Layout
   title={`${pageTitle} | Knit it Now`}
   {description}
-  bodyClass="page--tight-header"
+  bodyClass="page--tight-header page--whats-new"
 >
   <article
     class={`whats-new page-wrap${billboard ? " whats-new--with-billboard" : ""}`}
@@ -276,10 +276,30 @@ const description =
 </Layout>
 
 <style>
+  /*
+   * The shared layout caps every main at --max-content-width (1100px).
+   * This page supplies its own container, so that parent cap does not apply here.
+   */
+  :global(body.page--whats-new main.site-content) {
+    box-sizing: border-box;
+    width: 100%;
+    max-width: none;
+    margin-left: 0;
+    margin-right: 0;
+    padding-left: 0;
+    padding-right: 0;
+  }
+
   .whats-new.page-wrap {
-    max-width: 1100px;
+    box-sizing: border-box;
+    width: min(1400px, 100%);
+    max-width: 1400px;
+    margin-left: auto;
+    margin-right: auto;
     padding-top: 0.75rem;
+    padding-right: clamp(1.25rem, 3vw, 2.5rem);
     padding-bottom: 3rem;
+    padding-left: clamp(1.25rem, 3vw, 2.5rem);
   }
 
   .whats-new--with-billboard {
@@ -379,6 +399,10 @@ const description =
     height: auto;
     margin: 0 0 0.75rem;
     object-fit: contain;
+  }
+
+  .whats-new__billboard-message :global(img[width]) {
+    width: attr(width px);
   }
 
   .whats-new__billboard-message :global(img:not([width])) {
@@ -739,12 +763,16 @@ const description =
     text-underline-offset: 2px;
   }
 
-  /* Site images in a description scale to the card and keep their aspect ratio. */
+  /* Site images stay proportional. A saved width is kept; it does not grow with the card. */
   .whats-new__card-desc :global(img) {
     display: block;
     max-width: 100%;
     height: auto;
     margin: 0 0 0.75rem;
+  }
+
+  .whats-new__card-desc :global(img[width]) {
+    width: attr(width px);
   }
 
   .whats-new__card-desc :global(img:not([width])) {
