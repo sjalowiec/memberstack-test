@@ -11,5 +11,6 @@ export function initWatsonCardRichText(root: ParentNode = document): void {
   if (!wrap) return;
   initCompactRichText(wrap, {
     sanitize: sanitizeCardDescriptionHtml,
+    htmlSource: true,
   });
 }

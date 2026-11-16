@@ -242,6 +242,7 @@ function wireAnnouncement(host: HTMLElement): void {
     const safeIntro = sanitizeCardDescriptionHtml(input.introductionHtml || "");
     title.textContent = input.title.trim();
     intro.innerHTML = safeIntro;
+    intro.classList.toggle("wn-announce__intro--image", Boolean(intro.querySelector("img")));
     link.href = acceptsWhatsNewAnnouncementHref(input.href) ? input.href : "/whats-new";
     link.textContent = announcementButtonLabel(input.buttonLabel);
     link.dataset.cardId = input.id;

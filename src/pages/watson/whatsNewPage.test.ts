@@ -65,6 +65,11 @@ describe("Watson What's New page", () => {
     expect(page).toContain("data-wn-popup-edit");
     expect(page).toContain("data-wn-popup-preview");
     expect(page).toContain("data-wn-popup-enable");
+    expect(page).toContain("Make this the live billboard");
+    expect(page).toContain("Use as billboard");
+    expect(page).toContain("data-wn-use-billboard");
+    expect(page).toContain("No live billboard right now.");
+    expect(page).toContain("data-wn-popup-publish-note");
     expect(page).toContain("data-wn-popup-disable");
     expect(page).toContain("data-wn-popup-search");
     expect(page).toContain("What's New Billboard");
@@ -108,8 +113,11 @@ describe("Watson What's New page", () => {
     expect(popupScript).toContain("announcementButtonLabel");
     expect(popupScript).toContain("popupReadMoreHref");
     expect(popupScript).toContain("data-wn-popup-enable");
+    expect(popupScript).toContain("data-wn-use-billboard");
+    expect(popupScript).toContain("Making it the live billboard does not publish it.");
     expect(popupScript).toContain("data-wn-popup-disable");
     expect(popupScript).not.toContain("updateWhatsNewCard");
+    expect(popupScript).not.toContain('status: "published"');
   });
 
   it("offers permanent delete only for draft or archived cards", () => {
@@ -341,7 +349,12 @@ describe("Watson What's New page", () => {
     expect(rteBlock).not.toContain('data-wn-rte-cmd="link"');
     // Card editor reuses the shared sanitizer for descriptions.
     expect(cardRte).toContain("sanitizeCardDescriptionHtml");
+    expect(cardRte).toContain("htmlSource: true");
     expect(cardRte).toContain("initCompactRichText");
+    const editor = fs.readFileSync(path.resolve("src/scripts/watsonRichTextEditor.ts"), "utf8");
+    expect(editor).toContain("Edit HTML");
+    expect(editor).toContain("Visual editor");
+    expect(editor).toContain("data-wn-rte-source");
     expect(page).toContain("initWatsonCardRichText");
   });
 

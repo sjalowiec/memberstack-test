@@ -103,6 +103,11 @@ describe("sanitizeBillboardHtml", () => {
     expect(out).toContain("<ul><li>Item</li></ul>");
     expect(out).not.toContain("javascript:");
     expect(out).not.toContain("<img");
+    expect(
+      sanitizeBillboardHtml(
+        '<img src="/images/thank-you.jpg" alt="Thank you"><p>Hello</p>',
+      ),
+    ).toBe('<img src="/images/thank-you.jpg" alt="Thank you"><p>Hello</p>');
     expect(out).not.toContain("MsoNormal");
     expect(out).not.toContain("style=");
     expect(out).not.toContain("<div");

@@ -137,9 +137,12 @@ export function validateWhatsNewCardInput(
     return { ok: false, error: "Short description is required." };
   }
   const descriptionRaw = typeof input.description === "string" ? input.description.trim() : "";
+  // Sanitize server-side before saving; plain text becomes safe paragraph markup.
+  const descriptionHtml = sanitizeCardDescriptionHtml(descriptionRaw);
   // Length gate uses the visible text so markup overhead never rejects short copy.
-  const descriptionText = cardDescriptionPlainText(descriptionRaw);
-  if (!descriptionText) {
+  const descriptionText = cardDescriptionPlainText(descriptionHtml);
+  const descriptionHasImage = /<img\b/i.test(descriptionHtml);
+  if (!descriptionText && !descriptionHasImage) {
     return { ok: false, error: "Short description is required." };
   }
   if (descriptionText.length > WHATS_NEW_DESCRIPTION_MAX_LENGTH) {
@@ -147,11 +150,6 @@ export function validateWhatsNewCardInput(
       ok: false,
       error: `Short description must be ${WHATS_NEW_DESCRIPTION_MAX_LENGTH} characters or fewer.`,
     };
-  }
-  // Sanitize server-side before saving; plain text becomes safe paragraph markup.
-  const descriptionHtml = sanitizeCardDescriptionHtml(descriptionRaw);
-  if (!billboardMessageHasText(descriptionHtml)) {
-    return { ok: false, error: "Short description is required." };
   }
 
   if (typeof input.category !== "string" || !isWhatsNewCategory(input.category.trim())) {

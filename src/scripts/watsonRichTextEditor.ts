@@ -5,7 +5,39 @@ export type CompactRichTextOptions = {
   enableLink?: boolean;
   /** Prompt for and validate a link URL when the link button is used. */
   promptLink?: () => string | null;
+  /** Show an HTML source editor beside the visual editor. */
+  htmlSource?: boolean;
 };
+
+/** The HTML currently being edited: the source box when it is open, otherwise the visual editor. */
+export function readCompactRichTextValue(wrap: ParentNode): string {
+  const source = wrap.querySelector<HTMLTextAreaElement>("[data-wn-rte-source]");
+  if (source?.dataset.active === "true") return source.value;
+  return wrap.querySelector<HTMLElement>("[data-wn-rte-editor]")?.innerHTML ?? "";
+}
+
+/** Put sanitized HTML into the visual editor, the source box, and the submitted field. */
+export function writeCompactRichTextValue(wrap: ParentNode, html: string): void {
+  const editor = wrap.querySelector<HTMLElement>("[data-wn-rte-editor]");
+  const hidden = wrap.querySelector<HTMLTextAreaElement>("[data-wn-rte-input]");
+  const source = wrap.querySelector<HTMLTextAreaElement>("[data-wn-rte-source]");
+  if (editor) editor.innerHTML = html || "<p><br></p>";
+  if (hidden) hidden.value = html;
+  if (source) source.value = html;
+}
+
+/** Sanitize whichever view is open and store that as the value that will be saved. */
+export function syncCompactRichText(
+  wrap: ParentNode,
+  sanitize: (html: string) => string,
+): string {
+  const clean = sanitize(readCompactRichTextValue(wrap));
+  const hidden = wrap.querySelector<HTMLTextAreaElement>("[data-wn-rte-input]");
+  const source = wrap.querySelector<HTMLTextAreaElement>("[data-wn-rte-source]");
+  if (hidden) hidden.value = clean;
+  if (source?.dataset.active === "true") source.value = clean;
+  return clean;
+}
 
 function exec(cmd: string, value?: string): void {
   try {
@@ -97,5 +129,71 @@ export function initCompactRichText(wrap: HTMLElement, options: CompactRichTextO
     if (event.key !== "Enter" || event.shiftKey) return;
     // Default contenteditable Enter behavior; sync after the browser mutates.
     queueMicrotask(sync);
+  });
+
+  if (!options.htmlSource) return;
+
+  const source = document.createElement("textarea");
+  source.className = "watson-wn__rte-source";
+  source.dataset.wnRteSource = "";
+  source.hidden = true;
+  source.spellcheck = false;
+  source.setAttribute("aria-label", "HTML source");
+  source.value = options.sanitize(hidden.value);
+  editor.insertAdjacentElement("afterend", source);
+
+  const note = document.createElement("p");
+  note.className = "watson-wn__rte-source-note";
+  note.hidden = true;
+  note.textContent =
+    "HTML source. Images, links, paragraphs, and lists are kept. Unsafe tags are removed when you return to the visual editor or save.";
+  source.insertAdjacentElement("afterend", note);
+
+  const htmlButton = document.createElement("button");
+  htmlButton.type = "button";
+  htmlButton.className = "watson-wn__rte-btn watson-wn__rte-btn--html";
+  htmlButton.dataset.wnRteHtml = "";
+  htmlButton.textContent = "Edit HTML";
+  htmlButton.title = "Edit the message HTML";
+  htmlButton.setAttribute("aria-pressed", "false");
+  toolbar.append(htmlButton);
+
+  const showVisual = (): void => {
+    const clean = options.sanitize(source.value);
+    editor.innerHTML = clean || "<p><br></p>";
+    hidden.value = clean;
+    source.value = clean;
+    source.dataset.active = "false";
+    source.hidden = true;
+    note.hidden = true;
+    editor.hidden = false;
+    htmlButton.textContent = "Edit HTML";
+    htmlButton.title = "Edit the message HTML";
+    htmlButton.setAttribute("aria-pressed", "false");
+    editor.focus();
+  };
+
+  const showSource = (): void => {
+    const clean = options.sanitize(editor.innerHTML);
+    source.value = clean;
+    hidden.value = clean;
+    source.dataset.active = "true";
+    editor.hidden = true;
+    source.hidden = false;
+    note.hidden = false;
+    htmlButton.textContent = "Visual editor";
+    htmlButton.title = "Return to the visual editor";
+    htmlButton.setAttribute("aria-pressed", "true");
+    source.focus();
+  };
+
+  htmlButton.addEventListener("click", (event) => {
+    event.preventDefault();
+    if (source.dataset.active === "true") showVisual();
+    else showSource();
+  });
+
+  source.addEventListener("input", () => {
+    hidden.value = source.value;
   });
 }

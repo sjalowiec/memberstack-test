@@ -31,6 +31,7 @@ import {
 import { announcementButtonLabel } from "../../lib/whatsNew/announcement";
 import {
   formatLosAngelesDateTime,
+  isPopupAnnouncementActive,
   POPUP_ANNOUNCEMENT_AUDIENCE_LABELS,
 } from "../../lib/whatsNew/popupAnnouncement";
 import { resolveSearchActivityEnvironment } from "../../lib/searchActivity";
@@ -79,12 +80,17 @@ if (!loadError) {
   }
 }
 
+const liveBillboard =
+  popupAnnouncement && isPopupAnnouncementActive(popupAnnouncement) ? popupAnnouncement : null;
+const liveBillboardCardId = liveBillboard?.sourceCardId ?? "";
+
 const popupEntriesJson = JSON.stringify(
-  activeCards.map((card) => ({
+  [...activeCards, ...archivedCards].map((card) => ({
     id: card.id,
     title: card.title,
     description: card.description,
     status: card.status,
+    archived: card.archived,
   })),
 ).replace(/</g, "\\u003c");
 
@@ -175,9 +181,18 @@ function cardDataAttr(card: (typeof activeCards)[number]): string {
     <section class="watson__panel watson-wn__announce" data-wn-popup-panel aria-labelledby="wn-popup-heading">
       <h2 id="wn-popup-heading" class="watson__panel-title">Pop-up Announcement</h2>
       <p class="watson-wn__hint">
-        The message displayed over the website. This is separate from the What's New Billboard,
-        which is the banner on the What's New page. Editing this pop-up does not change the
-        What's New entry it was copied from.
+        This is the billboard displayed over the website. It is separate from the What's New
+        Billboard, which is the banner on the What's New page. Choose an entry with Use as
+        billboard. Making one live does not change that What's New entry.
+      </p>
+      <p class="watson-wn__live-billboard" data-wn-live-billboard>
+        {
+          liveBillboard
+            ? `Live billboard: ${liveBillboard.title}`
+            : popupAnnouncement?.enabled
+              ? `No live billboard right now. "${popupAnnouncement.title}" is saved but not showing.`
+              : "No live billboard right now."
+        }
       </p>
       {
         popupLoadError ? (
@@ -193,7 +208,9 @@ function cardDataAttr(card: (typeof activeCards)[number]): string {
         </div>
         <div>
           <dt>Status</dt>
-          <dd>{popupAnnouncement?.enabled ? "Enabled" : "Disabled"}</dd>
+          <dd>
+            {liveBillboard ? "Live" : popupAnnouncement?.enabled ? "Not showing" : "Disabled"}
+          </dd>
         </div>
         <div>
           <dt>Audience</dt>
@@ -343,12 +360,16 @@ function cardDataAttr(card: (typeof activeCards)[number]): string {
           Pacific time is reached. Leave the button text blank to use Read more. Leave the button destination blank
           to keep the button linked to the What's New entry. The label and the URL are independent,
           so you can change either one. Preview and the public pop-up use the saved label and
-          destination. Save stores this draft and keeps it enabled or disabled. Enable shows it.
-          Disable hides it. Preview does not publish it and does not change who has already closed it.
+          destination. Save stores this copy and keeps it enabled or disabled. Choose Make this the
+          live billboard to show it. Disable hides it. Preview does not publish it and does not
+          change who has already closed it.
         </p>
+        <p class="watson-wn__billboard-note" data-wn-popup-publish-note hidden></p>
         <div class="watson-wn__actions">
-          <button type="submit" class="watson__button">Save</button>
-          <button type="button" class="watson__button" data-wn-popup-enable>Enable</button>
+          <button type="submit" class="watson__button watson__button--secondary">Save</button>
+          <button type="button" class="watson__button" data-wn-popup-enable>
+            Make this the live billboard
+          </button>
           <button type="button" class="watson__button watson__button--secondary" data-wn-popup-disable>
             Disable
           </button>
@@ -725,6 +746,9 @@ function cardDataAttr(card: (typeof activeCards)[number]): string {
                           {card.featured ? (
                             <span class="watson-wn__badge watson-wn__badge--featured">featured</span>
                           ) : null}
+                          {liveBillboardCardId === card.id ? (
+                            <span class="watson-wn__badge watson-wn__badge--popup">Live billboard</span>
+                          ) : null}
                         </div>
                         <div class="watson-wn__card-head">
                           {toolIcon ? (
@@ -753,6 +777,13 @@ function cardDataAttr(card: (typeof activeCards)[number]): string {
                             data-wn-edit={cardDataAttr(card)}
                           >
                             Edit
+                          </button>
+                          <button
+                            type="button"
+                            class="watson__button watson__button--secondary"
+                            data-wn-use-billboard={card.id}
+                          >
+                            Use as billboard
                           </button>
                           <label class="watson-wn__move">
                             <span class="visually-hidden">Move to</span>
@@ -835,6 +866,9 @@ function cardDataAttr(card: (typeof activeCards)[number]): string {
                   >
                     {whatsNewStatusLabel(card.status)}
                   </span>
+                  {liveBillboardCardId === card.id ? (
+                    <span class="watson-wn__badge watson-wn__badge--popup">Live billboard</span>
+                  ) : null}
                 </div>
                 <strong>{card.title}</strong>
                 <p class="watson-wn__card-desc">{cardDescriptionPlainText(card.description)}</p>
@@ -845,6 +879,13 @@ function cardDataAttr(card: (typeof activeCards)[number]): string {
                     data-wn-edit={cardDataAttr(card)}
                   >
                     Edit
+                  </button>
+                  <button
+                    type="button"
+                    class="watson__button watson__button--secondary"
+                    data-wn-use-billboard={card.id}
+                  >
+                    Use as billboard
                   </button>
                   <button
                     type="button"
@@ -1079,6 +1120,23 @@ function cardDataAttr(card: (typeof activeCards)[number]): string {
     margin: 0;
   }
 
+  .watson-wn__live-billboard {
+    margin: 0 0 0.85rem;
+    font-weight: 700;
+    color: #243015;
+  }
+
+  .watson-wn__billboard-note {
+    margin: 0;
+    padding: 0.7rem 0.8rem;
+    background: #f6f1e4;
+    border: 1px solid #e2d3a8;
+    border-radius: 8px;
+    color: #3f3420;
+    font-size: 0.95rem;
+    line-height: 1.45;
+  }
+
   .watson-wn__announce-summary dt {
     font-size: 0.78rem;
     font-weight: 700;
@@ -1234,6 +1292,58 @@ function cardDataAttr(card: (typeof activeCards)[number]): string {
   .watson-wn__rte-editor ol {
     margin: 0.25rem 0 0.5rem;
     padding-left: 1.3rem;
+  }
+
+  .watson-wn__rte-btn--html {
+    margin-left: auto;
+    font-weight: 700;
+  }
+
+  .watson-wn__rte-btn--html[aria-pressed="true"] {
+    background: #243015;
+    border-color: #243015;
+    color: #fff;
+  }
+
+  .watson-wn__rte-source {
+    display: block;
+    width: 100%;
+    min-height: 11rem;
+    margin: 0;
+    padding: 0.55rem 0.7rem;
+    border: 0;
+    resize: vertical;
+    font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+    font-size: 0.86rem;
+    line-height: 1.45;
+    color: #2c3a57;
+  }
+
+  .watson-wn__rte--compact .watson-wn__rte-source {
+    min-height: 8rem;
+  }
+
+  .watson-wn__rte-source:focus {
+    outline: none;
+    box-shadow: inset 0 0 0 2px #c5d4b0;
+  }
+
+  .watson-wn__rte-source-note {
+    margin: 0;
+    padding: 0.45rem 0.7rem 0.6rem;
+    border-top: 1px solid #dfe5d4;
+    background: #f7f8f3;
+    color: #3f3420;
+    font-size: 0.82rem;
+    line-height: 1.4;
+  }
+
+  .watson-wn__rte-editor :global(img) {
+    display: block;
+    width: auto;
+    max-width: min(100%, 20rem);
+    height: auto;
+    margin: 0 0 0.75rem;
   }
 
   .watson-wn__board {

@@ -1,9 +1,15 @@
 import { normalizeWhatsNewDestinationUrl } from "./destinationUrl";
 
-const ALLOWED_TAGS = new Set(["p", "br", "strong", "em", "ul", "ol", "li", "a"]);
-/** Card descriptions reuse the billboard allowlist minus links. */
-const CARD_ALLOWED_TAGS = new Set(["p", "br", "strong", "em", "ul", "ol", "li"]);
-const VOID_TAGS = new Set(["br"]);
+const ALLOWED_TAGS = new Set(["p", "br", "strong", "em", "ul", "ol", "li", "a", "img"]);
+/** Card messages use the same formatting, links, and safe site images. */
+const CARD_ALLOWED_TAGS = ALLOWED_TAGS;
+const VOID_TAGS = new Set(["br", "img"]);
+/** Encoded `<img` only. Ordinary text, including `&lt;` that is not an image, stays put. */
+const ENCODED_IMAGE_TAG = /&(?:amp;)*lt;\s*img\b/i;
+/** Escaped message tags, used only when the value has no real tags yet. */
+const ENCODED_MESSAGE_TAG = /&(?:amp;)*lt;\s*\/?\s*(?:p|br|strong|em|b|i|ul|ol|li|a|img)\b/i;
+/** Site path only: one leading slash, no scheme, traversal, query, or spaces. */
+const SAFE_SITE_IMAGE_SRC = /^\/(?!\/)(?!.*\.\.)[A-Za-z0-9/._~-]+$/;
 /** Drop these tags and their inner content entirely. */
 const SKIP_CONTENT_TAGS = new Set([
   "script",
@@ -27,6 +33,34 @@ function escapeText(text: string): string {
     .replace(/"/g, "&quot;");
 }
 
+/**
+ * Decode each entity once. `&amp;lt;` becomes `&lt;`, not `<`, so a later escape
+ * does not add another `&amp;` and does not turn ordinary text into a tag.
+ */
+function decodeMarkupEntitiesOnce(text: string): string {
+  return text.replace(/&(?:amp|lt|gt|quot|#39|apos);/gi, (entity) => {
+    switch (entity.toLowerCase()) {
+      case "&amp;":
+        return "&";
+      case "&lt;":
+        return "<";
+      case "&gt;":
+        return ">";
+      case "&quot;":
+        return '"';
+      case "&#39;":
+      case "&apos;":
+        return "'";
+      default:
+        return entity;
+    }
+  });
+}
+
+function escapeTextNode(text: string): string {
+  return escapeText(decodeMarkupEntitiesOnce(text));
+}
+
 function decodeBasicEntities(text: string): string {
   return text
     .replace(/&nbsp;/gi, " ")
@@ -40,6 +74,80 @@ function decodeBasicEntities(text: string): string {
 
 function looksLikeHtml(input: string): boolean {
   return /<\/?[a-z][\s\S]*>/i.test(input);
+}
+
+/**
+ * One pass of the entities produced by HTML-escaping a previous pass.
+ * Ampersands are decoded first so `&amp;lt;` becomes `&lt;`.
+ */
+function decodeEscapedMarkupOnce(value: string): string {
+  return value
+    .replace(/&amp;/g, "&")
+    .replace(/&#0*38;/g, "&")
+    .replace(/&#x0*26;/gi, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&#0*60;/g, "<")
+    .replace(/&#x0*3c;/gi, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&#0*62;/g, ">")
+    .replace(/&#x0*3e;/gi, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#0*34;/g, '"')
+    .replace(/&#x0*22;/gi, '"')
+    .replace(/&#39;|&apos;/g, "'");
+}
+
+/**
+ * Restore a repeatedly escaped `<img` tag so a later save does not escape it again.
+ * Stops as soon as a real image tag is present. Text without an encoded image is unchanged.
+ */
+function unwrapEncodedCardImages(value: string): string {
+  let current = value;
+  for (let pass = 0; pass < 8; pass += 1) {
+    if (!ENCODED_IMAGE_TAG.test(current)) break;
+    const next = decodeEscapedMarkupOnce(current);
+    if (next === current) break;
+    current = next;
+  }
+  return current;
+}
+
+/**
+ * Restore HTML that was saved as visible text. A message that already has real
+ * tags is left alone except for an encoded image. Plain `&amp;` and `&lt;` stay
+ * one level deep so saving again does not keep escaping them.
+ */
+function prepareMessageHtml(value: string): string {
+  if (ENCODED_IMAGE_TAG.test(value)) return unwrapEncodedCardImages(value);
+  if (looksLikeHtml(value) || !ENCODED_MESSAGE_TAG.test(value)) return value;
+  let current = value;
+  for (let pass = 0; pass < 8; pass += 1) {
+    if (looksLikeHtml(current)) break;
+    const next = decodeEscapedMarkupOnce(current);
+    if (next === current) break;
+    current = next;
+  }
+  return current;
+}
+
+function readAttribute(attrs: string, name: string): string | null {
+  const match = attrs.match(
+    new RegExp(`\\b${name}\\s*=\\s*(?:"([^"]*)"|'([^']*)'|([^\\s>]+))`, "i"),
+  );
+  if (!match) return null;
+  return (match[1] ?? match[2] ?? match[3] ?? "").trim();
+}
+
+/** A site image tag, or null when the address is not a local path. Event handlers are dropped. */
+function safeCardImageTag(attrs: string): string | null {
+  const src = readAttribute(attrs, "src");
+  if (!src || !SAFE_SITE_IMAGE_SRC.test(src)) return null;
+  const alt = escapeText(
+    decodeBasicEntities(readAttribute(attrs, "alt") ?? "")
+      .replace(/[\r\n]+/g, " ")
+      .trim(),
+  );
+  return `<img src="${src}" alt="${alt}">`;
 }
 
 function normalizeTagName(name: string): string | null {
@@ -127,12 +235,12 @@ function tokenize(html: string): Token[] {
 
 /**
  * Sanitize What's New billboard message HTML.
- * Allows only: p, br, strong (b?strong), em (i?em), ul, ol, li, a[href].
- * Plain text is wrapped in safe paragraphs.
+ * Allows only: p, br, strong (b→strong), em (i→em), ul, ol, li, a[href], and img
+ * whose src is a site path. Plain text is wrapped in safe paragraphs.
  */
 export function sanitizeBillboardHtml(input: string): string {
   if (typeof input !== "string") return "";
-  const trimmed = input.trim();
+  const trimmed = prepareMessageHtml(input).trim();
   if (!trimmed) return "";
 
   if (!looksLikeHtml(trimmed)) {
@@ -164,7 +272,7 @@ export function sanitizeBillboardHtml(input: string): string {
     }
 
     if (tok.type === "text") {
-      out += escapeText(tok.value);
+      out += escapeTextNode(tok.value);
       continue;
     }
 
@@ -195,6 +303,12 @@ export function sanitizeBillboardHtml(input: string): string {
       continue;
     }
 
+    if (tag === "img") {
+      const image = safeCardImageTag(tok.attrs);
+      if (image) out += image;
+      continue;
+    }
+
     if (tag === "a") {
       const hrefRaw = extractHref(tok.attrs);
       const hrefResult = normalizeWhatsNewDestinationUrl(hrefRaw);
@@ -218,7 +332,7 @@ export function sanitizeBillboardHtml(input: string): string {
     out += `</${stack.pop()}>`;
   }
 
-  if (!billboardMessageHasText(out)) return "";
+  if (!billboardMessageHasText(out) && !/<img\b/i.test(out)) return "";
 
   // Ensure block structure for orphan inline fragments (e.g. pasted "hello <b>there</b>").
   if (!/<(?:p|ul|ol)\b/i.test(out)) {
@@ -235,13 +349,14 @@ export function cardDescriptionPlainText(html: string): string {
 
 /**
  * Sanitize What's New card description HTML.
- * Mirrors sanitizeBillboardHtml but drops links: card CTAs use dedicated fields.
- * Allows only: p, br, strong (b?strong), em (i?em), ul, ol, li.
+ * Allows p, br, strong (b→strong), em (i→em), ul, ol, li, safe links, and img
+ * whose src is a site path such as /images/thank-you.jpg. Unsafe HTML is removed.
+ * Saving the same message again does not escape its tags into visible text.
  * Plain text is wrapped in safe paragraphs.
  */
 export function sanitizeCardDescriptionHtml(input: string): string {
   if (typeof input !== "string") return "";
-  const trimmed = input.trim();
+  const trimmed = prepareMessageHtml(input).trim();
   if (!trimmed) return "";
 
   if (!looksLikeHtml(trimmed)) {
@@ -253,6 +368,8 @@ export function sanitizeCardDescriptionHtml(input: string): string {
   const stack: string[] = [];
   let out = "";
   let skipUntil: string | null = null;
+  /** Closing tags for anchors we refused to open (bad href). */
+  let skippedAnchorDepth = 0;
 
   const closeUntil = (tag: string): void => {
     while (stack.length) {
@@ -271,7 +388,7 @@ export function sanitizeCardDescriptionHtml(input: string): string {
     }
 
     if (tok.type === "text") {
-      out += escapeText(tok.value);
+      out += escapeTextNode(tok.value);
       continue;
     }
 
@@ -283,19 +400,44 @@ export function sanitizeCardDescriptionHtml(input: string): string {
     }
 
     const tag = normalizeCardTagName(tok.name);
-    // Unsupported tags (including links) are dropped; their text is preserved.
+    // Unsupported tags are dropped; their text is preserved.
     if (!tag) {
       continue;
     }
 
     if (tok.closing) {
       if (VOID_TAGS.has(tag)) continue;
+      if (tag === "a" && skippedAnchorDepth > 0 && !stack.includes("a")) {
+        skippedAnchorDepth -= 1;
+        continue;
+      }
       if (stack.includes(tag)) closeUntil(tag);
       continue;
     }
 
     if (tag === "br") {
       out += "<br>";
+      continue;
+    }
+
+    if (tag === "img") {
+      const image = safeCardImageTag(tok.attrs);
+      if (image) out += image;
+      continue;
+    }
+
+    if (tag === "a") {
+      const hrefRaw = extractHref(tok.attrs);
+      const hrefResult = normalizeWhatsNewDestinationUrl(hrefRaw);
+      if (!hrefResult.ok || !hrefResult.value) {
+        skippedAnchorDepth += 1;
+        continue;
+      }
+      const href = hrefResult.value;
+      const isExternal = href.startsWith("https://");
+      const rel = isExternal ? ' rel="noopener noreferrer"' : "";
+      out += `<a href="${escapeText(href)}"${rel}>`;
+      stack.push("a");
       continue;
     }
 
@@ -307,7 +449,7 @@ export function sanitizeCardDescriptionHtml(input: string): string {
     out += `</${stack.pop()}>`;
   }
 
-  if (!billboardMessageHasText(out)) return "";
+  if (!billboardMessageHasText(out) && !/<img\b/i.test(out)) return "";
 
   // Ensure block structure for orphan inline fragments (e.g. pasted "hello <b>there</b>").
   if (!/<(?:p|ul|ol)\b/i.test(out)) {

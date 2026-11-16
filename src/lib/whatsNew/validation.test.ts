@@ -88,19 +88,19 @@ describe("validateWhatsNewCardInput", () => {
     }
   });
 
-  it("sanitizes rich description HTML and strips links, scripts, and unsupported tags", () => {
+  it("sanitizes rich description HTML and keeps safe links and images", () => {
     const result = validateWhatsNewCardInput(
       {
         ...baseCard,
         description:
-          '<p><b>Bold</b> <i>italic</i> <a href="/tools">Tools</a><script>x</script></p><ul><li>One</li></ul>',
+          '<img src="/images/thank-you.jpg" alt="Thank you"><p><b>Bold</b> <i>italic</i> <a href="/tools">Tools</a><script>x</script></p><ul><li>One</li></ul>',
       },
       now,
     );
     expect(result.ok).toBe(true);
     if (result.ok) {
       expect(result.value.description).toBe(
-        "<p><strong>Bold</strong> <em>italic</em> Tools</p><ul><li>One</li></ul>",
+        '<img src="/images/thank-you.jpg" alt="Thank you"><p><strong>Bold</strong> <em>italic</em> <a href="/tools">Tools</a></p><ul><li>One</li></ul>',
       );
     }
   });

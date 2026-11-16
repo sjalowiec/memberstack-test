@@ -24,5 +24,6 @@ export function initWatsonBillboardRichText(root: ParentNode = document): void {
     sanitize: sanitizeBillboardHtml,
     enableLink: true,
     promptLink: promptLinkUrl,
+    htmlSource: true,
   });
 }

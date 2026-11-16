@@ -53,19 +53,21 @@ describe("sanitizeCardDescriptionHtml", () => {
     );
   });
 
-  it("removes links but preserves their visible text", () => {
+  it("keeps safe links and drops unsafe addresses", () => {
     expect(
       sanitizeCardDescriptionHtml('<p>See <a href="/tools">Tools</a> now</p>'),
-    ).toBe("<p>See Tools now</p>");
+    ).toBe('<p>See <a href="/tools">Tools</a> now</p>');
     expect(
-      sanitizeCardDescriptionHtml('<p><a href="https://example.com">External</a></p>'),
-    ).toBe("<p>External</p>");
+      sanitizeCardDescriptionHtml('<p><a href="https://example.com/path">External</a></p>'),
+    ).toBe(
+      '<p><a href="https://example.com/path" rel="noopener noreferrer">External</a></p>',
+    );
     expect(
       sanitizeCardDescriptionHtml('<p><a href="javascript:alert(1)">Bad</a></p>'),
     ).toBe("<p>Bad</p>");
   });
 
-  it("removes scripts, iframes, images, styles, handlers, and unsupported tags", () => {
+  it("removes scripts, iframes, unsafe images, styles, handlers, and unsupported tags", () => {
     expect(
       sanitizeCardDescriptionHtml("<p>Safe<script>alert(1)</script> text</p>"),
     ).toBe("<p>Safe text</p>");
@@ -91,7 +93,7 @@ describe("sanitizeCardDescriptionHtml", () => {
     ).toBe("<p>Hi</p>Nopex");
   });
 
-  it("cleans pasted formatted content to the allowlist without links", () => {
+  it("cleans pasted formatted content to the allowlist", () => {
     const pasted = `
       <div class="MsoNormal" style="margin:0">
         <b>Hello</b>
@@ -103,13 +105,58 @@ describe("sanitizeCardDescriptionHtml", () => {
     const out = sanitizeCardDescriptionHtml(pasted);
     expect(out).toContain("<strong>Hello</strong>");
     expect(out).toContain("<ul><li>Item</li></ul>");
-    expect(out).toContain("Patterns");
-    expect(out).not.toContain("<a");
-    expect(out).not.toContain("href");
+    expect(out).toContain('<a href="/patterns">Patterns</a>');
     expect(out).not.toContain("<img");
     expect(out).not.toContain("MsoNormal");
     expect(out).not.toContain("style=");
     expect(out).not.toContain("<div");
+  });
+
+  it("keeps a site image and leaves other saved descriptions unchanged", () => {
+    const image =
+      '<img src="/images/thank-you.jpg" alt="Thank you"><p>It\u2019s been an interesting year! Thank you for your patience and support.</p><p>Sue</p>';
+    expect(sanitizeCardDescriptionHtml(image)).toBe(image);
+    expect(sanitizeCardDescriptionHtml(sanitizeCardDescriptionHtml(image))).toBe(image);
+
+    const escaped =
+      '<p>&amp;amp;lt;img src=&amp;quot;/images/thank-you.jpg&amp;quot;&amp;amp;gt; &amp;amp;lt;br&amp;amp;gt;</p><p>It\u2019s been an interesting year! Thank you for your patience and support.</p><p>Sue</p>';
+    const restored = sanitizeCardDescriptionHtml(escaped);
+    expect(restored).toBe(
+      '<p><img src="/images/thank-you.jpg" alt=""> <br></p><p>It\u2019s been an interesting year! Thank you for your patience and support.</p><p>Sue</p>',
+    );
+    expect(sanitizeCardDescriptionHtml(restored)).toBe(restored);
+  });
+
+  it("drops remote, script, and traversal image addresses and event handlers", () => {
+    expect(
+      sanitizeCardDescriptionHtml(
+        '<p>Hi <img src="/images/thank-you.jpg" alt="Thank you" onerror="alert(1)"> there</p>',
+      ),
+    ).toBe('<p>Hi <img src="/images/thank-you.jpg" alt="Thank you"> there</p>');
+    expect(
+      sanitizeCardDescriptionHtml('<p>No <img src="https://evil.test/a.jpg" alt="x"> pic</p>'),
+    ).toBe("<p>No  pic</p>");
+    expect(
+      sanitizeCardDescriptionHtml('<p>No <img src="javascript:alert(1)" alt="x"> pic</p>'),
+    ).toBe("<p>No  pic</p>");
+    expect(
+      sanitizeCardDescriptionHtml('<p>No <img src="//evil.test/a.jpg" alt="x"> pic</p>'),
+    ).toBe("<p>No  pic</p>");
+    expect(
+      sanitizeCardDescriptionHtml('<p>No <img src="/images/../secret.jpg" alt="x"> pic</p>'),
+    ).toBe("<p>No  pic</p>");
+  });
+
+  it("does not escape a saved message again", () => {
+    const saved = "<p>A &amp; B</p>";
+    expect(sanitizeCardDescriptionHtml(saved)).toBe(saved);
+    expect(sanitizeCardDescriptionHtml(sanitizeCardDescriptionHtml(saved))).toBe(saved);
+    const comparison = "<p>Use 2 &amp; 4, and a &lt; b.</p>";
+    expect(sanitizeCardDescriptionHtml(comparison)).toBe(comparison);
+    expect(sanitizeCardDescriptionHtml("&lt;p&gt;Hello&lt;/p&gt;")).toBe("<p>Hello</p>");
+    expect(
+      sanitizeCardDescriptionHtml("<p><strong>New</strong> tool</p><ul><li>Fast</li></ul>"),
+    ).toBe("<p><strong>New</strong> tool</p><ul><li>Fast</li></ul>");
   });
 
   it("treats markup with no visible text as empty", () => {
