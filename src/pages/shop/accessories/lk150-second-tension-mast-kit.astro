@@ -17,6 +17,8 @@ import {
   TENSION_MAST_INSTALLATION,
   TENSION_MAST_LK150_ONLY,
   TENSION_MAST_NOT_INCLUDED,
+  TENSION_MAST_PREORDER_LABEL,
+  TENSION_MAST_PREORDER_NOTICE,
   TENSION_MAST_US_SALES_ONLY,
 } from "../../../data/shop/lk150SecondTensionMastKit";
 import {
@@ -106,6 +108,9 @@ const description = kit.introduction;
 
       <div class="kit-product-details">
         {kit.headline && <p class="kit-headline">{kit.headline}</p>}
+        <p class="kit-intro">
+          <strong>{TENSION_MAST_PREORDER_LABEL}</strong>: {TENSION_MAST_PREORDER_NOTICE}
+        </p>
         <p class="kit-intro">{kit.introduction}</p>
 
         <section class="machine-purchase" aria-label="Purchase">

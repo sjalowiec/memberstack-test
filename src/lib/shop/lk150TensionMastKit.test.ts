@@ -8,6 +8,8 @@ import {
   TENSION_MAST_INSTALLATION,
   TENSION_MAST_LK150_ONLY,
   TENSION_MAST_NOT_INCLUDED,
+  TENSION_MAST_PREORDER_LABEL,
+  TENSION_MAST_PREORDER_NOTICE,
   TENSION_MAST_SALES_FINAL,
   TENSION_MAST_US_SALES_ONLY,
 } from "../../data/shop/lk150SecondTensionMastKit";
@@ -165,6 +167,16 @@ describe("LK150 tension mast kit", () => {
       "Yarn rod socket",
       "Socket base with mounting screw",
     ]);
+    expect(TENSION_MAST_PREORDER_LABEL).toBe("PREORDER");
+    expect(TENSION_MAST_PREORDER_NOTICE).toBe(
+      "This item is currently out of stock. Orders placed now are expected to ship around December 20. Payment is collected when you order.",
+    );
+    const noticeAt = page.indexOf(
+      "<strong>{TENSION_MAST_PREORDER_LABEL}</strong>: {TENSION_MAST_PREORDER_NOTICE}",
+    );
+    const introAt = page.indexOf('<p class="kit-intro">{kit.introduction}</p>');
+    expect(noticeAt).toBeGreaterThan(-1);
+    expect(introAt).toBeGreaterThan(noticeAt);
     expect(LK150_SECOND_TENSION_MAST_KIT.introduction).toBe(
       "Keep a second yarn ready to knit. Add a second tension mast to your Silver Reed LK150 for Fair Isle, intarsia, and other multicolor projects, or keep waste yarn threaded and ready to use.",
     );
