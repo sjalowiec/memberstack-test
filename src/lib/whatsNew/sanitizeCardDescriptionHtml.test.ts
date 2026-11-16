@@ -112,6 +112,33 @@ describe("sanitizeCardDescriptionHtml", () => {
     expect(out).not.toContain("<div");
   });
 
+  it("keeps an editable image width through another save", () => {
+    const sized =
+      '<img src="/images/thank-you.jpg" alt="Thank you for your support" class="center" width="202"><p>Happy Thanksgiving!<br>Sue</p>';
+    expect(sanitizeCardDescriptionHtml(sized)).toBe(sized);
+    expect(sanitizeCardDescriptionHtml(sanitizeCardDescriptionHtml(sized))).toBe(sized);
+    expect(
+      sanitizeCardDescriptionHtml(
+        '<img src="/images/thank-you.jpg" alt="Thank you" class="center" style="width: 202px; height: 100px" onerror="alert(1)">',
+      ),
+    ).toBe('<p><img src="/images/thank-you.jpg" alt="Thank you" class="center" width="202"></p>');
+    expect(
+      sanitizeCardDescriptionHtml(
+        '<img src="/images/thank-you.jpg" alt="Thank you" width="70%">',
+      ),
+    ).toBe('<p><img src="/images/thank-you.jpg" alt="Thank you" style="width: 70%"></p>');
+    expect(
+      sanitizeCardDescriptionHtml(
+        '<img src="/images/thank-you.jpg" alt="Thank you" width="9999">',
+      ),
+    ).toBe('<p><img src="/images/thank-you.jpg" alt="Thank you"></p>');
+    expect(
+      sanitizeCardDescriptionHtml(
+        '<img src="/images/thank-you.jpg" alt="Thank you" style="width: expression(alert(1))">',
+      ),
+    ).toBe('<p><img src="/images/thank-you.jpg" alt="Thank you"></p>');
+  });
+
   it("keeps a centered site image through another save", () => {
     const centered =
       '<img src="/images/thank-you.jpg" alt="Thank you for your support" class="center"><p>Happy Thanksgiving!<br>Sue</p>';

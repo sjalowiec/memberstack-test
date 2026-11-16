@@ -168,12 +168,16 @@ const { auto = false } = Astro.props;
 
   .wn-announce__intro :global(img) {
     display: block;
-    width: auto;
     max-width: 100%;
-    max-height: 16rem;
     height: auto;
     margin: 0 auto 0.75rem;
     object-fit: contain;
+  }
+
+  /* An unsized photo stays within the dialog. A saved width is left alone. */
+  .wn-announce__intro :global(img:not([width])) {
+    width: auto;
+    max-height: 16rem;
   }
 
   .wn-announce__intro :global(img.center) {
