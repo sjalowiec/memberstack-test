@@ -84,6 +84,11 @@ export const LK150_SECOND_TENSION_MAST_KIT: TensionMastKitContent = {
   installationInstructionsHtml: "",
 };
 
+export const TENSION_MAST_PREORDER_LABEL = "PREORDER";
+
+export const TENSION_MAST_PREORDER_NOTICE =
+  "This item is currently out of stock. Orders placed now are expected to ship around December 20. Payment is collected when you order.";
+
 export const TENSION_MAST_BENEFITS = [
   "Keep a second color threaded and ready.",
   "Set up yarn for Fair Isle, intarsia, and other multicolor knitting.",
