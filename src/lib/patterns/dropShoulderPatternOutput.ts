@@ -74,6 +74,8 @@ import {
 import { cardiganFrontInitialNeckBindOffStitches } from "./roundNeckNotation";
 import { dropShoulderShoulderBindOffVideoRow } from "./dropShoulderShoulderBindOffVideo";
 import { dropShoulderRoundNecklineVideoRow } from "./dropShoulderRoundNecklineVideoTip";
+import { dropShoulderHoldPositionVideoRow } from "./dropShoulderHoldPositionVideoTip";
+import { straightShoulderShallowRoundNeckWrittenLines } from "./straightShoulderShallowRoundNeck";
 import { attachNecklinePrintInstructions } from "./patternPrintWrittenShaping";
 import { roundBackNecklineShapingVideoRow } from "./roundBackNecklineShapingVideoTip";
 import {
@@ -515,6 +517,32 @@ function splitTrustedParagraphsAtShoulderCompletion(
   return blocks;
 }
 
+/**
+ * Place the hold-position Quick Tip on the block that first puts the opposite side into hold.
+ */
+function pushStraightShoulderShallowNeckBlocks(
+  rows: SleevelessPatternDisplayRow[],
+  lines: readonly string[],
+  shoulderStsEach: number,
+): void {
+  const holdIdx = lines.findIndex((line) => /into hold/i.test(line.replace(/<[^>]+>/g, " ")));
+  const tip = dropShoulderHoldPositionVideoRow();
+  if (holdIdx < 0 || !tip) {
+    rows.push(...splitTrustedParagraphsAtShoulderCompletion(lines, shoulderStsEach));
+    return;
+  }
+  rows.push({
+    kind: "block",
+    trustedParagraphs: lines.slice(0, holdIdx + 1),
+    paragraphs: [],
+    tipHtml: tip.tipHtml,
+    tipHtmlIsFull: true,
+    tipPresentation: "quick-tip",
+    tipId: tip.tipId,
+  });
+  rows.push(...splitTrustedParagraphsAtShoulderCompletion(lines.slice(holdIdx + 1), shoulderStsEach));
+}
+
 /** Local neckline RC after the row-counter reset (matches chart/map/checklist RC 000). */
 const DROP_SHOULDER_NECKLINE_LOCAL_RC_START = 0;
 
@@ -824,13 +852,19 @@ function buildBackRows(args: {
       args.totalRows,
     );
     const necklineWrittenStartRc = dropShoulderNecklineWrittenStartRc(true, neckStartRc)!;
-    const executionLines = roundNeckBackShallowExecutionWrittenLines(plan, {
-      bodyWidthStitches: args.bodyWidthSts,
-      rc: {
-        necklineStartRc: necklineWrittenStartRc,
-        shoulderCompleteRc: necklineLocalTotalRows,
-      },
-    });
+    const executionLines =
+      plan.strategy === "shallow-round"
+        ? straightShoulderShallowRoundNeckWrittenLines(plan, args.bodyWidthSts, {
+            necklineStartRc: necklineWrittenStartRc,
+            shoulderCompleteRc: necklineLocalTotalRows,
+          })
+        : roundNeckBackShallowExecutionWrittenLines(plan, {
+            bodyWidthStitches: args.bodyWidthSts,
+            rc: {
+              necklineStartRc: necklineWrittenStartRc,
+              shoulderCompleteRc: necklineLocalTotalRows,
+            },
+          });
     // Isolated, hardcoded explainer video shown immediately before the shoulder
     // bind-off instructions. See `dropShoulderShoulderBindOffVideo.ts`.
     rows.push(dropShoulderShoulderBindOffVideoRow());
@@ -852,7 +886,11 @@ function buildBackRows(args: {
       tipPresentation: "quick-tip",
       tipId: roundBackNeckVideoTip.tipId,
     });
-    rows.push(...splitTrustedParagraphsAtShoulderCompletion(executionLines, args.shoulderStsEach));
+    if (plan.strategy === "shallow-round") {
+      pushStraightShoulderShallowNeckBlocks(rows, executionLines, args.shoulderStsEach);
+    } else {
+      rows.push(...splitTrustedParagraphsAtShoulderCompletion(executionLines, args.shoulderStsEach));
+    }
   } else {
     rows.push({
       kind: "block",
@@ -991,42 +1029,71 @@ function buildPulloverFrontRows(args: {
       );
       rows.push(...splitTrustedParagraphsAtShoulderCompletion(finishTrusted, args.shoulderStsEach));
     } else {
-      const { lines, plan } = roundNeckEdgeLines(
-        args.neckSts,
-        args.frontNeckDepthRows,
-        necklineWrittenStartRc,
-      );
-      const centerLine = roundNeckPlanCenterWrittenLine(plan);
-      const introTrusted = insertLifelineReminderAfterOpening([
-        centerLine ? `${centerLine} for the neck.` : "Shape the neck.",
-        ...dropShoulderPulloverFrontShoulderDivideParagraphs(),
-        ...lines,
-        ...(isShallowSinglesOnlyPlan(plan) ? [roundNeckPlanFinishHeldStitchesLine()] : []),
-      ]);
-      const finishTrusted = dropShoulderPulloverBothShouldersFinishParagraphs(
-        args.shoulderStsEach,
-        shoulderFinishRc,
-        DROP_SHOULDER_PULLOVER_ROUND_NECK_SECOND_SHOULDER_SENTENCE,
-      );
-      // Catalog video 2212: pullover round front only (center + neck-edge, no
-      // shoulder shaping). Insert before the shaping block so knitters can watch
-      // first. V-neck and cardigan use a different process and must not get this tip.
+      const frontPlan = calculateRoundNecklinePlan({
+        necklineStitches: args.neckSts,
+        necklineDepthRows: args.frontNeckDepthRows,
+      });
+      // Catalog video 2212: pullover round front only. V-neck and cardigan stay out.
       const roundNeckHelp = dropShoulderRoundNecklineVideoRow();
       if (roundNeckHelp) rows.push(roundNeckHelp);
-      rows.push({
-        kind: "block",
-        rc: dropShoulderNecklineFirstBlockRc(useLocalNecklineRc, neckStartRc),
-        trustedParagraphs: introTrusted,
-        paragraphs: [],
-      });
-      appendDropShoulderFrontArmholeMarkerDuringNeckline(
-        rows,
-        timing,
-        pulloverMarkerLine,
-        A,
-        useLocalNecklineRc,
-      );
-      rows.push(...splitTrustedParagraphsAtShoulderCompletion(finishTrusted, args.shoulderStsEach));
+      if (frontPlan.strategy === "shallow-round") {
+        rows.push({
+          kind: "block",
+          rc: dropShoulderNecklineFirstBlockRc(useLocalNecklineRc, neckStartRc),
+          trustedParagraphs: insertLifelineReminderAfterOpening([
+            "Begin front neckline shaping.",
+            "Drop-shoulder shoulders are worked straight — there is no shoulder shaping.",
+          ]),
+          paragraphs: [],
+        });
+        pushStraightShoulderShallowNeckBlocks(
+          rows,
+          straightShoulderShallowRoundNeckWrittenLines(frontPlan, args.bodyWidthSts, {
+            necklineStartRc: necklineWrittenStartRc ?? 0,
+            shoulderCompleteRc: shoulderFinishRc,
+          }),
+          args.shoulderStsEach,
+        );
+        appendDropShoulderFrontArmholeMarkerDuringNeckline(
+          rows,
+          timing,
+          pulloverMarkerLine,
+          A,
+          useLocalNecklineRc,
+        );
+      } else {
+        const { lines, plan } = roundNeckEdgeLines(
+          args.neckSts,
+          args.frontNeckDepthRows,
+          necklineWrittenStartRc,
+        );
+        const centerLine = roundNeckPlanCenterWrittenLine(plan);
+        const introTrusted = insertLifelineReminderAfterOpening([
+          centerLine ? `${centerLine} for the neck.` : "Shape the neck.",
+          ...dropShoulderPulloverFrontShoulderDivideParagraphs(),
+          ...lines,
+          ...(isShallowSinglesOnlyPlan(plan) ? [roundNeckPlanFinishHeldStitchesLine()] : []),
+        ]);
+        const finishTrusted = dropShoulderPulloverBothShouldersFinishParagraphs(
+          args.shoulderStsEach,
+          shoulderFinishRc,
+          DROP_SHOULDER_PULLOVER_ROUND_NECK_SECOND_SHOULDER_SENTENCE,
+        );
+        rows.push({
+          kind: "block",
+          rc: dropShoulderNecklineFirstBlockRc(useLocalNecklineRc, neckStartRc),
+          trustedParagraphs: introTrusted,
+          paragraphs: [],
+        });
+        appendDropShoulderFrontArmholeMarkerDuringNeckline(
+          rows,
+          timing,
+          pulloverMarkerLine,
+          A,
+          useLocalNecklineRc,
+        );
+        rows.push(...splitTrustedParagraphsAtShoulderCompletion(finishTrusted, args.shoulderStsEach));
+      }
     }
   } else {
     rows.push({

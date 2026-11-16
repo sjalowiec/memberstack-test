@@ -9,6 +9,8 @@ import {
   type RoundNecklineShapingResult,
   type RoundNecklineSidePlan,
 } from "./legoBlocks/roundNeckline";
+import { computeShallowBackNeckNeedleLayout } from "./legoBlocks/shallowBackNeckNeedleLayout";
+import { alignShallowHoldGroupsToShoulderSections } from "./straightShoulderShallowRoundNeck";
 import { distributeTotalAcrossRows } from "./distributeTotalAcrossRows";
 
 export { distributeTotalAcrossRows };
@@ -161,6 +163,8 @@ function backInnerNeckRow(
   stairRowCount: number,
   neckInnerRowSpan: number,
   shallowHold: boolean,
+  /** Drop-shoulder straight shoulders: multi-stitch groups bind off; a 1-stitch group decreases. */
+  neckEdgeBindOrDecrease = false,
 ): { events: ShapingEvent[]; innerNetL: number; innerNetR: number } {
   const events: ShapingEvent[] = [];
   let innerNetL = 0;
@@ -226,12 +230,14 @@ function backInnerNeckRow(
   const si = j / 2;
   const lb = neckPlan.left.holdGroups[si] ?? 0;
   const rb = neckPlan.right.holdGroups[si] ?? 0;
+  const kindFor = (amount: number): ShapingEvent["kind"] =>
+    !neckEdgeBindOrDecrease ? "hold" : amount <= 1 ? "decrease" : "bindOff";
   if (lb > 0) {
-    events.push({ kind: "hold", side: "left", edge: "inner", amount: lb });
+    events.push({ kind: kindFor(lb), side: "left", edge: "inner", amount: lb });
     innerNetL += lb;
   }
   if (rb > 0) {
-    events.push({ kind: "hold", side: "right", edge: "inner", amount: rb });
+    events.push({ kind: kindFor(rb), side: "right", edge: "inner", amount: rb });
     innerNetR += rb;
   }
   return { events, innerNetL, innerNetR };
@@ -715,6 +721,14 @@ export type BuildTimelineOptions = {
    */
   straightShoulders?: boolean;
   /**
+   * Full-width Drop Shoulder shallow round neck with straight shoulders.
+   * Neck-edge groups become bind-offs (2 or more stitches) or fully fashioned
+   * decreases (1 stitch) on the existing odd rows. Setup and center stay holds.
+   * Edge groups are aligned to the needle-bed shoulder sections. Default off so
+   * sleeveless, set-in, cardigan, and sloped-shoulder timelines stay on holds.
+   */
+  straightShoulderShallowNeckEdge?: boolean;
+  /**
    * Place any shoulder stitches that did not fit an earlier action row on the last in-budget row.
    * Keeps the shoulder from gaining a row past the armhole.
    */
@@ -809,7 +823,7 @@ export function buildTimeline(inputs: ShapingTimelineInputs, options?: BuildTime
           necklineDepthRows: neckDepthRows,
         })
       : null;
-  const neckPlan: RoundNecklineShapingResult =
+  let neckPlan: RoundNecklineShapingResult =
     inputs.neckProfile === "back"
       ? calculateDocumentedShallowRoundNecklineShaping({
           necklineStitches: N,
@@ -825,6 +839,21 @@ export function buildTimeline(inputs: ShapingTimelineInputs, options?: BuildTime
   const centerBindOffAmount = neckPlan.centerBindOff;
   const shallowHold =
     inputs.neckProfile === "back" || frontRoundPlan!.strategy === "shallow-round";
+  const straightShoulderShallowNeckEdge =
+    options?.straightShoulderShallowNeckEdge === true && shallowHold;
+  if (straightShoulderShallowNeckEdge) {
+    const aligned = alignShallowHoldGroupsToShoulderSections(
+      B,
+      centerBindOffAmount,
+      neckPlan.left.holdGroups,
+      neckPlan.right.holdGroups,
+    );
+    neckPlan = {
+      ...neckPlan,
+      left: { ...neckPlan.left, holdGroups: aligned.leftGroups },
+      right: { ...neckPlan.right, holdGroups: aligned.rightGroups },
+    };
+  }
 
   const leftStair = neckPlan.left.stairSteps;
   const rightStair = neckPlan.right.stairSteps;
@@ -834,10 +863,17 @@ export function buildTimeline(inputs: ShapingTimelineInputs, options?: BuildTime
   const C = centerBindOffAmount;
   const shoulderBandTotal = B - N;
   const neckOpeningRemainingAfterBo = N - C;
-  const leftStart =
+  let leftStart =
     Math.floor(shoulderBandTotal / 2) + Math.floor(neckOpeningRemainingAfterBo / 2);
-  const rightStart =
+  let rightStart =
     Math.ceil(shoulderBandTotal / 2) + Math.ceil(neckOpeningRemainingAfterBo / 2);
+  if (straightShoulderShallowNeckEdge) {
+    const layout = computeShallowBackNeckNeedleLayout(B, centerBindOffAmount);
+    if (layout.stitchCounts.leftShoulder > 0 && layout.stitchCounts.rightShoulder > 0) {
+      leftStart = layout.stitchCounts.leftShoulder;
+      rightStart = layout.stitchCounts.rightShoulder;
+    }
+  }
 
   const shoulderBindoffRowsIn = Math.max(1, Math.floor(shoulderBindoffRowsRaw));
   const leftShoulderTotal = Math.floor(shoulderBandTotal / 2);
@@ -907,6 +943,7 @@ export function buildTimeline(inputs: ShapingTimelineInputs, options?: BuildTime
       stairRowCount,
       neckInnerRowSpan,
       shallowHold,
+      straightShoulderShallowNeckEdge,
     );
     plannedInnerLPerRow.push(Math.max(0, planned.innerNetL));
     plannedInnerRPerRow.push(Math.max(0, planned.innerNetR));
@@ -969,6 +1006,7 @@ export function buildTimeline(inputs: ShapingTimelineInputs, options?: BuildTime
       stairRowCount,
       neckInnerRowSpan,
       shallowHold,
+      straightShoulderShallowNeckEdge,
     );
     events.push(...inner.events);
     innerNetL = inner.innerNetL;

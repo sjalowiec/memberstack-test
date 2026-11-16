@@ -11,6 +11,7 @@ import {
   calculateBackRoundNecklinePlan,
   compressHoldGroupsToSegments,
 } from "./legoBlocks/roundNeckline";
+import { alignShallowHoldGroupsToShoulderSections } from "./straightShoulderShallowRoundNeck";
 import {
   roundNeckBackShallowExecutionWrittenLines,
   roundNeckPlanOneSideNeckEdgeWrittenLines,
@@ -105,23 +106,35 @@ function frontBlockParagraphs(rows: SleevelessPatternDisplayRow[]): string[] {
 }
 
 describe("drop-shoulder neckline shaping row lists", () => {
-  it("back shallow hold bullets include every-other-row local RC lists after reset", () => {
+  it("back shallow neck-edge actions use odd local RC lists after the setup row", () => {
     const result = generateDropShoulderPattern(DROP_SHOULDER_PATTERN);
     const plan = calculateBackRoundNecklinePlan({
       necklineStitches: result.debug.necklineStitches!,
       necklineDepthRows: result.debug.backNeckDepthRows!,
     });
-    const rightSegments = compressHoldGroupsToSegments(plan.right.holdGroups);
-    let rc = 0;
+    const bodyWidth =
+      (result.debug.shoulderStitches ?? 0) * 2 + (result.debug.necklineStitches ?? 0);
+    const aligned = alignShallowHoldGroupsToShoulderSections(
+      bodyWidth,
+      plan.centerBindOff,
+      plan.left.holdGroups,
+      plan.right.holdGroups,
+    );
+    const rightSegments = compressHoldGroupsToSegments(aligned.rightGroups);
+    let rc = 1;
     for (const seg of rightSegments) {
       const expected = formatParentheticalShapingRowNumbers(
         shapingActionRowNumbers(rc, seg.repeatCount, 2),
       );
-      expect(blockText(result.displayRows)).toContain(
-        `Put ${seg.stitchCount} needles into hold every other row ${seg.repeatCount} time${seg.repeatCount === 1 ? "" : "s"}. ${expected}`,
-      );
+      const times = `${seg.repeatCount} time${seg.repeatCount === 1 ? "" : "s"}`;
+      const instruction =
+        seg.stitchCount === 1
+          ? `Decrease 1 stitch at the neck edge, fully fashioned, every other row ${times}.`
+          : `Bind off ${seg.stitchCount} stitches every other row ${times}.`;
+      expect(blockText(result.displayRows)).toContain(`${instruction} ${expected}`);
       rc += 2 * seg.repeatCount;
     }
+    expect(rc - 2).toBe(result.debug.backNeckDepthRows! - 1);
   });
 
   it("pullover round front shaping lines include local row lists in the neckline section", () => {

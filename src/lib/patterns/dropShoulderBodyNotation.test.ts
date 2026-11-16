@@ -330,8 +330,13 @@ describe("dropShoulderBodyJapaneseNotation", () => {
     expect(backText).toMatch(/class="needle-range"/);
     expect(backText).toMatch(/Put needles .*L50 through R9.*into hold \(59 stitches total\)/);
     expect(backText).toMatch(/Work needles .*R10 through R50.*\(41 stitches total\)/);
-    expect(backText).toMatch(/Put 3 needles into hold every other row 1 time/i);
-    expect(backText).toMatch(/Put 2 needles into hold every other row 3 times/i);
+    expect(backText).toMatch(/Bind off 3 stitches every other row 1 time/i);
+    expect(backText).toMatch(/Bind off 2 stitches every other row 3 times/i);
+    expect(backText).toMatch(/\(RC: 001\)/);
+    expect(backText).toMatch(/\(RC: 003, 005, 007\)/);
+    expect(backText).toMatch(/Reset the row counter to RC: 000/i);
+    expect(backText).toMatch(/Scrap off or bind off the center neckline stitches left in hold/i);
+    expect(backText).not.toMatch(/Put \d+ needles into hold every other row/i);
     expect(backText).toMatch(/<em>\(RC: \d+(?:, \d+)*\)<\/em>/);
     expect(backText).toMatch(/Scrap off or bind off the remaining shoulder stitches/i);
     expect(backText).toMatch(/The first shoulder is complete/i);

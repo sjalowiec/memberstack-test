@@ -498,6 +498,7 @@ export function buildDropShoulderBackNeckShapingTimeline(
 
   let timeline = buildNeckShoulderTimelineAndChartRows(patternNumbers, {
     straightShoulders: true,
+    straightShoulderShallowNeckEdge: true,
   }).timeline;
   if (timeline.length === 0) return null;
 
@@ -531,7 +532,17 @@ export function buildDropShoulderFrontNeckShapingChart(
 
   const isCardiganHalfFront = isCardigan;
   const shoulderBindoffRows = Math.max(1, Math.round(rowsPerInch));
-  const timelineOpts = { straightShoulders: true as const };
+  const pulloverShallowStraightNeck =
+    !isCardigan &&
+    !isVNeck &&
+    calculateRoundNecklinePlan({
+      necklineStitches: neckSts,
+      necklineDepthRows: frontNeckDepthRows,
+    }).strategy === "shallow-round";
+  const timelineOpts = {
+    straightShoulders: true as const,
+    ...(pulloverShallowStraightNeck ? { straightShoulderShallowNeckEdge: true as const } : {}),
+  };
 
   const necklineOpeningStsForFrontPiece = isCardiganHalfFront
     ? Math.max(1, Math.round(neckSts / 2))
