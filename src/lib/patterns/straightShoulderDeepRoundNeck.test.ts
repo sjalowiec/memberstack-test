@@ -7,8 +7,19 @@ import { computeShallowBackNeckNeedleLayout } from "./legoBlocks/shallowBackNeck
 import { calculateRoundNecklinePlan } from "./legoBlocks/roundNeckline";
 import { neckShoulderChartRowsFromTimeline } from "./neckShoulderShapingChartRows";
 import { neckShoulderShapingChartFromRows } from "./neckShoulderShapingChart";
-import { buildActiveSideInstructionTableRows } from "./neckShoulderActiveSideChecklist";
-import { dropShoulderFrontChartActiveSideRcStart } from "./dropShoulderFrontNeckShapingChart";
+import {
+  ARMHOLE_MARKER_BESIDE_NECKLINE_SENTENCE,
+  buildActiveSideInstructionTableRows,
+  buildSecondShoulderInstructionTableRows,
+} from "./neckShoulderActiveSideChecklist";
+import {
+  dropShoulderFrontChartActiveSideRcStart,
+  dropShoulderFrontNeckChartTableOptions,
+} from "./dropShoulderFrontNeckShapingChart";
+import {
+  renderNeckShoulderShapingChartTableOnlyHtml,
+  renderNeckShoulderShapingPrintInstructionTableHtml,
+} from "./neckShoulderShapingChartHtml";
 import {
   DROP_SHOULDER_HOLD_POSITION_VIDEO_CONTENT_ID,
   DROP_SHOULDER_HOLD_POSITION_VIDEO_TIP_ID,
@@ -167,6 +178,76 @@ describe("deep round neckline that starts on the armhole row", () => {
     expect(back).toContain("Put needles L61 through R10 into hold");
     expect(back).toContain("Decrease 1 stitch at the neck edge, fully fashioned, every other row 1 time. (RC: 011)");
     expect(back).not.toContain("Bind off center neckline needles");
+  });
+
+  it("keeps the armhole marker at RC 177 when the displayed 5-inch neck starts at RC 175", () => {
+    const result = generateDropShoulderPattern(size1Pattern(5));
+    expect(result.debug.armholeDepth).toBe(9.75 / 2);
+    expect(result.debug.armholeStartRow).toBe(177);
+    expect(result.debug.armholeRows).toBe(54);
+    expect(result.debug.frontNeckDepth).toBe(5);
+    expect(result.debug.frontNeckDepthRows).toBe(56);
+    expect(result.debug.frontNecklineStartRC).toBe(175);
+    expect(result.debug.frontNeckRoundNecklineStrategy).toBe("deep-round");
+
+    const front = plain(result.frontDisplayRows);
+    const lifelineAt = front.indexOf("Optional: Add a lifeline before dividing the neckline.");
+    const centerAt = front.indexOf("Bind off the center 14 stitches for the neck.");
+    const markerAt = front.indexOf("Place a marker at each end of this row to mark the base of the armhole.");
+    const stairAt = front.indexOf("(RC: 177, 179, 181)");
+    const singlesAt = front.indexOf("(RC: 183, 185, 187, 189, 191, 193, 195)");
+    expect(lifelineAt).toBeGreaterThanOrEqual(0);
+    expect(centerAt).toBeGreaterThan(lifelineAt);
+    expect(markerAt).toBeGreaterThan(centerAt);
+    expect(stairAt).toBeGreaterThan(markerAt);
+    expect(singlesAt).toBeGreaterThan(stairAt);
+    expect(front).not.toContain("stitches. for the neck");
+    expect(front).not.toContain("Begin the front neckline on this same row.");
+
+    const markerBlock = result.frontDisplayRows.find(
+      (row) => row.kind === "block" && row.rc === "RC: 177",
+    );
+    expect(markerBlock?.kind).toBe("block");
+    if (markerBlock?.kind === "block") {
+      expect(markerBlock.paragraphs?.[0]).toMatch(/^Place a marker at each end/i);
+      expect(plain([markerBlock])).toContain("bind off 3, then 2, then 2 stitches");
+      expect(plain([markerBlock])).toContain("(RC: 177, 179, 181)");
+    }
+
+    const chart = neckShoulderShapingChartFromRows(
+      neckShoulderChartRowsFromTimeline(result.frontNeckShoulderTimeline ?? []),
+      { timeline: result.frontNeckShoulderTimeline },
+    );
+    const rcStart = dropShoulderFrontChartActiveSideRcStart(
+      chart,
+      result.debug.frontNecklineStartRC,
+      result.debug.armholeStartRow,
+    );
+    const options = dropShoulderFrontNeckChartTableOptions(rcStart, chart, result.debug.armholeStartRow);
+    const checklist = buildActiveSideInstructionTableRows(chart, rcStart, {
+      includeCenterNecklineSetupRow: true,
+      armholeMarkerWithNecklineRc: result.debug.armholeStartRow,
+    });
+    const markerRow = checklist.find((row) => row.rc === 177);
+    expect(markerRow?.action).toBe(`${ARMHOLE_MARKER_BESIDE_NECKLINE_SENTENCE} Bind off 3 sts`);
+    const second = buildSecondShoulderInstructionTableRows(checklist);
+    expect(second.find((row) => row.rc === 177)?.action).toBe("Bind off 3 sts");
+    expect(second.some((row) => row.action.includes("Place a marker"))).toBe(false);
+
+    const online = renderNeckShoulderShapingChartTableOnlyHtml(chart, "deep-before-marker", undefined, options);
+    const printed = renderNeckShoulderShapingPrintInstructionTableHtml(
+      chart,
+      "deep-before-marker-print",
+      "",
+      options,
+    );
+    expect(online).toContain(`${ARMHOLE_MARKER_BESIDE_NECKLINE_SENTENCE} Bind off 3 sts`);
+    expect(printed.replace(/\u00a0/g, " ")).toContain(
+      `${ARMHOLE_MARKER_BESIDE_NECKLINE_SENTENCE} Bind off 3 sts`,
+    );
+    expect(online.indexOf(ARMHOLE_MARKER_BESIDE_NECKLINE_SENTENCE)).toBeLessThan(
+      online.indexOf("Bind off 2 sts"),
+    );
   });
 
   it("leaves the default 4-inch deep front and the 1-inch shallow front on their approved paths", () => {

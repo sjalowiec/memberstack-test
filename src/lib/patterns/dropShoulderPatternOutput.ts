@@ -68,6 +68,7 @@ import {
   roundNeckPlanCenterWrittenLine,
   roundNeckPlanFinishHeldStitchesLine,
   roundNeckPlanOneSideNeckEdgeWrittenLines,
+  roundNeckEdgeLinesAroundArmholeMarker,
   isShallowSinglesOnlyPlan,
   appendEvenShapingRowListToInstruction,
 } from "./roundNeckPlanPresentation";
@@ -84,6 +85,7 @@ import {
   pieceMarkersSeamingTipDisplayRow,
   formatRcColon,
   insertLifelineReminderAfterOpening,
+  lifelineBeforeDividingNecklineReminderTrustedHtml,
   type SleevelessPatternDisplayRow,
   type SleevelessBackPatternResult,
   type SleevelessBackPatternDebug,
@@ -1102,12 +1104,26 @@ function buildPulloverFrontRows(args: {
           necklineWrittenStartRc,
         );
         const centerLine = roundNeckPlanCenterWrittenLine(plan);
-        const introTrusted = insertLifelineReminderAfterOpening([
-          centerLine ? `${centerLine} for the neck.` : "Shape the neck.",
+        const centerSentence = centerLine
+          ? `${centerLine.replace(/\.\s*$/, "")} for the neck.`
+          : "Shape the neck.";
+        const edgeSplit =
+          timing.neckStartsBeforeMarker && necklineWrittenStartRc !== undefined
+            ? roundNeckEdgeLinesAroundArmholeMarker(
+                plan,
+                necklineWrittenStartRc,
+                args.armholeMarkerRc,
+              )
+            : { beforeMarker: lines, fromMarker: [] as string[] };
+        const heldFinish =
+          isShallowSinglesOnlyPlan(plan) ? [roundNeckPlanFinishHeldStitchesLine()] : [];
+        const setupTrusted = [
+          lifelineBeforeDividingNecklineReminderTrustedHtml(),
+          centerSentence,
           ...dropShoulderPulloverFrontShoulderDivideParagraphs(),
-          ...lines,
-          ...(isShallowSinglesOnlyPlan(plan) ? [roundNeckPlanFinishHeldStitchesLine()] : []),
-        ]);
+          ...edgeSplit.beforeMarker,
+          ...(edgeSplit.fromMarker.length === 0 ? heldFinish : []),
+        ];
         const finishTrusted = dropShoulderPulloverBothShouldersFinishParagraphs(
           args.shoulderStsEach,
           shoulderFinishRc,
@@ -1116,16 +1132,30 @@ function buildPulloverFrontRows(args: {
         rows.push({
           kind: "block",
           rc: dropShoulderNecklineFirstBlockRc(useLocalNecklineRc, neckStartRc),
-          trustedParagraphs: introTrusted,
+          trustedParagraphs: setupTrusted,
           paragraphs: [],
         });
-        appendDropShoulderFrontArmholeMarkerDuringNeckline(
-          rows,
-          timing,
-          pulloverMarkerLine,
-          A,
-          useLocalNecklineRc,
-        );
+        if (timing.neckStartsBeforeMarker && edgeSplit.fromMarker.length > 0) {
+          const markerWithNeckline = armholeMarkerBlockParagraphs(pulloverMarkerLine, [
+            ...edgeSplit.fromMarker,
+            ...heldFinish,
+          ]);
+          rows.push({
+            kind: "block",
+            rc: formatRcColon(args.armholeMarkerRc),
+            paragraphs: markerWithNeckline.paragraphs,
+            trustedParagraphs: markerWithNeckline.trustedParagraphs,
+            stitchCount: A > 0 ? A : undefined,
+          });
+        } else {
+          appendDropShoulderFrontArmholeMarkerDuringNeckline(
+            rows,
+            timing,
+            pulloverMarkerLine,
+            A,
+            useLocalNecklineRc,
+          );
+        }
         rows.push(...splitTrustedParagraphsAtShoulderCompletion(finishTrusted, args.shoulderStsEach));
       }
       }

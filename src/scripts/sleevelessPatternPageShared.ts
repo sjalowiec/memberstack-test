@@ -4054,9 +4054,18 @@ table {
       result?.debug?.frontNecklineStartRC,
       result?.debug?.armholeStartRow,
     );
+    const frontNeckStartRc = result?.debug?.frontNecklineStartRC;
+    const frontArmholeMarkerRc = result?.debug?.armholeStartRow;
+    const armholeMarkerDuringNeckline =
+      typeof frontNeckStartRc === "number" &&
+      typeof frontArmholeMarkerRc === "number" &&
+      frontNeckStartRc < frontArmholeMarkerRc
+        ? frontArmholeMarkerRc
+        : undefined;
     const frontChartTableOptions = dropShoulderFrontNeckChartTableOptions(
       frontActiveSideRcStart,
       result.frontNeckShoulderShapingChart,
+      armholeMarkerDuringNeckline,
     );
     const frontChartTableHost = mount.querySelector("#sg-neck-shoulder-chart-table-front");
     if (frontChartTableHost && result.frontNeckShoulderChartUsesLiveRows) {

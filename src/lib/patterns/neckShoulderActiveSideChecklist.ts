@@ -63,9 +63,18 @@ export type ActiveSideInstructionTableRow = {
   rowCounterResetGarmentRc?: number;
 };
 
+/** Written with a neckline action when that action is on the armhole-marker row. */
+export const ARMHOLE_MARKER_BESIDE_NECKLINE_SENTENCE =
+  "Place a marker at each end of this row to mark the base of the armhole.";
+
 /** Back neckline checklist: prepend center divide/setup row at the timeline center-bind-off RC. */
 export type ActiveShoulderChecklistOptions = {
   includeCenterNecklineSetupRow?: boolean;
+  /**
+   * Garment RC of a drop-shoulder armhole marker that falls inside this checklist.
+   * The first-shoulder row at that RC states the marker with its neckline action.
+   */
+  armholeMarkerWithNecklineRc?: number;
   /**
    * Center-seam left pieces place the center edge on the right. The timeline still records
    * that edge as the inner edge; only the carriage label is mirrored so a neck bind-off
@@ -870,7 +879,29 @@ function buildSideInstructionTableRows(
     });
   }
 
-  return out;
+  return side === "right"
+    ? annotateArmholeMarkerBesideNeckline(out, options?.armholeMarkerWithNecklineRc)
+    : out;
+}
+
+function annotateArmholeMarkerBesideNeckline(
+  rows: readonly ActiveSideInstructionTableRow[],
+  markerRc: number | undefined,
+): ActiveSideInstructionTableRow[] {
+  if (typeof markerRc !== "number" || !Number.isFinite(markerRc)) return [...rows];
+  const rc = Math.max(0, Math.floor(markerRc));
+  const neckIndex = rows.findIndex((row) => row.rc === rc && row.edge === "Neck");
+  const index =
+    neckIndex >= 0 ? neckIndex : rows.findIndex((row) => row.rc === rc && row.rcEnd === undefined);
+  if (index < 0) return [...rows];
+  const row = rows[index]!;
+  if (row.action.startsWith(ARMHOLE_MARKER_BESIDE_NECKLINE_SENTENCE)) return [...rows];
+  const next = [...rows];
+  next[index] = {
+    ...row,
+    action: `${ARMHOLE_MARKER_BESIDE_NECKLINE_SENTENCE} ${row.action}`,
+  };
+  return next;
 }
 
 export function buildActiveSideInstructionTableRows(
@@ -967,6 +998,10 @@ export function buildSecondShoulderInstructionTableRows(
     };
     if (isCenterNecklineSetupChecklistRow(r)) {
       mirrored.action = formatSecondShoulderCenterSetupChecklistAction(r.stitchesRemaining);
+    }
+    const markerPrefix = `${ARMHOLE_MARKER_BESIDE_NECKLINE_SENTENCE} `;
+    if (mirrored.action.startsWith(markerPrefix)) {
+      mirrored.action = mirrored.action.slice(markerPrefix.length);
     }
     return mirrored;
   });

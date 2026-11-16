@@ -688,14 +688,20 @@ export function dropShoulderFrontChartActiveSideRcStart(
 export function dropShoulderFrontNeckChartTableOptions(
   activeSideRcStart: number,
   chart?: NeckShoulderShapingChart,
+  armholeMarkerWithNecklineRc?: number,
 ): NeckShoulderChartRenderOptions {
   const isCardiganFront = isSleevelessCardiganFrontNeckShoulderChart(chart);
+  const markerRc =
+    typeof armholeMarkerWithNecklineRc === "number" && Number.isFinite(armholeMarkerWithNecklineRc)
+      ? Math.max(0, Math.floor(armholeMarkerWithNecklineRc))
+      : undefined;
   return {
     activeSideOnly: true,
     activeSideRcStart,
     includeCenterNecklineSetupRow: true,
     hideCenterNecklineSetupRow: false,
     shouldersShaped: false,
+    ...(markerRc !== undefined ? { armholeMarkerWithNecklineRc: markerRc } : {}),
     ...(isCardiganFront
       ? { tableHeading: "Front Neckline Shaping Chart", isCardiganFront: true }
       : necklineShapingTwoSideTabPresentation()),

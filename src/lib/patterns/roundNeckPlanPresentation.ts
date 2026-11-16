@@ -44,6 +44,16 @@ function appendShapingRowListAfterSentence(line: string, rows: readonly number[]
   return parens ? `${line} ${parens}` : line;
 }
 
+function deepStairWrittenLine(steps: readonly number[], rows: readonly number[]): string {
+  const stairLine = `At the neck edge, bind off ${steps.join(", then ")} stitch${steps.length === 1 && steps[0] === 1 ? "" : "es"} on alternate (neck-edge) rows.`;
+  return appendShapingRowListAfterSentence(stairLine, rows);
+}
+
+function deepSingleWrittenLine(count: number, rows: readonly number[]): string {
+  const singleLine = `Decrease 1 stitch at the neck edge every other row ${count} time${count === 1 ? "" : "s"}.`;
+  return appendShapingRowListAfterSentence(singleLine, rows);
+}
+
 export type RoundNeckBackShallowExecutionOptions = {
   /** Full back body width in stitches — enables needle-range execution instructions. */
   bodyWidthStitches: number;
@@ -476,33 +486,80 @@ export function roundNeckPlanOneSideNeckEdgeWrittenLines(
 
   const lines: string[] = [];
   if (stairSteps.length > 0) {
-    const stairLine = `At the neck edge, bind off ${stairSteps.join(", then ")} stitch${stairSteps.length === 1 && stairSteps[0] === 1 ? "" : "es"} on alternate (neck-edge) rows.`;
-    if (necklineStartRc !== undefined) {
-      lines.push(
-        appendShapingRowListAfterSentence(
-          stairLine,
-          shapingActionRowNumbers(necklineStartRc + 2, stairSteps.length, 2),
-        ),
-      );
-    } else {
-      lines.push(stairLine);
-    }
+    lines.push(
+      deepStairWrittenLine(
+        stairSteps,
+        necklineStartRc !== undefined
+          ? shapingActionRowNumbers(necklineStartRc + 2, stairSteps.length, 2)
+          : [],
+      ),
+    );
   }
   if (singleDecreaseCount > 0) {
-    const singleLine = `Decrease 1 stitch at the neck edge every other row ${singleDecreaseCount} time${singleDecreaseCount === 1 ? "" : "s"}.`;
-    if (necklineStartRc !== undefined) {
-      const firstSingleRc = necklineStartRc + 2 * (stairSteps.length + 1);
-      lines.push(
-        appendShapingRowListAfterSentence(
-          singleLine,
-          shapingActionRowNumbers(firstSingleRc, singleDecreaseCount, 2),
-        ),
-      );
-    } else {
-      lines.push(singleLine);
-    }
+    const firstSingleRc =
+      necklineStartRc !== undefined ? necklineStartRc + 2 * (stairSteps.length + 1) : undefined;
+    lines.push(
+      deepSingleWrittenLine(
+        singleDecreaseCount,
+        firstSingleRc !== undefined
+          ? shapingActionRowNumbers(firstSingleRc, singleDecreaseCount, 2)
+          : [],
+      ),
+    );
   }
   return lines;
+}
+
+/**
+ * Same deep-round neck-edge rows as {@link roundNeckPlanOneSideNeckEdgeWrittenLines},
+ * split so instructions that reach the armhole marker can be printed with that marker.
+ * Stitch groups and row numbers stay the same. A group that crosses the marker is
+ * divided at that row.
+ */
+export function roundNeckEdgeLinesAroundArmholeMarker(
+  plan: RoundNecklinePlanResult | RoundNecklineShapingResult,
+  necklineStartRc: number,
+  armholeMarkerRc: number,
+): { beforeMarker: string[]; fromMarker: string[] } {
+  if (isShallowHoldRoundPlan(plan)) {
+    return {
+      beforeMarker: roundNeckPlanOneSideNeckEdgeWrittenLines(plan, "right", { necklineStartRc }),
+      fromMarker: [],
+    };
+  }
+  const { stairSteps, singleDecreaseCount } = sidePlan(plan, "right");
+  const beforeMarker: string[] = [];
+  const fromMarker: string[] = [];
+  const stairRcs = shapingActionRowNumbers(necklineStartRc + 2, stairSteps.length, 2);
+  const beforeStairs: number[] = [];
+  const beforeStairRcs: number[] = [];
+  const fromStairs: number[] = [];
+  const fromStairRcs: number[] = [];
+  stairSteps.forEach((step, index) => {
+    const rc = stairRcs[index];
+    if (rc === undefined) return;
+    if (rc < armholeMarkerRc) {
+      beforeStairs.push(step);
+      beforeStairRcs.push(rc);
+    } else {
+      fromStairs.push(step);
+      fromStairRcs.push(rc);
+    }
+  });
+  if (beforeStairs.length > 0) beforeMarker.push(deepStairWrittenLine(beforeStairs, beforeStairRcs));
+  if (fromStairs.length > 0) fromMarker.push(deepStairWrittenLine(fromStairs, fromStairRcs));
+
+  const firstSingleRc = necklineStartRc + 2 * (stairSteps.length + 1);
+  const singleRcs = shapingActionRowNumbers(firstSingleRc, singleDecreaseCount, 2);
+  const beforeSingleRcs = singleRcs.filter((rc) => rc < armholeMarkerRc);
+  const fromSingleRcs = singleRcs.filter((rc) => rc >= armholeMarkerRc);
+  if (beforeSingleRcs.length > 0) {
+    beforeMarker.push(deepSingleWrittenLine(beforeSingleRcs.length, beforeSingleRcs));
+  }
+  if (fromSingleRcs.length > 0) {
+    fromMarker.push(deepSingleWrittenLine(fromSingleRcs.length, fromSingleRcs));
+  }
+  return { beforeMarker, fromMarker };
 }
 
 /** Insert comma-separated garment RC list before the closing stitch-count parenthetical. */

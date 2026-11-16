@@ -1168,6 +1168,11 @@ export type NeckShoulderChartRenderOptions = {
   counterNote?: string;
   /** Sentences after the checklist, such as the hold-option bind-off. */
   closingParagraphs?: readonly string[];
+  /**
+   * Drop-shoulder front: garment RC where the armhole marker and a neckline
+   * action share a row. The first-shoulder checklist states both.
+   */
+  armholeMarkerWithNecklineRc?: number;
 };
 
 const SECOND_SHOULDER_CHECKLIST_HEADING = "Second Shoulder Checklist";
@@ -1405,13 +1410,20 @@ function renderShoulderTabsHtml(args: {
 
 function activeShoulderChecklistOptions(
   options?: NeckShoulderChartRenderOptions,
-): { includeCenterNecklineSetupRow?: boolean; invertCarriageParity?: boolean } | undefined {
+): {
+  includeCenterNecklineSetupRow?: boolean;
+  invertCarriageParity?: boolean;
+  armholeMarkerWithNecklineRc?: number;
+} | undefined {
   const includeCenter = options?.includeCenterNecklineSetupRow === true;
   const invertCarriage = options?.invertCarriageParity === true;
-  if (!includeCenter && !invertCarriage) return undefined;
+  const markerRc = options?.armholeMarkerWithNecklineRc;
+  const hasMarker = typeof markerRc === "number" && Number.isFinite(markerRc);
+  if (!includeCenter && !invertCarriage && !hasMarker) return undefined;
   return {
     ...(includeCenter ? { includeCenterNecklineSetupRow: true } : {}),
     ...(invertCarriage ? { invertCarriageParity: true } : {}),
+    ...(hasMarker ? { armholeMarkerWithNecklineRc: Math.max(0, Math.floor(markerRc)) } : {}),
   };
 }
 
@@ -1829,6 +1841,7 @@ export function renderNeckShoulderShapingPrintInstructionTableHtml(
     fullWidthChartOneRowPerRc?: boolean;
     isCardiganFront?: boolean;
     includeCenterNecklineSetupRow?: boolean;
+    armholeMarkerWithNecklineRc?: number;
   },
 ): string {
   const headingId = `${idPrefix}-heading`;
