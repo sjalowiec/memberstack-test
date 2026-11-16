@@ -165,6 +165,8 @@ function backInnerNeckRow(
   shallowHold: boolean,
   /** Drop-shoulder straight shoulders: multi-stitch groups bind off; a 1-stitch group decreases. */
   neckEdgeBindOrDecrease = false,
+  /** Deep straight shoulders: neck bind-offs and decreases on odd rows, when the carriage is at the neck. */
+  deepNeckEdgeOnOddRows = false,
 ): { events: ShapingEvent[]; innerNetL: number; innerNetR: number } {
   const events: ShapingEvent[] = [];
   let innerNetL = 0;
@@ -174,12 +176,14 @@ function backInnerNeckRow(
   }
 
   if (!shallowHold) {
-    // Deep: local RC 2, 4, 6… → action index 0, 1, 2…
+    // Default deep: local RC 2, 4, 6… Action index 0, 1, 2…
+    // Straight-shoulder drop shoulder at the armhole: odd rows 1, 3, 5… so the carriage is at the neck.
     const localFromCenter = i + 1;
-    if (localFromCenter % 2 !== 0) {
+    const onActionRow = deepNeckEdgeOnOddRows ? localFromCenter % 2 === 1 : localFromCenter % 2 === 0;
+    if (!onActionRow) {
       return { events, innerNetL, innerNetR };
     }
-    const actionIndex = localFromCenter / 2 - 1;
+    const actionIndex = deepNeckEdgeOnOddRows ? (localFromCenter - 1) / 2 : localFromCenter / 2 - 1;
     if (actionIndex < stairRowCount) {
       const leftStair = neckPlan.left.stairSteps;
       const rightStair = neckPlan.right.stairSteps;
@@ -729,6 +733,12 @@ export type BuildTimelineOptions = {
    */
   straightShoulderShallowNeckEdge?: boolean;
   /**
+   * Full-width Drop Shoulder deep round neck with straight shoulders, when the
+   * neckline starts on the armhole-marker row. Neck-edge bind-offs and decreases
+   * move to the odd rows. Stitch groups stay the deep-round plan. Default off.
+   */
+  straightShoulderDeepNeckEdge?: boolean;
+  /**
    * Place any shoulder stitches that did not fit an earlier action row on the last in-budget row.
    * Keeps the shoulder from gaining a row past the armhole.
    */
@@ -841,6 +851,8 @@ export function buildTimeline(inputs: ShapingTimelineInputs, options?: BuildTime
     inputs.neckProfile === "back" || frontRoundPlan!.strategy === "shallow-round";
   const straightShoulderShallowNeckEdge =
     options?.straightShoulderShallowNeckEdge === true && shallowHold;
+  const straightShoulderDeepNeckEdge =
+    options?.straightShoulderDeepNeckEdge === true && !shallowHold;
   if (straightShoulderShallowNeckEdge) {
     const aligned = alignShallowHoldGroupsToShoulderSections(
       B,
@@ -944,6 +956,7 @@ export function buildTimeline(inputs: ShapingTimelineInputs, options?: BuildTime
       neckInnerRowSpan,
       shallowHold,
       straightShoulderShallowNeckEdge,
+      straightShoulderDeepNeckEdge,
     );
     plannedInnerLPerRow.push(Math.max(0, planned.innerNetL));
     plannedInnerRPerRow.push(Math.max(0, planned.innerNetR));
@@ -1007,6 +1020,7 @@ export function buildTimeline(inputs: ShapingTimelineInputs, options?: BuildTime
       neckInnerRowSpan,
       shallowHold,
       straightShoulderShallowNeckEdge,
+      straightShoulderDeepNeckEdge,
     );
     events.push(...inner.events);
     innerNetL = inner.innerNetL;

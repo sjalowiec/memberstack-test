@@ -76,6 +76,7 @@ import { dropShoulderShoulderBindOffVideoRow } from "./dropShoulderShoulderBindO
 import { dropShoulderRoundNecklineVideoRow } from "./dropShoulderRoundNecklineVideoTip";
 import { dropShoulderHoldPositionVideoRow } from "./dropShoulderHoldPositionVideoTip";
 import { straightShoulderShallowRoundNeckWrittenLines } from "./straightShoulderShallowRoundNeck";
+import { straightShoulderDeepRoundNeckWrittenLines } from "./straightShoulderDeepRoundNeck";
 import { attachNecklinePrintInstructions } from "./patternPrintWrittenShaping";
 import { roundBackNecklineShapingVideoRow } from "./roundBackNecklineShapingVideoTip";
 import {
@@ -957,12 +958,24 @@ function buildPulloverFrontRows(args: {
   }
 
   const pulloverMarkerLine = "Place a marker at each end of this row to mark the base of the armhole.";
+  const frontPlanForMarker =
+    !args.isVNeck && args.neckSts > 0
+      ? calculateRoundNecklinePlan({
+          necklineStitches: args.neckSts,
+          necklineDepthRows: args.frontNeckDepthRows,
+        })
+      : null;
+  const deepRoundAtArmhole =
+    frontPlanForMarker?.strategy === "deep-round" && timing.neckStartRc === args.armholeMarkerRc;
   if (!timing.neckStartsBeforeMarker) {
     rows.push({ kind: "section", title: "ABOVE ARMHOLE MARKERS" });
-    const pulloverFrontAboveMarker = armholeMarkerBlockParagraphs(
-      pulloverMarkerLine,
-      [knitEvenLine(timing.straightAboveMarkerRows)].filter((line) => line.length > 0),
-    );
+    const markerFollow = [knitEvenLine(timing.straightAboveMarkerRows)].filter((line) => line.length > 0);
+    if (deepRoundAtArmhole) {
+      markerFollow.push(
+        "Begin the front neckline on this same row. After the row counter resets to RC 000, use that counter for the neckline and both shoulders.",
+      );
+    }
+    const pulloverFrontAboveMarker = armholeMarkerBlockParagraphs(pulloverMarkerLine, markerFollow);
     rows.push({
       kind: "block",
       rc: formatRcColon(args.armholeMarkerRc),
@@ -1029,10 +1042,31 @@ function buildPulloverFrontRows(args: {
       );
       rows.push(...splitTrustedParagraphsAtShoulderCompletion(finishTrusted, args.shoulderStsEach));
     } else {
-      const frontPlan = calculateRoundNecklinePlan({
-        necklineStitches: args.neckSts,
-        necklineDepthRows: args.frontNeckDepthRows,
-      });
+      const frontPlan =
+        frontPlanForMarker ??
+        calculateRoundNecklinePlan({
+          necklineStitches: args.neckSts,
+          necklineDepthRows: args.frontNeckDepthRows,
+        });
+      if (frontPlan.strategy === "deep-round" && neckStartRc === args.armholeMarkerRc) {
+        rows.push({
+          kind: "block",
+          rc: dropShoulderNecklineFirstBlockRc(useLocalNecklineRc, neckStartRc),
+          trustedParagraphs: insertLifelineReminderAfterOpening([
+            "Begin front neckline shaping.",
+            "Drop-shoulder shoulders are worked straight — there is no shoulder shaping.",
+          ]),
+          paragraphs: [],
+        });
+        pushStraightShoulderShallowNeckBlocks(
+          rows,
+          straightShoulderDeepRoundNeckWrittenLines(frontPlan, args.bodyWidthSts, {
+            necklineStartRc: necklineWrittenStartRc ?? 0,
+            shoulderCompleteRc: shoulderFinishRc,
+          }),
+          args.shoulderStsEach,
+        );
+      } else {
       // Catalog video 2212: pullover round front only. V-neck and cardigan stay out.
       const roundNeckHelp = dropShoulderRoundNecklineVideoRow();
       if (roundNeckHelp) rows.push(roundNeckHelp);
@@ -1093,6 +1127,7 @@ function buildPulloverFrontRows(args: {
           useLocalNecklineRc,
         );
         rows.push(...splitTrustedParagraphsAtShoulderCompletion(finishTrusted, args.shoulderStsEach));
+      }
       }
     }
   } else {
@@ -1864,6 +1899,7 @@ export function generateDropShoulderPattern(
     shoulderStsEach: isCardigan ? cardiganFrontShoulderSts : shoulderStsEach,
     frontNeckDepthRows: isCardigan && isVNeck ? cardiganVNeckScheduleRows : frontNeckDepthRows,
     frontNecklineStartRC,
+    armholeMarkerRc,
     totalRows,
     bustBodySts,
     frontPieceStitches: isCardigan ? cardiganHalfLeftBustBodySts : undefined,

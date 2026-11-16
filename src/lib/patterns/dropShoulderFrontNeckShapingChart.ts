@@ -42,6 +42,8 @@ export type DropShoulderFrontNeckChartInputs = {
   shoulderStsEach: number;
   frontNeckDepthRows: number;
   frontNecklineStartRC: number;
+  /** Garment RC of the armhole marker. Used to select the deep round neck that starts on that row. */
+  armholeMarkerRc?: number;
   totalRows: number;
   bustBodySts: number;
   /**
@@ -520,6 +522,7 @@ export function buildDropShoulderFrontNeckShapingChart(
     shoulderStsEach,
     frontNeckDepthRows,
     frontNecklineStartRC,
+    armholeMarkerRc,
     totalRows,
     bustBodySts,
     frontPieceStitches,
@@ -532,16 +535,22 @@ export function buildDropShoulderFrontNeckShapingChart(
 
   const isCardiganHalfFront = isCardigan;
   const shoulderBindoffRows = Math.max(1, Math.round(rowsPerInch));
-  const pulloverShallowStraightNeck =
-    !isCardigan &&
-    !isVNeck &&
-    calculateRoundNecklinePlan({
-      necklineStitches: neckSts,
-      necklineDepthRows: frontNeckDepthRows,
-    }).strategy === "shallow-round";
+  const pulloverRoundPlan =
+    !isCardigan && !isVNeck
+      ? calculateRoundNecklinePlan({
+          necklineStitches: neckSts,
+          necklineDepthRows: frontNeckDepthRows,
+        })
+      : null;
+  const pulloverShallowStraightNeck = pulloverRoundPlan?.strategy === "shallow-round";
+  const pulloverDeepAtArmhole =
+    pulloverRoundPlan?.strategy === "deep-round" &&
+    typeof armholeMarkerRc === "number" &&
+    frontNecklineStartRC === armholeMarkerRc;
   const timelineOpts = {
     straightShoulders: true as const,
     ...(pulloverShallowStraightNeck ? { straightShoulderShallowNeckEdge: true as const } : {}),
+    ...(pulloverDeepAtArmhole ? { straightShoulderDeepNeckEdge: true as const } : {}),
   };
 
   const necklineOpeningStsForFrontPiece = isCardiganHalfFront
