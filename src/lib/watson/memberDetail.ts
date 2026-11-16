@@ -16,6 +16,12 @@ export interface LegacyMemberDetailRow {
   datejoined: Date | string | null;
   /** Watson authoritative legacy paid-through date (calendar day). */
   subscriptionexpiring: Date | string | null;
+  /**
+   * Pointer at a legacy subscription. Null on account-only rows. A set value
+   * can be missing from `legacy_subscriptions`. Email lookup selects it;
+   * other member queries may omit it.
+   */
+  subscriptionid_fk?: number | string | null;
   active: number | null;
   betaactive: number | null;
   currentsubscriber: number | null;

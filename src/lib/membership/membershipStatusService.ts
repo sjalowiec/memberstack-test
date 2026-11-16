@@ -22,6 +22,7 @@ import {
 import type { WatsonQueryFn } from "../watson/memberSearch";
 import { hasComplimentaryMemberAccess } from "../memberAccess";
 import { loadComplimentaryAccessThroughYmd } from "../watson/complimentaryAccess";
+import type { LegacyMemberDetailRow } from "../watson/memberDetail";
 import type { MemberstackMember } from "./membershipSummary";
 import {
   buildMembershipStatusSummary,
@@ -32,6 +33,29 @@ import {
   type MembershipStatusLegacyContext,
   type MembershipStatusSummary,
 } from "./membershipStatusSummary";
+
+function hasText(value: unknown): boolean {
+  if (value == null) return false;
+  if (typeof value === "string") return value.trim() !== "";
+  return true;
+}
+
+/**
+ * A `legacy_members` row is an account. It is Knit it Now membership evidence
+ * only when it has an expiration value, a `legacy_subscriptions` row, or a
+ * `subscriptionid_fk`. `currentsubscriber` is only 0/1 and is not used: the
+ * one undated subscription row in the import has 0. `subscriptiontype` is
+ * blank on confirmed history and mixes Free, trials, and Single Payment.
+ * Course purchases are not membership evidence.
+ */
+function hasKinMembershipEvidence(
+  member: LegacyMemberDetailRow | null,
+  memberships: MemberMembershipDisplay[],
+): boolean {
+  if (memberships.length > 0) return true;
+  if (hasText(member?.subscriptionid_fk)) return true;
+  return hasText(member?.subscriptionexpiring);
+}
 
 export type MembershipStatusServiceDeps = {
   secretKey?: string | null;
@@ -76,6 +100,15 @@ export function legacyContextFromLink(options: {
   }
 
   if (!linkState.hasLegacyHistory || !linkState.legacyMemberid) {
+    return {
+      linkState: "not_found",
+      legacyExpirationDate: null,
+      legacyExpirationYmd: null,
+      previousPlanName: null,
+    };
+  }
+
+  if (!hasKinMembershipEvidence(linkState.legacyMember, options.memberships)) {
     return {
       linkState: "not_found",
       legacyExpirationDate: null,

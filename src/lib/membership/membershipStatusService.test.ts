@@ -237,8 +237,8 @@ describe("loadMembershipStatusForMemberId", () => {
     expect(summary.customerFacingMessage).not.toMatch(/paid through July 30, 2026/);
   });
 
-  it("stays purchase-eligible when subscriptionexpiring and history expiration are both missing", async () => {
-    const summary = await loadMembershipStatusForMemberId("mem_no_date", {
+  it("lets a legacy account with no subscription evidence purchase when the expiration is blank", async () => {
+    const summary = await loadMembershipStatusForMemberId("mem_course_only", {
       now: PACIFIC_AFTERNOON_JULY_22,
       secretKey: "sk_test",
       getClient: async () =>
@@ -252,7 +252,44 @@ describe("loadMembershipStatusForMemberId", () => {
         }) as never,
       resolveLegacyLink: async () => ({
         status: "unique",
-        member: uniqueLegacyMember({ subscriptionexpiring: null }),
+        member: uniqueLegacyMember({
+          subscriptionexpiring: null,
+          subscriptionid_fk: null,
+          // currentsubscriber is 0/1 in the import and is not membership evidence.
+          currentsubscriber: 1,
+        }),
+      }),
+      loadMemberships: async () => [],
+    });
+
+    expect(summary.legacyLinkState).toBe("not_found");
+    expect(summary.legacyExpirationDate).toBeNull();
+    expect(summary.recommendedAction).toBe("purchase");
+    expect(summary.customerFacingMessage).toMatch(
+      /does not currently include an active Knit it Now membership/i,
+    );
+  });
+
+  it("keeps a blank expiration on contact support when a subscription id is set but the row is missing", async () => {
+    const summary = await loadMembershipStatusForMemberId("mem_dangling_fk", {
+      now: PACIFIC_AFTERNOON_JULY_22,
+      secretKey: "sk_test",
+      getClient: async () =>
+        ({
+          getMember: async (id: string) => ({
+            id,
+            auth: { email: "unique@example.com" },
+            planConnections: [],
+          }),
+          listMembers: async () => ({ data: [] }),
+        }) as never,
+      resolveLegacyLink: async () => ({
+        status: "unique",
+        member: uniqueLegacyMember({
+          subscriptionexpiring: null,
+          subscriptionid_fk: 8811,
+          currentsubscriber: 0,
+        }),
       }),
       loadMemberships: async () => [],
     });
@@ -263,6 +300,42 @@ describe("loadMembershipStatusForMemberId", () => {
     expect(summary.customerFacingMessage).toMatch(
       /could not safely confirm whether it has ended/i,
     );
+  });
+
+  it("keeps an active paid member on manage when the legacy row has no subscription evidence", async () => {
+    const summary = await loadMembershipStatusForMemberId("mem_paid_course", {
+      now: PACIFIC_AFTERNOON_JULY_22,
+      secretKey: "sk_test",
+      getClient: async () =>
+        ({
+          getMember: async () => ({
+            id: "mem_paid_course",
+            auth: { email: "paid@example.com" },
+            planConnections: [
+              {
+                planId: MEMBERSHIPS.membership.memberstackPlanId,
+                planName: MEMBERSHIPS.membership.name,
+                status: "ACTIVE",
+                active: true,
+              },
+            ],
+          }),
+          listMembers: async () => ({ data: [] }),
+        }) as never,
+      resolveLegacyLink: async () => ({
+        status: "unique",
+        member: uniqueLegacyMember({
+          email: "paid@example.com",
+          subscriptionexpiring: null,
+          subscriptionid_fk: null,
+        }),
+      }),
+      loadMemberships: async () => [],
+    });
+
+    expect(summary.currentStatus).toBe("active");
+    expect(summary.accountType).toBe("paid_membership");
+    expect(summary.recommendedAction).toBe("manage");
   });
 
   it("keeps an active free legacy membership on manage even with future subscriptionexpiring", async () => {
