@@ -112,6 +112,23 @@ describe("sanitizeCardDescriptionHtml", () => {
     expect(out).not.toContain("<div");
   });
 
+  it("keeps a centered site image through another save", () => {
+    const centered =
+      '<img src="/images/thank-you.jpg" alt="Thank you for your support" class="center"><p>Happy Thanksgiving!<br>Sue</p>';
+    expect(sanitizeCardDescriptionHtml(centered)).toBe(centered);
+    expect(sanitizeCardDescriptionHtml(sanitizeCardDescriptionHtml(centered))).toBe(centered);
+    expect(
+      sanitizeCardDescriptionHtml(
+        '<img src="/images/thank-you.jpg" alt="Thank you" align="center" onerror="alert(1)">',
+      ),
+    ).toBe('<p><img src="/images/thank-you.jpg" alt="Thank you" class="center"></p>');
+    expect(
+      sanitizeCardDescriptionHtml(
+        '<img src="/images/thank-you.jpg" alt="Thank you" class="center evil">',
+      ),
+    ).toBe('<p><img src="/images/thank-you.jpg" alt="Thank you" class="center"></p>');
+  });
+
   it("keeps a site image and leaves other saved descriptions unchanged", () => {
     const image =
       '<img src="/images/thank-you.jpg" alt="Thank you"><p>It\u2019s been an interesting year! Thank you for your patience and support.</p><p>Sue</p>';

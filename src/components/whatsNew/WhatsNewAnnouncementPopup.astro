@@ -176,6 +176,11 @@ const { auto = false } = Astro.props;
     object-fit: contain;
   }
 
+  .wn-announce__intro :global(img.center) {
+    margin-left: auto;
+    margin-right: auto;
+  }
+
   /* A photo uses the dialog scroll area. Text-only messages keep the short cap. */
   .wn-announce__intro--image {
     max-height: none;

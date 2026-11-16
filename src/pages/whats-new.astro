@@ -383,6 +383,11 @@ const description =
     object-fit: contain;
   }
 
+  .whats-new__billboard-message :global(img.center) {
+    margin-left: auto;
+    margin-right: auto;
+  }
+
   .whats-new__billboard-cta {
     display: inline-flex;
     margin-top: 1rem;
@@ -738,6 +743,14 @@ const description =
     max-width: 100%;
     height: auto;
     margin: 0 0 0.75rem;
+  }
+
+  /* A centered image stays its own width, up to the card, and sits in the middle. */
+  .whats-new__card-desc :global(img.center) {
+    width: auto;
+    max-width: min(100%, 18rem);
+    margin-left: auto;
+    margin-right: auto;
   }
 
   .whats-new__quiet-date {

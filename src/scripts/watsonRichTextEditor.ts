@@ -146,7 +146,7 @@ export function initCompactRichText(wrap: HTMLElement, options: CompactRichTextO
   note.className = "watson-wn__rte-source-note";
   note.hidden = true;
   note.textContent =
-    "HTML source. Images, links, paragraphs, and lists are kept. Unsafe tags are removed when you return to the visual editor or save.";
+    'HTML source. Images, links, paragraphs, and lists are kept. Add class="center" to an image to center it. Unsafe tags are removed when you return to the visual editor or save.';
   source.insertAdjacentElement("afterend", note);
 
   const htmlButton = document.createElement("button");

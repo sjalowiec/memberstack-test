@@ -138,6 +138,14 @@ function readAttribute(attrs: string, name: string): string | null {
   return (match[1] ?? match[2] ?? match[3] ?? "").trim();
 }
 
+/** True when the image asks to be centered. Other classes and styles are not kept. */
+function imageIsCentered(attrs: string): boolean {
+  const align = (readAttribute(attrs, "align") ?? "").toLowerCase();
+  if (align === "center" || align === "middle") return true;
+  const className = readAttribute(attrs, "class") ?? "";
+  return className.split(/\s+/).some((token) => token.toLowerCase() === "center");
+}
+
 /** A site image tag, or null when the address is not a local path. Event handlers are dropped. */
 function safeCardImageTag(attrs: string): string | null {
   const src = readAttribute(attrs, "src");
@@ -147,7 +155,8 @@ function safeCardImageTag(attrs: string): string | null {
       .replace(/[\r\n]+/g, " ")
       .trim(),
   );
-  return `<img src="${src}" alt="${alt}">`;
+  const center = imageIsCentered(attrs) ? ' class="center"' : "";
+  return `<img src="${src}" alt="${alt}"${center}>`;
 }
 
 function normalizeTagName(name: string): string | null {
