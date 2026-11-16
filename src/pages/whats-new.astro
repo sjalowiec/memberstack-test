@@ -375,12 +375,15 @@ const description =
 
   .whats-new__billboard-message :global(img) {
     display: block;
-    width: auto;
     max-width: 100%;
-    max-height: 16rem;
     height: auto;
     margin: 0 0 0.75rem;
     object-fit: contain;
+  }
+
+  .whats-new__billboard-message :global(img:not([width])) {
+    width: auto;
+    max-height: 16rem;
   }
 
   .whats-new__billboard-message :global(img.center) {
@@ -739,18 +742,24 @@ const description =
   /* Site images in a description scale to the card and keep their aspect ratio. */
   .whats-new__card-desc :global(img) {
     display: block;
-    width: 100%;
     max-width: 100%;
     height: auto;
     margin: 0 0 0.75rem;
   }
 
-  /* A centered image stays its own width, up to the card, and sits in the middle. */
+  .whats-new__card-desc :global(img:not([width])) {
+    width: 100%;
+  }
+
+  /* A centered image without its own width stays within the card. */
   .whats-new__card-desc :global(img.center) {
-    width: auto;
-    max-width: min(100%, 18rem);
     margin-left: auto;
     margin-right: auto;
+  }
+
+  .whats-new__card-desc :global(img.center:not([width])) {
+    width: auto;
+    max-width: min(100%, 18rem);
   }
 
   .whats-new__quiet-date {

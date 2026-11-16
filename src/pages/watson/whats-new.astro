@@ -1340,10 +1340,14 @@ function cardDataAttr(card: (typeof activeCards)[number]): string {
 
   .watson-wn__rte-editor :global(img) {
     display: block;
-    width: auto;
-    max-width: min(100%, 20rem);
+    max-width: 100%;
     height: auto;
     margin: 0 0 0.75rem;
+  }
+
+  .watson-wn__rte-editor :global(img:not([width])) {
+    width: auto;
+    max-width: min(100%, 20rem);
   }
 
   .watson-wn__rte-editor :global(img.center) {

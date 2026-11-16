@@ -138,6 +138,32 @@ function readAttribute(attrs: string, name: string): string | null {
   return (match[1] ?? match[2] ?? match[3] ?? "").trim();
 }
 
+/** Pixel widths an editor may save. 202px is 30% smaller than the 288px billboard preview. */
+const IMAGE_WIDTH_PX_MIN = 32;
+const IMAGE_WIDTH_PX_MAX = 800;
+
+/**
+ * A pixel width or a 10–100% width. Anything else, including extra style
+ * properties, is dropped so the saved tag stays editable and safe.
+ */
+function safeImageWidth(attrs: string): string | null {
+  const style = readAttribute(attrs, "style") ?? "";
+  const styleWidth = style.match(/(?:^|;)\s*width\s*:\s*([^;]+)/i)?.[1]?.trim() ?? "";
+  const raw = styleWidth || (readAttribute(attrs, "width") ?? "");
+  if (!raw) return null;
+  const percent = raw.match(/^(\d{1,3})%$/);
+  if (percent) {
+    const value = Number(percent[1]);
+    if (value < 10 || value > 100) return null;
+    return `${value}%`;
+  }
+  const pixels = raw.match(/^(\d{1,4})(?:px)?$/i);
+  if (!pixels) return null;
+  const value = Number(pixels[1]);
+  if (value < IMAGE_WIDTH_PX_MIN || value > IMAGE_WIDTH_PX_MAX) return null;
+  return String(value);
+}
+
 /** True when the image asks to be centered. Other classes and styles are not kept. */
 function imageIsCentered(attrs: string): boolean {
   const align = (readAttribute(attrs, "align") ?? "").toLowerCase();
@@ -156,7 +182,10 @@ function safeCardImageTag(attrs: string): string | null {
       .trim(),
   );
   const center = imageIsCentered(attrs) ? ' class="center"' : "";
-  return `<img src="${src}" alt="${alt}"${center}>`;
+  const width = safeImageWidth(attrs);
+  const widthAttr =
+    width == null ? "" : width.endsWith("%") ? ` style="width: ${width}"` : ` width="${width}"`;
+  return `<img src="${src}" alt="${alt}"${center}${widthAttr}>`;
 }
 
 function normalizeTagName(name: string): string | null {
