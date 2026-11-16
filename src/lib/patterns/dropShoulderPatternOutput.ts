@@ -676,6 +676,42 @@ function dropShoulderPulloverBothShouldersFinishParagraphs(
   ];
 }
 
+/**
+ * Deep front that starts below the armhole: knit even and bind off first, with the
+ * shoulder count on that instruction. The completion sentence follows the bind-off.
+ */
+function dropShoulderBeforeArmholeShoulderFinishBlocks(
+  shoulderStsEach: number,
+  shoulderFinishRc: number,
+  secondShoulderSentence: string,
+): Block[] {
+  const workBlock = (): Block => ({
+    kind: "block",
+    trustedParagraphs: [
+      `When neckline shaping is complete and ${shoulderStsEach} stitches remain on the working shoulder, knit even to ${formatRcColon(shoulderFinishRc)} (no further neck-edge decreases).`,
+      `Bind off the ${shoulderStsEach} shoulder stitches.`,
+    ],
+    paragraphs: [],
+    stitchCount: shoulderStsEach > 0 ? shoulderStsEach : undefined,
+  });
+  const completeBlock = (orderLabel: "first" | "second"): Block => ({
+    kind: "block",
+    trustedParagraphs: [`The ${orderLabel} shoulder is complete.`],
+    paragraphs: [],
+  });
+  return [
+    workBlock(),
+    completeBlock("first"),
+    {
+      kind: "block",
+      trustedParagraphs: [secondShoulderSentence],
+      paragraphs: [],
+    },
+    workBlock(),
+    completeBlock("second"),
+  ];
+}
+
 /** Hem → bust side shaping in the BODY section (drop shoulder: no armhole bind-offs after this). */
 function appendDropShoulderAlineBodyRows(
   rows: SleevelessPatternDisplayRow[],
@@ -1124,11 +1160,6 @@ function buildPulloverFrontRows(args: {
           ...edgeSplit.beforeMarker,
           ...(edgeSplit.fromMarker.length === 0 ? heldFinish : []),
         ];
-        const finishTrusted = dropShoulderPulloverBothShouldersFinishParagraphs(
-          args.shoulderStsEach,
-          shoulderFinishRc,
-          DROP_SHOULDER_PULLOVER_ROUND_NECK_SECOND_SHOULDER_SENTENCE,
-        );
         rows.push({
           kind: "block",
           rc: dropShoulderNecklineFirstBlockRc(useLocalNecklineRc, neckStartRc),
@@ -1145,18 +1176,36 @@ function buildPulloverFrontRows(args: {
             rc: formatRcColon(args.armholeMarkerRc),
             paragraphs: markerWithNeckline.paragraphs,
             trustedParagraphs: markerWithNeckline.trustedParagraphs,
-            stitchCount: A > 0 ? A : undefined,
           });
         } else {
           appendDropShoulderFrontArmholeMarkerDuringNeckline(
             rows,
             timing,
             pulloverMarkerLine,
-            A,
+            timing.neckStartsBeforeMarker ? 0 : A,
             useLocalNecklineRc,
           );
         }
-        rows.push(...splitTrustedParagraphsAtShoulderCompletion(finishTrusted, args.shoulderStsEach));
+        if (timing.neckStartsBeforeMarker) {
+          rows.push(
+            ...dropShoulderBeforeArmholeShoulderFinishBlocks(
+              args.shoulderStsEach,
+              shoulderFinishRc,
+              DROP_SHOULDER_PULLOVER_ROUND_NECK_SECOND_SHOULDER_SENTENCE,
+            ),
+          );
+        } else {
+          rows.push(
+            ...splitTrustedParagraphsAtShoulderCompletion(
+              dropShoulderPulloverBothShouldersFinishParagraphs(
+                args.shoulderStsEach,
+                shoulderFinishRc,
+                DROP_SHOULDER_PULLOVER_ROUND_NECK_SECOND_SHOULDER_SENTENCE,
+              ),
+              args.shoulderStsEach,
+            ),
+          );
+        }
       }
       }
     }

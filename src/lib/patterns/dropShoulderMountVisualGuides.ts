@@ -14,6 +14,28 @@ import { dropShoulderFrontNecklineDisplayRcOffset } from "./dropShoulderFrontNec
 import type { ShapingMapData } from "./shapingMapSvg";
 import type { RowEntry } from "./shapingTimeline";
 
+const ARMHOLE_MARKER_LABEL = "Armhole marker";
+
+/**
+ * Attach the written armhole-marker row when it falls inside this map.
+ * The row is the calculated armhole row in the map's own counter, so it stays
+ * put when the neckline starts on a different row. Rows outside the map are omitted.
+ */
+function withArmholeMarkerIndicator(
+  map: ShapingMapData | null,
+  armholeGarmentRc: number | undefined,
+  displayOffset: number,
+): ShapingMapData | null {
+  if (!map) return map;
+  if (typeof armholeGarmentRc !== "number" || !Number.isFinite(armholeGarmentRc)) return map;
+  const row = Math.floor(armholeGarmentRc) - displayOffset;
+  if (row <= map.rowMin || row >= map.rowMax) return map;
+  return {
+    ...map,
+    armholeMarker: { row, label: ARMHOLE_MARKER_LABEL },
+  };
+}
+
 export type DropShoulderMountShapingMapResult = {
   backShapingMapData: ShapingMapData | null;
   frontShapingMapData: ShapingMapData | null;
@@ -63,13 +85,16 @@ export function buildDropShoulderMountShapingMapData(
     result.debug?.frontNecklineStartRC,
     result.debug?.armholeStartRow,
   );
-  const frontShapingMapData =
+  const frontShapingMapData = withArmholeMarkerIndicator(
     isRoundNeckPullover && result?.frontNeckShoulderChartUsesLiveRows
       ? buildSleevelessRoundNeckShapingMapData(result.frontNeckShoulderTimeline, {
           firstArmholeRc: frontMapOffset,
           title: "Front neckline shaping map",
         })
-      : null;
+      : null,
+    result?.debug?.armholeStartRow,
+    frontMapOffset,
+  );
 
   // Back neckline map uses the post-reset neckline counter (origin = backNecklineStartRC → RC:000).
   // Do NOT use armholeStartRow here — that yields armhole-local RC (e.g. 34) after the neckline reset.

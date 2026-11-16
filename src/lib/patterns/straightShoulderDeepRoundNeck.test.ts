@@ -24,6 +24,10 @@ import {
   DROP_SHOULDER_HOLD_POSITION_VIDEO_CONTENT_ID,
   DROP_SHOULDER_HOLD_POSITION_VIDEO_TIP_ID,
 } from "./dropShoulderHoldPositionVideoTip";
+import { buildDropShoulderMountShapingMapData } from "./dropShoulderMountVisualGuides";
+import { buildPatternVisualGuidesHtml } from "./patternVisualGuides";
+import { renderSleevelessPrintPieceHtml } from "./sleevelessPatternPrintRender";
+import { renderShapingMapSvg } from "./shapingMapSvg";
 
 const WOMENS_SIZE_1: ChartRow = {
   size: 1,
@@ -41,7 +45,10 @@ const WOMENS_SIZE_1: ChartRow = {
   sleeve_length: 16.25,
 };
 
-function size1Pattern(frontNeckDepthInches: number): Record<string, unknown> {
+function size1Pattern(
+  frontNeckDepthInches: number,
+  finishedBustInches?: number,
+): Record<string, unknown> {
   const measurements = computeDefaultMeasurementsFromChartRow(WOMENS_SIZE_1, "standard", {
     bodyShape: "straight",
   });
@@ -50,7 +57,11 @@ function size1Pattern(frontNeckDepthInches: number): Record<string, unknown> {
       sizingChart: "misses",
       selectedSize: 1,
       easeChoice: "standard",
-      selectedMeasurements: { ...measurements, front_neck_depth: frontNeckDepthInches },
+      selectedMeasurements: {
+        ...measurements,
+        front_neck_depth: frontNeckDepthInches,
+        ...(finishedBustInches !== undefined ? { finished_bust_chest: finishedBustInches } : {}),
+      },
     },
     style: {
       construction: "drop-shoulder",
@@ -265,5 +276,157 @@ describe("deep round neckline that starts on the armhole row", () => {
     expect(shallowFront).toContain("(RC: 001, 003, 005, 007, 009)");
     expect(shallowFront).not.toContain("Bind off center neckline needles");
     expect(shallow.debug.shoulderStitches).toBe(deep.debug.shoulderStitches);
+    expect(deepFront.indexOf("The first shoulder is complete")).toBeLessThan(
+      deepFront.indexOf("knit even to"),
+    );
+    expect(shallowFront.indexOf("The first shoulder is complete")).toBeLessThan(
+      shallowFront.indexOf("Scrap off or bind off"),
+    );
+    const shallowMap = buildDropShoulderMountShapingMapData(shallow, size1Pattern(1));
+    expect(shallowMap.frontShapingMapData?.armholeMarker).toBeUndefined();
+  });
+});
+
+function blocks(rows: readonly SleevelessPatternDisplayRow[]) {
+  return rows.filter(
+    (row): row is Extract<SleevelessPatternDisplayRow, { kind: "block" }> => row.kind === "block",
+  );
+}
+
+function textBox(attrs: string, text: string): { left: number; right: number; top: number; bottom: number } {
+  const cls = attrs.match(/class="([^"]+)"/)?.[1] ?? "";
+  const x = Number(attrs.match(/\bx="([\d.]+)"/)?.[1]);
+  const y = Number(attrs.match(/\by="([\d.]+)"/)?.[1]);
+  const inlineAnchor = attrs.match(/text-anchor="([^"]+)"/)?.[1];
+  const anchor =
+    inlineAnchor ??
+    (cls.includes("step-label--centered")
+      ? "middle"
+      : cls.includes("step-label")
+        ? "end"
+        : cls.includes("row-number")
+          ? "start"
+          : "middle");
+  const font = cls.includes("armhole-marker-label")
+    ? 13
+    : cls.includes("edge-label")
+      ? 13
+      : cls.includes("center-label")
+        ? 12
+        : 20;
+  const width = text.length * font * 0.62;
+  const left = anchor === "middle" ? x - width / 2 : anchor === "end" ? x - width : x;
+  return { left, right: left + width, top: y - font / 2, bottom: y + font / 2 };
+}
+
+describe("deep round neckline that starts below the armhole", () => {
+  const pattern = size1Pattern(100 / 11, (114 / 7) * 2);
+
+  it("keeps the calculated rows and places the shoulder count on the knit-even bind-off", () => {
+    const result = generateDropShoulderPattern(pattern);
+    expect(result.debug.frontNecklineStartRC).toBe(131);
+    expect(result.debug.armholeStartRow).toBe(177);
+    expect(result.debug.finalRC).toBe(231);
+    expect(result.debug.shoulderStitches).toBe(36);
+    expect(result.debug.bustBodyStitches).toBe(114);
+
+    const frontBlocks = blocks(result.frontDisplayRows);
+    const marker = frontBlocks.find((row) => row.rc === "RC: 177");
+    expect(marker?.stitchCount).toBeUndefined();
+    expect(plain([marker!])).toContain(
+      "Place a marker at each end of this row to mark the base of the armhole.",
+    );
+    expect(plain([marker!])).not.toMatch(/\d/);
+
+    const work = frontBlocks.filter((row) =>
+      (row.trustedParagraphs ?? []).some((line) => line.includes("knit even to RC: 231")),
+    );
+    expect(work).toHaveLength(2);
+    expect(work.every((row) => row.stitchCount === 36)).toBe(true);
+    expect(work[0]?.trustedParagraphs?.[0]).toMatch(/36 stitches remain on the working shoulder, knit even to RC: 231/);
+    expect(work[0]?.trustedParagraphs?.[1]).toBe("Bind off the 36 shoulder stitches.");
+    expect(work[1]?.trustedParagraphs?.[1]).toBe("Bind off the 36 shoulder stitches.");
+
+    const text = plain(result.frontDisplayRows);
+    const firstKnit = text.indexOf("knit even to RC: 231");
+    const firstBind = text.indexOf("Bind off the 36 shoulder stitches.");
+    const firstDone = text.indexOf("The first shoulder is complete.");
+    const secondKnit = text.indexOf("knit even to RC: 231", firstKnit + 1);
+    const secondBind = text.indexOf("Bind off the 36 shoulder stitches.", firstBind + 1);
+    const secondDone = text.indexOf("The second shoulder is complete.");
+    expect(firstKnit).toBeGreaterThan(-1);
+    expect(firstKnit).toBeLessThan(firstBind);
+    expect(firstBind).toBeLessThan(firstDone);
+    expect(firstDone).toBeLessThan(secondKnit);
+    expect(secondKnit).toBeLessThan(secondBind);
+    expect(secondBind).toBeLessThan(secondDone);
+    expect(text).toContain("149, 151");
+    const neckStart = frontBlocks.find((row) =>
+      (row.trustedParagraphs ?? []).some((line) => line.includes("Bind off the center 14 stitches for the neck.")),
+    );
+    expect(neckStart?.rc).toBe("RC: 131");
+    expect(frontBlocks.indexOf(neckStart!)).toBeLessThan(frontBlocks.indexOf(marker!));
+    expect(frontBlocks.indexOf(marker!)).toBeLessThan(frontBlocks.indexOf(work[0]!));
+
+    const printed = renderSleevelessPrintPieceHtml(result.frontDisplayRows, "", "front").replace(
+      /\u00a0/g,
+      " ",
+    );
+    expect(printed.indexOf("knit even to RC: 231")).toBeLessThan(
+      printed.indexOf("The first shoulder is complete."),
+    );
+    expect(printed.indexOf("Bind off the 36 shoulder stitches.")).toBeLessThan(
+      printed.indexOf("The second shoulder is complete."),
+    );
+    expect(printed).not.toMatch(/RC: 177[\s\S]{0,240}114 sts/);
+    expect(printed).toMatch(/36 sts/);
+  });
+
+  it("marks RC 177 on both edges of the front shaping map without covering other labels", () => {
+    const result = generateDropShoulderPattern(pattern);
+    const { frontShapingMapData } = buildDropShoulderMountShapingMapData(result, pattern);
+    expect(frontShapingMapData?.armholeMarker).toEqual({ row: 177, label: "Armhole marker" });
+    expect(frontShapingMapData?.rowMin).toBe(131);
+
+    const orientations = [true, false];
+    for (const mirror of orientations) {
+      const svg = renderShapingMapSvg(frontShapingMapData!, { mirror });
+      expect(svg).toContain('data-armhole-marker-row="177"');
+      expect(svg).toContain("Armhole marker");
+      const ticks = [...svg.matchAll(/data-armhole-marker-edge="(start|end)" cx="([\d.]+)" cy="([\d.]+)"/g)];
+      expect(ticks.map((tick) => tick[1])).toEqual(["start", "end"]);
+      expect(Number(ticks[0]?.[2])).not.toBe(Number(ticks[1]?.[2]));
+      const y176 = Number(svg.match(/class="shaping-map-row-number" x="[\d.]+" y="([\d.]+)"[^>]*>176</)?.[1]);
+      const y178 = Number(svg.match(/class="shaping-map-row-number" x="[\d.]+" y="([\d.]+)"[^>]*>178</)?.[1]);
+      expect(Number(ticks[0]?.[3])).toBeCloseTo((y176 + y178) / 2, 1);
+      expect(Number(ticks[1]?.[3])).toBeCloseTo((y176 + y178) / 2, 1);
+
+      const boxes = [...svg.matchAll(/<text([^>]*)>([^<]*)<\/text>/g)].map((match) => ({
+        text: match[2] ?? "",
+        box: textBox(match[1] ?? "", match[2] ?? ""),
+      }));
+      const markerLabel = boxes.find((entry) => entry.text === "Armhole marker");
+      expect(markerLabel).toBeDefined();
+      for (const other of boxes) {
+        if (other.text === "Armhole marker") continue;
+        const a = markerLabel!.box;
+        const b = other.box;
+        const overlaps =
+          a.left < b.right - 1 && a.right > b.left + 1 && a.top < b.bottom - 1 && a.bottom > b.top + 1;
+        expect(overlaps, `Armhole marker overlaps ${other.text}`).toBe(false);
+      }
+    }
+
+    const printedMap = buildPatternVisualGuidesHtml({
+      piece: "front",
+      notationSupported: true,
+      construction: "drop-shoulder",
+      shapingMapData: frontShapingMapData,
+    });
+    const secondShoulderMap = renderShapingMapSvg(frontShapingMapData!, { mirror: false });
+    expect(printedMap).toContain("Armhole marker");
+    expect(printedMap).toContain('data-armhole-marker-row="177"');
+    expect(secondShoulderMap).toContain('data-armhole-marker-edge="start"');
+    expect(secondShoulderMap).toContain('data-armhole-marker-edge="end"');
   });
 });

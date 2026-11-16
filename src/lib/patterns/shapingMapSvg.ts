@@ -114,6 +114,14 @@ export type ShapingMapData = {
   centerAnnotation?: {
     bindOff: string;
   };
+  /**
+   * Armhole-marker row in this map's displayed row numbers — the same counter as
+   * the written marker instruction. Drawn only when that row falls inside the map.
+   */
+  armholeMarker?: {
+    row: number;
+    label: string;
+  };
 };
 
 /** Options for the renderer (kept tiny for the prototype). */
@@ -395,6 +403,37 @@ function buildOutlinePoints(
   }
   if (centerSeg) pushUniquePoint(points, { x: centerSeg.x2, row: centerSeg.row });
   return points;
+}
+
+const ARMHOLE_MARKER_LABEL_ABOVE_PX = 18;
+const ARMHOLE_MARKER_TICK_R = 4.5;
+
+/** Stitch-space crossings of the outline through one displayed row. */
+function outlineCrossingsAtRow(
+  points: { x: number; row: number }[],
+  row: number,
+): number[] {
+  const xs: number[] = [];
+  for (let i = 0; i < points.length - 1; i++) {
+    const a = points[i]!;
+    const b = points[i + 1]!;
+    const lo = Math.min(a.row, b.row);
+    const hi = Math.max(a.row, b.row);
+    if (row < lo || row > hi) continue;
+    if (a.row === b.row) {
+      xs.push(a.x, b.x);
+      continue;
+    }
+    const t = (row - a.row) / (b.row - a.row);
+    xs.push(a.x + t * (b.x - a.x));
+  }
+  xs.sort((p, q) => p - q);
+  const unique: number[] = [];
+  for (const x of xs) {
+    const prev = unique[unique.length - 1];
+    if (prev === undefined || Math.abs(prev - x) > 0.01) unique.push(x);
+  }
+  return unique;
 }
 
 function textLeftExtent(
@@ -886,6 +925,40 @@ export function renderShapingMapSvg(
     parts.push(
       `<text class="shaping-map-annotation" x="${fmt(drawX(centerMidX))}" y="${fmt(gridBottom + 36)}" text-anchor="middle">${escapeXml(centerAnnBindOff)}</text>`,
     );
+  }
+
+  const armholeMarker = data.armholeMarker;
+  if (
+    armholeMarker &&
+    Number.isFinite(armholeMarker.row) &&
+    armholeMarker.row > rowMin &&
+    armholeMarker.row < rowMax &&
+    armholeMarker.label.trim()
+  ) {
+    const crossings = outlineCrossingsAtRow(edgePoints, armholeMarker.row);
+    if (crossings.length > 0) {
+      const y = yPx(armholeMarker.row);
+      const left = crossings[0]!;
+      const right = crossings[crossings.length - 1]!;
+      const tick = (stitchX: number, edge: "start" | "end"): string =>
+        `<circle class="shaping-map-armhole-marker-tick" data-armhole-marker-edge="${edge}" cx="${fmt(drawX(xPx(stitchX)))}" cy="${fmt(y)}" r="${ARMHOLE_MARKER_TICK_R}" />`;
+      const ticks =
+        crossings.length === 1
+          ? tick(left, "start")
+          : `${tick(left, "start")}${tick(right, "end")}`;
+      const line =
+        right - left > 0.01
+          ? `<line class="shaping-map-armhole-marker-line" x1="${fmt(drawX(xPx(left)))}" y1="${fmt(y)}" x2="${fmt(drawX(xPx(right)))}" y2="${fmt(y)}" />`
+          : "";
+      const labelY = y - ARMHOLE_MARKER_LABEL_ABOVE_PX;
+      parts.push(
+        `<g class="shaping-map-armhole-marker" data-armhole-marker-row="${fmt(armholeMarker.row)}">` +
+          line +
+          ticks +
+          `<text class="shaping-map-armhole-marker-label" x="${fmt(drawX(xPx((left + right) / 2)))}" y="${fmt(labelY)}" text-anchor="middle" dominant-baseline="central">${escapeXml(armholeMarker.label.trim())}</text>` +
+          `</g>`,
+      );
+    }
   }
 
   const titleAttr = data.title

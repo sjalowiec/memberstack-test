@@ -163,6 +163,27 @@
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 }
 
+/* Armhole-marker row. Distinct from the black shaping path and the stitch-count labels. */
+.shaping-map-armhole-marker-line {
+  fill: none;
+  stroke: #1d4e89;
+  stroke-width: 1.75;
+  stroke-dasharray: 2 3;
+}
+
+.shaping-map-armhole-marker-tick {
+  fill: #1d4e89;
+  stroke: #ffffff;
+  stroke-width: 1;
+}
+
+.shaping-map-armhole-marker-label {
+  fill: #1d4e89;
+  font-size: 13px;
+  font-weight: 700;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
 .shaping-map-practice {
   fill: rgba(183, 167, 224, 0.14);
   stroke: #111111;
