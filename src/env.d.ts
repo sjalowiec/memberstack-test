@@ -61,7 +61,10 @@ interface ImportMetaEnv {
   readonly STRIPE_TLS_INSECURE?: string;
   /** Server-only: Resend API key for transactional email. */
   readonly RESEND_API_KEY?: string;
-  /** Server-only: verified sender for Resend (defaults to hello@knititnow.com). */
+  /**
+   * Server-only: verified Resend sender. Required.
+   * Use Knit It Now <sue@knititnow.com>. The Resend testing address is refused.
+   */
   readonly CONTACT_FROM_EMAIL?: string;
   /**
    * Server-only: optional override for staff notification mail.

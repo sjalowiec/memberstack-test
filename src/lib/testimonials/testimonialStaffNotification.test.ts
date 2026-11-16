@@ -51,7 +51,7 @@ describe("testimonial staff notification", () => {
       {
         query,
         recipient: "sue@knititnow.com",
-        config: { apiKey: "test-key", fromAddress: "Knit It Now <hello@knititnow.com>" },
+        config: { apiKey: "test-key", fromAddress: "Knit It Now <sue@knititnow.com>" },
         fetchImpl: async (_url, init) => {
           posted = JSON.parse(String(init?.body));
           return new Response("{}", { status: 200 });
@@ -80,7 +80,7 @@ describe("testimonial staff notification", () => {
       {
         query,
         recipient: "sue@knititnow.com",
-        config: { apiKey: "test-key", fromAddress: "Knit It Now <hello@knititnow.com>" },
+        config: { apiKey: "test-key", fromAddress: "Knit It Now <sue@knititnow.com>" },
         fetchImpl: async () => new Response("nope", { status: 500 }),
       },
     );
@@ -91,7 +91,7 @@ describe("testimonial staff notification", () => {
       {
         query: async () => [],
         recipient: "sue@knititnow.com",
-        config: { apiKey: "test-key", fromAddress: "Knit It Now <hello@knititnow.com>" },
+        config: { apiKey: "test-key", fromAddress: "Knit It Now <sue@knititnow.com>" },
         fetchImpl: async () => {
           throw new Error("should not send");
         },
@@ -114,7 +114,7 @@ describe("testimonial staff notification", () => {
           }
           return [];
         },
-        config: { apiKey: "test-key", fromAddress: "Knit It Now <hello@knititnow.com>" },
+        config: { apiKey: "test-key", fromAddress: "Knit It Now <sue@knititnow.com>" },
         fetchImpl: async () => {
           sent = true;
           return new Response("{}", { status: 200 });

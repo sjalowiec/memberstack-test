@@ -1,5 +1,11 @@
 import { escapeHtml } from "../email/escapeHtml";
-import { readResendConfig, type ResendConfig } from "../email/resendConfig";
+import {
+  isResendTestingSender,
+  readResendConfig,
+  resendConfigError,
+  RESEND_TESTING_FROM_MESSAGE,
+  type ResendConfig,
+} from "../email/resendConfig";
 import { readStaffNotificationRecipient } from "../email/staffNotificationRecipient";
 import { queryTestimonials } from "./testimonialQuery";
 import type { WatsonQueryFn } from "../watson/memberSearch";
@@ -103,8 +109,13 @@ export async function deliverNewTestimonialStaffNotification(
   }
 
   const config = options.config === undefined ? readResendConfig() : options.config;
-  if (!config) {
-    await query(RECORD_NOTIFICATION_FAILURE_SQL, [id, "Email service is not configured"]);
+  if (!config || isResendTestingSender(config.fromAddress)) {
+    const reason = !config
+      ? options.config === undefined
+        ? (resendConfigError() ?? "Email service is not configured")
+        : "Email service is not configured"
+      : RESEND_TESTING_FROM_MESSAGE;
+    await query(RECORD_NOTIFICATION_FAILURE_SQL, [id, clipNotificationError(reason)]);
     return { ok: false, reason: "config" };
   }
 

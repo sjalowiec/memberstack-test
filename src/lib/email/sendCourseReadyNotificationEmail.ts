@@ -1,5 +1,11 @@
 import { escapeHtml } from "./escapeHtml";
-import { readResendConfig, type ResendConfig } from "./resendConfig";
+import {
+  isResendTestingSender,
+  readResendConfig,
+  resendConfigError,
+  RESEND_TESTING_FROM_MESSAGE,
+  type ResendConfig,
+} from "./resendConfig";
 
 function isResendTransportError(error: unknown): boolean {
   if (!(error instanceof Error)) return false;
@@ -73,10 +79,13 @@ export async function sendCourseReadyNotificationEmail(
   options: SendCourseReadyNotificationOptions = {},
 ): Promise<SendCourseReadyNotificationResult> {
   const config = options.config === undefined ? readResendConfig() : options.config;
-  if (!config) {
-    console.error(
-      "[course-ready-notification] Missing RESEND_API_KEY or from address configuration",
-    );
+  if (!config || isResendTestingSender(config.fromAddress)) {
+    const reason = !config
+      ? options.config === undefined
+        ? (resendConfigError() ?? "Email service is not configured. Notification was not sent.")
+        : "Email service is not configured. Notification was not sent."
+      : RESEND_TESTING_FROM_MESSAGE;
+    console.error(`[course-ready-notification] ${reason}`);
     return { ok: false, reason: "config" };
   }
 
