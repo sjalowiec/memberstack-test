@@ -144,3 +144,17 @@
   from = "/reference/brother-cable-comparison"
   to = "/reference/DAK-brother-cables"
   status = 301
+
+# Restore exact legacy machine-shopping and reference URLs.
+[[redirects]]
+  from = "/store/catalog/5/machines"
+  to = "/shop/machines"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/machines/254/brother-knitking-iv-KH940"
+  to = "/reference/machines/brother-knitking-iv-kh940/"
+  status = 301
+  force = true
+
