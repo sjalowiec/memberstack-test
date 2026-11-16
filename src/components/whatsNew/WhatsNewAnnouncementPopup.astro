@@ -154,10 +154,36 @@ const { auto = false } = Astro.props;
     margin-bottom: 0;
   }
 
+  .wn-announce__intro :global(a) {
+    color: inherit;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
   .wn-announce__intro :global(ul),
   .wn-announce__intro :global(ol) {
     margin: 0.25rem 0 0.55rem;
     padding-left: 1.2rem;
+  }
+
+  .wn-announce__intro :global(img) {
+    display: block;
+    width: auto;
+    max-width: 100%;
+    max-height: 16rem;
+    height: auto;
+    margin: 0 auto 0.75rem;
+    object-fit: contain;
+  }
+
+  .wn-announce__intro :global(img.center) {
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  /* A photo uses the dialog scroll area. Text-only messages keep the short cap. */
+  .wn-announce__intro--image {
+    max-height: none;
   }
 
   .wn-announce__read {

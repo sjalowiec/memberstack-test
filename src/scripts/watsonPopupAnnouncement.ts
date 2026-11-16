@@ -3,7 +3,11 @@ import { normalizeWhatsNewDestinationUrl } from "../lib/whatsNew/destinationUrl"
 import { popupReadMoreHref } from "../lib/whatsNew/popupAnnouncement";
 import { WHATS_NEW_BUTTON_TEXT_MAX_LENGTH } from "../lib/whatsNew/types";
 import { sanitizeCardDescriptionHtml } from "../lib/whatsNew/sanitizeBillboardHtml";
-import { initCompactRichText } from "./watsonRichTextEditor";
+import {
+  initCompactRichText,
+  syncCompactRichText,
+  writeCompactRichTextValue,
+} from "./watsonRichTextEditor";
 import { openWhatsNewAnnouncementPreview } from "./whatsNewAnnouncement";
 
 type PopupEntry = {
@@ -11,7 +15,15 @@ type PopupEntry = {
   title: string;
   description: string;
   status: string;
+  archived: boolean;
 };
+
+const DRAFT_BILLBOARD_NOTE =
+  "This entry is a draft. Making it the live billboard does not publish it. Visitors can see the pop-up, and this entry stays off the public What's New board.";
+const PUBLISHED_BILLBOARD_NOTE =
+  "This entry is already published. Making it the live billboard does not change the What's New entry.";
+const ARCHIVED_BILLBOARD_NOTE =
+  "This entry is archived. Making it the live billboard does not restore it or publish it. The What's New board stays unchanged.";
 
 function setStatus(el: HTMLElement | null, message: string, isError = false): void {
   if (!el) return;
@@ -37,6 +49,7 @@ function readEntries(root: ParentNode): PopupEntry[] {
           title: row.title,
           description: typeof row.description === "string" ? row.description : "",
           status: typeof row.status === "string" ? row.status : "",
+          archived: row.archived === true,
         },
       ];
     });
@@ -45,30 +58,20 @@ function readEntries(root: ParentNode): PopupEntry[] {
   }
 }
 
-function introductionParts(form: HTMLFormElement): {
-  editor: HTMLElement;
-  hidden: HTMLTextAreaElement;
-} | null {
-  const wrap = form.querySelector<HTMLElement>("[data-wn-popup-rte]");
-  if (!wrap) return null;
-  const editor = wrap.querySelector<HTMLElement>("[data-wn-rte-editor]");
-  const hidden = wrap.querySelector<HTMLTextAreaElement>("[data-wn-rte-input]");
-  if (!editor || !hidden) return null;
-  return { editor, hidden };
+function popupRichText(form: HTMLFormElement): HTMLElement | null {
+  return form.querySelector<HTMLElement>("[data-wn-popup-rte]");
 }
 
 function setIntroduction(form: HTMLFormElement, value: string): void {
-  const parts = introductionParts(form);
-  if (!parts) return;
-  const clean = sanitizeCardDescriptionHtml(value || "");
-  parts.editor.innerHTML = clean || "<p><br></p>";
-  parts.hidden.value = clean;
+  const wrap = popupRichText(form);
+  if (!wrap) return;
+  writeCompactRichTextValue(wrap, sanitizeCardDescriptionHtml(value || ""));
 }
 
 function syncIntroduction(form: HTMLFormElement): void {
-  const parts = introductionParts(form);
-  if (!parts) return;
-  parts.hidden.value = sanitizeCardDescriptionHtml(parts.editor.innerHTML);
+  const wrap = popupRichText(form);
+  if (!wrap) return;
+  syncCompactRichText(wrap, sanitizeCardDescriptionHtml);
 }
 
 function fieldValue(form: HTMLFormElement, name: string): string {
@@ -101,13 +104,60 @@ export function initWatsonPopupAnnouncement(root: ParentNode = document): void {
 
   const rte = form.querySelector<HTMLElement>("[data-wn-popup-rte]");
   if (rte) {
-    initCompactRichText(rte, { sanitize: sanitizeCardDescriptionHtml });
+    initCompactRichText(rte, { sanitize: sanitizeCardDescriptionHtml, htmlSource: true });
   }
 
   const status = panel.querySelector<HTMLElement>("[data-wn-popup-status]");
+  const publishNote = form.querySelector<HTMLElement>("[data-wn-popup-publish-note]");
   const search = panel.querySelector<HTMLInputElement>("[data-wn-popup-search]");
   const results = panel.querySelector<HTMLElement>("[data-wn-popup-results]");
   const entries = readEntries(root);
+
+  const explainPublishing = (entry: PopupEntry): void => {
+    if (!publishNote) return;
+    publishNote.hidden = false;
+    if (entry.archived) {
+      publishNote.textContent = ARCHIVED_BILLBOARD_NOTE;
+      return;
+    }
+    publishNote.textContent =
+      entry.status === "draft" ? DRAFT_BILLBOARD_NOTE : PUBLISHED_BILLBOARD_NOTE;
+  };
+
+  const previewForm = (): void => {
+    syncIntroduction(form);
+    const title = fieldValue(form, "title").trim();
+    if (!title) {
+      showForm();
+      setStatus(status, "Add a title before previewing the pop-up.", true);
+      return;
+    }
+    const sourceCardId = fieldValue(form, "sourceCardId").trim();
+    const savedId = fieldValue(form, "announcementId").trim();
+    const buttonText = fieldValue(form, "buttonText").trim();
+    if (buttonText.length > WHATS_NEW_BUTTON_TEXT_MAX_LENGTH) {
+      showForm();
+      setStatus(
+        status,
+        `Button text must be ${WHATS_NEW_BUTTON_TEXT_MAX_LENGTH} characters or fewer.`,
+        true,
+      );
+      return;
+    }
+    const destination = normalizeWhatsNewDestinationUrl(fieldValue(form, "buttonDestinationUrl"));
+    if (!destination.ok) {
+      showForm();
+      setStatus(status, destination.error, true);
+      return;
+    }
+    openWhatsNewAnnouncementPreview({
+      id: savedId || "preview",
+      title,
+      introductionHtml: fieldValue(form, "introduction"),
+      href: popupReadMoreHref(sourceCardId, destination.value),
+      buttonLabel: announcementButtonLabel(buttonText),
+    });
+  };
 
   const showForm = (): void => {
     form.hidden = false;
@@ -118,11 +168,25 @@ export function initWatsonPopupAnnouncement(root: ParentNode = document): void {
     setField(form, "sourceCardId", entry.id);
     setIntroduction(form, entry.description);
     showForm();
+    explainPublishing(entry);
     setStatus(
       status,
-      "Draft filled from that entry. Preview, Save, or Enable when it looks right. The What's New entry is not changed.",
+      "Loaded from that entry. It is not live until you choose Make this the live billboard. The What's New entry is not changed.",
     );
     form.querySelector<HTMLElement>("[name='title']")?.focus();
+  };
+
+  const useEntryAsBillboard = (entry: PopupEntry): void => {
+    fillFromEntry(entry);
+    setField(form, "expiresAtLocal", "");
+    setField(form, "buttonText", "");
+    setField(form, "buttonDestinationUrl", "");
+    setStatus(
+      status,
+      "Loaded into the billboard preview. It is not live until you choose Make this the live billboard. The previous expiration and button were cleared.",
+    );
+    panel.scrollIntoView({ behavior: "smooth", block: "start" });
+    previewForm();
   };
 
   const renderResults = (query: string): void => {
@@ -134,7 +198,7 @@ export function initWatsonPopupAnnouncement(root: ParentNode = document): void {
       return;
     }
     const matches = entries
-      .filter((entry) => entry.title.toLowerCase().includes(needle))
+      .filter((entry) => !entry.archived && entry.title.toLowerCase().includes(needle))
       .slice(0, 8);
     if (matches.length === 0) {
       const empty = document.createElement("li");
@@ -170,37 +234,18 @@ export function initWatsonPopupAnnouncement(root: ParentNode = document): void {
   });
 
   panel.querySelector("[data-wn-popup-preview]")?.addEventListener("click", () => {
-    syncIntroduction(form);
-    const title = fieldValue(form, "title").trim();
-    if (!title) {
-      showForm();
-      setStatus(status, "Add a title before previewing the pop-up.", true);
-      return;
-    }
-    const sourceCardId = fieldValue(form, "sourceCardId").trim();
-    const savedId = fieldValue(form, "announcementId").trim();
-    const buttonText = fieldValue(form, "buttonText").trim();
-    if (buttonText.length > WHATS_NEW_BUTTON_TEXT_MAX_LENGTH) {
-      showForm();
-      setStatus(
-        status,
-        `Button text must be ${WHATS_NEW_BUTTON_TEXT_MAX_LENGTH} characters or fewer.`,
-        true,
-      );
-      return;
-    }
-    const destination = normalizeWhatsNewDestinationUrl(fieldValue(form, "buttonDestinationUrl"));
-    if (!destination.ok) {
-      showForm();
-      setStatus(status, destination.error, true);
-      return;
-    }
-    openWhatsNewAnnouncementPreview({
-      id: savedId || "preview",
-      title,
-      introductionHtml: fieldValue(form, "introduction"),
-      href: popupReadMoreHref(sourceCardId, destination.value),
-      buttonLabel: announcementButtonLabel(buttonText),
+    previewForm();
+  });
+
+  root.querySelectorAll<HTMLButtonElement>("[data-wn-use-billboard]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const id = button.getAttribute("data-wn-use-billboard") || "";
+      const entry = entries.find((item) => item.id === id);
+      if (!entry) {
+        setStatus(status, "That What's New entry could not be loaded.", true);
+        return;
+      }
+      useEntryAsBillboard(entry);
     });
   });
 

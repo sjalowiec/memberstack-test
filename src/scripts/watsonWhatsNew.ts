@@ -3,6 +3,7 @@ import {
   sanitizeBillboardHtml,
   sanitizeCardDescriptionHtml,
 } from "../lib/whatsNew/sanitizeBillboardHtml";
+import { syncCompactRichText, writeCompactRichTextValue } from "./watsonRichTextEditor";
 import { openWhatsNewAnnouncementPreview } from "./whatsNewAnnouncement";
 
 const DEFAULT_BUTTON_TEXT: Record<string, string> = {
@@ -116,32 +117,22 @@ function fillForm(form: HTMLFormElement, card: Record<string, unknown>): void {
   set("archived", Boolean(card.archived));
 }
 
-function cardDescriptionParts(form: HTMLFormElement): {
-  editor: HTMLElement;
-  hidden: HTMLTextAreaElement;
-} | null {
-  const wrap = form.querySelector<HTMLElement>("[data-wn-card-rte]");
-  if (!wrap) return null;
-  const editor = wrap.querySelector<HTMLElement>("[data-wn-rte-editor]");
-  const hidden = wrap.querySelector<HTMLTextAreaElement>("[data-wn-rte-input]");
-  if (!editor || !hidden) return null;
-  return { editor, hidden };
+function cardRichText(form: HTMLFormElement): HTMLElement | null {
+  return form.querySelector<HTMLElement>("[data-wn-card-rte]");
 }
 
 /** Seed the description editor (and its hidden input) from stored text or HTML. */
 function setCardDescription(form: HTMLFormElement, value: string): void {
-  const parts = cardDescriptionParts(form);
-  if (!parts) return;
-  const clean = sanitizeCardDescriptionHtml(value || "");
-  parts.editor.innerHTML = clean || "<p><br></p>";
-  parts.hidden.value = clean;
+  const wrap = cardRichText(form);
+  if (!wrap) return;
+  writeCompactRichTextValue(wrap, sanitizeCardDescriptionHtml(value || ""));
 }
 
 /** Push the current editor HTML into the hidden field before reading the form. */
 function syncCardDescription(form: HTMLFormElement): void {
-  const parts = cardDescriptionParts(form);
-  if (!parts) return;
-  parts.hidden.value = sanitizeCardDescriptionHtml(parts.editor.innerHTML);
+  const wrap = cardRichText(form);
+  if (!wrap) return;
+  syncCompactRichText(wrap, sanitizeCardDescriptionHtml);
 }
 
 function resetForm(form: HTMLFormElement): void {
@@ -407,11 +398,8 @@ export function initWatsonWhatsNew(root: ParentNode = document): void {
   videoForm?.addEventListener("submit", async (event) => {
     event.preventDefault();
     // Ensure the rich-text editor has synced into the hidden message field.
-    const rteEditor = videoForm.querySelector<HTMLElement>("[data-wn-rte-editor]");
-    const rteInput = videoForm.querySelector<HTMLTextAreaElement>("[data-wn-rte-input]");
-    if (rteEditor && rteInput) {
-      rteInput.value = sanitizeBillboardHtml(rteEditor.innerHTML);
-    }
+    const rte = videoForm.querySelector<HTMLElement>("[data-wn-rte]");
+    if (rte) syncCompactRichText(rte, sanitizeBillboardHtml);
     const data = new FormData(videoForm);
     const payload = {
       headline: String(data.get("headline") || ""),
