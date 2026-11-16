@@ -24,9 +24,14 @@ import {
 import { cardiganFrontInitialNeckBindOffStitches, cardiganFrontNeckOpeningStitches } from "./roundNeckNotation";
 import { neckDecreaseStitchesPerSideFromOpening } from "./legoBlocks/vNeckline";
 import {
+  calculateBackRoundNecklinePlan,
   calculateRoundNecklinePlan,
   isShallowHoldRoundPlan,
 } from "./legoBlocks/roundNeckline";
+import {
+  shallowNeckShortRowShoulderTimeline,
+  shortRowShoulderGroups,
+} from "./shallowNeckShortRowShoulder";
 import {
   evenShapingGarmentRowNumbers,
   evenShapingSchedule,
@@ -445,6 +450,8 @@ export type DropShoulderBackNeckTimelineInputs = {
   totalRows: number;
   bustBodySts: number;
   rowsPerInch: number;
+  /** Shallow back neckline with short-row shoulders. Straight shoulders stay the default. */
+  shortRowShoulders?: boolean;
 };
 
 /** True when live back neckline map inputs are sufficient (straight shoulders OK). */
@@ -485,6 +492,22 @@ export function buildDropShoulderBackNeckShapingTimeline(
 
   if (!dropShoulderBackNeckShapingTimelineInputsReady(inputs)) {
     return null;
+  }
+
+  if (inputs.shortRowShoulders) {
+    const plan = calculateBackRoundNecklinePlan({
+      necklineStitches: backNeckSts,
+      necklineDepthRows: backNeckDepthRows,
+    });
+    const groups = shortRowShoulderGroups(shoulderStsEach, backNeckDepthRows, rowsPerInch);
+    const timeline = shallowNeckShortRowShoulderTimeline({
+      plan,
+      bodyWidthStitches: bustBodySts,
+      shoulderGroups: groups,
+      depthRows: backNeckDepthRows,
+      necklineStartRc: backNecklineStartRC,
+    });
+    return timeline && timeline.length > 0 ? timeline : null;
   }
 
   const shoulderBindoffRows = Math.max(1, Math.round(rowsPerInch));

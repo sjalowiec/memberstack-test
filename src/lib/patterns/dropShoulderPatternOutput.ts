@@ -102,6 +102,10 @@ import {
 } from "./legoBlocks/bustDart";
 import type { NeckShoulderShapingChart } from "./neckShoulderShapingChart";
 import {
+  shallowNeckShortRowShoulderBlocks,
+  shortRowShoulderGroups,
+} from "./shallowNeckShortRowShoulder";
+import {
   buildDropShoulderBackNeckShapingTimeline,
   buildDropShoulderFrontNeckShapingChart,
   dropShoulderCardiganRoundFrontNeckLastLocalRc,
@@ -822,6 +826,9 @@ function buildBackRows(args: {
   backNeckSts: number;
   backNeckDepthRows: number;
   backRoundNeckPlan: RoundNecklinePlanResult | null;
+  /** Shallow back only. Straight-shoulder wording stays in place when this is omitted. */
+  shortRowShoulders?: boolean;
+  rowsPerInch?: number;
   alineBodyShaping?: SleevelessAlineBodyShapingPlan | null;
   alineShapingEdgeScope?: SleevelessAlineShapingEdgeScope;
 }): SleevelessPatternDisplayRow[] {
@@ -925,7 +932,62 @@ function buildBackRows(args: {
       tipPresentation: "quick-tip",
       tipId: roundBackNeckVideoTip.tipId,
     });
-    if (plan.strategy === "shallow-round") {
+    const shortRowBlocks =
+      args.shortRowShoulders && plan.strategy === "shallow-round"
+        ? shallowNeckShortRowShoulderBlocks({
+            plan,
+            bodyWidthStitches: args.bodyWidthSts,
+            shoulderGroups: shortRowShoulderGroups(
+              args.shoulderStsEach,
+              args.backNeckDepthRows,
+              args.rowsPerInch ?? 0,
+            ),
+            depthRows: args.backNeckDepthRows,
+          })
+        : null;
+    if (shortRowBlocks) {
+      rows[rows.length - 1] = {
+        kind: "block",
+        rc: dropShoulderNecklineFirstBlockRc(true, neckStartRc),
+        trustedParagraphs: insertLifelineReminderAfterOpening([
+          "Begin back neckline shaping.",
+          "Work the neckline bind-offs and decreases in the same rows as the short-row shoulder shaping.",
+        ]),
+        paragraphs: [],
+        tipHtml: roundBackNeckVideoTip.tipHtml,
+        tipHtmlIsFull: true,
+        tipPresentation: "quick-tip",
+        tipId: roundBackNeckVideoTip.tipId,
+      };
+      const holdTip = dropShoulderHoldPositionVideoRow();
+      for (const block of shortRowBlocks) {
+        const holdIdx = block.lines.findIndex((line) => /into hold/i.test(line.replace(/<[^>]+>/g, " ")));
+        if (holdIdx >= 0 && holdTip) {
+          rows.push({
+            kind: "block",
+            trustedParagraphs: block.lines.slice(0, holdIdx + 1),
+            paragraphs: [],
+            tipHtml: holdTip.tipHtml,
+            tipHtmlIsFull: true,
+            tipPresentation: "quick-tip",
+            tipId: holdTip.tipId,
+          });
+          rows.push({
+            kind: "block",
+            trustedParagraphs: block.lines.slice(holdIdx + 1),
+            paragraphs: [],
+            stitchCount: block.stitchCount,
+          });
+        } else {
+          rows.push({
+            kind: "block",
+            trustedParagraphs: block.lines,
+            paragraphs: [],
+            stitchCount: block.stitchCount,
+          });
+        }
+      }
+    } else if (plan.strategy === "shallow-round") {
       pushStraightShoulderShallowNeckBlocks(rows, executionLines, args.shoulderStsEach);
     } else {
       rows.push(...splitTrustedParagraphsAtShoulderCompletion(executionLines, args.shoulderStsEach));
@@ -1661,6 +1723,8 @@ export function generateDropShoulderPattern(
   const style = section(patternData.style);
   const isCardigan = String(style.frontStyle) === "open";
   const isVNeck = isSleevelessVNeckChoice(patternData);
+  const shortRowShoulders =
+    String(style.shoulderShaping) === "short-row" && !isCardigan && !isVNeck;
   const sleeveDirection: DropShoulderSleeveDirection =
     options?.sleeveDirection ?? DROP_SHOULDER_SLEEVE_DIRECTION_DEFAULT;
 
@@ -1927,6 +1991,8 @@ export function generateDropShoulderPattern(
     backNeckSts,
     backNeckDepthRows,
     backRoundNeckPlan,
+    shortRowShoulders,
+    rowsPerInch: rpi,
     alineBodyShaping,
   });
 
@@ -2031,8 +2097,22 @@ export function generateDropShoulderPattern(
           totalRows,
           bustBodySts,
           rowsPerInch: rpi,
+          shortRowShoulders,
         }) ?? undefined
       : undefined;
+
+  if (shortRowShoulders) {
+    const backText = displayRows
+      .flatMap((row) =>
+        row.kind === "block" ? [...(row.trustedParagraphs ?? []), ...(row.paragraphs ?? [])] : [],
+      )
+      .join("\n");
+    if (backText.includes("there is no shoulder shaping")) {
+      warnings.push(
+        "Short-row shoulders were requested, but the calculated neckline depth does not have a separate row for every neckline action and every shoulder wrap. The straight-shoulder instructions were kept. Garment measurements were not changed.",
+      );
+    }
+  }
 
   const sleeveDisplayRows = buildDropShoulderSleeveDisplayRows({
     topSts,

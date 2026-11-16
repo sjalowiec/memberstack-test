@@ -69,7 +69,7 @@ function edgeAmount(
   const matched = entry.events.filter((e) => {
     if (e.side !== side || e.edge !== edge) return false;
     if (e.amount <= 0) return false;
-    if (edge === "outer") return e.kind === "bindOff" || e.kind === "decrease";
+    if (edge === "outer") return e.kind === "bindOff" || e.kind === "decrease" || e.kind === "hold";
     return e.kind === "bindOff" || e.kind === "decrease" || e.kind === "hold";
   });
   if (matched.length === 0) return null;
@@ -201,11 +201,15 @@ export function buildSleevelessRoundNeckBackShapingSchedule(
 
 function opsToPoints(
   ops: readonly SleevelessRoundNeckBackShapingOp[],
-): { row: number; stitches: number }[] {
-  const points: { row: number; stitches: number }[] = [];
+): { row: number; stitches: number; label?: string }[] {
+  const points: { row: number; stitches: number; label?: string }[] = [];
   for (const op of ops) {
     for (let r = 0; r < op.repetitions; r++) {
-      points.push({ row: op.startRow + r * op.rowInterval, stitches: op.stitches });
+      points.push({
+        row: op.startRow + r * op.rowInterval,
+        stitches: op.stitches,
+        ...(op.kind === "hold" ? { label: `hold ${op.stitches}` } : {}),
+      });
     }
   }
   points.sort((a, b) => a.row - b.row);
@@ -213,7 +217,7 @@ function opsToPoints(
 }
 
 function pathStepsTopDown(
-  points: readonly { row: number; stitches: number }[],
+  points: readonly { row: number; stitches: number; label?: string }[],
   trailingRows: number,
 ): { startRow: number; steps: ShapingMapStep[]; totalStitches: number } {
   if (points.length === 0) {
@@ -227,14 +231,14 @@ function pathStepsTopDown(
     const cur = desc[i]!;
     const next = desc[i + 1];
     const rows = next ? Math.max(1, cur.row - next.row) : Math.max(1, trailingRows);
-    steps.push({ stitches: cur.stitches, rows });
+    steps.push({ stitches: cur.stitches, rows, ...(cur.label ? { label: cur.label } : {}) });
     totalStitches += cur.stitches;
   }
   return { startRow, steps, totalStitches };
 }
 
 function pathStepsBottomUp(
-  points: readonly { row: number; stitches: number }[],
+  points: readonly { row: number; stitches: number; label?: string }[],
 ): { startRow: number; steps: ShapingMapStep[]; totalStitches: number } {
   if (points.length === 0) {
     return { startRow: 0, steps: [], totalStitches: 0 };
@@ -247,7 +251,7 @@ function pathStepsBottomUp(
     const cur = asc[i]!;
     const next = asc[i + 1];
     const rows = next ? Math.max(1, next.row - cur.row) : 0;
-    steps.push({ stitches: cur.stitches, rows });
+    steps.push({ stitches: cur.stitches, rows, ...(cur.label ? { label: cur.label } : {}) });
     totalStitches += cur.stitches;
   }
   return { startRow, steps, totalStitches };
