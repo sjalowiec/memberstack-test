@@ -6,6 +6,8 @@
  *   - `style.construction = "drop-shoulder"` so the pattern workspace uses the drop-shoulder
  *     generator + layout (see dropShoulderPatternOutput.ts / sleevelessPatternPageShared.ts).
  *   - `style.sleeveLength` ("long" default | "three-quarter" | "elbow" | "short") from the picker.
+ *   - `style.shoulderShaping` ("straight" default | "short-row") from the shoulder picker.
+ *     Patterns with no stored value stay on straight shoulders until a choice is saved.
  *     NOTE: the length selection is captured/persisted now for the UI, but is intentionally NOT
  *     yet applied to the generator math (deferred until the length→inches mapping is defined).
  *
@@ -30,6 +32,9 @@ import {
 } from "../lib/patterns/patternConstructionIdentity";
 
 type SleeveLength = "long" | "three-quarter" | "elbow" | "short";
+type ShoulderShaping = "straight" | "short-row";
+
+const SHOULDER_SHAPINGS: readonly ShoulderShaping[] = ["straight", "short-row"];
 
 const SLEEVE_LENGTHS: readonly SleeveLength[] = ["long", "three-quarter", "elbow", "short"];
 
@@ -56,12 +61,20 @@ function readStoredSleeveLength(): SleeveLength {
   return SLEEVE_LENGTHS.includes(v as SleeveLength) ? (v as SleeveLength) : "long";
 }
 
-function persist(sleeveLength: SleeveLength): void {
+function readStoredShoulderShaping(): ShoulderShaping {
+  const v = readStyleValue("shoulderShaping");
+  return SHOULDER_SHAPINGS.includes(v as ShoulderShaping) ? (v as ShoulderShaping) : "straight";
+}
+
+function persist(sleeveLength: SleeveLength, shoulderShaping: ShoulderShaping): void {
   try {
     const canonicalStyle =
       (getCurrentPattern().style as Record<string, unknown> | undefined) ?? {};
     const pbStyle = (getPatternData().style as Record<string, unknown> | undefined) ?? {};
-    const style = withDropShoulderConstructionAuthored({ ...canonicalStyle, ...pbStyle }, sleeveLength);
+    const style = withDropShoulderConstructionAuthored(
+      { ...canonicalStyle, ...pbStyle, shoulderShaping },
+      sleeveLength,
+    );
     saveCurrentPattern({ style });
     savePatternData("style", style);
   } catch {
@@ -99,6 +112,16 @@ function reflectLengthSummary(length: SleeveLength): void {
     });
 }
 
+function reflectShoulderButtons(shaping: ShoulderShaping): void {
+  document
+    .querySelectorAll<HTMLButtonElement>("[data-ds-shoulder-shaping-option]")
+    .forEach((btn) => {
+      const selected = btn.getAttribute("data-value") === shaping;
+      btn.classList.toggle("is-selected", selected);
+      btn.setAttribute("aria-pressed", selected ? "true" : "false");
+    });
+}
+
 function wireControls(): void {
   const lengthRoot = document.querySelector("[data-ds-sleeve-length]");
   if (lengthRoot) {
@@ -112,7 +135,23 @@ function wireControls(): void {
         ? (raw as SleeveLength)
         : "long";
       reflectLengthButtons(length);
-      persist(length);
+      persist(length, readStoredShoulderShaping());
+    });
+  }
+
+  const shoulderRoot = document.querySelector("[data-ds-shoulder-shaping]");
+  if (shoulderRoot) {
+    shoulderRoot.addEventListener("click", (event) => {
+      const btn = (event.target as HTMLElement | null)?.closest<HTMLButtonElement>(
+        "[data-ds-shoulder-shaping-option]",
+      );
+      if (!btn) return;
+      const raw = btn.getAttribute("data-value");
+      const shaping: ShoulderShaping = SHOULDER_SHAPINGS.includes(raw as ShoulderShaping)
+        ? (raw as ShoulderShaping)
+        : "straight";
+      reflectShoulderButtons(shaping);
+      persist(readStoredSleeveLength(), shaping);
     });
   }
 }
@@ -120,9 +159,11 @@ function wireControls(): void {
 function init(): void {
   clearStaleSleevelessActiveProjectLink();
   const length = readStoredSleeveLength();
+  const shaping = readStoredShoulderShaping();
   stampDropShoulderWorkingDraftFromPage(length);
-  persist(length);
+  persist(length, shaping);
   reflectLengthButtons(length);
+  reflectShoulderButtons(shaping);
   wireControls();
 }
 
@@ -136,5 +177,5 @@ if (document.readyState === "loading") {
 
 // Belt-and-suspenders: re-assert just before leaving for the review page.
 window.addEventListener("pagehide", () => {
-  persist(readStoredSleeveLength());
+  persist(readStoredSleeveLength(), readStoredShoulderShaping());
 });

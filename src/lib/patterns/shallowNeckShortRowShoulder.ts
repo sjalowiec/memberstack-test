@@ -1,16 +1,19 @@
 /**
  * Shallow round neckline worked at the same time as short-row shoulder shaping.
  *
+ * The center neckline is bound off once, before either shoulder is shaped.
+ * The opposite shoulder waits in hold. That hold is not the short-row shaping.
+ *
  * Neck-edge groups of 2 or more are bind-offs. A 1-stitch group is a fully fashioned
  * decrease. Those stay on the odd rows, when the carriage is at the neck.
  *
- * The calculated shoulder groups are the same sizes the shaped-shoulder schedule
- * already uses. That schedule places them on the odd rows, which is the neck edge,
- * so a shoulder bind-off cannot be worked there. Each group is held instead:
- * all but one stitch go into hold on the neck-edge pass (opposite the carriage),
- * and the last stitch is pulled into hold on the next row, when the carriage is
- * at the shoulder, so the automatic wrap can happen. Stitch totals and the
- * neckline depth stay the same.
+ * Shoulder groups use the existing shaped-shoulder sizes. The automatic wrap
+ * (short-row Skill Builder, glossary 346) holds all but one stitch opposite the
+ * carriage, knits across, then pulls the last needle into hold on the carriage
+ * side. The last group ends on that wrap: no working needle remains, so that
+ * return is not knitted. The 12-row depth is the positioning row plus those
+ * knitted short rows. The shoulder is bound off at the resulting row counter.
+ * Stitch totals and the neckline depth stay the same.
  */
 
 import { distributeTotalAcrossRows } from "./distributeTotalAcrossRows";
@@ -21,7 +24,8 @@ import type { RoundNecklinePlanResult, RoundNecklineShapingResult } from "./lego
 import {
   computeShallowBackNeckNeedleLayout,
   formatCenterNeedleHoldPhraseHtml,
-  formatFirstSideHoldPhraseHtml,
+  formatNeedleLabel,
+  parseNeedleLabel,
   formatNeedleRangeHtml,
   formatNeedleRangeThrough,
   formatStitchCountValidation,
@@ -167,34 +171,144 @@ function neckSentence(action: { amount: number; kind: "bindOff" | "decrease" }):
   return `Bind off ${action.amount} ${stitchWord(action.amount)} at the neck edge. These stitches are removed for the neckline.`;
 }
 
-function passLines(pass: ShallowNeckShortRowPass): string[] {
-  const lines = [inlineRcHeadingLine(formatRcLabel(pass.localRc))];
-  if (pass.carriage === "neck") {
-    lines.push("Before knitting this row, the carriage and the working yarn are at the neck edge.");
-    if (pass.neck) lines.push(neckSentence(pass.neck));
-    if (pass.shoulderHoldOpposite > 0) {
-      const n = pass.shoulderHoldOpposite;
-      lines.push(
-        `On this same row, put ${n} ${stitchWord(n)} at the shoulder edge into hold. The carriage is opposite those stitches. These stitches are held for the shoulder slope. They are not removed.`,
-      );
-    }
-    lines.push("Knit to the shoulder edge.");
-    return lines;
+type ShoulderSide = "right" | "left";
+
+function counterSentence(localRc: number): string {
+  const label = formatRcLabel(localRc);
+  return `The row counter shows ${label}. This row has not been knitted.`;
+}
+
+function afterKnitSentence(localRc: number): string {
+  return `After this row, the row counter shows ${formatRcLabel(localRc + 1)}.`;
+}
+
+function sideWords(side: ShoulderSide): {
+  bed: "L" | "R";
+  neckCarriage: string;
+  shoulderCarriage: string;
+  knitToShoulderFinish: string;
+  knitToNeckFinish: string;
+} {
+  if (side === "right") {
+    return {
+      bed: "R",
+      neckCarriage:
+        "The carriage is at the neck edge, beside the center, on the left of these working stitches.",
+      shoulderCarriage: "The carriage is COR, at the shoulder edge.",
+      knitToShoulderFinish: "COR, at the shoulder edge",
+      knitToNeckFinish: "at the neck edge, beside the center",
+    };
   }
-  lines.push("Before knitting this row, the carriage and the working yarn are at the shoulder edge.");
-  lines.push(
-    `On the carriage side, put 1 needle into hold, ${automaticWrapHtml()}, and knit back to the neck edge. This held stitch is part of the shoulder slope. It is not removed.`,
+  return {
+    bed: "L",
+    neckCarriage:
+      "The carriage is at the neck edge, beside the center, on the right of these working stitches.",
+    shoulderCarriage: "The carriage is COL, at the shoulder edge.",
+    knitToShoulderFinish: "COL, at the shoulder edge",
+    knitToNeckFinish: "at the neck edge, beside the center",
+  };
+}
+
+function rangePhrase(bed: "L" | "R", from: number, to: number): string {
+  if (from === to) return formatNeedleRangeHtml(formatNeedleLabel(bed, from));
+  return formatNeedleRangeHtml(
+    formatNeedleRangeThrough(formatNeedleLabel(bed, from), formatNeedleLabel(bed, to)),
   );
+}
+
+/**
+ * One shoulder, in carriage order. A row heading is the counter before that row is knitted.
+ * The final wrap is not given a row to knit when no working needle remains.
+ */
+function shoulderPassLines(
+  side: ShoulderSide,
+  plan: ShallowNeckShortRowShoulderPlan,
+  neckIndex: number,
+  shoulderIndex: number,
+): string[] {
+  const words = sideWords(side);
+  let neck = neckIndex;
+  let shoulder = shoulderIndex;
+  let working = plan.finishedShoulder + plan.neckRemoved;
+  const lines: string[] = [];
+
+  for (const pass of plan.passes) {
+    if (pass.carriage === "neck") {
+      lines.push(inlineRcHeadingLine(formatRcLabel(pass.localRc)));
+      lines.push(counterSentence(pass.localRc));
+      lines.push(words.neckCarriage);
+      if (pass.neck) {
+        const removed = rangePhrase(words.bed, neck, neck + pass.neck.amount - 1);
+        lines.push(`${neckSentence(pass.neck)} Remove ${removed}.`);
+        neck += pass.neck.amount;
+        working -= pass.neck.amount;
+      }
+      if (pass.shoulderHoldOpposite > 0) {
+        const n = pass.shoulderHoldOpposite;
+        const held = rangePhrase(words.bed, shoulder - n + 1, shoulder);
+        lines.push(
+          `Before knitting, put ${removedOrHeld(n)} ${held} into hold at the shoulder edge. The carriage is opposite those needles. These stitches are held for the shoulder slope. They are not removed, and they are not the other shoulder waiting in hold.`,
+        );
+        shoulder -= n;
+        working -= n;
+      }
+      if (working > 0) {
+        lines.push(
+          `Knit the ${working} working ${stitchWord(working)}, ${rangePhrase(words.bed, neck, shoulder)}. The carriage finishes ${words.knitToShoulderFinish}. ${afterKnitSentence(pass.localRc)}`,
+        );
+      } else {
+        lines.push(
+          `No working stitches remain. Do not knit this row. The row counter stays at ${formatRcLabel(pass.localRc)}.`,
+        );
+      }
+      continue;
+    }
+
+    const wrappingLast = pass.shoulderWrap > 0 && working <= pass.shoulderWrap;
+    if (wrappingLast) {
+      lines.push(
+        `The row counter shows ${formatRcLabel(pass.localRc)}. ${words.shoulderCarriage} Put the last working needle, ${rangePhrase(words.bed, shoulder, shoulder)}, into hold, ${automaticWrapHtml()}. This stitch is held for the shoulder slope. It is not removed. No working needles remain. Do not knit. The row counter stays at ${formatRcLabel(pass.localRc)}.`,
+      );
+      working = 0;
+      continue;
+    }
+
+    lines.push(inlineRcHeadingLine(formatRcLabel(pass.localRc)));
+    lines.push(counterSentence(pass.localRc));
+    lines.push(words.shoulderCarriage);
+    if (pass.shoulderWrap > 0) {
+      const wrapped = rangePhrase(words.bed, shoulder, shoulder);
+      lines.push(
+        `On the carriage side, put 1 needle, ${wrapped}, into hold, ${automaticWrapHtml()}. This stitch is held for the shoulder slope. It is not removed.`,
+      );
+      shoulder -= 1;
+      working -= 1;
+    }
+    lines.push(
+      `Knit the ${working} working ${stitchWord(working)}, ${rangePhrase(words.bed, neck, shoulder)}, back to the neck edge. The carriage finishes ${words.knitToNeckFinish}. ${afterKnitSentence(pass.localRc)}`,
+    );
+  }
   return lines;
 }
 
+function removedOrHeld(n: number): string {
+  return `${n} ${stitchWord(n)}`;
+}
+
 function finishLines(
+  side: ShoulderSide,
   orderLabel: "first" | "second",
   plan: ShallowNeckShortRowShoulderPlan,
 ): string[] {
+  const words = sideWords(side);
+  const held = plan.shoulderHeld;
+  const removed = plan.neckRemoved;
+  const finished = plan.finishedShoulder;
   return [
-    `${plan.neckRemoved} ${stitchWord(plan.neckRemoved)} were removed for the neckline. ${plan.shoulderHeld} ${stitchWord(plan.shoulderHeld)} were held for the shoulder slope and are still on the machine.`,
-    `Bind off the ${plan.finishedShoulder} shoulder stitches.`,
+    `${removed} ${stitchWord(removed)} were removed for the neckline. ${held} ${stitchWord(held)} were held for the shoulder slope and are still on the machine. These held stitches are the short-row shoulder. They are not the other shoulder.`,
+    `Return the ${held} held shoulder stitches to working position. ${words.shoulderCarriage} Each of those needles has its wrap.`,
+    `Bind off the ${finished} shoulder stitches from the shoulder edge. Knit each wrap together with its stitch as that stitch is bound off.`,
+    `The row counter is at ${formatRcLabel(plan.depthRows)}. This bind-off does not add a knitted row. Do not knit a separate row across the shoulder before the bind-off. That row would end at ${formatRcLabel(plan.depthRows + 1)}, one row past the calculated neckline depth.`,
     `The ${orderLabel} shoulder is complete.`,
   ];
 }
@@ -243,29 +357,46 @@ export function shallowNeckShortRowShoulderBlocks(input: {
     formatNeedleRangeThrough(layout.leftShoulder.start, layout.leftShoulder.end),
   );
   const center = formatCenterNeedleHoldPhraseHtml(layout);
+  const rightNeck = layout.rightShoulder.start;
+  const rightOuter = layout.rightShoulder.end;
+  const leftOuter = layout.leftShoulder.start;
+  const leftNeck = layout.leftShoulder.end;
 
   const rightLines = [
     inlineSubheadingLine("RIGHT SIDE"),
     "Divide the neckline. Work one shoulder at a time.",
-    `Put needles ${formatFirstSideHoldPhraseHtml(layout)} into hold${formatStitchCountValidation(counts.firstSideHold)}. This is the second shoulder waiting. These stitches are not the short-row shoulder shaping.`,
-    `Work needles ${rightWork}${formatStitchCountValidation(counts.rightShoulder)}.`,
-    "Place the carriage at the shoulder edge without knitting a row.",
-    "Knit this row. The carriage finishes at the neck edge.",
-    ...rightPlan.passes.flatMap(passLines),
-    ...finishLines("first", rightPlan),
+    `Put needles ${leftWork} into hold${formatStitchCountValidation(counts.leftShoulder)}. This is the left shoulder waiting. These stitches are not the short-row shoulder shaping.`,
+    inlineRcHeadingLine(formatRcLabel(0)),
+    "The row counter shows RC: 000. This row has not been knitted.",
+    `Break the yarn and join it at ${layout.center.start}. Bind off center neckline needles ${center}${formatStitchCountValidation(counts.center)}. Start this bind-off at ${layout.center.start} and bind off through ${layout.center.end}. These center stitches are removed from work and finished. The yarn finishes at the neck edge of the right shoulder. If the carriage passes the row-counter tripper during this bind-off, set the row counter back to RC: 000.`,
+    "Place the carriage at the shoulder edge, COR, without knitting a row. The row counter stays at RC: 000.",
+    `Work needles ${rightWork}${formatStitchCountValidation(counts.rightShoulder)}. The neck edge is ${rightNeck}. The shoulder edge is ${rightOuter}, COR.`,
+    "Knit this row. The carriage finishes at the neck edge, on the left of these working stitches. After this row, the row counter shows RC: 001.",
+    ...shoulderPassLines(
+      "right",
+      rightPlan,
+      parseNeedleLabel(rightNeck).index,
+      parseNeedleLabel(rightOuter).index,
+    ),
+    ...finishLines("right", "first", rightPlan),
   ];
   const leftLines = [
     inlineSubheadingLine("LEFT SIDE"),
     "Break the yarn.",
-    `Return needles ${leftWork} to working position${formatStitchCountValidation(counts.leftShoulder)}.`,
-    `Leave center neckline needles ${center} in hold${formatStitchCountValidation(counts.center)}. The center stitches were not bound off. They are still in hold.`,
-    "Reset the row counter to RC: 000.",
-    "Place the carriage at the shoulder edge without knitting a row.",
-    "Knit this row. The carriage finishes at the neck edge.",
-    "Work this shoulder on its own. The neck edge is toward the center. The shoulder edge is the outer edge.",
-    ...leftPlan.passes.flatMap(passLines),
-    ...finishLines("second", leftPlan),
-    "Scrap off or bind off the center neckline stitches left in hold.",
+    `Return needles ${leftWork} to working position${formatStitchCountValidation(counts.leftShoulder)}. This is the shoulder that was waiting. These stitches are not the short-row shoulder shaping.`,
+    "The center neckline stitches are already bound off. Do not bind them off again.",
+    "Reset the row counter to RC: 000. This row has not been knitted.",
+    "Place the carriage at the shoulder edge, COL, without knitting a row. The row counter stays at RC: 000.",
+    "Attach the yarn at the neck edge.",
+    `Work needles ${leftWork}. The neck edge is ${leftNeck}, toward the center. The shoulder edge is ${leftOuter}, COL.`,
+    "Knit this row. The carriage finishes at the neck edge, on the right of these working stitches. After this row, the row counter shows RC: 001.",
+    ...shoulderPassLines(
+      "left",
+      leftPlan,
+      parseNeedleLabel(leftNeck).index,
+      parseNeedleLabel(leftOuter).index,
+    ),
+    ...finishLines("left", "second", leftPlan),
   ];
 
   return [
@@ -320,7 +451,7 @@ export function shallowNeckShortRowShoulderTimeline(input: {
   });
 
   const rows: RowEntry[] = [
-    row(0, [{ kind: "hold", side: "center", edge: "center", amount: input.plan.centerBindOff }]),
+    row(0, [{ kind: "bindOff", side: "center", edge: "center", amount: input.plan.centerBindOff }]),
   ];
   const byLocal = new Map<number, RowEntry["events"]>();
   const add = (

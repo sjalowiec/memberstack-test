@@ -9,6 +9,7 @@ import {
   getPatternData,
   SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY,
   saveCurrentPattern,
+  savePatternData,
 } from "./patternStorage";
 import {
   applyExpressGaugeNeedleEdits,
@@ -131,6 +132,28 @@ describe("syncExpressWizardToPatternStorage", () => {
     expect(String(getCurrentPattern().machine.availableNeedles)).toBe("180");
     expect(String((getPatternData().machine as Record<string, unknown>).availableNeedles)).toBe("180");
     expect(readActiveCustomPatternProjectId()).toBe("proj-test");
+  });
+
+  it("keeps a saved short-row shoulder choice when the wizard syncs style", () => {
+    saveCurrentPattern({
+      ...basePattern(),
+      style: { ...basePattern().style, shoulderShaping: "short-row", construction: "drop-shoulder" },
+    });
+    savePatternData("style", { shoulderShaping: "short-row", construction: "drop-shoulder" });
+    syncExpressWizardToPatternStorage(
+      {
+        who: "women",
+        selectedSize: "1",
+        front: "closed",
+        neckline: "round",
+        fit: "standard",
+        style: "straight-pullover",
+      },
+      null,
+      { preferDomGauge: false },
+    );
+    expect(getCurrentPattern().style.shoulderShaping).toBe("short-row");
+    expect((getPatternData().style as Record<string, unknown>).shoulderShaping).toBe("short-row");
   });
 
   it("resolveExpressGaugeFieldsForPersist keeps builder gauge when DOM is empty (editChoices resume)", () => {

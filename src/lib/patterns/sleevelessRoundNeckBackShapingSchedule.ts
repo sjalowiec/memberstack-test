@@ -85,6 +85,27 @@ function centerAmount(entry: RowEntry): { amount: number; held: boolean } {
   return { amount, held };
 }
 
+function shortRowCenterBindOffRequested(patternData: unknown): boolean {
+  if (!patternData || typeof patternData !== "object") return false;
+  const style = (patternData as { style?: unknown }).style;
+  if (!style || typeof style !== "object") return false;
+  return (style as { shoulderShaping?: unknown }).shoulderShaping === "short-row";
+}
+
+/** Shallow maps keep the center-hold gate. Short-row shoulders bind the center off instead. */
+function centerOpensBackMap(
+  entry: RowEntry,
+  patternData: unknown,
+): { amount: number; held: boolean; ok: boolean } {
+  const center = centerAmount(entry);
+  if (center.amount <= 0) return { ...center, ok: false };
+  if (center.held) return { ...center, ok: true };
+  const boundOff = entry.events.some(
+    (event) => event.side === "center" && event.edge === "center" && event.kind === "bindOff" && event.amount > 0,
+  );
+  return { ...center, ok: boundOff && shortRowCenterBindOffRequested(patternData) };
+}
+
 function groupPoints(
   points: readonly EdgePoint[],
   region: ShapingScheduleRegion,
@@ -152,8 +173,7 @@ export function isSleevelessRoundBackNeckShapingMapSupported(
   if (isSleevelessVNeckChoice(patternData)) return false;
   if (!timeline || timeline.length === 0) return false;
   const sorted = [...timeline].sort((a, b) => a.row - b.row);
-  const center = centerAmount(sorted[0]!);
-  return center.amount > 0 && center.held;
+  return centerOpensBackMap(sorted[0]!, patternData).ok;
 }
 
 /**
@@ -162,7 +182,7 @@ export function isSleevelessRoundBackNeckShapingMapSupported(
  */
 export function buildSleevelessRoundNeckBackShapingSchedule(
   timeline: readonly RowEntry[] | undefined,
-  options?: { edge?: SleevelessRoundBackShapingEdge },
+  options?: { edge?: SleevelessRoundBackShapingEdge; patternData?: unknown },
 ): SleevelessRoundNeckBackShapingSchedule | null {
   if (!timeline || timeline.length === 0) return null;
 
@@ -170,8 +190,8 @@ export function buildSleevelessRoundNeckBackShapingSchedule(
     options?.edge ?? SLEEVELESS_ROUND_BACK_FIRST_SHOULDER_EDGE;
   const sorted = [...timeline].sort((a, b) => a.row - b.row);
 
-  const center = centerAmount(sorted[0]!);
-  if (center.amount <= 0 || !center.held) return null;
+  const center = centerOpensBackMap(sorted[0]!, options?.patternData);
+  if (!center.ok) return null;
 
   const shoulderPoints = collectEdgePoints(sorted, edge, "outer");
   const neckPoints = collectEdgePoints(sorted, edge, "inner");
@@ -364,7 +384,9 @@ export function backShapingScheduleToMapData(
     ? centerCount === 1
       ? "Hold 1 center stitch"
       : `Hold ${centerCount} center stitches`
-    : undefined;
+    : centerCount === 1
+      ? "Bind off 1 center stitch"
+      : `Bind off ${centerCount} center stitches`;
 
   return {
     title: options?.title ?? "Back neckline shaping map",
@@ -395,6 +417,7 @@ export function buildSleevelessRoundNeckBackShapingMapData(
   }
   const schedule = buildSleevelessRoundNeckBackShapingSchedule(timeline, {
     ...(options?.edge ? { edge: options.edge } : {}),
+    ...(options?.patternData !== undefined ? { patternData: options.patternData } : {}),
   });
   if (!schedule) return null;
   if (schedule.neckStitchesTotal <= 0 && schedule.shoulderStitchesTotal <= 0) {
