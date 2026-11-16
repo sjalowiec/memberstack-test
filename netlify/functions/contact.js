@@ -18,15 +18,15 @@ import {
   contactImageTypeError,
   validateContactImageBatch,
 } from "../../src/lib/contact/contactImages.ts";
+import { resolveContactFromAddress } from "../../src/lib/email/resendConfig.ts";
 
 const CONTACT_UPLOADS_STORE = "contact-uploads";
 
-/** Production default; override with CONTACT_FROM_EMAIL (e.g. Resend sandbox for local). */
-const DEFAULT_CONTACT_FROM_EMAIL = "Knit It Now <hello@knititnow.com>";
-
-function getContactFromAddress() {
-  const configured = (process.env.CONTACT_FROM_EMAIL || "").trim();
-  return configured || DEFAULT_CONTACT_FROM_EMAIL;
+function resolveHandlerFromAddress(deps) {
+  if (typeof deps.getFromAddress === "function") {
+    return resolveContactFromAddress(deps.getFromAddress());
+  }
+  return resolveContactFromAddress();
 }
 
 /**
@@ -350,9 +350,9 @@ export async function handleContactPost(req, event, deps = {}) {
     // --- Resend notification (must not lose the saved message on failure) ---
     const getResendApiKey =
       deps.getResendApiKey || (() => (process.env.RESEND_API_KEY || "").trim());
-    const getFromAddress = deps.getFromAddress || getContactFromAddress;
     const RESEND_API_KEY = getResendApiKey();
-    const contactFrom = getFromAddress();
+    const fromResult = resolveHandlerFromAddress(deps);
+    const contactFrom = fromResult.ok ? fromResult.fromAddress : "";
 
     const emailSubject =
       formSource === "help-hub"
@@ -400,12 +400,9 @@ ${submittedImages.length > 0 ? imagesTextSection(submittedImages, imageStorages,
         "[contact] Missing RESEND_API_KEY — message saved; notification not sent",
         { id: savedMessage.id },
       );
-    } else if (!contactFrom) {
-      notificationError = "Missing CONTACT_FROM_EMAIL";
-      console.error(
-        "[contact] CONTACT_FROM_EMAIL is empty — message saved; notification not sent",
-        { id: savedMessage.id },
-      );
+    } else if (!fromResult.ok) {
+      notificationError = fromResult.reason;
+      console.error(`[contact] ${fromResult.reason}`, { id: savedMessage.id });
     } else {
       let emailAttachments = [];
       let attachmentsReady = submittedImages.length === 0;

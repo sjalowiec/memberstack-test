@@ -26,7 +26,7 @@ describe("buildCourseReadyNotificationEmail", () => {
 
 describe("sendCourseReadyNotificationEmail", () => {
   it("sends from the verified site address to sue with reply_to set to the customer email", async () => {
-    const fromAddress = "Knit It Now <hello@knititnow.com>";
+    const fromAddress = "Knit It Now <sue@knititnow.com>";
     const fetchImpl = vi.fn(async (_url: string, init?: RequestInit) => {
       const body = JSON.parse(String(init?.body));
       expect(body.from).toBe(fromAddress);
@@ -54,6 +54,34 @@ describe("sendCourseReadyNotificationEmail", () => {
     expect(fetchImpl).toHaveBeenCalledOnce();
   });
 
+  it("does not send when the configured sender is the Resend testing address", async () => {
+    const previousFrom = process.env.CONTACT_FROM_EMAIL;
+    const previousKey = process.env.RESEND_API_KEY;
+    process.env.CONTACT_FROM_EMAIL = "Knit It Now <onboarding@resend.dev>";
+    process.env.RESEND_API_KEY = "test-key";
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const fetchImpl = vi.fn();
+
+    const result = await sendCourseReadyNotificationEmail(
+      {
+        courseSlug: "lk-150-quick-start",
+        courseTitle: "LK-150 Quick Start",
+        customerEmail: "customer@example.com",
+      },
+      { fetchImpl },
+    );
+
+    expect(result).toEqual({ ok: false, reason: "config" });
+    expect(fetchImpl).not.toHaveBeenCalled();
+    expect(errorSpy).toHaveBeenCalledWith(expect.stringMatching(/onboarding@resend\.dev/));
+
+    if (previousFrom == null) delete process.env.CONTACT_FROM_EMAIL;
+    else process.env.CONTACT_FROM_EMAIL = previousFrom;
+    if (previousKey == null) delete process.env.RESEND_API_KEY;
+    else process.env.RESEND_API_KEY = previousKey;
+    errorSpy.mockRestore();
+  });
+
   it("accepts the request in dev when Resend is unreachable due to TLS/network errors", async () => {
     const fetchImpl = vi.fn(async () => {
       throw new TypeError("fetch failed", {
@@ -74,7 +102,7 @@ describe("sendCourseReadyNotificationEmail", () => {
       },
       {
         fetchImpl,
-        config: { apiKey: "test-key", fromAddress: "Knit It Now <hello@knititnow.com>" },
+        config: { apiKey: "test-key", fromAddress: "Knit It Now <sue@knititnow.com>" },
       },
     );
 

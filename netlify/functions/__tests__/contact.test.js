@@ -106,7 +106,7 @@ describe("contact submission handler", () => {
       fetchImpl,
       getResendApiKey: () => "test-resend-key",
       getTurnstileSecretKey: () => "turnstile_test_secret",
-      getFromAddress: () => "Knit It Now <hello@knititnow.com>",
+      getFromAddress: () => "Knit It Now <sue@knititnow.com>",
       nowIso: () => {
         clock += 1;
         return `2026-07-19T12:00:0${clock}.000Z`;
@@ -595,7 +595,89 @@ describe("contact submission handler", () => {
     );
     expect(res.status).toBe(200);
     expect(persistence.messages[0].attachment).toBeUndefined();
-    expect(resendPayload(fetchImpl).attachments).toBeUndefined();
+    const payload = resendPayload(fetchImpl);
+    expect(payload.attachments).toBeUndefined();
+    expect(payload.from).toBe("Knit It Now <sue@knititnow.com>");
+    expect(payload.reply_to).toBe("visitor@example.com");
+  });
+
+  it("puts the customer email in Reply-To when the sender comes from CONTACT_FROM_EMAIL", async () => {
+    const previous = process.env.CONTACT_FROM_EMAIL;
+    process.env.CONTACT_FROM_EMAIL = "Knit It Now <sue@knititnow.com>";
+    const { getFromAddress, ...withoutFrom } = deps();
+    const res = await handleContactPost(
+      makeContactRequest({
+        name: "Sue",
+        email: "visitor@example.com",
+        message: "Reply to me",
+      }),
+      null,
+      withoutFrom,
+    );
+    if (previous == null) delete process.env.CONTACT_FROM_EMAIL;
+    else process.env.CONTACT_FROM_EMAIL = previous;
+
+    expect(res.status).toBe(200);
+    const payload = resendPayload(fetchImpl);
+    expect(payload.from).toBe("Knit It Now <sue@knititnow.com>");
+    expect(payload.reply_to).toBe("visitor@example.com");
+    expect(getFromAddress).toBeTypeOf("function");
+  });
+
+  it("saves the message and does not send when the sender is the Resend testing address", async () => {
+    const previous = process.env.CONTACT_FROM_EMAIL;
+    process.env.CONTACT_FROM_EMAIL = "Knit It Now <onboarding@resend.dev>";
+    const { getFromAddress, ...withoutFrom } = deps();
+    const res = await handleContactPost(
+      makeContactRequest({
+        name: "Sue",
+        email: "visitor@example.com",
+        message: "Do not send from the sandbox",
+      }),
+      null,
+      withoutFrom,
+    );
+    if (previous == null) delete process.env.CONTACT_FROM_EMAIL;
+    else process.env.CONTACT_FROM_EMAIL = previous;
+
+    expect(res.status).toBe(502);
+    expect(persistence.messages).toHaveLength(1);
+    expect(persistence.messages[0].notificationEmailSent).toBe(false);
+    expect(persistence.messages[0].notificationEmailError).toMatch(/onboarding@resend\.dev/);
+    expect(
+      fetchImpl.mock.calls.filter((call) => String(call[0]) === "https://api.resend.com/emails"),
+    ).toHaveLength(0);
+    expect(getFromAddress).toBeTypeOf("function");
+  });
+
+  it("saves the message and logs a clear error when CONTACT_FROM_EMAIL is missing", async () => {
+    const previous = process.env.CONTACT_FROM_EMAIL;
+    delete process.env.CONTACT_FROM_EMAIL;
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const { getFromAddress, ...withoutFrom } = deps();
+    const res = await handleContactPost(
+      makeContactRequest({
+        name: "Sue",
+        email: "visitor@example.com",
+        message: "Sender missing",
+      }),
+      null,
+      withoutFrom,
+    );
+    expect(res.status).toBe(502);
+    expect(persistence.messages[0].notificationEmailSent).toBe(false);
+    expect(persistence.messages[0].notificationEmailError).toMatch(/CONTACT_FROM_EMAIL is missing/);
+    expect(errorSpy).toHaveBeenCalledWith(
+      expect.stringMatching(/CONTACT_FROM_EMAIL is missing/),
+      expect.objectContaining({ id: persistence.messages[0].id }),
+    );
+    if (previous == null) delete process.env.CONTACT_FROM_EMAIL;
+    else process.env.CONTACT_FROM_EMAIL = previous;
+    errorSpy.mockRestore();
+    expect(
+      fetchImpl.mock.calls.filter((call) => String(call[0]) === "https://api.resend.com/emails"),
+    ).toHaveLength(0);
+    expect(getFromAddress).toBeTypeOf("function");
   });
 
   it("attaches every accepted image to the contact email", async () => {
