@@ -8,21 +8,27 @@
  *
  * Intentionally playable without membership:
  *   - `access_level` public / open / free
- *   - the current Tuesday Tip (`isTipOfWeek` / `tipOfWeek`)
+ *   - the current Tip of the Week, and only during its free window
  *
- * The live tip is still stored as member. Callers mark that one row with
- * `markCurrentFeaturedTipForPlayback` before using this rule.
+ * The video record keeps its own access level. A stored `isTipOfWeek` /
+ * `tipOfWeek` checkbox is not a playback grant: those flags drifted from the
+ * tip schedule. Callers apply the live schedule with
+ * `markCurrentFeaturedTipForPlayback`, which sets `featuredTipPlayback` on
+ * that one copy.
  */
 export type CatalogVideoPlaybackAccess = "open" | "member";
 
 export type CatalogVideoPlaybackFields = {
   access_level?: unknown;
+  /** Set only on the playback copy of the tip that is free today. */
+  featuredTipPlayback?: boolean;
+  /** Stored catalog label. Ignored for playback so it cannot outlive the schedule. */
   isTipOfWeek?: boolean;
   tipOfWeek?: boolean;
 };
 
 export function isFeaturedTipCatalogVideo(video: CatalogVideoPlaybackFields): boolean {
-  return video.isTipOfWeek === true || video.tipOfWeek === true;
+  return video.featuredTipPlayback === true;
 }
 
 /** JSON synonyms that mean "playable without membership". */

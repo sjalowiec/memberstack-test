@@ -23,8 +23,11 @@ describe("glossaryInternalVideoIdList", () => {
 });
 
 describe("effectiveCatalogVideoAccess", () => {
-  it("treats featured tip as open", () => {
-    expect(effectiveCatalogVideoAccess({ access_level: "member", isTipOfWeek: true })).toBe("open");
+  it("opens only the live featured tip, not a stored tip checkbox", () => {
+    expect(effectiveCatalogVideoAccess({ access_level: "member", featuredTipPlayback: true })).toBe(
+      "open",
+    );
+    expect(effectiveCatalogVideoAccess({ access_level: "member", isTipOfWeek: true })).toBe("member");
   });
 
   it("respects access_level", () => {

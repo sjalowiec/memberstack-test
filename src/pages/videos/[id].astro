@@ -61,8 +61,7 @@ const rawAccessLevel = String((video as any)?.access_level ?? "member")
   .toLowerCase();
 const effectiveAccessLevel = catalogVideoPlaybackAccess({
   access_level: rawAccessLevel,
-  isTipOfWeek: (video as any)?.isTipOfWeek === true,
-  tipOfWeek: (video as any)?.tipOfWeek === true,
+  featuredTipPlayback: (video as { featuredTipPlayback?: unknown })?.featuredTipPlayback === true,
 });
 
 // thumbnail / poster: support full URL, /path, or filename → /images/filename

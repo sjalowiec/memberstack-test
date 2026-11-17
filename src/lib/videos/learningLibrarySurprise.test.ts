@@ -86,6 +86,12 @@ describe("learningLibrarySurpriseRefs", () => {
         content_id: 4,
         title: "Tuesday tip",
         access_level: "member",
+        featuredTipPlayback: true,
+      }),
+      video({
+        content_id: 14,
+        title: "Stale tip checkbox",
+        access_level: "member",
         isTipOfWeek: true,
       }),
       video({ content_id: 5, title: "Members", access_level: "member" }),
@@ -108,6 +114,7 @@ describe("learningLibrarySurpriseRefs", () => {
       { id: "2", access: "open" },
       { id: "3", access: "open" },
       { id: "4", access: "open" },
+      { id: "14", access: "member" },
       { id: "5", access: "member" },
       { id: "6", access: "member" },
     ]);

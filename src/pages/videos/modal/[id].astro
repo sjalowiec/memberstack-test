@@ -44,8 +44,9 @@ const rawAccessLevel = String(video ? (video as { access_level?: unknown }).acce
   .toLowerCase();
 const effectiveAccessLevel = catalogVideoPlaybackAccess({
   access_level: rawAccessLevel,
-  isTipOfWeek: video ? (video as { isTipOfWeek?: unknown }).isTipOfWeek === true : false,
-  tipOfWeek: video ? (video as { tipOfWeek?: unknown }).tipOfWeek === true : false,
+  featuredTipPlayback: video
+    ? (video as { featuredTipPlayback?: unknown }).featuredTipPlayback === true
+    : false,
 });
 const rawPosterUrl = video
   ? String((video as { posterUrl?: unknown; poster_url?: unknown }).posterUrl ?? (video as { poster_url?: unknown }).poster_url ?? "")

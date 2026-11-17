@@ -121,7 +121,29 @@ export function tipDateRangesOverlap(
 }
 
 /**
- * Whether a tip is the publicly featured free lesson on `today` (LA).
+ * The one public tip for a calendar day.
+ * Latest start date wins when windows overlap; the latest edit breaks a tie.
+ * Draft and archived tips are never selected. An ended window selects nothing.
+ */
+export function selectPublicFeaturedTip<
+  T extends Pick<TipOfTheWeekRecord, "status" | "availableFrom" | "availableThrough"> & {
+    updatedAt?: string;
+  },
+>(tips: readonly T[], todayLa: string = tipLosAngelesCalendarDate()): T | null {
+  const featured = tips.filter((tip) => tipIsPubliclyFeatured(tip, todayLa));
+  featured.sort((a, b) => {
+    if (a.availableFrom !== b.availableFrom) {
+      return a.availableFrom < b.availableFrom ? 1 : -1;
+    }
+    const aUpdated = a.updatedAt ?? "";
+    const bUpdated = b.updatedAt ?? "";
+    return aUpdated < bUpdated ? 1 : -1;
+  });
+  return featured[0] ?? null;
+}
+
+/**
+ * Whether a tip is inside the public free window on `today` (LA).
  * Draft/archived never; scheduled/active only inside their date window.
  */
 export function tipIsPubliclyFeatured(

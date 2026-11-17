@@ -168,6 +168,8 @@ const boardHtml = renderTipAdminBoardHtml({ todayLa, items, archiveQuery: "" });
           </span>
           <span class="watson-totw__hint">
             Defaults to a 7-day window (start + 6 days). Edit freely, or reset to recalculate.
+            Free playback includes the end date, then stops on its own. You do not need to
+            open the video editor or publish another tip.
           </span>
           <span class="watson-totw__field-error" data-totw-field-error="availableThrough" hidden></span>
         </label>
@@ -272,7 +274,10 @@ const boardHtml = renderTipAdminBoardHtml({ todayLa, items, archiveQuery: "" });
         Learning Library content ID
         <span class="watson-totw__hint">
           Enter the catalog content_id (for example 339). Use Resolve to confirm title, Vimeo
-          ID, and poster — no Vimeo ID pasting required.
+          ID, and poster — no Vimeo ID pasting required. Scheduling or activating this tip
+          makes that video playable for everyone during the dates below. Replacing the content
+          ID moves that free access to the new video. The video’s own member or public setting
+          is left unchanged.
         </span>
         <div class="watson-totw__video-row">
           <input name="videoContentId" required inputmode="numeric" pattern="[0-9]+" />
