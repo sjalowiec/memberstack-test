@@ -97,6 +97,9 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
             <input type="checkbox" name="tipOfWeek" id="field-tipOfWeek" />
             <span>Current Tip of the Week</span>
           </label>
+          <p class="field-full tip-access-note">
+            This checkbox does not change who can play the video. Free access follows the Tip of the Week schedule: the selected video, its dates, and Schedule or Activate.
+          </p>
           <label class="field-full">
             <span>Tip of the Week Headline</span>
             <input type="text" name="tipHeadline" id="field-tipHeadline" />
@@ -453,6 +456,12 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
     .tip-current-wrap.is-current-tip {
       border-color: #15803d;
       background: #dcfce7;
+    }
+    .tip-access-note {
+      margin: -0.2rem 0 0.2rem;
+      color: #3d5244;
+      font-size: 0.85rem;
+      line-height: 1.4;
     }
     .tip-history-panel {
       margin-top: 0.9rem;

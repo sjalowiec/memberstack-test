@@ -11,6 +11,10 @@ import type { PublicVideoRow } from "../../../lib/lessonVideo";
 import { catalogTranscriptVimeoId } from "../../../lib/transcripts/generateCatalogTranscripts";
 import { normalizeVideoCatalogStatus } from "../../../lib/videoPublic";
 import { catalogVideoPlaybackAccess } from "../../../lib/videos/catalogVideoPlaybackAccess";
+import {
+  loadCurrentFeaturedTipVideoContentId,
+  markCurrentFeaturedTipForPlayback,
+} from "../../../lib/videos/featuredTipPlayback";
 import { videoCatalogRepoForHost } from "../../../lib/videos/videoCatalogRepo";
 import { loadMergedVideoCatalog } from "../../../lib/videos/videoCatalogStore";
 import {
@@ -67,11 +71,14 @@ if (video && !error) {
 const title = typeof video?.title === "string" ? video.title : "Video preview";
 const description = typeof video?.description === "string" ? video.description : "";
 const status = normalizeVideoCatalogStatus(video?.status);
-const access = video
+const featuredTipVideoContentId = await loadCurrentFeaturedTipVideoContentId();
+const previewForPlayback = video
+  ? markCurrentFeaturedTipForPlayback([video], featuredTipVideoContentId)[0]
+  : undefined;
+const access = previewForPlayback
   ? catalogVideoPlaybackAccess({
-      access_level: String(video.access_level ?? "member").trim().toLowerCase(),
-      isTipOfWeek: video.isTipOfWeek === true,
-      tipOfWeek: video.tipOfWeek === true,
+      access_level: String(previewForPlayback.access_level ?? "member").trim().toLowerCase(),
+      featuredTipPlayback: previewForPlayback.featuredTipPlayback === true,
     })
   : "member";
 const vimeoId = video ? catalogTranscriptVimeoId(video as PublicVideoRow) : "";

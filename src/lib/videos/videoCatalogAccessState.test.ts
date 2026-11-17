@@ -28,7 +28,17 @@ const PAID = MEMBERSHIPS.membership.memberstackPlanId;
 const member257 = { content_id: 257, access_level: "member" as const };
 const member259 = { content_id: 259, access_level: "member" as const };
 const public258 = { content_id: 258, access_level: "public" as const };
-const tuesdayTip = { content_id: 249, access_level: "member" as const, isTipOfWeek: true };
+const tuesdayTip = {
+  content_id: 263,
+  access_level: "member" as const,
+  featuredTipPlayback: true,
+};
+const staleTipFlag = {
+  content_id: 249,
+  access_level: "member" as const,
+  isTipOfWeek: true,
+  tipOfWeek: true,
+};
 
 const ACCESS_STATES: VideoCatalogAccessState[] = [
   "checking",
@@ -40,6 +50,7 @@ const ACCESS_STATES: VideoCatalogAccessState[] = [
 function catalogLockFor(
   video: {
     access_level?: string;
+    featuredTipPlayback?: boolean;
     isTipOfWeek?: boolean;
     tipOfWeek?: boolean;
   },
@@ -113,6 +124,7 @@ describe("shouldShowVideoCatalogLock", () => {
       expect(catalogLockFor(public258, state)).toBe(false);
       expect(catalogLockFor({ access_level: "free" }, state)).toBe(false);
       expect(catalogLockFor(tuesdayTip, state)).toBe(false);
+      expect(catalogLockFor(staleTipFlag, state)).toBe(state !== "has_access");
     }
   });
 

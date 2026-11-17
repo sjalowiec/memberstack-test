@@ -29,10 +29,9 @@ Astro.response.headers.set("Cache-Control", "private, no-store");
 const catalogVideosForClient = videoCatalogClientCards(publicVideos);
 
 // --- Featured tip (Tuesday Tip / Weekly Quick Win) ---
-// Link and text are resolved from videos-public.json via tipOfWeek/isTipOfWeek.
+// The live schedule marks one playback copy. Stored tip checkboxes are ignored.
 const featuredTipVideo = publicVideos.find(
-  (v: { tipOfWeek?: boolean; isTipOfWeek?: boolean }) =>
-    v.tipOfWeek === true || v.isTipOfWeek === true,
+  (v: { featuredTipPlayback?: boolean }) => v.featuredTipPlayback === true,
 );
 const indexQuery = Astro.url.search || "";
 const featuredTipHref = featuredTipVideo
@@ -45,9 +44,7 @@ const featuredTipHref = featuredTipVideo
 const featuredTip = featuredTipVideo
   ? {
       href: featuredTipHref,
-      isTipOfWeek:
-        (featuredTipVideo as { isTipOfWeek?: boolean; tipOfWeek?: boolean }).isTipOfWeek === true ||
-        (featuredTipVideo as { isTipOfWeek?: boolean; tipOfWeek?: boolean }).tipOfWeek === true,
+      isTipOfWeek: true,
       tipHeadline: (featuredTipVideo as { tipHeadline?: string }).tipHeadline ?? "",
       tipNote: (featuredTipVideo as { tipNote?: string }).tipNote ?? "",
       title: (featuredTipVideo as { title?: string }).title ?? "",

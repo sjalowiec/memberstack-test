@@ -9,6 +9,7 @@ export type VideoCatalogClientCard = {
   category?: string;
   subcategory?: string;
   access_level?: string;
+  featuredTipPlayback?: boolean;
   isTipOfWeek?: boolean;
   tipOfWeek?: boolean;
 };
@@ -26,6 +27,7 @@ export function videoCatalogClientCards<T extends VideoCatalogClientCard>(
     category: video.category,
     subcategory: video.subcategory,
     access_level: video.access_level,
+    featuredTipPlayback: video.featuredTipPlayback,
     isTipOfWeek: video.isTipOfWeek,
     tipOfWeek: video.tipOfWeek,
   }));

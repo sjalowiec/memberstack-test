@@ -45,8 +45,11 @@ describe("catalogVideoPlaybackAccess", () => {
     expect(catalogVideoPlaybackAccess({ access_level: "open" })).toBe("open");
     expect(catalogVideoPlaybackAccess({ access_level: "free" })).toBe("open");
     expect(
-      catalogVideoPlaybackAccess({ access_level: "member", isTipOfWeek: true }),
+      catalogVideoPlaybackAccess({ access_level: "member", featuredTipPlayback: true }),
     ).toBe("open");
+    expect(
+      catalogVideoPlaybackAccess({ access_level: "member", isTipOfWeek: true, tipOfWeek: true }),
+    ).toBe("member");
   });
 
   it("treats omitted or member access_level as member-only", () => {

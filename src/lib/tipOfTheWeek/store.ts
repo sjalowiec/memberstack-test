@@ -4,7 +4,7 @@
 import { queryWatson } from "../watson/db";
 import type { WatsonQueryFn } from "../watson/memberSearch";
 import { buildTipOfTheWeekRecord } from "./map";
-import { tipIsPubliclyFeatured, tipLosAngelesCalendarDate } from "./schedule";
+import { selectPublicFeaturedTip, tipLosAngelesCalendarDate } from "./schedule";
 import type { ValidatedTipInput } from "./validation";
 import { validateTipOfTheWeekInput } from "./validation";
 import type {
@@ -92,14 +92,7 @@ export async function getPublicFeaturedTip(
 ): Promise<TipOfTheWeekRecord | null> {
   const today = tipLosAngelesCalendarDate(now);
   const tips = await listAllTipOfTheWeek(queryFn);
-  const featured = tips.filter((tip) => tipIsPubliclyFeatured(tip, today));
-  featured.sort((a, b) => {
-    if (a.availableFrom !== b.availableFrom) {
-      return a.availableFrom < b.availableFrom ? 1 : -1;
-    }
-    return a.updatedAt < b.updatedAt ? 1 : -1;
-  });
-  return featured[0] ?? null;
+  return selectPublicFeaturedTip(tips, today);
 }
 
 async function insertTip(
