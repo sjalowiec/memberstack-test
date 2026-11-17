@@ -3,6 +3,18 @@ import { join } from "node:path";
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+const featuredTipVideoContentId = vi.hoisted(() => vi.fn(async () => null as string | null));
+
+vi.mock("../../../src/lib/videos/featuredTipPlayback", async () => {
+  const actual = await vi.importActual<typeof import("../../../src/lib/videos/featuredTipPlayback")>(
+    "../../../src/lib/videos/featuredTipPlayback",
+  );
+  return {
+    ...actual,
+    loadCurrentFeaturedTipVideoContentId: featuredTipVideoContentId,
+  };
+});
+
 vi.mock("../lib/member-auth.js", () => ({
   requireMember: vi.fn(),
 }));
@@ -30,6 +42,7 @@ function makeRequest(contentId: string, init?: RequestInit) {
 }
 
 beforeEach(() => {
+  featuredTipVideoContentId.mockResolvedValue(null);
   vi.mocked(requireMember).mockResolvedValue({
     ok: true,
     member: { id: VERIFIED_ID, email: "jwt@example.com" },
@@ -68,6 +81,36 @@ describe("catalog-video-embed", () => {
     expect(body.ok).toBe(true);
     expect(body.iframeSrc).toContain("player.vimeo.com/video/");
     expect(requireMember).not.toHaveBeenCalled();
+  });
+
+  it("returns the current featured tip without membership and keeps other member videos locked", async () => {
+    featuredTipVideoContentId.mockResolvedValue("263");
+
+    const tip = await handler(makeRequest("263"));
+    expect(tip.status).toBe(200);
+    const tipBody = await tip.json();
+    expect(tipBody.ok).toBe(true);
+    expect(tipBody.iframeSrc).toContain("player.vimeo.com/video/");
+    expect(requireMember).not.toHaveBeenCalled();
+
+    const member = await handler(
+      makeRequest("257", { headers: { Authorization: "Bearer good-token" } }),
+    );
+    expect(member.status).toBe(403);
+    const memberBody = await member.json();
+    expect(memberBody.ok).toBe(false);
+    expect(memberBody).not.toHaveProperty("iframeSrc");
+  });
+
+  it("keeps the featured tip's own record member-only outside its free window", async () => {
+    featuredTipVideoContentId.mockResolvedValue(null);
+    const res = await handler(
+      makeRequest("263", { headers: { Authorization: "Bearer good-token" } }),
+    );
+    expect(res.status).toBe(403);
+    const body = await res.json();
+    expect(body.ok).toBe(false);
+    expect(body).not.toHaveProperty("iframeSrc");
   });
 
   it("does not return a member-only embed when access is denied", async () => {

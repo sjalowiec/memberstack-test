@@ -5,6 +5,10 @@ import { loadMergedVideoCatalog } from "../../lib/videos/videoCatalogStore";
 import { getPreviewMember } from "../../lib/getPreviewMember";
 import { filterPublicCatalogVideos } from "../../lib/videoPublic";
 import { catalogVideoPlaybackAccess } from "../../lib/videos/catalogVideoPlaybackAccess";
+import {
+  loadCurrentFeaturedTipVideoContentId,
+  markCurrentFeaturedTipForPlayback,
+} from "../../lib/videos/featuredTipPlayback";
 import { videoCatalogClientCards } from "../../lib/videos/videoCatalogClientCards";
 import { applyVideoPosterOverrides } from "../../lib/videos/videoPosterOverrides";
 import { loadPublicVideoPosterOverrides } from "../../lib/videos/videoPosterStore";
@@ -13,7 +17,11 @@ import "../../styles/favorites.css";
 
 const videosRaw = await loadMergedVideoCatalog();
 const posterOverrides = await loadPublicVideoPosterOverrides();
-const catalogWithPosters = applyVideoPosterOverrides(videosRaw, posterOverrides);
+const featuredTipVideoContentId = await loadCurrentFeaturedTipVideoContentId();
+const catalogWithPosters = markCurrentFeaturedTipForPlayback(
+  applyVideoPosterOverrides(videosRaw, posterOverrides),
+  featuredTipVideoContentId,
+);
 const publicVideos = filterPublicCatalogVideos(catalogWithPosters);
 const surpriseRefs = learningLibrarySurpriseRefs(catalogWithPosters);
 const surpriseRefsJson = JSON.stringify(surpriseRefs).replace(/</g, "\\u003c");

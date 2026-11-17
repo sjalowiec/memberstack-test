@@ -11,6 +11,10 @@ import { catalogVimeoIframePlayerId } from "../../lib/videos/catalogVideoEmbedSr
 import publicCatalogTranscripts from "../../data/transcripts/generated/public.json";
 import { paragraphsForVimeoId } from "../../lib/transcripts/catalogTranscriptData";
 import { catalogVideoPlaybackAccess } from "../../lib/videos/catalogVideoPlaybackAccess";
+import {
+  loadCurrentFeaturedTipVideoContentId,
+  markCurrentFeaturedTipForPlayback,
+} from "../../lib/videos/featuredTipPlayback";
 import { findPublicCatalogVideoByContentId } from "../../lib/videoPublic";
 import { applyVideoPosterOverrides } from "../../lib/videos/videoPosterOverrides";
 import { loadPublicVideoPosterOverrides } from "../../lib/videos/videoPosterStore";
@@ -19,7 +23,11 @@ export const prerender = false;
 const id = String(Astro.params.id);
 const videosRaw = await loadMergedVideoCatalog();
 const posterOverrides = await loadPublicVideoPosterOverrides();
-const catalog = applyVideoPosterOverrides(videosRaw, posterOverrides);
+const featuredTipVideoContentId = await loadCurrentFeaturedTipVideoContentId();
+const catalog = markCurrentFeaturedTipForPlayback(
+  applyVideoPosterOverrides(videosRaw, posterOverrides),
+  featuredTipVideoContentId,
+);
 const video = findPublicCatalogVideoByContentId(catalog, id);
 Astro.response.headers.set("Cache-Control", "private, no-store");
 
