@@ -8,6 +8,10 @@
  * Individual course lesson videos are not served here; those stay on gated
  * course pages (`canAccessCourse`, including individual course purchase).
  */
+import {
+  loadCurrentFeaturedTipVideoContentId,
+  markCurrentFeaturedTipForPlayback,
+} from "../../src/lib/videos/featuredTipPlayback";
 import { loadMergedVideoCatalog } from "../../src/lib/videos/videoCatalogStore";
 import { requireMember } from "./lib/member-auth.js";
 import { jsonResponse, withCors } from "./lib/custom-pattern-projects-store.js";
@@ -65,7 +69,11 @@ export default async (req: Request): Promise<Response> => {
   }
   const enableVimeoPlayerApi = url.searchParams.get("playerApi") === "1";
 
-  const catalog = (await loadMergedVideoCatalog()) as PublicVideoRow[];
+  const featuredTipVideoContentId = await loadCurrentFeaturedTipVideoContentId();
+  const catalog = markCurrentFeaturedTipForPlayback(
+    (await loadMergedVideoCatalog()) as PublicVideoRow[],
+    featuredTipVideoContentId,
+  );
   const resolved = resolveCatalogVideoEmbed(catalog, contentId, { enableVimeoPlayerApi });
   if (!resolved.ok) {
     return withCors(jsonResponse({ ok: false, error: "Video is not available." }, 404));

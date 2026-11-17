@@ -9,6 +9,9 @@
  * Intentionally playable without membership:
  *   - `access_level` public / open / free
  *   - the current Tuesday Tip (`isTipOfWeek` / `tipOfWeek`)
+ *
+ * The live tip is still stored as member. Callers mark that one row with
+ * `markCurrentFeaturedTipForPlayback` before using this rule.
  */
 export type CatalogVideoPlaybackAccess = "open" | "member";
 

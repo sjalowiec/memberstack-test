@@ -11,6 +11,10 @@
 import GatedVimeoEmbed from "../../../components/videos/GatedVimeoEmbed.astro";
 import { findPublicCatalogVideoByContentId } from "../../../lib/videoPublic";
 import { catalogVideoPlaybackAccess } from "../../../lib/videos/catalogVideoPlaybackAccess";
+import {
+  loadCurrentFeaturedTipVideoContentId,
+  markCurrentFeaturedTipForPlayback,
+} from "../../../lib/videos/featuredTipPlayback";
 import { loadMergedVideoCatalog } from "../../../lib/videos/videoCatalogStore";
 import { applyVideoPosterOverrides } from "../../../lib/videos/videoPosterOverrides";
 import { loadPublicVideoPosterOverrides } from "../../../lib/videos/videoPosterStore";
@@ -20,7 +24,11 @@ export const prerender = false;
 const id = String(Astro.params.id ?? "").trim();
 const videosRaw = await loadMergedVideoCatalog();
 const posterOverrides = await loadPublicVideoPosterOverrides();
-const catalog = applyVideoPosterOverrides(videosRaw, posterOverrides);
+const featuredTipVideoContentId = await loadCurrentFeaturedTipVideoContentId();
+const catalog = markCurrentFeaturedTipForPlayback(
+  applyVideoPosterOverrides(videosRaw, posterOverrides),
+  featuredTipVideoContentId,
+);
 const video = id ? findPublicCatalogVideoByContentId(catalog, id) : undefined;
 Astro.response.headers.set("Cache-Control", "private, no-store");
 
