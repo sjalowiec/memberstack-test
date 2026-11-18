@@ -15,7 +15,10 @@ import {
   type HelpHubSaveIntent,
 } from "./adminForm";
 import { openerPreviewBaseHref, requestHelpHubPreview } from "./adminEditorClient";
-import { canonicalHelpHubSolutionHtml, helpHubSolutionImageTag } from "./solutionHtml";
+import { helpHubImageUploadProblem, HELP_HUB_IMAGE_SIZE_ERROR } from "./imagePolicy";
+import { helpHubSolutionImageTag, renderHelpHubExplanation } from "./solutionHtml";
+import { normalizeWhatsNewDestinationUrl } from "../whatsNew/destinationUrl";
+import { initCompactRichText, seedCompactRichText, syncCompactRichText } from "../../scripts/watsonRichTextEditor";
 import {
   addMemberResource,
   describeSelectedMemberResources,
@@ -738,13 +741,33 @@ export function initHelpHubAdminEditor(): boolean {
   syncImageFields();
 
   const solutionField = form.elements.namedItem("solutionText");
+  const explanationEditor = form.querySelector<HTMLElement>("[data-help-hub-explanation]");
+  const explanationRte = {
+    sanitize: renderHelpHubExplanation,
+    enableLink: true,
+    preserveUntilEdit: true,
+    promptLink: promptHelpHubExplanationLink,
+  };
   if (solutionField instanceof HTMLTextAreaElement) {
-    const repaired = canonicalHelpHubSolutionHtml(solutionField.value);
+    const repaired = renderHelpHubExplanation(solutionField.value);
     if (repaired !== solutionField.value) solutionField.value = repaired;
+  }
+  if (explanationEditor) initCompactRichText(explanationEditor, explanationRte);
+
+  function promptHelpHubExplanationLink(): string | null {
+    const raw = window.prompt("Link URL (site path like /help-hub, or https://…)");
+    if (raw == null) return null;
+    const result = normalizeWhatsNewDestinationUrl(raw);
+    if (!result.ok || !result.value) {
+      window.alert(result.ok ? "Enter a site path or https:// URL." : result.error);
+      return null;
+    }
+    return result.value;
   }
 
   document.getElementById("helpHubInsertSolutionImage")?.addEventListener("click", () => {
-    if (!(solutionField instanceof HTMLTextAreaElement)) return;
+    const editor = explanationEditor?.querySelector<HTMLElement>("[data-wn-rte-editor]");
+    if (!explanationEditor || !editor) return;
     const src = window.prompt("Image address on this site", "/images/");
     if (src == null) return;
     const alt = window.prompt("Alt text (short description of the image)", "") ?? "";
@@ -753,16 +776,14 @@ export function initHelpHubAdminEditor(): boolean {
       setSaveStatus("Use a site image address such as /images/thank-you.jpg.", "err");
       return;
     }
-    const start = solutionField.selectionStart ?? solutionField.value.length;
-    const end = solutionField.selectionEnd ?? start;
-    const prefix = start > 0 && solutionField.value[start - 1] !== "\n" ? "\n" : "";
-    const inserted = `${prefix}${tag}\n`;
-    solutionField.value =
-      solutionField.value.slice(0, start) + inserted + solutionField.value.slice(end);
-    const cursor = start + inserted.length;
-    solutionField.focus();
-    solutionField.setSelectionRange(cursor, cursor);
-    solutionField.dispatchEvent(new Event("input", { bubbles: true }));
+    editor.style.whiteSpace = "";
+    editor.focus();
+    document.execCommand("insertHTML", false, tag);
+    const srcPath = src.trim();
+    const alreadyThere = Array.from(editor.querySelectorAll("img")).some((img) => img.getAttribute("src") === srcPath);
+    if (!alreadyThere) editor.insertAdjacentHTML("beforeend", tag);
+    syncCompactRichText(explanationEditor, renderHelpHubExplanation);
+    editor.dispatchEvent(new Event("input", { bubbles: true }));
   });
 
   const baselineSnapshot = JSON.stringify(snapshotForm(form));
@@ -851,13 +872,23 @@ export function initHelpHubAdminEditor(): boolean {
   async function uploadImageFile(group: HTMLElement, file: File): Promise<void> {
     const status = group.querySelector<HTMLElement>("[data-image-upload-status]");
     const urlInput = group.querySelector<HTMLInputElement>("[data-image-url]");
-    const setStatus = (message: string) => {
-      if (status) status.textContent = message;
+    const setStatus = (message: string, isError = false) => {
+      if (!status) return;
+      status.textContent = message;
+      status.classList.toggle("is-error", isError);
     };
     if (!urlInput) return;
+    const fileInput = group.querySelector<HTMLInputElement>("[data-image-file]");
+    const problem = helpHubImageUploadProblem(file, {
+      allowGif: Boolean(fileInput?.accept.toLowerCase().includes("gif")),
+    });
+    if (problem) {
+      setStatus(problem, true);
+      return;
+    }
     const admin = window.kbmHelpHubAdmin;
     if (!admin?.request) {
-      setStatus("Help Hub admin is still loading. Try Choose image again.");
+      setStatus("Help Hub admin is still loading. Try Choose image again.", true);
       return;
     }
     setStatus("Uploading image…");
@@ -868,17 +899,23 @@ export function initHelpHubAdminEditor(): boolean {
         body: { filename: file.name, mimeType: file.type || "", dataBase64 },
       });
       if (result.needsSignIn) {
-        setStatus(result.error || "Sign in with your Knit it Now account to upload an image.");
+        setStatus(result.error || "Sign in with your Knit it Now account to upload an image.", true);
         admin.promptSignIn?.();
         return;
       }
       if (!admin.saveSucceeded(result)) {
-        setStatus(result.error || "Could not upload that image. The other fields are unchanged.");
+        const tooBig = result.status === 413 || /too large/i.test(result.error || "");
+        setStatus(
+          tooBig
+            ? HELP_HUB_IMAGE_SIZE_ERROR
+            : result.error || "Could not upload that image. The other fields are unchanged.",
+          true,
+        );
         return;
       }
       const url = typeof result.data.url === "string" ? result.data.url.trim() : "";
       if (!url) {
-        setStatus("Upload did not return an image address. The other fields are unchanged.");
+        setStatus("Upload did not return an image address. The other fields are unchanged.", true);
         return;
       }
       urlInput.value = url;
@@ -886,7 +923,10 @@ export function initHelpHubAdminEditor(): boolean {
       syncImageFields(group);
       form.dispatchEvent(new Event("input", { bubbles: true }));
     } catch {
-      setStatus("Could not upload that image. The other fields are unchanged.");
+      setStatus(
+        "Could not upload that image. Check your connection. Files must be under 4 MB. The other fields are unchanged.",
+        true,
+      );
     }
   }
 
@@ -1002,6 +1042,7 @@ export function initHelpHubAdminEditor(): boolean {
   restoreBtn?.addEventListener("click", () => {
     if (pendingDraft) {
       applySnapshot(form, pendingDraft);
+      if (explanationEditor) seedCompactRichText(explanationEditor, explanationRte);
       rebuildStepsFromStore();
       syncImageFields();
       updateSaveButtonLabel(form);
@@ -1100,7 +1141,7 @@ export function initHelpHubAdminEditor(): boolean {
       }
       updateSaveButtonLabel(form);
       if (solutionField instanceof HTMLTextAreaElement) {
-        const repaired = canonicalHelpHubSolutionHtml(solutionField.value);
+        const repaired = renderHelpHubExplanation(solutionField.value);
         if (repaired !== solutionField.value) solutionField.value = repaired;
       }
       setSaveStatus(nextStatus === "published" ? "Published" : "Saved", "ok");

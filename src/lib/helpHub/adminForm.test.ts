@@ -69,7 +69,7 @@ describe("explanationForAdminForm", () => {
     const encoded =
       "&amp;amp;amp;amp;lt;img src=&amp;amp;amp;quot;/images/thank-you.jpg&amp;amp;amp;quot;&amp;amp;amp;amp;gt;";
     const loaded = explanationForAdminForm({ solutionText: encoded });
-    expect(loaded).toBe('<img src="/images/thank-you.jpg">');
+    expect(loaded).toBe('<p><img src="/images/thank-you.jpg" alt=""></p>');
     const saved = applyAdminFormToDocument(
       { id: 1, solutionText: encoded },
       form({ solutionText: loaded }),

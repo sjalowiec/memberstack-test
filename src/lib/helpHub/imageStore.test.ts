@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { helpHubImageUploadProblem } from "./imagePolicy";
 import {
   helpHubImagePublicPath,
   isHelpHubImageFilename,
@@ -26,14 +27,49 @@ describe("Help Hub image uploads", () => {
     expect(isHelpHubImageFilename("../secret.png")).toBe(false);
   });
 
-  it("rejects a file that is not a JPG, PNG, or WebP", () => {
+  it("rejects a file that is not a JPG, PNG, WebP, or GIF", () => {
     expect(() =>
       prepareHelpHubImageUpload({
         filename: "notes.svg",
         mimeType: "image/svg+xml",
         dataBase64: Buffer.from("<svg></svg>").toString("base64"),
       }),
-    ).toThrow(/JPG, PNG, or WebP/);
+    ).toThrow(/JPG, PNG, WebP, or GIF/);
+  });
+
+  it("stores a GIF byte for byte so an animation is not flattened", () => {
+    const gif = Buffer.from(
+      "R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7",
+      "base64",
+    );
+    const prepared = prepareHelpHubImageUpload({
+      filename: "Needle Bounce.GIF",
+      mimeType: "image/gif",
+      dataBase64: gif.toString("base64"),
+    });
+    expect(prepared.contentType).toBe("image/gif");
+    expect(prepared.filename).toBe("needle-bounce.gif");
+    expect(prepared.bytes.equals(gif)).toBe(true);
+    expect(sniffHelpHubImage(prepared.bytes)).toBe("image/gif");
+    expect(isHelpHubImageFilename(prepared.filename)).toBe(true);
+  });
+
+  it("explains a file that is too large or the wrong type before upload", () => {
+    expect(
+      helpHubImageUploadProblem(
+        { name: "loop.gif", type: "image/gif", size: 4 * 1024 * 1024 + 1 },
+        { allowGif: true },
+      ),
+    ).toMatch(/under 4 MB/);
+    expect(
+      helpHubImageUploadProblem({ name: "notes.svg", type: "image/svg+xml", size: 20 }, { allowGif: true }),
+    ).toMatch(/JPG, PNG, WebP, or GIF/);
+    expect(
+      helpHubImageUploadProblem({ name: "loop.gif", type: "image/gif", size: 20 }, { allowGif: false }),
+    ).toMatch(/JPG, PNG, or WebP/);
+    expect(
+      helpHubImageUploadProblem({ name: "loop.gif", type: "image/gif", size: 20 }, { allowGif: true }),
+    ).toBeNull();
   });
 
   it("stores a new name when that filename is already used", async () => {
