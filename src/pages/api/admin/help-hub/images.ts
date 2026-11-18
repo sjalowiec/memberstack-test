@@ -44,7 +44,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     return jsonResponse({ ok: true, filename: saved.filename, url: saved.url });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Could not save the image.";
-    const status = /too large|empty|JPG, PNG, or WebP|required|unique image name/i.test(message) ? 400 : 500;
+    const status = /too large|empty|JPG, PNG, WebP, or GIF|required|unique image name/i.test(message) ? 400 : 500;
     return jsonResponse({ ok: false, error: message }, status);
   }
 };

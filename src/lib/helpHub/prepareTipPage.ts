@@ -23,7 +23,9 @@ import {
   helpHubRelatedToolModal,
   type HelpHubRelatedToolModal,
 } from "./relatedToolModal";
-import { canonicalHelpHubSolutionHtml } from "./solutionHtml";
+import { renderHelpHubExplanation, solutionHtmlWithLoadableImages } from "./solutionHtml";
+
+export { solutionHtmlWithLoadableImages };
 
 export type HelpHubTryThis = {
   quickActionTitle?: string;
@@ -85,23 +87,6 @@ export type HelpHubPageTip = {
   jumpLinks?: { label: string; href: string }[];
 };
 
-/**
- * Display-only repair. An unquoted image address that ends with a quotation
- * mark is requested as `file.png%22` and never loads. Stored Help Hub text is
- * left unchanged.
- */
-export function solutionHtmlWithLoadableImages(html: string): string {
-  return html.replace(
-    /(<img\b[^>]*?\bsrc\s*=\s*)(?:"([^"]*)"|'([^']*)'|([^\s>]+))/gi,
-    (full, prefix: string, doubleQuoted?: string, singleQuoted?: string, unquoted?: string) => {
-      const raw = doubleQuoted ?? singleQuoted ?? unquoted ?? "";
-      const cleaned = raw.replace(/(?:&quot;|%22|")+$/i, "");
-      if (!cleaned || cleaned === raw) return full;
-      return `${prefix}"${cleaned}"`;
-    },
-  );
-}
-
 function helpHubRelatedToolView(tip: HelpHubPageTip): HelpHubRelatedToolView | null {
   const button = helpHubRelatedToolButton(tip);
   if (!button) return null;
@@ -151,7 +136,7 @@ export function prepareHelpHubTipPage(
       : typeof tip.bridge === "string" && tip.bridge.trim() !== ""
         ? tip.bridge.trim()
         : "";
-  const whyBodyRaw = solutionHtmlWithLoadableImages(canonicalHelpHubSolutionHtml(whyBodySource));
+  const whyBodyRaw = renderHelpHubExplanation(whyBodySource);
   const appliesToList = Array.isArray(tip.appliesTo)
     ? tip.appliesTo.map((item) => (typeof item === "string" ? item.trim() : "")).filter(Boolean)
     : [];

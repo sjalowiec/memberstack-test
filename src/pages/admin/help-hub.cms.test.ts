@@ -143,6 +143,10 @@ describe("Help Hub admin CMS", () => {
     expect(editSource).toContain("Choose image");
     expect(editSource).toContain("data-image-choose");
     expect(editSource).toContain("data-image-file");
+    expect(editSource).toContain("image/gif");
+    expect(editSource).toContain("data-wn-rte-cmd=\"bold\"");
+    expect(editSource).toContain("data-help-hub-explanation");
+    expect(editSource).toContain("Maximum size is 4 MB");
     expect(formClientSource).toContain('"/api/admin/help-hub/images"');
     expect(formClientSource).toContain("Image address filled in.");
     expect(editSource).toContain("Button label");

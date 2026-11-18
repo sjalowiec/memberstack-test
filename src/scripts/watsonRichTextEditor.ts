@@ -7,7 +7,35 @@ export type CompactRichTextOptions = {
   promptLink?: () => string | null;
   /** Show an HTML source editor beside the visual editor. */
   htmlSource?: boolean;
+  /**
+   * Show the stored value, but do not write it back until the person edits.
+   * Plain text stays plain text. Existing Help Hub entries are not rewritten
+   * just because the editor opened.
+   */
+  preserveUntilEdit?: boolean;
 };
+
+function valueLooksPlain(value: string): boolean {
+  return value.trim() !== "" && !/<\/?[a-z][\s\S]*>/i.test(value);
+}
+
+/** Fill the visual editor from the hidden field. */
+export function seedCompactRichText(wrap: ParentNode, options: CompactRichTextOptions): void {
+  const editor = wrap.querySelector<HTMLElement>("[data-wn-rte-editor]");
+  const hidden = wrap.querySelector<HTMLTextAreaElement>("[data-wn-rte-input]");
+  if (!editor || !hidden) return;
+  const initial = hidden.value;
+  if (options.preserveUntilEdit && valueLooksPlain(initial)) {
+    editor.textContent = initial;
+    editor.style.whiteSpace = "pre-wrap";
+    return;
+  }
+  editor.style.whiteSpace = "";
+  editor.innerHTML = options.sanitize(initial) || "<p><br></p>";
+  if (!options.preserveUntilEdit) {
+    hidden.value = options.sanitize(editor.innerHTML);
+  }
+}
 
 /** The HTML currently being edited: the source box when it is open, otherwise the visual editor. */
 export function readCompactRichTextValue(wrap: ParentNode): string {
@@ -62,12 +90,11 @@ export function initCompactRichText(wrap: HTMLElement, options: CompactRichTextO
   if (!editor || !hidden || !toolbar) return;
 
   const sync = (): void => {
+    editor.style.whiteSpace = "";
     hidden.value = options.sanitize(editor.innerHTML);
   };
 
-  // Seed visual editor from stored value (plain text or prior HTML).
-  editor.innerHTML = options.sanitize(hidden.value) || "<p><br></p>";
-  sync();
+  seedCompactRichText(wrap, options);
 
   editor.addEventListener("input", sync);
 
@@ -80,6 +107,7 @@ export function initCompactRichText(wrap: HTMLElement, options: CompactRichTextO
     if (!cleaned) return;
     exec("insertHTML", cleaned);
     sync();
+    hidden.dispatchEvent(new Event("input", { bubbles: true }));
   });
 
   toolbar.addEventListener("click", (event) => {
@@ -122,6 +150,7 @@ export function initCompactRichText(wrap: HTMLElement, options: CompactRichTextO
         break;
     }
     sync();
+    hidden.dispatchEvent(new Event("input", { bubbles: true }));
   });
 
   // Keep Enter creating paragraphs in most browsers.

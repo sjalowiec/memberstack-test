@@ -122,7 +122,7 @@ describe("prepareHelpHubTipPage member resources", () => {
       solutionText: stored,
     };
     const view = prepareHelpHubTipPage(tip, lessons, videosPublic);
-    expect(view.whyBody).toBe('<img src="/images/thank-you.jpg">');
+    expect(view.whyBody).toBe('<p><img src="/images/thank-you.jpg" alt=""></p>');
     expect(tip.solutionText).toBe(stored);
   });
 

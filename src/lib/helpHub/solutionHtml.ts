@@ -1,3 +1,5 @@
+import { sanitizeBillboardHtml } from "../whatsNew/sanitizeBillboardHtml";
+
 /**
  * Supported tags that may appear as real markup in Help Hub solution text.
  * Ordinary prose is left alone, including &, quotes, and angle brackets.
@@ -94,4 +96,60 @@ export function helpHubSolutionImageTag(src: string, alt: string): string | null
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;");
   return `<img src="${path}" alt="${safeAlt}">`;
+}
+
+/**
+ * Display-only repair. An unquoted image address that ends with a quotation
+ * mark is requested as `file.png%22` and never loads. Stored Help Hub text is
+ * left unchanged until a later save.
+ */
+export function solutionHtmlWithLoadableImages(html: string): string {
+  return html.replace(
+    /(<img\b[^>]*?\bsrc\s*=\s*)(?:"([^"]*)"|'([^']*)'|([^\s>]+))/gi,
+    (full, prefix: string, doubleQuoted?: string, singleQuoted?: string, unquoted?: string) => {
+      const raw = doubleQuoted ?? singleQuoted ?? unquoted ?? "";
+      const cleaned = raw.replace(/(?:&quot;|%22|")+$/i, "");
+      if (!cleaned || cleaned === raw) return full;
+      return `${prefix}"${cleaned}"`;
+    },
+  );
+}
+
+function explanationHasMarkup(value: string): boolean {
+  return /<\/?[a-z][\s\S]*>/i.test(value);
+}
+
+/** The visual editor uses divs for Enter. Treat those as paragraphs. */
+function editorDivsToParagraphs(html: string): string {
+  return html.replace(/<\s*div\b/gi, "<p").replace(/<\s*\/\s*div\s*>/gi, "</p>");
+}
+
+/**
+ * Turn one level of `&amp;` inside hrefs back into `&` before the sanitizer
+ * escapes it again. A second save then stays on a single `&amp;`.
+ */
+function decodeHrefAmpersands(html: string): string {
+  return html.replace(
+    /(\bhref\s*=\s*)(?:"([^"]*)"|'([^']*)')/gi,
+    (full, prefix: string, doubleQuoted?: string, singleQuoted?: string) => {
+      const href = doubleQuoted ?? singleQuoted ?? "";
+      const decoded = href.replace(/&amp;/gi, "&");
+      if (decoded === href) return full;
+      return `${prefix}"${decoded}"`;
+    },
+  );
+}
+
+/**
+ * Explanation HTML that is safe to store and show.
+ * Paragraphs, line breaks, bold, italic, lists, links, and site images are kept.
+ * Scripts and unsafe URLs are removed.
+ * Plain text is returned unchanged so existing Help Hub entries stay as written.
+ */
+export function renderHelpHubExplanation(value: string): string {
+  const canonical = canonicalHelpHubSolutionHtml(value);
+  if (!canonical) return "";
+  const loadable = solutionHtmlWithLoadableImages(canonical);
+  if (!explanationHasMarkup(loadable)) return loadable;
+  return sanitizeBillboardHtml(decodeHrefAmpersands(editorDivsToParagraphs(loadable)));
 }

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   canonicalHelpHubSolutionHtml,
   helpHubSolutionImageTag,
+  renderHelpHubExplanation,
 } from "./solutionHtml";
 
 const IMAGE_AND_TEXT =
@@ -49,6 +50,36 @@ describe("canonicalHelpHubSolutionHtml", () => {
   it("drops javascript image addresses", () => {
     expect(canonicalHelpHubSolutionHtml('<img src="javascript:alert(1)" alt="x">')).toBe(
       '<img alt="x">',
+    );
+  });
+});
+
+describe("renderHelpHubExplanation", () => {
+  it("leaves existing plain text unchanged, including ampersands and angle brackets", () => {
+    expect(renderHelpHubExplanation(ORDINARY)).toBe(ORDINARY);
+    expect(renderHelpHubExplanation(renderHelpHubExplanation(ORDINARY))).toBe(ORDINARY);
+    expect(renderHelpHubExplanation("Match the needle arrangement.")).toBe(
+      "Match the needle arrangement.",
+    );
+  });
+
+  it("keeps paragraphs, bold, italic, lists, and links, and drops scripts", () => {
+    const saved = renderHelpHubExplanation(
+      '<p>Hold the needles.</p><p><strong>Then</strong> <em>knit</em>.</p><ul><li>One</li></ul><ol><li>Two</li></ol><p><a href="/stitch?machine=lk150&category=tuck">tuck stitches</a></p><script>alert(1)</script><a href="javascript:alert(1)">bad</a>',
+    );
+    expect(saved).toContain("<strong>Then</strong>");
+    expect(saved).toContain("<em>knit</em>");
+    expect(saved).toContain("<ul><li>One</li></ul>");
+    expect(saved).toContain("<ol><li>Two</li></ol>");
+    expect(saved).toContain('href="/stitch?machine=lk150&amp;category=tuck"');
+    expect(saved).not.toContain("script");
+    expect(saved).not.toContain("javascript:");
+    expect(renderHelpHubExplanation(saved)).toBe(saved);
+  });
+
+  it("turns editor line breaks into paragraphs without flattening the text", () => {
+    expect(renderHelpHubExplanation("<div>First line</div><div>Second line</div>")).toBe(
+      "<p>First line</p><p>Second line</p>",
     );
   });
 });
