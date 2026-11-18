@@ -186,7 +186,14 @@ function lessonTitleEnding(title: string): { lead: string; end: string } {
         {hasHeroMedia && (
         <div class="tuesday-tip-hero__media" aria-label="Free visual" data-help-hub-section={sectionAttr("image")}>
         <div class="tuesday-tip-video-shell" data-placeholder="hero media">
-          <div class="tuesday-tip-video-aspect">
+          <div
+            class:list={[
+              "tuesday-tip-video-aspect",
+              mediaType === "image" &&
+                /\.gif$/i.test(mediaUrl.split("?")[0] || "") &&
+                "tuesday-tip-video-aspect--gif",
+            ]}
+          >
             {catalogVimeoEmbedUrl ? (
               <div class="help-hub-media">
                 <iframe
@@ -204,7 +211,10 @@ function lessonTitleEnding(title: string): { lead: string; end: string } {
               <img
                 src={mediaUrl}
                 alt={mediaAlt}
-                class="tuesday-tip-media-image"
+                class:list={[
+                  "tuesday-tip-media-image",
+                  /\.gif$/i.test(mediaUrl.split("?")[0] || "") && "tuesday-tip-media-image--gif",
+                ]}
                 loading="lazy"
               />
             ) : mediaType === "vimeo" && mediaUrl ? (
@@ -258,7 +268,7 @@ function lessonTitleEnding(title: string): { lead: string; end: string } {
       <div class="tuesday-tip__section-card">
         {whyBody ? (
           <div
-            class="tuesday-tip__description"
+            class="tuesday-tip__description prose"
             data-placeholder="why this works text"
             set:html={whyBody}
           ></div>
@@ -671,6 +681,12 @@ function lessonTitleEnding(title: string): { lead: string; end: string } {
     background: #0f172a;
   }
 
+  .tuesday-tip-video-aspect--gif {
+    height: auto;
+    padding-bottom: 0;
+    background: transparent;
+  }
+
   .tuesday-tip-video-iframe {
     position: absolute;
     inset: 0;
@@ -700,6 +716,15 @@ function lessonTitleEnding(title: string): { lead: string; end: string } {
     width: 100%;
     height: 100%;
     object-fit: cover;
+  }
+
+  .tuesday-tip-media-image--gif {
+    position: static;
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    object-fit: contain;
   }
 
   .tuesday-tip-media-caption {
@@ -779,6 +804,46 @@ function lessonTitleEnding(title: string): { lead: string; end: string } {
     font-size: 1rem;
     line-height: 1.65;
     color: #2f3a25;
+  }
+
+  .tuesday-tip__description :global(p) {
+    margin: 0 0 0.75rem;
+  }
+
+  .tuesday-tip__description :global(p:last-child) {
+    margin-bottom: 0;
+  }
+
+  .tuesday-tip__description :global(strong) {
+    font-weight: 700;
+  }
+
+  .tuesday-tip__description :global(em) {
+    font-style: italic;
+  }
+
+  .tuesday-tip__description :global(a) {
+    color: var(--kbm-green, #52682d);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  .tuesday-tip__description :global(ul),
+  .tuesday-tip__description :global(ol) {
+    margin: 0.5rem 0 1rem 1.25rem;
+    padding: 0;
+  }
+
+  .tuesday-tip__description :global(ul) {
+    list-style: disc;
+  }
+
+  .tuesday-tip__description :global(ol) {
+    list-style: decimal;
+  }
+
+  .tuesday-tip__description :global(li) {
+    margin: 0.35rem 0;
   }
 
   .tuesday-tip__description :global(img) {

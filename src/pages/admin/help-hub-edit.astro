@@ -408,14 +408,14 @@ const chooserBoxes = [
                       </button>
                       <input
                         type="file"
-                        accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp"
+                        accept="image/jpeg,image/png,image/webp,image/gif,.jpg,.jpeg,.png,.webp,.gif"
                         data-image-file
                         hidden
                       />
-                      <p class="help-hub-edit__hint" data-image-upload-status></p>
+                      <p class="help-hub-edit__hint help-hub-edit__upload-status" data-image-upload-status role="status"></p>
                     </div>
                     <p class="help-hub-edit__hint">
-                      JPG, PNG, or WebP from your computer. The address is filled in after the upload.
+                      JPG, PNG, WebP, or GIF. Animated GIFs stay animated. Maximum size is 4 MB.
                     </p>
                   </div>
                   <div class="help-hub-edit__field">
@@ -471,17 +471,82 @@ const chooserBoxes = [
                     </p>
                   </div>
                   <div class="help-hub-edit__field">
-                    <label for="help-hub-solution-text" class="help-hub-edit__label">Explanation</label>
+                    <span id="help-hub-solution-label" class="help-hub-edit__label">Explanation</span>
                     <button type="button" id="helpHubInsertSolutionImage" class="kbm-btn kbm-btn-outline help-hub-edit__insert-image">
                       Insert image
                     </button>
-                    <textarea
-                      id="help-hub-solution-text"
-                      class="help-hub-edit__textarea"
-                      name="solutionText"
-                      rows="6">{valueFor("solutionText", "")}</textarea>
+                    <div class="help-hub-edit__rte" data-help-hub-explanation>
+                      <div class="help-hub-edit__rte-modes" role="group" aria-label="Explanation editor">
+                        <button
+                          type="button"
+                          class="help-hub-edit__rte-mode is-active"
+                          data-wn-rte-mode="visual"
+                          aria-pressed="true"
+                        >
+                          Visual
+                        </button>
+                        <button
+                          type="button"
+                          class="help-hub-edit__rte-mode"
+                          data-wn-rte-mode="html"
+                          aria-pressed="false"
+                        >
+                          Edit HTML
+                        </button>
+                      </div>
+                      <div
+                        class="help-hub-edit__rte-toolbar"
+                        data-wn-rte-toolbar
+                        role="toolbar"
+                        aria-label="Explanation formatting"
+                      >
+                        <button type="button" class="help-hub-edit__rte-btn" data-wn-rte-cmd="bold" title="Bold">
+                          <strong>B</strong>
+                        </button>
+                        <button type="button" class="help-hub-edit__rte-btn" data-wn-rte-cmd="italic" title="Italic">
+                          <em>I</em>
+                        </button>
+                        <button type="button" class="help-hub-edit__rte-btn" data-wn-rte-cmd="paragraph" title="Paragraph">
+                          Paragraph
+                        </button>
+                        <button type="button" class="help-hub-edit__rte-btn" data-wn-rte-cmd="ul" title="Bulleted list">
+                          List
+                        </button>
+                        <button type="button" class="help-hub-edit__rte-btn" data-wn-rte-cmd="ol" title="Numbered list">
+                          1. List
+                        </button>
+                        <button type="button" class="help-hub-edit__rte-btn" data-wn-rte-cmd="link" title="Add or edit link">
+                          Link
+                        </button>
+                        <button type="button" class="help-hub-edit__rte-btn" data-wn-rte-cmd="clear" title="Clear formatting">
+                          Clear
+                        </button>
+                      </div>
+                      <div
+                        id="help-hub-solution-text"
+                        class="help-hub-edit__rte-editor"
+                        data-wn-rte-editor
+                        contenteditable="true"
+                        role="textbox"
+                        aria-multiline="true"
+                        aria-labelledby="help-hub-solution-label"
+                      ></div>
+                      <textarea
+                        class="help-hub-edit__rte-source"
+                        data-wn-rte-source
+                        hidden
+                        spellcheck="false"
+                        aria-label="Explanation HTML"
+                      ></textarea>
+                      <textarea
+                        class="help-hub-edit__rte-input"
+                        data-wn-rte-input
+                        name="solutionText"
+                        hidden
+                      >{valueFor("solutionText", "")}</textarea>
+                    </div>
                     <p class="help-hub-edit__hint">
-                      The section under the question. Insert an image and add a short paragraph if you want one. Leave blank to hide it.
+                      Use Visual for paragraphs, bold, italic, lists, and links, or Edit HTML to change the markup. Switching keeps what you wrote. Existing text stays as it is until you edit this field. Leave blank to hide it.
                     </p>
                   </div>
                 </div>
@@ -639,10 +704,10 @@ const chooserBoxes = [
                         data-image-file
                         hidden
                       />
-                      <p class="help-hub-edit__hint" data-image-upload-status></p>
+                      <p class="help-hub-edit__hint help-hub-edit__upload-status" data-image-upload-status role="status"></p>
                     </div>
                     <p class="help-hub-edit__hint">
-                      JPG, PNG, or WebP from your computer. The address is filled in after the upload.
+                      JPG, PNG, or WebP from your computer. Maximum size is 4 MB. The address is filled in after the upload.
                     </p>
                   </div>
                   <div class="help-hub-edit__field">
@@ -1732,6 +1797,130 @@ const chooserBoxes = [
       font-size: 0.8rem;
       color: #b91c1c;
       margin: 0.15rem 0 0;
+    }
+
+    .help-hub-edit__upload-status.is-error {
+      color: #9f2d2d;
+      font-weight: 700;
+    }
+
+    .help-hub-edit__rte {
+      border: 1px solid #c9d0c0;
+      border-radius: 8px;
+      background: #fff;
+      overflow: hidden;
+    }
+
+    .help-hub-edit__rte-modes {
+      display: flex;
+      gap: 0;
+      border-bottom: 1px solid #dfe5d4;
+      background: #eef2e6;
+    }
+
+    .help-hub-edit__rte-mode {
+      appearance: none;
+      border: 0;
+      border-right: 1px solid #dfe5d4;
+      background: transparent;
+      color: #2c3a57;
+      font: inherit;
+      font-size: 0.85rem;
+      font-weight: 700;
+      padding: 0.45rem 0.75rem;
+      cursor: pointer;
+    }
+
+    .help-hub-edit__rte-mode.is-active {
+      background: #fff;
+      box-shadow: inset 0 -2px 0 #52682d;
+    }
+
+    .help-hub-edit__rte-mode:focus-visible {
+      outline: 2px solid #c5d4b0;
+      outline-offset: -2px;
+    }
+
+    .help-hub-edit__rte-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.3rem;
+      padding: 0.4rem 0.45rem;
+      border-bottom: 1px solid #dfe5d4;
+      background: #f7f8f3;
+    }
+
+    .help-hub-edit__rte-btn {
+      appearance: none;
+      border: 1px solid #c9d0c0;
+      border-radius: 6px;
+      background: #fff;
+      color: #2c3a57;
+      font: inherit;
+      font-size: 0.85rem;
+      line-height: 1;
+      padding: 0.35rem 0.5rem;
+      cursor: pointer;
+    }
+
+    .help-hub-edit__rte-btn:hover,
+    .help-hub-edit__rte-btn:focus-visible {
+      border-color: #8fa07a;
+      outline: 2px solid #c5d4b0;
+      outline-offset: 1px;
+    }
+
+    .help-hub-edit__rte-editor {
+      min-height: 9rem;
+      padding: 0.55rem 0.7rem;
+      font: inherit;
+      color: #2c3a57;
+      line-height: 1.5;
+    }
+
+    .help-hub-edit__rte-editor:focus {
+      outline: none;
+      box-shadow: inset 0 0 0 2px #c5d4b0;
+    }
+
+    .help-hub-edit__rte-editor :global(p) {
+      margin: 0 0 0.5rem;
+    }
+
+    .help-hub-edit__rte-editor :global(p:last-child) {
+      margin-bottom: 0;
+    }
+
+    .help-hub-edit__rte-editor :global(ul),
+    .help-hub-edit__rte-editor :global(ol) {
+      margin: 0.25rem 0 0.5rem;
+      padding-left: 1.3rem;
+    }
+
+    .help-hub-edit__rte-source {
+      display: block;
+      box-sizing: border-box;
+      width: 100%;
+      min-height: 12rem;
+      margin: 0;
+      padding: 0.55rem 0.7rem;
+      border: 0;
+      resize: vertical;
+      font-family: ui-monospace, Consolas, monospace;
+      font-size: 0.85rem;
+      line-height: 1.45;
+      color: #2c3a57;
+    }
+
+    .help-hub-edit__rte-source:focus {
+      outline: none;
+      box-shadow: inset 0 0 0 2px #c5d4b0;
+    }
+
+    .help-hub-edit__rte-editor :global(img) {
+      display: block;
+      max-width: 100%;
+      height: auto;
     }
 
     .related-lessons-picker__remove {

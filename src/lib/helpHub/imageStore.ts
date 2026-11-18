@@ -1,17 +1,22 @@
 import { queryWatson } from "../watson/db";
 import type { WatsonQueryFn } from "../watson/memberSearch";
+import {
+  HELP_HUB_IMAGE_MAX_BYTES,
+  HELP_HUB_IMAGE_SIZE_ERROR,
+  HELP_HUB_IMAGE_TYPE_ERROR,
+  HELP_HUB_IMAGE_TYPES,
+  type HelpHubImageContentType,
+} from "./imagePolicy";
 
-export const HELP_HUB_IMAGE_MAX_BYTES = 4 * 1024 * 1024;
+export {
+  HELP_HUB_IMAGE_MAX_BYTES,
+  HELP_HUB_IMAGE_SIZE_ERROR,
+  HELP_HUB_IMAGE_TYPE_ERROR,
+  HELP_HUB_IMAGE_TYPES,
+};
+export type { HelpHubImageContentType };
 
-export const HELP_HUB_IMAGE_TYPES = {
-  "image/png": "png",
-  "image/jpeg": "jpg",
-  "image/webp": "webp",
-} as const;
-
-export type HelpHubImageContentType = keyof typeof HELP_HUB_IMAGE_TYPES;
-
-const FILENAME_PATTERN = /^[a-z0-9][a-z0-9_-]{0,60}\.(png|jpe?g|webp)$/;
+const FILENAME_PATTERN = /^[a-z0-9][a-z0-9_-]{0,60}\.(png|jpe?g|webp|gif)$/;
 
 export type HelpHubImageUploadInput = {
   filename: string;
@@ -59,6 +64,10 @@ export function sniffHelpHubImage(bytes: Buffer): HelpHubImageContentType | null
   ) {
     return "image/webp";
   }
+  if (bytes.length >= 6) {
+    const signature = bytes.toString("ascii", 0, 6);
+    if (signature === "GIF87a" || signature === "GIF89a") return "image/gif";
+  }
   return null;
 }
 
@@ -87,18 +96,18 @@ export function prepareHelpHubImageUpload(input: HelpHubImageUploadInput): Prepa
     throw new Error("Image data is empty.");
   }
   if (bytes.length > HELP_HUB_IMAGE_MAX_BYTES) {
-    throw new Error("Image is too large. Please use a file under 4 MB.");
+    throw new Error(HELP_HUB_IMAGE_SIZE_ERROR);
   }
   const contentType = sniffHelpHubImage(bytes);
   if (!contentType) {
-    throw new Error("Image must be a JPG, PNG, or WebP file.");
+    throw new Error(HELP_HUB_IMAGE_TYPE_ERROR);
   }
   const declared = input.mimeType.trim().toLowerCase();
   if (declared && declared !== contentType && declared !== "image/jpg") {
-    throw new Error("Image must be a JPG, PNG, or WebP file.");
+    throw new Error(HELP_HUB_IMAGE_TYPE_ERROR);
   }
   if (declared === "image/jpg" && contentType !== "image/jpeg") {
-    throw new Error("Image must be a JPG, PNG, or WebP file.");
+    throw new Error(HELP_HUB_IMAGE_TYPE_ERROR);
   }
   return {
     filename: sanitizeHelpHubImageFilename(input.filename, contentType),
@@ -133,7 +142,7 @@ export async function readHelpHubImage(
   const row = rows[0];
   if (!row) return null;
   const contentType = row.content_type;
-  if (contentType !== "image/png" && contentType !== "image/jpeg" && contentType !== "image/webp") {
+  if (!(contentType in HELP_HUB_IMAGE_TYPES)) {
     return null;
   }
   return { filename: row.filename, contentType, bytes: asBuffer(row.bytes) };
