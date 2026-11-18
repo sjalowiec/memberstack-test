@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   canonicalHelpHubSolutionHtml,
+  helpHubExplanationWithImageOnRight,
   helpHubSolutionImageTag,
   renderHelpHubExplanation,
 } from "./solutionHtml";
@@ -81,6 +82,35 @@ describe("renderHelpHubExplanation", () => {
     expect(renderHelpHubExplanation("<div>First line</div><div>Second line</div>")).toBe(
       "<p>First line</p><p>Second line</p>",
     );
+  });
+
+  it("keeps a text-and-image layout and a safe image address", () => {
+    const saved = renderHelpHubExplanation(
+      '<div class="help-hub-split"><div class="help-hub-split__text"><p>Keep this wording.</p></div><div class="help-hub-split__image"><img src="/images/help-hub/DAk-x-3.gif" alt="From concept to knitting with DesignaKnit" style="width: 100%"></div></div><script>alert(1)</script>',
+    );
+    expect(saved).toBe(
+      '<div class="help-hub-split"><div class="help-hub-split__text"><p>Keep this wording.</p></div><div class="help-hub-split__image" contenteditable="false"><img src="/images/help-hub/DAk-x-3.gif" alt="From concept to knitting with DesignaKnit" style="width: 100%"></div></div>',
+    );
+    expect(renderHelpHubExplanation(saved)).toBe(saved);
+  });
+
+  it("drops a layout image that is not a site path", () => {
+    const saved = renderHelpHubExplanation(
+      '<div class="help-hub-split"><div class="help-hub-split__text"><p>Keep this wording.</p></div><div class="help-hub-split__image"><img src="javascript:alert(1)" alt="bad"></div></div>',
+    );
+    expect(saved).toBe("<p>Keep this wording.</p>");
+    expect(saved).not.toContain("javascript:");
+  });
+
+  it("moves an existing image to the right without changing the words", () => {
+    const saved = helpHubExplanationWithImageOnRight(
+      '<p>Keep this wording.</p><p><img src="/images/help-hub/DAk-x-3.gif" alt="From concept to knitting with DesignaKnit" style="width: 100%"></p>',
+    );
+    expect(saved).toContain("<p>Keep this wording.</p>");
+    expect(saved).toContain('src="/images/help-hub/DAk-x-3.gif"');
+    expect(saved.indexOf("Keep this wording.")).toBeLessThan(saved.indexOf("<img"));
+    expect(saved).toContain('class="help-hub-split"');
+    expect(helpHubExplanationWithImageOnRight(saved)).toBe(saved);
   });
 });
 

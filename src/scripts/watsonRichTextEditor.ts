@@ -179,7 +179,11 @@ export function initCompactRichText(wrap: HTMLElement, options: CompactRichTextO
 
   const sync = (): void => {
     editor.style.whiteSpace = "";
-    hidden.value = options.sanitize(editor.innerHTML);
+    const clean = options.sanitize(editor.innerHTML);
+    hidden.value = clean;
+    if (clean.includes("help-hub-split") && !editor.querySelector(".help-hub-split")) {
+      editor.innerHTML = clean;
+    }
     wrap.dataset.wnRteEdited = "1";
   };
 

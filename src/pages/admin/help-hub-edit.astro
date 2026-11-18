@@ -475,6 +475,9 @@ const chooserBoxes = [
                     <button type="button" id="helpHubInsertSolutionImage" class="kbm-btn kbm-btn-outline help-hub-edit__insert-image">
                       Insert image
                     </button>
+                    <button type="button" id="helpHubPlaceImageOnRight" class="kbm-btn kbm-btn-outline help-hub-edit__insert-image">
+                      Image on the right
+                    </button>
                     <div class="help-hub-edit__rte" data-help-hub-explanation>
                       <div class="help-hub-edit__rte-modes" role="group" aria-label="Explanation editor">
                         <button
@@ -546,7 +549,7 @@ const chooserBoxes = [
                       >{valueFor("solutionText", "")}</textarea>
                     </div>
                     <p class="help-hub-edit__hint">
-                      Use Visual for paragraphs, bold, italic, lists, and links, or Edit HTML to change the markup. Switching keeps what you wrote. Existing text stays as it is until you edit this field. Leave blank to hide it.
+                      Use Visual for paragraphs, bold, italic, lists, and links, or Edit HTML to change the markup. Image on the right places the text on the left and the image on the right, and stacks them on a phone. Switching keeps what you wrote. Existing text stays as it is until you edit this field. Leave blank to hide it.
                     </p>
                   </div>
                 </div>
@@ -1921,6 +1924,37 @@ const chooserBoxes = [
       display: block;
       max-width: 100%;
       height: auto;
+    }
+
+    .help-hub-edit__rte-editor :global(.help-hub-split) {
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+    }
+
+    .help-hub-edit__rte-editor :global(.help-hub-split__text) {
+      flex: 1 1 auto;
+      min-width: 0;
+    }
+
+    .help-hub-edit__rte-editor :global(.help-hub-split__image) {
+      flex: 0 0 38%;
+      max-width: 20rem;
+    }
+
+    .help-hub-edit__rte-editor :global(.help-hub-split__image img) {
+      width: 100%;
+    }
+
+    @media (max-width: 640px) {
+      .help-hub-edit__rte-editor :global(.help-hub-split) {
+        flex-direction: column;
+      }
+
+      .help-hub-edit__rte-editor :global(.help-hub-split__image) {
+        flex-basis: auto;
+        max-width: 100%;
+      }
     }
 
     .related-lessons-picker__remove {
