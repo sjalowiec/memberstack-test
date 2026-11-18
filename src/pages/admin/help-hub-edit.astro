@@ -1938,12 +1938,17 @@ const chooserBoxes = [
     }
 
     .help-hub-edit__rte-editor :global(.help-hub-split__image) {
-      flex: 0 0 38%;
-      max-width: 20rem;
+      flex: 0 0 auto;
+      width: min(260px, 100%);
+      max-width: 100%;
     }
 
     .help-hub-edit__rte-editor :global(.help-hub-split__image img) {
-      width: 100%;
+      display: block;
+      width: auto !important;
+      max-width: 100%;
+      height: auto !important;
+      object-fit: unset;
     }
 
     @media (max-width: 640px) {
@@ -1952,7 +1957,7 @@ const chooserBoxes = [
       }
 
       .help-hub-edit__rte-editor :global(.help-hub-split__image) {
-        flex-basis: auto;
+        width: min(260px, 100%);
         max-width: 100%;
       }
     }

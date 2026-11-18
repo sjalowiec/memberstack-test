@@ -866,12 +866,17 @@ function lessonTitleEnding(title: string): { lead: string; end: string } {
   }
 
   .tuesday-tip__description :global(.help-hub-split__image) {
-    flex: 0 0 38%;
-    max-width: 20rem;
+    flex: 0 0 auto;
+    width: min(260px, 100%);
+    max-width: 100%;
   }
 
   .tuesday-tip__description :global(.help-hub-split__image img) {
-    width: 100%;
+    display: block;
+    width: auto !important;
+    max-width: 100%;
+    height: auto !important;
+    object-fit: unset;
     margin: 0;
   }
 
@@ -881,7 +886,7 @@ function lessonTitleEnding(title: string): { lead: string; end: string } {
     }
 
     .tuesday-tip__description :global(.help-hub-split__image) {
-      flex-basis: auto;
+      width: min(260px, 100%);
       max-width: 100%;
     }
   }
