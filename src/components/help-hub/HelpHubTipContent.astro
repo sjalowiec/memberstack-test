@@ -853,6 +853,39 @@ function lessonTitleEnding(title: string): { lead: string; end: string } {
     object-fit: contain;
   }
 
+  .tuesday-tip__description :global(.help-hub-split) {
+    display: flex;
+    align-items: flex-start;
+    gap: 1.25rem;
+    margin: 0 0 0.75rem;
+  }
+
+  .tuesday-tip__description :global(.help-hub-split__text) {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .tuesday-tip__description :global(.help-hub-split__image) {
+    flex: 0 0 38%;
+    max-width: 20rem;
+  }
+
+  .tuesday-tip__description :global(.help-hub-split__image img) {
+    width: 100%;
+    margin: 0;
+  }
+
+  @media (max-width: 640px) {
+    .tuesday-tip__description :global(.help-hub-split) {
+      flex-direction: column;
+    }
+
+    .tuesday-tip__description :global(.help-hub-split__image) {
+      flex-basis: auto;
+      max-width: 100%;
+    }
+  }
+
   .tuesday-tip__jump-links {
     margin: 0 0 1rem;
     max-width: 100%;

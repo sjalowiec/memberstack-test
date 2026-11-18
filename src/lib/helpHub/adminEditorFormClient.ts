@@ -16,7 +16,11 @@ import {
 } from "./adminForm";
 import { openerPreviewBaseHref, requestHelpHubPreview } from "./adminEditorClient";
 import { helpHubImageUploadProblem, HELP_HUB_IMAGE_SIZE_ERROR } from "./imagePolicy";
-import { helpHubSolutionImageTag, renderHelpHubExplanation } from "./solutionHtml";
+import {
+  helpHubExplanationWithImageOnRight,
+  helpHubSolutionImageTag,
+  renderHelpHubExplanation,
+} from "./solutionHtml";
 import { normalizeWhatsNewDestinationUrl } from "../whatsNew/destinationUrl";
 import { initCompactRichText, seedCompactRichText, syncCompactRichText } from "../../scripts/watsonRichTextEditor";
 import {
@@ -789,6 +793,38 @@ export function initHelpHubAdminEditor(): boolean {
     const srcPath = src.trim();
     const alreadyThere = Array.from(editor.querySelectorAll("img")).some((img) => img.getAttribute("src") === srcPath);
     if (!alreadyThere) editor.insertAdjacentHTML("beforeend", tag);
+    syncCompactRichText(explanationEditor, renderHelpHubExplanation);
+    editor.dispatchEvent(new Event("input", { bubbles: true }));
+  });
+
+  document.getElementById("helpHubPlaceImageOnRight")?.addEventListener("click", () => {
+    const editor = explanationEditor?.querySelector<HTMLElement>("[data-wn-rte-editor]");
+    const source = explanationEditor?.querySelector<HTMLTextAreaElement>("[data-wn-rte-source]");
+    if (!explanationEditor || !editor || !(solutionField instanceof HTMLTextAreaElement)) return;
+    const htmlMode = source?.dataset.active === "true";
+    const current = htmlMode ? source.value : editor.innerHTML;
+    let imageTag = "";
+    if (!/<img\b/i.test(current)) {
+      const src = window.prompt("Image address on this site", "/images/");
+      if (src == null) return;
+      const alt = window.prompt("Alt text (short description of the image)", "") ?? "";
+      const tag = helpHubSolutionImageTag(src, alt);
+      if (!tag) {
+        setSaveStatus("Use a site image address such as /images/thank-you.jpg.", "err");
+        return;
+      }
+      imageTag = tag;
+    }
+    const next = helpHubExplanationWithImageOnRight(current, imageTag);
+    if (htmlMode && source) {
+      source.value = next;
+      source.dataset.dirty = "true";
+      solutionField.value = next;
+      source.dispatchEvent(new Event("input", { bubbles: true }));
+      return;
+    }
+    editor.style.whiteSpace = "";
+    editor.innerHTML = next || "<p><br></p>";
     syncCompactRichText(explanationEditor, renderHelpHubExplanation);
     editor.dispatchEvent(new Event("input", { bubbles: true }));
   });
