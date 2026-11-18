@@ -476,6 +476,24 @@ const chooserBoxes = [
                       Insert image
                     </button>
                     <div class="help-hub-edit__rte" data-help-hub-explanation>
+                      <div class="help-hub-edit__rte-modes" role="group" aria-label="Explanation editor">
+                        <button
+                          type="button"
+                          class="help-hub-edit__rte-mode is-active"
+                          data-wn-rte-mode="visual"
+                          aria-pressed="true"
+                        >
+                          Visual
+                        </button>
+                        <button
+                          type="button"
+                          class="help-hub-edit__rte-mode"
+                          data-wn-rte-mode="html"
+                          aria-pressed="false"
+                        >
+                          Edit HTML
+                        </button>
+                      </div>
                       <div
                         class="help-hub-edit__rte-toolbar"
                         data-wn-rte-toolbar
@@ -514,6 +532,13 @@ const chooserBoxes = [
                         aria-labelledby="help-hub-solution-label"
                       ></div>
                       <textarea
+                        class="help-hub-edit__rte-source"
+                        data-wn-rte-source
+                        hidden
+                        spellcheck="false"
+                        aria-label="Explanation HTML"
+                      ></textarea>
+                      <textarea
                         class="help-hub-edit__rte-input"
                         data-wn-rte-input
                         name="solutionText"
@@ -521,7 +546,7 @@ const chooserBoxes = [
                       >{valueFor("solutionText", "")}</textarea>
                     </div>
                     <p class="help-hub-edit__hint">
-                      Paragraphs, bold, italic, lists, and links. Existing plain text stays as it is until you edit this field. Leave blank to hide it.
+                      Use Visual for paragraphs, bold, italic, lists, and links, or Edit HTML to change the markup. Switching keeps what you wrote. Existing text stays as it is until you edit this field. Leave blank to hide it.
                     </p>
                   </div>
                 </div>
@@ -1786,6 +1811,36 @@ const chooserBoxes = [
       overflow: hidden;
     }
 
+    .help-hub-edit__rte-modes {
+      display: flex;
+      gap: 0;
+      border-bottom: 1px solid #dfe5d4;
+      background: #eef2e6;
+    }
+
+    .help-hub-edit__rte-mode {
+      appearance: none;
+      border: 0;
+      border-right: 1px solid #dfe5d4;
+      background: transparent;
+      color: #2c3a57;
+      font: inherit;
+      font-size: 0.85rem;
+      font-weight: 700;
+      padding: 0.45rem 0.75rem;
+      cursor: pointer;
+    }
+
+    .help-hub-edit__rte-mode.is-active {
+      background: #fff;
+      box-shadow: inset 0 -2px 0 #52682d;
+    }
+
+    .help-hub-edit__rte-mode:focus-visible {
+      outline: 2px solid #c5d4b0;
+      outline-offset: -2px;
+    }
+
     .help-hub-edit__rte-toolbar {
       display: flex;
       flex-wrap: wrap;
@@ -1840,6 +1895,26 @@ const chooserBoxes = [
     .help-hub-edit__rte-editor :global(ol) {
       margin: 0.25rem 0 0.5rem;
       padding-left: 1.3rem;
+    }
+
+    .help-hub-edit__rte-source {
+      display: block;
+      box-sizing: border-box;
+      width: 100%;
+      min-height: 12rem;
+      margin: 0;
+      padding: 0.55rem 0.7rem;
+      border: 0;
+      resize: vertical;
+      font-family: ui-monospace, Consolas, monospace;
+      font-size: 0.85rem;
+      line-height: 1.45;
+      color: #2c3a57;
+    }
+
+    .help-hub-edit__rte-source:focus {
+      outline: none;
+      box-shadow: inset 0 0 0 2px #c5d4b0;
     }
 
     .help-hub-edit__rte-editor :global(img) {
