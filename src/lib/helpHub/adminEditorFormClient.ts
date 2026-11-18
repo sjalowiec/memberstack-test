@@ -746,12 +746,9 @@ export function initHelpHubAdminEditor(): boolean {
     sanitize: renderHelpHubExplanation,
     enableLink: true,
     preserveUntilEdit: true,
+    labeledHtmlToggle: true,
     promptLink: promptHelpHubExplanationLink,
   };
-  if (solutionField instanceof HTMLTextAreaElement) {
-    const repaired = renderHelpHubExplanation(solutionField.value);
-    if (repaired !== solutionField.value) solutionField.value = repaired;
-  }
   if (explanationEditor) initCompactRichText(explanationEditor, explanationRte);
 
   function promptHelpHubExplanationLink(): string | null {
@@ -767,13 +764,23 @@ export function initHelpHubAdminEditor(): boolean {
 
   document.getElementById("helpHubInsertSolutionImage")?.addEventListener("click", () => {
     const editor = explanationEditor?.querySelector<HTMLElement>("[data-wn-rte-editor]");
-    if (!explanationEditor || !editor) return;
+    const source = explanationEditor?.querySelector<HTMLTextAreaElement>("[data-wn-rte-source]");
+    if (!explanationEditor || !editor || !(solutionField instanceof HTMLTextAreaElement)) return;
     const src = window.prompt("Image address on this site", "/images/");
     if (src == null) return;
     const alt = window.prompt("Alt text (short description of the image)", "") ?? "";
     const tag = helpHubSolutionImageTag(src, alt);
     if (!tag) {
       setSaveStatus("Use a site image address such as /images/thank-you.jpg.", "err");
+      return;
+    }
+    if (source?.dataset.active === "true") {
+      const start = source.selectionStart ?? source.value.length;
+      const end = source.selectionEnd ?? start;
+      source.value = `${source.value.slice(0, start)}${tag}${source.value.slice(end)}`;
+      source.dataset.dirty = "true";
+      solutionField.value = source.value;
+      source.dispatchEvent(new Event("input", { bubbles: true }));
       return;
     }
     editor.style.whiteSpace = "";
@@ -1078,8 +1085,17 @@ export function initHelpHubAdminEditor(): boolean {
     }
   }
 
+  function commitExplanationEdits(): void {
+    if (!explanationEditor) return;
+    const source = explanationEditor.querySelector<HTMLTextAreaElement>("[data-wn-rte-source]");
+    const htmlDirty = source?.dataset.active === "true" && source.dataset.dirty === "true";
+    if (!htmlDirty && explanationEditor.dataset.wnRteEdited !== "1") return;
+    syncCompactRichText(explanationEditor, renderHelpHubExplanation);
+  }
+
   async function saveEntry(intent: HelpHubSaveIntent): Promise<boolean> {
     syncTryStepsStore();
+    commitExplanationEdits();
     const nextStatus = statusForHelpHubSave({
       intent,
       selectedStatus: fieldValue(form, "status"),
