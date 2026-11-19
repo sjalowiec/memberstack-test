@@ -7,7 +7,7 @@ import videosPublic from "../../data/videos-public.json";
 import { helpHubMemberLessonCtaSpec } from "../helpHubMemberLessonCta";
 import { getViewerAccessState } from "../memberAccess";
 import { prepareHelpHubTipPage } from "./prepareTipPage";
-import { resolveHelpHubPublicVideo } from "./publicVideo";
+import { PUBLIC_VIDEO_ID_MESSAGE, publicVideoEntryProblem, resolveHelpHubPublicVideo } from "./publicVideo";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const tipSource = readFileSync(
@@ -98,6 +98,14 @@ describe("Help Hub public video", () => {
     expect(view.publicVideo?.vimeoId).toBe(YARN_VIMEO_ID);
     expect(view.publicVideo?.title).toBe(YARN_TITLE);
     expect(view.publicVideo?.embedUrl).toBe(`https://player.vimeo.com/video/${YARN_VIMEO_ID}`);
+  });
+
+  it("asks for a Vimeo ID when a new value is a page address", () => {
+    expect(publicVideoEntryProblem("https://vimeo.com/527759119")).toBe(PUBLIC_VIDEO_ID_MESSAGE);
+    expect(publicVideoEntryProblem("https://player.vimeo.com/video/527759119")).toBe(PUBLIC_VIDEO_ID_MESSAGE);
+    expect(publicVideoEntryProblem("527759119")).toBeNull();
+    expect(publicVideoEntryProblem("")).toBeNull();
+    expect(publicVideoEntryProblem("https://vimeo.com/527759119", "https://vimeo.com/527759119")).toBeNull();
   });
 
   it("accepts a bare Vimeo ID and a player URL", () => {
