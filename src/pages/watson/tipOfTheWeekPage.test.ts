@@ -79,6 +79,30 @@ describe("Watson Tip of the Week page", () => {
     expect(linkIdx).toBeLessThan(formIdx);
   });
 
+  it("links Feedback report to the Watson comparison in the same tab near admin actions", () => {
+    expect(page).toContain("Feedback report");
+    expect(page).toContain('href="/watson/tip-of-the-week/feedback"');
+    expect(page).toContain("data-totw-feedback-report");
+
+    const linkStart = page.indexOf("data-totw-feedback-report");
+    const linkBlock = page.slice(
+      page.lastIndexOf("<a", linkStart),
+      page.indexOf("Feedback report") + "Feedback report".length,
+    );
+    expect(linkBlock).toContain('href="/watson/tip-of-the-week/feedback"');
+    expect(linkBlock).toContain("watson-totw__btn watson-totw__btn--link");
+    expect(linkBlock).not.toContain('target="_blank"');
+
+    const toolbarIdx = page.indexOf('class="watson-totw__toolbar"');
+    const reportIdx = page.indexOf("data-totw-feedback-report");
+    const formIdx = page.indexOf("data-totw-form");
+    expect(toolbarIdx).toBeGreaterThan(-1);
+    expect(reportIdx).toBeGreaterThan(toolbarIdx);
+    expect(reportIdx).toBeLessThan(formIdx);
+    expect(script).toContain('new URLSearchParams(window.location.search).get("edit")');
+    expect(script).toContain("openTipModal");
+  });
+
   it("links View Email Signups to the Watson report in the same tab near admin actions", () => {
     expect(page).toContain("View Email Signups");
     expect(page).toContain('href="/watson/email-signups"');

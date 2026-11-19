@@ -1,0 +1,99 @@
+---
+import WatsonPageShell from "../../../components/watson/WatsonPageShell.astro";
+import {
+  FEEDBACK_REPORT_TOTAL_EXPLANATION,
+  FEEDBACK_REPORT_VIEWS_LIMITATION,
+  loadTipFeedbackReport,
+  renderTipFeedbackReportTable,
+} from "../../../lib/tipOfTheWeek/feedbackReport";
+
+export const prerender = false;
+
+Astro.response.headers.set("Cache-Control", "no-store");
+
+const report = await loadTipFeedbackReport();
+const tableHtml = renderTipFeedbackReportTable(report.rows);
+---
+
+<WatsonPageShell
+  title="Tip feedback report | Watson"
+  heading="Tip feedback report"
+  intro="Compare topic suggestions with how each tip was received, including past tips and tips with no responses yet."
+>
+  <p class="totw-feedback-report__back">
+    <a href="/watson/tip-of-the-week">Back to Tip of the Week</a>
+  </p>
+
+  {
+    report.error ? (
+      <p class="watson__status watson__status--error" role="alert">
+        {report.error}
+      </p>
+    ) : null
+  }
+
+  <p class="totw-feedback-report__note">{FEEDBACK_REPORT_TOTAL_EXPLANATION}</p>
+  <p class="totw-feedback-report__note">{FEEDBACK_REPORT_VIEWS_LIMITATION}</p>
+
+  <div class="totw-feedback-report" set:html={tableHtml} />
+</WatsonPageShell>
+
+<style>
+  .totw-feedback-report__back {
+    margin: 0 0 1rem;
+  }
+
+  .totw-feedback-report__note {
+    margin: 0 0 0.85rem;
+    color: #475569;
+    line-height: 1.5;
+    max-width: 46rem;
+  }
+
+  .totw-feedback-report {
+    overflow-x: auto;
+  }
+</style>
+
+<style is:global>
+  .totw-feedback-report__table td {
+    vertical-align: top;
+  }
+
+  .totw-feedback-report__title,
+  .totw-feedback-report__meta,
+  .totw-feedback-report__state,
+  .totw-feedback-report__historical {
+    display: block;
+  }
+
+  .totw-feedback-report__meta,
+  .totw-feedback-report__historical {
+    margin-top: 0.2rem;
+    color: #64748b;
+    font-size: 0.85rem;
+    font-weight: 500;
+    text-transform: none;
+    letter-spacing: 0;
+  }
+
+  .totw-feedback-report__state {
+    margin-top: 0.2rem;
+    font-weight: 650;
+  }
+
+  .totw-feedback-report__table details summary {
+    cursor: pointer;
+    font-weight: 650;
+  }
+
+  .totw-feedback-report__table details ul {
+    margin: 0.4rem 0 0;
+    padding-left: 1.1rem;
+  }
+
+  .totw-feedback-report__table details li {
+    margin: 0.25rem 0;
+    white-space: pre-wrap;
+  }
+</style>

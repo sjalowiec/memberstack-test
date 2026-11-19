@@ -1158,4 +1158,16 @@ export function initWatsonTipOfTheWeek() {
 
   // New-form default: end date stays auto-linked until manually edited.
   tipDateState = initTipDateFormState(null);
+  openTipEditorFromLocation(form);
+}
+
+function openTipEditorFromLocation(form: HTMLFormElement): void {
+  const id = new URLSearchParams(window.location.search).get("edit")?.trim() || "";
+  if (!id) return;
+  const item = adminItems.find((entry) => entry.tip.id === id);
+  if (!item) {
+    showPageStatus("Unable to load tip into the form.", "error");
+    return;
+  }
+  openTipModal(form, item.tip as TipRecord, null);
 }
