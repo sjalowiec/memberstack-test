@@ -132,6 +132,8 @@ describe("Help Hub admin CMS", () => {
     );
     expect(editSource).toContain('placeholder="Example: 123456789"');
     expect(formClientSource).toContain("publicVideoEntryProblem");
+    expect(formClientSource).toContain('from "./publicVideoField"');
+    expect(formClientSource).not.toContain('from "./publicVideo"');
     expect(editSource).toContain("Public video title");
     expect(formClientSource).toContain('fieldValue(form, "publicVideoUrl")');
     expect(formClientSource).toContain('fieldValue(form, "publicVideoTitle")');

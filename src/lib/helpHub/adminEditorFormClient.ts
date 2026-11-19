@@ -16,7 +16,7 @@ import {
 } from "./adminForm";
 import { openerPreviewBaseHref, requestHelpHubPreview } from "./adminEditorClient";
 import { helpHubImageUploadProblem, HELP_HUB_IMAGE_SIZE_ERROR } from "./imagePolicy";
-import { publicVideoEntryProblem } from "./publicVideo";
+import { publicVideoEntryProblem } from "./publicVideoField";
 import { helpHubSolutionImageTag, renderHelpHubExplanation } from "./solutionHtml";
 import { normalizeWhatsNewDestinationUrl } from "../whatsNew/destinationUrl";
 import { initCompactRichText, seedCompactRichText, syncCompactRichText } from "../../scripts/watsonRichTextEditor";

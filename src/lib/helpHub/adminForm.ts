@@ -1,5 +1,5 @@
 import { normalizeRelatedLessonRefs } from "./document";
-import { publicVideoValueToStore } from "./publicVideo";
+import { publicVideoValueToStore } from "./publicVideoField";
 import { renderHelpHubExplanation } from "./solutionHtml";
 import {
   normalizeMemberResourceOrder,
