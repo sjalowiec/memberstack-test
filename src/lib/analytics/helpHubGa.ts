@@ -164,14 +164,31 @@ function browserDraftPreview(): boolean {
   );
 }
 
+/**
+ * The layout installs gtag inside its own script, so window.gtag is not set.
+ * The same dataLayer that script already uses is the existing GA4 queue.
+ */
+export function helpHubGtagFromPage(page: {
+  gtag?: GtagEvent;
+  dataLayer?: unknown[];
+} | null | undefined): GtagEvent | undefined {
+  if (!page) return undefined;
+  if (typeof page.gtag === "function") return page.gtag;
+  if (!Array.isArray(page.dataLayer)) return undefined;
+  const dataLayer = page.dataLayer;
+  return (command, name, params) => {
+    dataLayer.push([command, name, params]);
+  };
+}
+
 function browserContext(): HelpHubGaContext {
-  const gtag =
+  const page =
     typeof window !== "undefined"
-      ? (window as Window & { gtag?: GtagEvent }).gtag
+      ? (window as Window & { gtag?: GtagEvent; dataLayer?: unknown[] })
       : undefined;
   return {
     now: Date.now(),
-    gtag: typeof gtag === "function" ? gtag : undefined,
+    gtag: helpHubGtagFromPage(page),
     hostname: typeof window !== "undefined" ? window.location.hostname : "",
     pathname: typeof window !== "undefined" ? window.location.pathname : "",
     search: typeof window !== "undefined" ? window.location.search : "",

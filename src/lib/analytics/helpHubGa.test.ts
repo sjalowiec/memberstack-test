@@ -8,6 +8,7 @@ import {
   HELP_HUB_GA_SLUG_PARAM,
   HELP_HUB_SURPRISE_ME_EVENT,
   helpHubGaLocationFromControl,
+  helpHubGtagFromPage,
   isHelpHubSurpriseAnalyticsExcluded,
   reportHelpHubAction,
   reportHelpHubFavoriteCommitted,
@@ -112,6 +113,26 @@ describe("Help Hub GA events", () => {
     expect(sent).not.toContain("@");
     expect(sent).not.toContain("mem_");
     expect(sent).not.toContain("question");
+  });
+
+  it("uses the existing dataLayer when the layout does not publish window.gtag", () => {
+    const dataLayer: unknown[] = [["js", {}], ["config", "G-WK4VG3CNQM"]];
+    const gtag = helpHubGtagFromPage({ dataLayer });
+    expect(typeof gtag).toBe("function");
+    gtag!("event", HELP_HUB_SURPRISE_ME_EVENT, {
+      [HELP_HUB_GA_SLUG_PARAM]: "newer-tip",
+      [HELP_HUB_GA_LOCATION_PARAM]: "discovery_card",
+    });
+    expect(dataLayer).toHaveLength(3);
+    expect(dataLayer[2]).toEqual([
+      "event",
+      HELP_HUB_SURPRISE_ME_EVENT,
+      {
+        [HELP_HUB_GA_SLUG_PARAM]: "newer-tip",
+        [HELP_HUB_GA_LOCATION_PARAM]: "discovery_card",
+      },
+    ]);
+    expect(helpHubGtagFromPage({})).toBeUndefined();
   });
 
   it("does not record Surprise Me from admin or draft preview", () => {
