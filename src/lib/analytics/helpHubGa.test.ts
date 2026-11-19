@@ -124,7 +124,7 @@ describe("Help Hub GA events", () => {
       [HELP_HUB_GA_LOCATION_PARAM]: "discovery_card",
     });
     expect(dataLayer).toHaveLength(3);
-    expect(dataLayer[2]).toEqual([
+    expect(Array.from(dataLayer[2] as ArrayLike<unknown>)).toEqual([
       "event",
       HELP_HUB_SURPRISE_ME_EVENT,
       {

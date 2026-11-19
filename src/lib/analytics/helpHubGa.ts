@@ -176,8 +176,14 @@ export function helpHubGtagFromPage(page: {
   if (typeof page.gtag === "function") return page.gtag;
   if (!Array.isArray(page.dataLayer)) return undefined;
   const dataLayer = page.dataLayer;
-  return (command, name, params) => {
-    dataLayer.push([command, name, params]);
+  // gtag.js reads the arguments object used by the layout snippet, not a plain array.
+  return function helpHubGtag(
+    command: "event",
+    name: string,
+    params: Record<string, string>,
+  ) {
+    if (command !== "event" || !name || !params) return;
+    dataLayer.push(arguments);
   };
 }
 
