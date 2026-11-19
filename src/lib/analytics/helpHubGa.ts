@@ -17,7 +17,6 @@
 import { cleanHelpHubDiscoverySlug } from "../helpHub/discoverySlug";
 import { helpHubSlugFromFavoriteContentId } from "../helpHub/discovery";
 import { detectSiteEnvironment } from "../env/siteEnvironment";
-import { isAdminProtectedPath } from "../admin/adminPageGate";
 import { FAVORITE_COMMITTED_EVENT, type FavoritesChangeDetail } from "../favorites/favoritesClient";
 
 /** Dedicated GA4 event for the public Help Hub Surprise Me button. */
@@ -115,6 +114,16 @@ export function shouldReportHelpHubToProductionGa(input: {
   );
 }
 
+/** Same admin paths as the server gate, without importing that server module into the browser. */
+function isAdminAnalyticsPath(pathname: string): boolean {
+  return (
+    pathname === "/admin" ||
+    pathname.startsWith("/admin/") ||
+    pathname === "/api/admin" ||
+    pathname.startsWith("/api/admin/")
+  );
+}
+
 /**
  * Admin pages and draft previews are not public Help Hub use.
  * A published article on the public landing page is not excluded.
@@ -122,7 +131,7 @@ export function shouldReportHelpHubToProductionGa(input: {
 export function isHelpHubSurpriseAnalyticsExcluded(input: HelpHubSurpriseSurface): boolean {
   if (input.draftPreview === true) return true;
   const path = (input.pathname || "").split("?")[0]?.split("#")[0] ?? "";
-  if (path && isAdminProtectedPath(path)) return true;
+  if (path && isAdminAnalyticsPath(path)) return true;
   const normalized = path.replace(/\/+$/, "") || "/";
   if (normalized === "/help-hub/preview") return true;
   const search = input.search || "";
