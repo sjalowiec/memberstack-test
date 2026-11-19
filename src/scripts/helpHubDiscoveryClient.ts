@@ -16,7 +16,11 @@ import {
   nextDiscoveryIndex,
   type HelpHubDiscoveryEntry,
 } from "../lib/helpHub/discovery";
-import { reportHelpHubAction } from "../lib/analytics/helpHubGa";
+import {
+  isHelpHubSurpriseAnalyticsExcluded,
+  reportHelpHubAction,
+  reportHelpHubSurpriseMe,
+} from "../lib/analytics/helpHubGa";
 import type { HelpHubDiscoveryActivityType } from "../lib/helpHub/discoveryActivity";
 import { resolveActivitySender } from "../lib/searchActivityClient";
 
@@ -63,8 +67,21 @@ function readEntries(section: ParentNode): HelpHubDiscoveryEntry[] {
   }
 }
 
+function surpriseSurface() {
+  return {
+    pathname: window.location.pathname,
+    search: window.location.search,
+    draftPreview: Boolean(
+      document.querySelector("[data-help-hub-preview-audience], .help-hub-preview-banner"),
+    ),
+  };
+}
+
 function track(eventType: HelpHubDiscoveryActivityType, slug: string): void {
-  if (eventType === "surprise_me" || eventType === "discovery_open") {
+  if (eventType === "surprise_me") {
+    if (isHelpHubSurpriseAnalyticsExcluded(surpriseSurface())) return;
+    reportHelpHubSurpriseMe(slug);
+  } else if (eventType === "discovery_open") {
     reportHelpHubAction(eventType, slug, "discovery_card");
   }
   void (async () => {

@@ -6,9 +6,12 @@ import {
   consumeHelpHubCardOpen,
   HELP_HUB_GA_LOCATION_PARAM,
   HELP_HUB_GA_SLUG_PARAM,
+  HELP_HUB_SURPRISE_ME_EVENT,
   helpHubGaLocationFromControl,
+  isHelpHubSurpriseAnalyticsExcluded,
   reportHelpHubAction,
   reportHelpHubFavoriteCommitted,
+  reportHelpHubSurpriseMe,
   reportHelpHubTipPageOpen,
   resetHelpHubGaForTests,
   shouldReportHelpHubToProductionGa,
@@ -83,14 +86,21 @@ describe("Help Hub GA environment", () => {
 });
 
 describe("Help Hub GA events", () => {
-  it("sends the slug and control location and nothing personal", () => {
+  it("sends help_hub_surprise_me with the published slug and nothing personal", () => {
     resetHelpHubGaForTests();
     const { calls, context } = productionContext();
-    expect(reportHelpHubAction("surprise_me", "Newer-Tip", "discovery_card", context)).toBe(true);
+    expect(
+      reportHelpHubSurpriseMe("Newer-Tip", {
+        ...context,
+        pathname: "/help-hub",
+        search: "",
+        draftPreview: false,
+      }),
+    ).toBe(true);
     expect(calls).toEqual([
       [
         "event",
-        "surprise_me",
+        HELP_HUB_SURPRISE_ME_EVENT,
         {
           [HELP_HUB_GA_SLUG_PARAM]: "newer-tip",
           [HELP_HUB_GA_LOCATION_PARAM]: "discovery_card",
@@ -102,6 +112,38 @@ describe("Help Hub GA events", () => {
     expect(sent).not.toContain("@");
     expect(sent).not.toContain("mem_");
     expect(sent).not.toContain("question");
+  });
+
+  it("does not record Surprise Me from admin or draft preview", () => {
+    expect(
+      isHelpHubSurpriseAnalyticsExcluded({ pathname: "/admin/help-hub", search: "" }),
+    ).toBe(true);
+    expect(
+      isHelpHubSurpriseAnalyticsExcluded({ pathname: "/help-hub/preview", search: "" }),
+    ).toBe(true);
+    expect(
+      isHelpHubSurpriseAnalyticsExcluded({ pathname: "/help-hub", search: "?preview=true" }),
+    ).toBe(true);
+    expect(isHelpHubSurpriseAnalyticsExcluded({ pathname: "/help-hub", draftPreview: true })).toBe(
+      true,
+    );
+    expect(
+      isHelpHubSurpriseAnalyticsExcluded({ pathname: "/help-hub", search: "", draftPreview: false }),
+    ).toBe(false);
+
+    resetHelpHubGaForTests();
+    const { calls, context } = productionContext();
+    expect(
+      reportHelpHubSurpriseMe("sponge-bar", { ...context, pathname: "/admin/help-hub-edit" }),
+    ).toBe(false);
+    expect(
+      reportHelpHubSurpriseMe("sponge-bar", {
+        ...context,
+        pathname: "/help-hub",
+        draftPreview: true,
+      }),
+    ).toBe(false);
+    expect(calls).toEqual([]);
   });
 
   it("does not call gtag from local or dev, or when the measurement id is missing", () => {
@@ -146,7 +188,7 @@ describe("Help Hub GA events", () => {
   it("rejects a personal-looking slug", () => {
     resetHelpHubGaForTests();
     const { calls, context } = productionContext();
-    expect(reportHelpHubAction("surprise_me", "sue@example.com", "discovery_card", context)).toBe(false);
+    expect(reportHelpHubSurpriseMe("sue@example.com", context)).toBe(false);
     expect(reportHelpHubAction("favorite_save", "mem_sb_123", "accordion", context)).toBe(false);
     expect(calls).toEqual([]);
   });
@@ -266,8 +308,12 @@ describe("Help Hub analytics wiring", () => {
     const trackStart = discovery.indexOf("function track(");
     const trackEnd = discovery.indexOf("export function initHelpHubDiscovery");
     const track = discovery.slice(trackStart, trackEnd);
-    expect(track).toContain('eventType === "surprise_me" || eventType === "discovery_open"');
+    expect(track).toContain('eventType === "surprise_me"');
+    expect(track).toContain("isHelpHubSurpriseAnalyticsExcluded(surpriseSurface())");
+    expect(track).toContain("reportHelpHubSurpriseMe(slug)");
     expect(track).toContain('reportHelpHubAction(eventType, slug, "discovery_card")');
+    expect(track).toContain("eventType,");
+    expect(track).not.toContain("HELP_HUB_SURPRISE_ME_EVENT");
 
     const controller = readFileSync(
       join(here, "..", "favorites", "favoriteStarController.ts"),
