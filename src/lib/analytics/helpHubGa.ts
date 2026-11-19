@@ -4,6 +4,10 @@
  * The layout loads gtag only when PUBLIC_GA4_ID is set. These events use that
  * function. They do not add a second property, a consent banner, or a report.
  *
+ * Surprise Me uses the event name help_hub_surprise_me. The other Help Hub
+ * actions keep their existing event names. The slug parameter is the published
+ * article slug. Question text, email addresses, and member ids are not sent.
+ *
  * Looker Studio can break results down by slug and control only after these
  * event parameters are registered as event-scoped custom dimensions:
  *   help_hub_slug
@@ -15,8 +19,11 @@ import { helpHubSlugFromFavoriteContentId } from "../helpHub/discovery";
 import { detectSiteEnvironment } from "../env/siteEnvironment";
 import { FAVORITE_COMMITTED_EVENT, type FavoritesChangeDetail } from "../favorites/favoritesClient";
 
+/** Dedicated GA4 event for the public Help Hub Surprise Me button. */
+export const HELP_HUB_SURPRISE_ME_EVENT = "help_hub_surprise_me";
+
 export const HELP_HUB_GA_EVENTS = [
-  "surprise_me",
+  HELP_HUB_SURPRISE_ME_EVENT,
   "discovery_open",
   "favorite_save",
   "favorite_remove",
@@ -54,10 +61,20 @@ export type HelpHubGaContext = {
   now?: number;
   gtag?: GtagEvent;
   hostname?: string | null;
+  pathname?: string | null;
+  search?: string | null;
+  /** True on an admin draft preview, including the preview banner. */
+  draftPreview?: boolean;
   isViteDev?: boolean;
   publicSiteEnv?: string | null;
   measurementIdConfigured?: boolean;
   storage?: HelpHubGaStorage | null;
+};
+
+export type HelpHubSurpriseSurface = {
+  pathname?: string | null;
+  search?: string | null;
+  draftPreview?: boolean;
 };
 
 type ControlNode = {
@@ -97,6 +114,31 @@ export function shouldReportHelpHubToProductionGa(input: {
   );
 }
 
+/** Same admin paths as the server gate, without importing that server module into the browser. */
+function isAdminAnalyticsPath(pathname: string): boolean {
+  return (
+    pathname === "/admin" ||
+    pathname.startsWith("/admin/") ||
+    pathname === "/api/admin" ||
+    pathname.startsWith("/api/admin/")
+  );
+}
+
+/**
+ * Admin pages and draft previews are not public Help Hub use.
+ * A published article on the public landing page is not excluded.
+ */
+export function isHelpHubSurpriseAnalyticsExcluded(input: HelpHubSurpriseSurface): boolean {
+  if (input.draftPreview === true) return true;
+  const path = (input.pathname || "").split("?")[0]?.split("#")[0] ?? "";
+  if (path && isAdminAnalyticsPath(path)) return true;
+  const normalized = path.replace(/\/+$/, "") || "/";
+  if (normalized === "/help-hub/preview") return true;
+  const search = input.search || "";
+  const query = search.startsWith("?") ? search.slice(1) : search;
+  return new URLSearchParams(query).get("preview") === "true";
+}
+
 export function helpHubGaLocationFromControl(node: ControlNode | null | undefined): HelpHubGaLocation | null {
   if (!node || typeof node.closest !== "function") return null;
   if (node.closest("[data-help-hub-preview-audience]")) return null;
@@ -115,6 +157,13 @@ function browserStorage(): HelpHubGaStorage | null {
   }
 }
 
+function browserDraftPreview(): boolean {
+  if (typeof document === "undefined") return false;
+  return Boolean(
+    document.querySelector("[data-help-hub-preview-audience], .help-hub-preview-banner"),
+  );
+}
+
 function browserContext(): HelpHubGaContext {
   const gtag =
     typeof window !== "undefined"
@@ -124,6 +173,9 @@ function browserContext(): HelpHubGaContext {
     now: Date.now(),
     gtag: typeof gtag === "function" ? gtag : undefined,
     hostname: typeof window !== "undefined" ? window.location.hostname : "",
+    pathname: typeof window !== "undefined" ? window.location.pathname : "",
+    search: typeof window !== "undefined" ? window.location.search : "",
+    draftPreview: browserDraftPreview(),
     isViteDev: import.meta.env.DEV === true,
     publicSiteEnv: import.meta.env.PUBLIC_SITE_ENV,
     measurementIdConfigured: Boolean(import.meta.env.PUBLIC_GA4_ID),
@@ -212,6 +264,25 @@ export function reportHelpHubAction(
     rememberCardOpen(cleanSlug, ctx.storage, now);
   }
   return true;
+}
+
+/**
+ * Surprise Me on the public Help Hub landing page.
+ * Sends the published article slug and nothing personal.
+ * Admin pages and draft previews are skipped.
+ */
+export function reportHelpHubSurpriseMe(slug: string, context?: HelpHubGaContext): boolean {
+  const ctx = context ?? browserContext();
+  if (
+    isHelpHubSurpriseAnalyticsExcluded({
+      pathname: ctx.pathname,
+      search: ctx.search,
+      draftPreview: ctx.draftPreview,
+    })
+  ) {
+    return false;
+  }
+  return reportHelpHubAction(HELP_HUB_SURPRISE_ME_EVENT, slug, "discovery_card", ctx);
 }
 
 /**
