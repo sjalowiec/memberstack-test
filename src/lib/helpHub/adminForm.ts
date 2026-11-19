@@ -1,4 +1,5 @@
 import { normalizeRelatedLessonRefs } from "./document";
+import { publicVideoValueToStore } from "./publicVideo";
 import { renderHelpHubExplanation } from "./solutionHtml";
 import {
   normalizeMemberResourceOrder,
@@ -272,7 +273,8 @@ export function applyAdminFormToDocument(
   else delete out.solutionText;
   const publicVideoUrl = form.publicVideoUrl.trim();
   const publicVideoTitle = form.publicVideoTitle.trim();
-  if (publicVideoUrl) out.publicVideoUrl = publicVideoUrl;
+  const storedPublicVideo = publicVideoValueToStore(publicVideoUrl, existing?.publicVideoUrl);
+  if (storedPublicVideo) out.publicVideoUrl = storedPublicVideo;
   else delete out.publicVideoUrl;
   if (publicVideoTitle) out.publicVideoTitle = publicVideoTitle;
   else delete out.publicVideoTitle;

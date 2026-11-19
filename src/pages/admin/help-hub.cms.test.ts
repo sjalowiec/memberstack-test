@@ -126,7 +126,12 @@ describe("Help Hub admin CMS", () => {
     expect(videoTitle).toBeGreaterThan(videoUrl);
     expect(tryThis).toBeGreaterThan(videoTitle);
     expect(members).toBeGreaterThan(videoTitle);
-    expect(editSource).toContain("Public video URL or Vimeo ID");
+    expect(editSource).toContain("Vimeo video ID");
+    expect(editSource).toContain(
+      "Enter the Vimeo ID for the free video you want to show here. Use the number from Vimeo, not the Knit It Now video library ID or page address.",
+    );
+    expect(editSource).toContain('placeholder="Example: 123456789"');
+    expect(formClientSource).toContain("publicVideoEntryProblem");
     expect(editSource).toContain("Public video title");
     expect(formClientSource).toContain('fieldValue(form, "publicVideoUrl")');
     expect(formClientSource).toContain('fieldValue(form, "publicVideoTitle")');

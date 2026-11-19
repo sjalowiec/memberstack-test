@@ -568,7 +568,7 @@ const chooserBoxes = [
                 <div class="help-hub-edit__fields">
                   <div class="help-hub-edit__field">
                     <label for="help-hub-public-video-url" class="help-hub-edit__label">
-                      Public video URL or Vimeo ID
+                      Vimeo video ID
                     </label>
                     <input
                       id="help-hub-public-video-url"
@@ -576,7 +576,14 @@ const chooserBoxes = [
                       type="text"
                       name="publicVideoUrl"
                       value={publicVideoUrl}
+                      placeholder="Example: 123456789"
+                      inputmode="numeric"
+                      aria-describedby="help-hub-public-video-hint help-hub-public-video-error"
                     />
+                    <p class="help-hub-edit__hint" id="help-hub-public-video-hint">
+                      Enter the Vimeo ID for the free video you want to show here. Use the number from Vimeo, not the Knit It Now video library ID or page address.
+                    </p>
+                    <p class="help-hub-edit__field-error" id="help-hub-public-video-error" role="alert" hidden></p>
                   </div>
                   <div class="help-hub-edit__field">
                     <label for="help-hub-public-video-title" class="help-hub-edit__label">
@@ -1608,6 +1615,18 @@ const chooserBoxes = [
       font-size: 0.85rem;
       color: #64748b;
       line-height: 1.4;
+    }
+
+    .help-hub-edit__field-error {
+      margin: 0;
+      color: #b91c1c;
+      font-size: 0.85rem;
+      font-weight: 700;
+      line-height: 1.4;
+    }
+
+    .help-hub-edit__field-error[hidden] {
+      display: none;
     }
 
     .help-hub-edit__upload {

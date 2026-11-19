@@ -238,11 +238,11 @@ describe("applyAdminFormToDocument", () => {
       form({
         relatedLessons: [5002],
         relatedLibraryVideos: [{ type: "library", contentId: 1027 }],
-        publicVideoUrl: "https://vimeo.com/527759119",
+        publicVideoUrl: "527759119",
         publicVideoTitle: "Yarn for Knitting Machines",
       }),
     );
-    expect(next.publicVideoUrl).toBe("https://vimeo.com/527759119");
+    expect(next.publicVideoUrl).toBe("527759119");
     expect(next.publicVideoTitle).toBe("Yarn for Knitting Machines");
     expect(next.relatedLessons).toEqual([5002]);
     expect(next.relatedLibraryVideos).toEqual([{ type: "library", contentId: 1027 }]);
@@ -321,6 +321,27 @@ describe("applyAdminFormToDocument", () => {
         storedStatus: "draft",
       }),
     ).toBe("Save draft");
+  });
+
+  it("keeps a saved public video address and refuses a new page address", () => {
+    const kept = applyAdminFormToDocument(
+      { publicVideoUrl: "https://vimeo.com/527759119", relatedLessons: [5002] },
+      form({ relatedLessons: [5002], publicVideoUrl: "https://vimeo.com/527759119" }),
+    );
+    expect(kept.publicVideoUrl).toBe("https://vimeo.com/527759119");
+
+    const rejected = applyAdminFormToDocument(
+      { publicVideoUrl: "https://vimeo.com/527759119", relatedLessons: [5002] },
+      form({ relatedLessons: [5002], publicVideoUrl: "https://vimeo.com/999" }),
+    );
+    expect(rejected.publicVideoUrl).toBe("https://vimeo.com/527759119");
+    expect(rejected.relatedLessons).toEqual([5002]);
+
+    const blank = applyAdminFormToDocument(
+      { status: "draft" },
+      form({ publicVideoUrl: "https://player.vimeo.com/video/527759119" }),
+    );
+    expect(blank).not.toHaveProperty("publicVideoUrl");
   });
 
   it("removes a public video when both fields are cleared", () => {

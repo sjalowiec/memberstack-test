@@ -16,6 +16,7 @@ import {
 } from "./adminForm";
 import { openerPreviewBaseHref, requestHelpHubPreview } from "./adminEditorClient";
 import { helpHubImageUploadProblem, HELP_HUB_IMAGE_SIZE_ERROR } from "./imagePolicy";
+import { publicVideoEntryProblem } from "./publicVideo";
 import { helpHubSolutionImageTag, renderHelpHubExplanation } from "./solutionHtml";
 import { normalizeWhatsNewDestinationUrl } from "../whatsNew/destinationUrl";
 import { initCompactRichText, seedCompactRichText, syncCompactRichText } from "../../scripts/watsonRichTextEditor";
@@ -155,6 +156,22 @@ function setSaveStatus(message: string, kind: "ok" | "err" | "signin" | null): v
     el.classList.toggle("is-error", kind === "err" || kind === "signin");
     el.classList.toggle("is-ok", kind === "ok");
   });
+}
+
+function storedPublicVideoUrl(): string {
+  const value = window.currentHelpHub?.publicVideoUrl;
+  return typeof value === "string" ? value.trim() : "";
+}
+
+function showPublicVideoProblem(message: string | null): void {
+  const error = document.getElementById("help-hub-public-video-error");
+  const input = document.getElementById("help-hub-public-video-url");
+  if (input instanceof HTMLInputElement) {
+    input.setAttribute("aria-invalid", message ? "true" : "false");
+  }
+  if (!(error instanceof HTMLElement)) return;
+  error.textContent = message ?? "";
+  error.hidden = !message;
 }
 
 function storedHelpHubStatus(): string {
@@ -1108,6 +1125,13 @@ export function initHelpHubAdminEditor(): boolean {
       setSaveStatus(missingFieldsMessage(missing), "err");
       return false;
     }
+    const videoProblem = publicVideoEntryProblem(values.publicVideoUrl, storedPublicVideoUrl());
+    showPublicVideoProblem(videoProblem);
+    if (videoProblem) {
+      setSaveStatus(videoProblem, "err");
+      document.getElementById("help-hub-public-video-url")?.focus();
+      return false;
+    }
     const payload = payloadFromForm(nextStatus);
     const id =
       window.currentHelpHub && window.currentHelpHub.id != null ? window.currentHelpHub.id : null;
@@ -1182,6 +1206,11 @@ export function initHelpHubAdminEditor(): boolean {
       setSaving(false);
     }
   }
+
+  document.getElementById("help-hub-public-video-url")?.addEventListener("input", () => {
+    const problem = publicVideoEntryProblem(fieldValue(form, "publicVideoUrl"), storedPublicVideoUrl());
+    showPublicVideoProblem(problem);
+  });
 
   saveBtn.addEventListener("click", () => {
     void saveEntry("keep");
