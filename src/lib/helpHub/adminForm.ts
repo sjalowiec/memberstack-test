@@ -114,18 +114,46 @@ export function isHelpHubInternalHref(href: string): boolean {
   return true;
 }
 
-const HELP_HUB_CTA_HOSTS = new Set(["knititnow.com", "www.knititnow.com"]);
+const HELP_HUB_CTA_HOSTS = new Set([
+  "knititnow.com",
+  "www.knititnow.com",
+  "learndesignaknit.com",
+  "www.learndesignaknit.com",
+]);
 
-/** Site path, or an https link on knititnow.com. Other sites stay blocked. */
-export function isHelpHubCtaHref(href: string): boolean {
-  const t = href.trim();
-  if (isHelpHubInternalHref(t)) return true;
-  try {
-    const url = new URL(t);
-    return url.protocol === "https:" && HELP_HUB_CTA_HOSTS.has(url.hostname.toLowerCase());
-  } catch {
-    return false;
+/**
+ * Site path, or a link on knititnow.com or learndesignaknit.com.
+ * Other sites stay blocked. http and a pasted host without a scheme become https.
+ */
+export function canonicalHelpHubCtaHref(href: string): string | null {
+  const trimmed = href.trim();
+  if (!trimmed || /[\u0000-\u001f\s<>]/.test(trimmed)) return null;
+  if (isHelpHubInternalHref(trimmed)) return trimmed;
+
+  let candidate = trimmed;
+  if (!/^[a-z][a-z0-9+.-]*:/i.test(candidate)) {
+    const host = candidate.split(/[/?#]/)[0]?.toLowerCase() ?? "";
+    if (!HELP_HUB_CTA_HOSTS.has(host)) return null;
+    candidate = `https://${candidate}`;
   }
+
+  let url: URL;
+  try {
+    url = new URL(candidate);
+  } catch {
+    return null;
+  }
+  if (url.username || url.password) return null;
+  if (url.protocol !== "http:" && url.protocol !== "https:") return null;
+  if (!HELP_HUB_CTA_HOSTS.has(url.hostname.toLowerCase())) return null;
+  url.protocol = "https:";
+  url.hostname = url.hostname.toLowerCase();
+  return url.href;
+}
+
+/** Site path, or an https link on knititnow.com or learndesignaknit.com. */
+export function isHelpHubCtaHref(href: string): boolean {
+  return canonicalHelpHubCtaHref(href) !== null;
 }
 
 export function storedHeroMediaIsImage(
@@ -166,8 +194,10 @@ export function helpHubRelatedToolButton(tip: {
   relatedToolNote?: unknown;
 }): HelpHubRelatedToolButton | null {
   const label = typeof tip.relatedToolLabel === "string" ? tip.relatedToolLabel.trim() : "";
-  const href = typeof tip.relatedToolUrl === "string" ? tip.relatedToolUrl.trim() : "";
-  if (!label || !href || !isHelpHubCtaHref(href)) return null;
+  const href = canonicalHelpHubCtaHref(
+    typeof tip.relatedToolUrl === "string" ? tip.relatedToolUrl : "",
+  );
+  if (!label || !href) return null;
   return {
     label,
     href,

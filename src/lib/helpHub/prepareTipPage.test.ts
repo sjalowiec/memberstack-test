@@ -251,6 +251,31 @@ describe("prepareHelpHubTipPage member resources", () => {
     expect(
       prepareHelpHubTipPage(
         {
+          slug: "do-i-need-designaknit",
+          status: "published",
+          question: "Do I Need DesignaKnit?",
+          relatedToolEyebrow: "Ready to explore?",
+          relatedToolNote:
+            "Explore step-by-step courses. Paid courses are purchased separately and aren’t included with Knit It Now membership.",
+          relatedToolLabel: "Explore Learn DesignaKnit",
+          relatedToolUrl: "https://learndesignaknit.com/",
+        },
+        lessons,
+        videosPublic,
+      ).relatedTool,
+    ).toEqual({
+      eyebrow: "Ready to explore?",
+      title: "",
+      note: "Explore step-by-step courses. Paid courses are purchased separately and aren’t included with Knit It Now membership.",
+      label: "Explore Learn DesignaKnit",
+      href: "https://learndesignaknit.com/",
+      memberOnly: false,
+      modal: null,
+    });
+
+    expect(
+      prepareHelpHubTipPage(
+        {
           slug: "how-do-i-finish-the-front-edges-of-my-cardigan",
           relatedToolEyebrow: "Band Pickup Calculator",
           relatedToolTitle: "How Many Stitches Do You Need?",

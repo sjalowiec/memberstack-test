@@ -227,6 +227,49 @@ describe("applyAdminFormToDocument", () => {
     expect(next.relatedToolUrl).toBe("https://knititnow.com/reference/repairs");
   });
 
+  it("keeps a Learn DesignaKnit call to action so it can reload and render", () => {
+    const courseUrl = "https://learndesignaknit.com/courses/designaknit-quick-start/";
+    const next = applyAdminFormToDocument(
+      { status: "draft", question: "Do I Need DesignaKnit?" },
+      form({
+        question: "Do I Need DesignaKnit?",
+        relatedToolEyebrow: "Free course",
+        relatedToolTitle: "DesignaKnit Demystified",
+        relatedToolNote: "A short look at what the software can do.",
+        relatedToolLabel: "Explore the course",
+        relatedToolUrl: "learndesignaknit.com/courses/designaknit-quick-start/",
+      }),
+    );
+    expect(next.relatedToolEyebrow).toBe("Free course");
+    expect(next.relatedToolTitle).toBe("DesignaKnit Demystified");
+    expect(next.relatedToolNote).toBe("A short look at what the software can do.");
+    expect(next.relatedToolLabel).toBe("Explore the course");
+    expect(next.relatedToolUrl).toBe(courseUrl);
+    expect(next.status).toBe("draft");
+
+    const reloaded = applyAdminFormToDocument(next, form({
+      question: "Do I Need DesignaKnit?",
+      relatedToolEyebrow: String(next.relatedToolEyebrow),
+      relatedToolTitle: String(next.relatedToolTitle),
+      relatedToolNote: String(next.relatedToolNote),
+      relatedToolLabel: String(next.relatedToolLabel),
+      relatedToolUrl: String(next.relatedToolUrl),
+    }));
+    expect(reloaded.relatedToolUrl).toBe(courseUrl);
+    expect(reloaded.relatedToolLabel).toBe("Explore the course");
+
+    const home = applyAdminFormToDocument(
+      { status: "published" },
+      form({
+        status: "published",
+        relatedToolLabel: "Explore Learn DesignaKnit",
+        relatedToolUrl: "https://learndesignaknit.com/",
+      }),
+    );
+    expect(home.relatedToolUrl).toBe("https://learndesignaknit.com/");
+    expect(home.status).toBe("published");
+  });
+
   it("stores an optional public video without changing related lessons", () => {
     const existing = {
       status: "published",
