@@ -2,6 +2,7 @@
  * Types and helpers for `src/data/videos-public.json` (catalog + admin).
  * Optional fields (`transcript_json`, `vtt_url`, `search_ready`) are safe to omit at runtime.
  */
+import { sanitizeVideoDescriptionHtml } from "./videos/videoDescriptionHtml";
 
 export type VideoPublicRecord = {
   content_id: string | number;
@@ -126,7 +127,7 @@ export function normalizeVideoForSave(
   }
   const vimeo_hash = trimStr(base.vimeo_hash);
 
-  const description = trimStr(base.description);
+  const description = sanitizeVideoDescriptionHtml(trimStr(base.description));
   const access_level = trimStr(base.access_level);
   const statusRaw = trimStr(base.status).toLowerCase();
   const status =

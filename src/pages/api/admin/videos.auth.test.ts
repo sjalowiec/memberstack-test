@@ -50,6 +50,10 @@ describe("video admin authorization", () => {
     // GitHub credentials stay on the server.
     expect(editPage).not.toContain("GITHUB_TOKEN");
     expect(editPage).not.toContain("videoCatalogGithub");
+    expect(editPage).toContain('data-video-desc-mode="visual"');
+    expect(editPage).toContain('data-video-desc-mode="html"');
+    expect(editPage).toContain("initCompactRichText");
+    expect(editPage).toContain("sanitizeVideoDescriptionHtml");
   });
 
   it("rejects an unsigned catalog read and does not return videos", async () => {
