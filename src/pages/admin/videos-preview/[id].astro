@@ -22,6 +22,7 @@ import {
   transcriptFilesForVimeoId,
 } from "../../../lib/videos/videoCatalogSave";
 import { videoContentIdKey } from "../../../lib/videos/videoPosterOverrides";
+import VideoDescription from "../../../components/videos/VideoDescription.astro";
 import {
   VIDEO_DRAFT_TRANSCRIPT_REPO_DIR,
   VIDEO_TRANSCRIPT_REPO_DIR,
@@ -128,7 +129,7 @@ const statusLabel =
           </section>
           {category ? <p class="video-preview-category">{category}</p> : null}
           <section class="video-description">
-            {description ? <div class="video-desc-text">{description}</div> : null}
+            <VideoDescription description={description} />
           </section>
           {posterUrl ? (
             <figure class="video-preview-thumb">

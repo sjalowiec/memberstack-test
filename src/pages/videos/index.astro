@@ -330,6 +330,7 @@ const forceMemberView =
     } from "../../lib/searchActivityClient";
     import { rankSearchText } from "../../lib/searchSynonyms";
     import { catalogVideoPlaybackAccess } from "../../lib/videos/catalogVideoPlaybackAccess";
+    import { videoDescriptionPlainText } from "../../lib/videos/videoDescriptionHtml";
 
     installSearchCommitLogger();
     import {
@@ -541,7 +542,9 @@ const forceMemberView =
     }
 
     function videoCatalogHaystack(video) {
-      return [video?.title, video?.description, video?.summary].filter(Boolean).join(" ");
+      return [video?.title, videoDescriptionPlainText(video?.description || ""), video?.summary]
+        .filter(Boolean)
+        .join(" ");
     }
 
     function render(cat) {
@@ -663,7 +666,9 @@ const forceMemberView =
             lockOverlay +
             "</div>"
           : "";
-        const desc = (v.description || v.summary || "").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        const desc = videoDescriptionPlainText(v.description || v.summary || "")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;");
         const starHtml = contentId
           ? favoriteStarButtonHtml({
               contentType: "video",
