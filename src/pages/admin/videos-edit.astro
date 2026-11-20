@@ -54,10 +54,80 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
             <button type="button" id="btn-slug-from-title" class="kbm-btn kbm-btn-outline">Make from title</button>
             <span id="field-slug-hint" class="field-hint">Lowercase words joined by hyphens. Filled in from the title until you edit it.</span>
           </div>
-          <label class="field-full">
-            <span>description</span>
-            <textarea name="description" id="field-description" rows="4"></textarea>
-          </label>
+          <div class="field-full videos-edit-description">
+            <span id="field-description-label">description</span>
+            <div class="videos-edit-rte" data-video-description-rte>
+              <div class="videos-edit-rte__modes" role="group" aria-label="Description editor">
+                <button
+                  type="button"
+                  class="videos-edit-rte__mode is-active"
+                  data-video-desc-mode="visual"
+                  aria-pressed="true"
+                >
+                  Visual
+                </button>
+                <button
+                  type="button"
+                  class="videos-edit-rte__mode"
+                  data-video-desc-mode="html"
+                  aria-pressed="false"
+                >
+                  HTML
+                </button>
+              </div>
+              <div
+                class="videos-edit-rte__toolbar"
+                data-wn-rte-toolbar
+                role="toolbar"
+                aria-label="Description formatting"
+              >
+                <button type="button" class="videos-edit-rte__btn" data-wn-rte-cmd="bold" title="Bold">
+                  <strong>B</strong>
+                </button>
+                <button type="button" class="videos-edit-rte__btn" data-wn-rte-cmd="italic" title="Italic">
+                  <em>I</em>
+                </button>
+                <button type="button" class="videos-edit-rte__btn" data-wn-rte-cmd="paragraph" title="Paragraph">
+                  Paragraph
+                </button>
+                <button type="button" class="videos-edit-rte__btn" data-video-desc-break title="Line break">
+                  Line break
+                </button>
+                <button type="button" class="videos-edit-rte__btn" data-wn-rte-cmd="ul" title="Bulleted list">
+                  List
+                </button>
+                <button type="button" class="videos-edit-rte__btn" data-wn-rte-cmd="ol" title="Numbered list">
+                  1. List
+                </button>
+                <button type="button" class="videos-edit-rte__btn" data-wn-rte-cmd="link" title="Add or edit link">
+                  Link
+                </button>
+                <button type="button" class="videos-edit-rte__btn" data-wn-rte-cmd="clear" title="Clear formatting">
+                  Clear
+                </button>
+              </div>
+              <div
+                id="field-description-editor"
+                class="videos-edit-rte__editor"
+                data-wn-rte-editor
+                contenteditable="true"
+                role="textbox"
+                aria-multiline="true"
+                aria-labelledby="field-description-label"
+              ></div>
+              <textarea
+                class="videos-edit-rte__source"
+                data-wn-rte-source
+                hidden
+                spellcheck="false"
+                aria-label="Description HTML"
+              ></textarea>
+              <textarea name="description" id="field-description" data-wn-rte-input hidden></textarea>
+            </div>
+            <span class="field-hint">
+              Use Visual for paragraphs, line breaks, bold, italics, lists, and links. HTML edits the markup. Existing plain text stays as written until you change this field.
+            </span>
+          </div>
           <label>
             <span>Access</span>
             <select name="access_level" id="field-access_level">
@@ -411,6 +481,97 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
       resize: vertical;
       min-height: 72px;
     }
+    .videos-edit-description {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+    .videos-edit-rte {
+      border: 1px solid #c9d0c0;
+      border-radius: 8px;
+      background: #fff;
+      overflow: hidden;
+    }
+    .videos-edit-rte__modes {
+      display: flex;
+      border-bottom: 1px solid #dfe5d4;
+      background: #eef2e6;
+    }
+    .videos-edit-rte__mode {
+      appearance: none;
+      border: 0;
+      border-right: 1px solid #dfe5d4;
+      background: transparent;
+      color: #2c3a57;
+      font: inherit;
+      font-size: 0.85rem;
+      font-weight: 700;
+      padding: 0.45rem 0.75rem;
+      cursor: pointer;
+    }
+    .videos-edit-rte__mode.is-active {
+      background: #fff;
+      box-shadow: inset 0 -2px 0 #52682d;
+    }
+    .videos-edit-rte__toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.3rem;
+      padding: 0.4rem 0.45rem;
+      border-bottom: 1px solid #dfe5d4;
+      background: #f7f8f3;
+    }
+    .videos-edit-rte__btn {
+      appearance: none;
+      border: 1px solid #c9d0c0;
+      border-radius: 6px;
+      background: #fff;
+      color: #2c3a57;
+      font: inherit;
+      font-size: 0.85rem;
+      line-height: 1;
+      padding: 0.35rem 0.5rem;
+      cursor: pointer;
+    }
+    .videos-edit-rte__editor {
+      min-height: 9rem;
+      padding: 0.55rem 0.7rem;
+      line-height: 1.5;
+      color: #2c3a57;
+    }
+    .videos-edit-rte__editor:focus {
+      outline: none;
+      box-shadow: inset 0 0 0 2px #c5d4b0;
+    }
+    .videos-edit-rte__editor :global(p) {
+      margin: 0 0 0.5rem;
+    }
+    .videos-edit-rte__editor :global(ul),
+    .videos-edit-rte__editor :global(ol) {
+      margin: 0.25rem 0 0.5rem;
+      padding-left: 1.3rem;
+    }
+    .videos-edit-rte__editor :global(ul) {
+      list-style: disc;
+    }
+    .videos-edit-rte__editor :global(ol) {
+      list-style: decimal;
+    }
+    .help-hub-admin__form .videos-edit-rte__source {
+      width: 100%;
+      min-height: 12rem;
+      margin: 0;
+      padding: 0.55rem 0.7rem;
+      border: 0;
+      border-radius: 0;
+      resize: vertical;
+      font-family: ui-monospace, Consolas, monospace;
+      font-size: 0.85rem;
+      line-height: 1.45;
+    }
+    .help-hub-admin__form .videos-edit-rte__source:not([hidden]) {
+      display: block;
+    }
     .help-hub-admin__form-actions {
       display: flex;
       flex-wrap: wrap;
@@ -546,8 +707,10 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 
   <script>
     import { fetchAdminJson, promptAdminSignIn } from "../../lib/admin/adminAuthClient";
-
+    import { normalizeWhatsNewDestinationUrl } from "../../lib/whatsNew/destinationUrl";
+    import { sanitizeVideoDescriptionHtml } from "../../lib/videos/videoDescriptionHtml";
     import { slugFromTitle, uniqueVideoSlug } from "../../lib/videos/videoSlug";
+    import { initCompactRichText, seedCompactRichText } from "../../scripts/watsonRichTextEditor";
 
     const API_BASE = "/api/admin/videos";
     const SAVE_API = "/api/admin/videos/save";
@@ -603,6 +766,124 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 
     function deepClone<T>(x: T): T {
       return JSON.parse(JSON.stringify(x)) as T;
+    }
+
+    const descriptionEditorOptions = {
+      sanitize: sanitizeVideoDescriptionHtml,
+      enableLink: true,
+      preserveUntilEdit: true,
+      promptLink(): string | null {
+        const raw = window.prompt("Link URL (site path like /videos, or https://…)");
+        if (raw == null) return null;
+        const result = normalizeWhatsNewDestinationUrl(raw);
+        if (!result.ok || !result.value) {
+          window.alert(result.ok ? "Enter a site path or https:// URL." : result.error);
+          return null;
+        }
+        return result.value;
+      },
+    };
+
+    function descriptionWrap(): HTMLElement | null {
+      return document.querySelector<HTMLElement>("[data-video-description-rte]");
+    }
+
+    /** Plain text stays plain text. Markup is sanitized, including editor divs. */
+    function descriptionEditorValue(editor: HTMLElement): string {
+      const hasElement = [...editor.childNodes].some((node) => node.nodeType === Node.ELEMENT_NODE);
+      if (!hasElement) return editor.textContent ?? "";
+      return sanitizeVideoDescriptionHtml(editor.innerHTML);
+    }
+
+    function commitDescriptionFromEditor(): void {
+      const wrap = descriptionWrap();
+      if (!wrap) return;
+      const hidden = wrap.querySelector<HTMLTextAreaElement>("[data-wn-rte-input]");
+      const editor = wrap.querySelector<HTMLElement>("[data-wn-rte-editor]");
+      const source = wrap.querySelector<HTMLTextAreaElement>("[data-wn-rte-source]");
+      if (!hidden) return;
+      if (source?.dataset.active === "true") {
+        hidden.value = sanitizeVideoDescriptionHtml(source.value);
+        return;
+      }
+      if (editor) hidden.value = descriptionEditorValue(editor);
+    }
+
+    function setDescriptionMode(mode: "visual" | "html"): void {
+      const wrap = descriptionWrap();
+      if (!wrap) return;
+      for (const button of wrap.querySelectorAll<HTMLButtonElement>("[data-video-desc-mode]")) {
+        const active = button.dataset.videoDescMode === mode;
+        button.classList.toggle("is-active", active);
+        button.setAttribute("aria-pressed", active ? "true" : "false");
+      }
+      const toolbar = wrap.querySelector<HTMLElement>("[data-wn-rte-toolbar]");
+      const editor = wrap.querySelector<HTMLElement>("[data-wn-rte-editor]");
+      const source = wrap.querySelector<HTMLTextAreaElement>("[data-wn-rte-source]");
+      if (toolbar) toolbar.hidden = mode === "html";
+      if (editor) editor.hidden = mode === "html";
+      if (source) {
+        source.hidden = mode !== "html";
+        source.dataset.active = mode === "html" ? "true" : "false";
+      }
+    }
+
+    function showDescriptionMode(mode: "visual" | "html"): void {
+      const wrap = descriptionWrap();
+      if (!wrap) return;
+      const editor = wrap.querySelector<HTMLElement>("[data-wn-rte-editor]");
+      const source = wrap.querySelector<HTMLTextAreaElement>("[data-wn-rte-source]");
+      const hidden = wrap.querySelector<HTMLTextAreaElement>("[data-wn-rte-input]");
+      if (!editor || !source || !hidden) return;
+      if (mode === "html") {
+        if (source.dataset.active !== "true") source.value = descriptionEditorValue(editor);
+        setDescriptionMode("html");
+        source.focus();
+        return;
+      }
+      if (source.dataset.active === "true") {
+        hidden.value = sanitizeVideoDescriptionHtml(source.value);
+        seedCompactRichText(wrap, descriptionEditorOptions);
+      }
+      setDescriptionMode("visual");
+    }
+
+    function seedDescriptionEditor(): void {
+      const wrap = descriptionWrap();
+      if (!wrap) return;
+      const source = wrap.querySelector<HTMLTextAreaElement>("[data-wn-rte-source]");
+      if (source) source.dataset.active = "false";
+      seedCompactRichText(wrap, descriptionEditorOptions);
+      setDescriptionMode("visual");
+    }
+
+    function wireDescriptionEditor(): void {
+      const wrap = descriptionWrap();
+      if (!wrap) return;
+      initCompactRichText(wrap, descriptionEditorOptions);
+      wrap.querySelector("[data-wn-rte-toolbar]")?.addEventListener(
+        "click",
+        (event) => {
+          const target = event.target;
+          if (!(target instanceof HTMLElement) || !target.closest("[data-video-desc-break]")) return;
+          const editor = wrap.querySelector<HTMLElement>("[data-wn-rte-editor]");
+          if (!editor) return;
+          event.preventDefault();
+          event.stopPropagation();
+          editor.focus();
+          document.execCommand("insertLineBreak");
+          editor.dispatchEvent(new Event("input", { bubbles: true }));
+        },
+        true,
+      );
+      wrap.addEventListener("click", (event) => {
+        const target = event.target;
+        if (!(target instanceof HTMLElement)) return;
+        const button = target.closest<HTMLButtonElement>("[data-video-desc-mode]");
+        if (!button) return;
+        event.preventDefault();
+        showDescriptionMode(button.dataset.videoDescMode === "html" ? "html" : "visual");
+      });
     }
 
     function textVal(name: string) {
@@ -866,6 +1147,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
         return null;
       }
 
+      commitDescriptionFromEditor();
       const base = baseline ? deepClone(baseline) : {};
       const row: VideoRow = { ...base };
 
@@ -1088,6 +1370,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
       setField("slug", typeof row.slug === "string" ? row.slug : "");
       setField("title", typeof row.title === "string" ? row.title : "");
       setField("description", typeof row.description === "string" ? row.description : "");
+      seedDescriptionEditor();
       setAccessField(typeof row.access_level === "string" ? row.access_level : "member");
       setField("posterUrl", typeof row.posterUrl === "string" ? row.posterUrl : "");
       setField("category", typeof row.category === "string" ? row.category : "");
@@ -1122,6 +1405,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
       setField("slug", "");
       setField("title", "");
       setField("description", "");
+      seedDescriptionEditor();
       setAccessField("member");
       setField("posterUrl", "");
       setField("category", "");
@@ -1371,6 +1655,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
     }
 
     async function init() {
+      wireDescriptionEditor();
       setStatus("Loading catalog…");
       try {
         const result = await fetchAdminJson<{

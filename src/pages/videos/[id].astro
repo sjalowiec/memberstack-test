@@ -17,6 +17,8 @@ import {
 } from "../../lib/videos/featuredTipPlayback";
 import { findPublicCatalogVideoByContentId } from "../../lib/videoPublic";
 import { applyVideoPosterOverrides } from "../../lib/videos/videoPosterOverrides";
+import { videoDescriptionPlainText } from "../../lib/videos/videoDescriptionHtml";
+import VideoDescription from "../../components/videos/VideoDescription.astro";
 import { loadPublicVideoPosterOverrides } from "../../lib/videos/videoPosterStore";
 export const prerender = false;
 
@@ -41,7 +43,10 @@ const vimeoId = rawVimeoId ? String(rawVimeoId).trim() : "";
 const privacyHash =
   typeof (video as any)?.vimeo_hash === "string" ? String((video as any).vimeo_hash).trim() : "";
 const title = (video as any)?.title ?? "Video";
-const description = (video as any)?.description ?? "";
+const description = typeof (video as { description?: unknown })?.description === "string"
+  ? (video as { description: string }).description
+  : "";
+const descriptionPlain = videoDescriptionPlainText(description);
 const downloadUrlRaw =
   typeof (video as any)?.downloadUrl === "string" ? String((video as any).downloadUrl).trim() : "";
 /** Only allow site-relative paths (avoid accidental open redirects from JSON). */
@@ -85,7 +90,7 @@ const ssrTranscriptSections = publicTranscriptParagraphs.map((text) => ({ text }
 const hasGatedTranscript = Boolean(video) && !isOpenPlayback && vimeoId.length > 0;
 ---
 
-<Layout title={video ? title : "Video not found"} description={video ? description : "Video not found."}>
+<Layout title={video ? title : "Video not found"} description={video ? descriptionPlain : "Video not found."}>
   <style>
     /* Override global .page-wrap top padding; Layout already supplies header clearance */
     .video-detail-wrap.page-wrap { padding-top: 8px; }
@@ -153,7 +158,7 @@ const hasGatedTranscript = Boolean(video) && !isOpenPlayback && vimeoId.length >
 
           {/* Description text (always visible); no heading — optional worksheet link via downloadUrl */}
           <section class="video-description">
-            {description ? <div class="video-desc-text">{description}</div> : null}
+            <VideoDescription description={description} />
             {downloadUrl ? (
               <p class="video-desc-download">
                 <a class="video-desc-download__link kbm-btn kbm-btn-primary" href={downloadUrl}>
