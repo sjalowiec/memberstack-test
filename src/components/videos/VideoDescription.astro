@@ -1,0 +1,44 @@
+---
+import { videoDescriptionDisplayHtml } from "../../lib/videos/videoDescriptionHtml";
+
+interface Props {
+  description?: string;
+}
+
+const html = videoDescriptionDisplayHtml(Astro.props.description ?? "");
+---
+
+{html ? <div class="video-desc-text" data-testid="video-description" set:html={html} /> : null}
+
+<style>
+  .video-desc-text :global(p) {
+    margin: 0 0 0.75rem;
+  }
+
+  .video-desc-text :global(p:last-child) {
+    margin-bottom: 0;
+  }
+
+  .video-desc-text :global(ul),
+  .video-desc-text :global(ol) {
+    margin: 0.35rem 0 0.75rem;
+    padding-left: 1.4rem;
+  }
+
+  .video-desc-text :global(ul) {
+    list-style: disc;
+  }
+
+  .video-desc-text :global(ol) {
+    list-style: decimal;
+  }
+
+  .video-desc-text :global(li) {
+    margin: 0.15rem 0;
+  }
+
+  .video-desc-text :global(a) {
+    color: #3d5c2e;
+    text-decoration: underline;
+  }
+</style>

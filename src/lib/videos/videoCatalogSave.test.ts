@@ -200,6 +200,51 @@ describe("saving a video", () => {
     expect(catalogOf(repo).find((video) => video.content_id === "249-1")).toEqual(seedCatalog[1]);
   });
 
+  it("keeps a numbered-list description through save and leaves plain text alone", async () => {
+    const repo = seededRepo();
+    const numbered = "<ol><li>Cast on.</li><li>Knit two rows.</li><li>Bind off.</li></ol>";
+    await saveCatalogVideo(
+      repo,
+      {
+        action: "update",
+        contentId: 300,
+        status: "published",
+        video: { description: `${numbered}<script>alert(1)</script>` },
+      },
+      null,
+    );
+    const saved = catalogOf(repo).find((video) => video.content_id === 300)!;
+    expect(saved.description).toBe(numbered);
+
+    await saveCatalogVideo(
+      repo,
+      {
+        action: "update",
+        contentId: 300,
+        status: "published",
+        video: { title: "Free Swatch again", description: saved.description },
+      },
+      null,
+    );
+    const reopened = catalogOf(repo).find((video) => video.content_id === 300)!;
+    expect(reopened.title).toBe("Free Swatch again");
+    expect(reopened.description).toBe(numbered);
+
+    await saveCatalogVideo(
+      repo,
+      {
+        action: "update",
+        contentId: 249,
+        status: "published",
+        video: { description: "Keep this sentence." },
+      },
+      null,
+    );
+    expect(catalogOf(repo).find((video) => video.slug === "full-video")?.description).toBe(
+      "Keep this sentence.",
+    );
+  });
+
   it("refuses a second video with the same Vimeo ID", async () => {
     const repo = seededRepo();
     await expect(saveCatalogVideo(repo, create({ ...newVideo, vimeo_id: 1239125400 }), null)).rejects.toThrow(
