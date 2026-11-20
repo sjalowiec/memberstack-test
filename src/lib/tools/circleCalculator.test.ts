@@ -305,8 +305,12 @@ describe("flat short row", () => {
       "The chart lists the needles to return at each of the 42 steps.",
       "Wrap manually to prevent holes, as shown in the Short-row refresher video.",
       "The last 2 rows are knitted across all 76 stitches. The row counter shows 84.",
-      "For each remaining section, set the row counter to 000, set the carriage to hold, push all 76 needles into hold position, and repeat the short-row sequence. Knit the 1 main-yarn row only once, at the start of the piece. Continue until 8 sections are complete.",
-      "After completing all 8 sections, scrap off with waste yarn. Do not bind off the main-yarn stitches.",
+      "Between sections",
+      "Set the row counter to 000. Put all needles into hold and repeat the chart for the next section.",
+      "The chart's row counter numbers restart at 000 for every section. Return the first group of needles to work next to the carriage.",
+      "Do not knit another setup row. The 1 main-yarn setup row is knitted only once, at the beginning of the piece. Continue until 8 sections are complete.",
+      "After the final section",
+      "Leave a long tail of main yarn for seaming, then scrap off with waste yarn. Do not bind off the main-yarn stitches.",
       "Graft the starting and finishing live edges together with the Kitchener join to form the circle's single seam. Remove the waste yarn as the live stitches are secured during grafting.",
       "Close the center separately:",
     ];
@@ -331,7 +335,8 @@ describe("flat short row", () => {
     expect(firstReturn).toBeGreaterThan(1);
     expect(wide.patternHtml).toContain(`Return the first group, ${firstReturn} needles, to work next to the carriage.`);
     expect(html).not.toContain("opposite the carriage");
-    expect(html.match(/main-yarn row|knit 1 row/gi)).toHaveLength(2);
+    expect(html.match(/knit 1 row/gi)).toHaveLength(1);
+    expect(html.match(/set the row counter to 000/gi)).toHaveLength(2);
     expect(wide.patternHtml).toContain(`<td>${firstReturn}</td><td>2</td>`);
   });
 });

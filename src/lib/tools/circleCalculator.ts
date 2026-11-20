@@ -584,9 +584,12 @@ function shortRowPatternHtml(input: CircleCalculatorInput, plan: CircleShortRowP
     <p><a href="/videos/811" class="pattern-video-modal-link no-print" data-video-id="811" data-content-id="811"><i class="fa-solid fa-play" aria-hidden="true"></i> Short-row refresher</a></p>
     ${checklist}
     <p>The last 2 rows are knitted across all ${plan.castOn} stitches. The row counter shows ${plan.rowsPerWedge}.</p>
-    <p>For each remaining section, set the row counter to 000, set the carriage to hold, push all ${plan.castOn} needles into hold position, and repeat the short-row sequence. Knit the ${plan.setupRows} main-yarn row only once, at the start of the piece. Continue until ${plan.wedges} sections are complete.</p>
-    <h3>End</h3>
-    <p>After completing all ${plan.wedges} sections, <a href="/glossary/scrap-off/" class="glossary-link">scrap off</a> with waste yarn. Do not bind off the main-yarn stitches.</p>
+    <h3>Between sections</h3>
+    <p>Set the row counter to 000. Put all needles into hold and repeat the chart for the next section.</p>
+    <p>The chart's row counter numbers restart at 000 for every section. Return the first group of needles to work next to the carriage.</p>
+    <p>Do not knit another setup row. The ${plan.setupRows} main-yarn setup row is knitted only once, at the beginning of the piece. Continue until ${plan.wedges} sections are complete.</p>
+    <h3>After the final section</h3>
+    <p>Leave a long tail of main yarn for seaming, then <a href="/glossary/scrap-off/" class="glossary-link">scrap off</a> with waste yarn. Do not bind off the main-yarn stitches.</p>
     <h3>Finishing</h3>
     <p>Graft the starting and finishing live edges together with the <a href="/glossary/kitchener-stitch/" class="glossary-link">Kitchener join</a> to form the circle's single seam. Remove the waste yarn as the live stitches are secured during grafting.</p>
     <p>Close the center separately: thread a darning needle through the edge stitches at the center, draw them together, and fasten securely.</p>
