@@ -1,0 +1,895 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import WizardBackLink from "../../components/wizards/WizardBackLink.astro";
+import ToolPageHeader from "../../components/tools/ToolPageHeader.astro";
+import ToolGate from "../../components/ui/ToolGate.astro";
+import ToolPreviewGate from "../../components/ui/ToolPreviewGate.astro";
+import FloatingInput from "../../components/tools/FloatingInput.astro";
+import UnitToggle from "../../components/wizards/UnitToggle.astro";
+import GaugeInput from "../../components/wizards/GaugeInput.astro";
+import ToolResultCard from "../../components/tools/ToolResultCard.astro";
+import PrintButton from "../../components/common/PrintButton.astro";
+import GlossaryTermModal from "../../components/glossary/GlossaryTermModal.astro";
+import toolsData from "../../../data/tools.json";
+import {
+  AVAILABLE_NEEDLES_HELPER_TEXT,
+  AVAILABLE_NEEDLES_LABEL,
+} from "../../lib/patterns/sleevelessExpressAvailableNeedles";
+import "../../styles/wizard.css";
+
+const tools = toolsData as Array<{
+  href?: string;
+  title?: string;
+  icon?: string;
+  id?: number;
+  membersonly?: boolean;
+}>;
+const tool = tools.find((entry) => entry.href === "/tools/circle-calculator") ?? null;
+---
+
+<Layout title="Circle Calculator">
+  <main class="wizard-page">
+    <div class="wizard-shell">
+      <WizardBackLink className="back-link no-print" />
+
+      <section class="wizard-hero no-print">
+        <ToolPageHeader tool={tool} fallbackTitle="Circle Calculator" />
+        <p class="wizard-intro">
+          Calculate a flat circle from your gauge and finished diameter.
+        </p>
+        <p class="wizard-intro-sub">
+          Knit separate wedges, increased or decreased, or one flat short-row piece with a single seam.
+        </p>
+      </section>
+
+      <ToolGate tool={tool} />
+
+      <ToolPreviewGate tool={tool}>
+      <div class="circle-calculator-panel kbm-tool-calculator-area no-print">
+        <div class="section-header-with-toggle">
+          <h2>Enter your measurements</h2>
+          <UnitToggle id="circle" />
+        </div>
+        <form id="circleForm">
+          <div class="circle-setup">
+            <div class="circle-setup-choices">
+              <fieldset class="circle-choice">
+                <legend>Construction</legend>
+                <label><input type="radio" name="construction" value="wedges" checked /> Separate wedges</label>
+                <label><input type="radio" name="construction" value="short-row" /> One piece, one seam, short rows</label>
+              </fieldset>
+              <fieldset class="circle-choice" id="circleDirection">
+                <legend>Wedge direction</legend>
+                <label><input type="radio" name="direction" value="increase" /> Increase</label>
+                <label><input type="radio" name="direction" value="decrease" checked /> Decrease</label>
+              </fieldset>
+              <fieldset class="circle-choice">
+                <legend>Wedges</legend>
+                <label><input type="radio" name="wedges" value="6" /> 6</label>
+                <label><input type="radio" name="wedges" value="8" checked /> 8</label>
+              </fieldset>
+            </div>
+            <figure class="circle-construction-preview" id="circleConstructionPreview" aria-live="polite">
+              <svg data-preview="wedges-6" viewBox="0 0 200 200" aria-hidden="true">
+                <polygon points="136,37.65 172,100 136,162.35 64,162.35 28,100 64,37.65" />
+                <line x1="100" y1="100" x2="136" y2="37.65" />
+                <line x1="100" y1="100" x2="172" y2="100" />
+                <line x1="100" y1="100" x2="136" y2="162.35" />
+                <line x1="100" y1="100" x2="64" y2="162.35" />
+                <line x1="100" y1="100" x2="28" y2="100" />
+                <line x1="100" y1="100" x2="64" y2="37.65" />
+              </svg>
+              <svg class="is-active" data-preview="wedges-8" viewBox="0 0 200 200" aria-hidden="true">
+                <polygon points="127.55,33.48 166.52,72.45 166.52,127.55 127.55,166.52 72.45,166.52 33.48,127.55 33.48,72.45 72.45,33.48" />
+                <line x1="100" y1="100" x2="127.55" y2="33.48" />
+                <line x1="100" y1="100" x2="166.52" y2="72.45" />
+                <line x1="100" y1="100" x2="166.52" y2="127.55" />
+                <line x1="100" y1="100" x2="127.55" y2="166.52" />
+                <line x1="100" y1="100" x2="72.45" y2="166.52" />
+                <line x1="100" y1="100" x2="33.48" y2="127.55" />
+                <line x1="100" y1="100" x2="33.48" y2="72.45" />
+                <line x1="100" y1="100" x2="72.45" y2="33.48" />
+              </svg>
+              <svg data-preview="short-row" viewBox="0 0 200 200" aria-hidden="true">
+                <polygon points="136,37.65 172,100 136,162.35 64,162.35 28,100 64,37.65" />
+                <path d="M 136 37.65 Q 159.04 100.17 105.27 97.14 M 172 100 Q 129.38 151.21 105.12 103.14 M 136 162.35 Q 70.34 151.05 99.84 106 M 64 162.35 Q 40.96 99.83 94.73 102.86 M 28 100 Q 70.62 48.79 94.88 96.86 M 64 37.65 Q 129.66 48.95 100.16 94" />
+              </svg>
+            </figure>
+          </div>
+          <div class="circle-input-grid">
+            <GaugeInput id="circle" showTitle={false} showToggle={false} toggleId="circle" />
+            <FloatingInput
+              id="circleDiameter"
+              name="diameter"
+              label="Diameter"
+              labelId="circleDiameterLabel"
+              type="number"
+              min={0}
+              step={0.01}
+            />
+            <p class="circle-hint" id="circleDiameterHint">Inches, between opposite flat edges.</p>
+            <FloatingInput
+              id="circle-available-needles"
+              name="availableNeedles"
+              label={AVAILABLE_NEEDLES_LABEL}
+              type="number"
+              inputmode="numeric"
+              min={1}
+              step={1}
+              required
+              ariaDescribedby="circle-available-needles-help"
+            />
+            <p class="circle-hint" id="circle-available-needles-help">{AVAILABLE_NEEDLES_HELPER_TEXT}</p>
+          </div>
+          <div class="circle-actions">
+            <button type="button" id="calculateCircle" class="kbm-btn kbm-btn-primary">Calculate</button>
+          </div>
+          <div id="circleValidation" class="circle-validation" role="alert" hidden></div>
+        </form>
+      </div>
+      </ToolPreviewGate>
+
+      <ToolResultCard id="circleResults" hidden title="Your Pattern" resultsContentId="circlePattern">
+        <PrintButton slot="actions" label="" ariaLabel="Print pattern" />
+        <div id="circleDiagram" slot="diagram"></div>
+      </ToolResultCard>
+      <p class="circle-print-footer" aria-hidden="true">knititnow.com/tools/circle-calculator</p>
+
+      <section id="circleReviewNotes" class="circle-review-notes no-print" hidden></section>
+    </div>
+  </main>
+
+  <GlossaryTermModal />
+  <div id="circleVideoModal" class="circle-video-modal no-print" hidden>
+    <div class="circle-video-modal__backdrop" data-circle-video-close="true"></div>
+    <div class="circle-video-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="circleVideoModalTitle">
+      <h2 id="circleVideoModalTitle" class="circle-video-modal__title">Short-row refresher</h2>
+      <button type="button" class="circle-video-modal__close" data-circle-video-close="true">Close</button>
+      <iframe
+        id="circleVideoFrame"
+        title="Short-row refresher"
+        allow="autoplay; fullscreen; picture-in-picture"
+        allowfullscreen
+      ></iframe>
+    </div>
+  </div>
+
+  <style>
+    .wizard-hero .wizard-intro-sub {
+      margin-top: 0.5rem;
+      font-size: 0.95rem;
+      color: #6b7280;
+    }
+
+    .circle-calculator-panel {
+      background: #fff;
+      padding: 1.75rem;
+      border-radius: 12px;
+      border: 1px solid #e5e7eb;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+      margin-bottom: 1.5rem;
+    }
+
+    .circle-setup {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 180px;
+      gap: 0.5rem 1.5rem;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+
+    .circle-construction-preview {
+      margin: 0;
+      width: 100%;
+      max-width: 180px;
+      justify-self: center;
+    }
+
+    .circle-construction-preview svg {
+      display: none;
+      width: 100%;
+      height: auto;
+    }
+
+    .circle-construction-preview svg.is-active {
+      display: block;
+    }
+
+    .circle-construction-preview polygon,
+    .circle-construction-preview line,
+    .circle-construction-preview path {
+      fill: none;
+      stroke: #1a1a1a;
+      stroke-width: 3.25;
+      stroke-linejoin: miter;
+      stroke-linecap: butt;
+    }
+
+    .circle-actions .kbm-btn {
+      padding: 12px 22px;
+      font-size: 1rem;
+      line-height: 1.3;
+      min-width: 9rem;
+    }
+
+    .circle-choice {
+      border: 0;
+      margin: 0 0 1rem;
+      padding: 0;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem 1.25rem;
+    }
+
+    .circle-choice[hidden] {
+      display: none;
+    }
+
+    .circle-choice legend {
+      width: 100%;
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: 0.35rem;
+      padding: 0;
+    }
+
+    .circle-choice label {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .circle-input-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 8px;
+    }
+
+    .circle-hint,
+    .circle-validation {
+      margin: 0;
+      color: #6b7280;
+      font-size: 0.95rem;
+    }
+
+    #circleDiameterLabel {
+      max-width: calc(100% - 1.5rem);
+      line-height: 1.2;
+      white-space: normal;
+    }
+
+    :global(#circlePattern a.pattern-video-modal-link) {
+      color: var(--kbm-green, #52682d);
+      font-weight: 700;
+      text-underline-offset: 2px;
+    }
+
+    .circle-video-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 80;
+      display: grid;
+      place-items: center;
+      padding: 1rem;
+    }
+
+    .circle-video-modal[hidden] {
+      display: none;
+    }
+
+    .circle-video-modal__backdrop {
+      position: absolute;
+      inset: 0;
+      background: rgba(17, 24, 39, 0.55);
+    }
+
+    .circle-video-modal__dialog {
+      position: relative;
+      width: min(920px, 100%);
+      background: #fff;
+      border-radius: 12px;
+      padding: 1rem 1rem 1.25rem;
+    }
+
+    .circle-video-modal__title {
+      margin: 0 2.5rem 0.75rem 0;
+      font-size: 1.1rem;
+    }
+
+    .circle-video-modal__close {
+      position: absolute;
+      top: 0.75rem;
+      right: 0.75rem;
+    }
+
+    .circle-video-modal iframe {
+      display: block;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      border: 0;
+      background: #111;
+    }
+
+    .circle-validation {
+      color: #991b1b;
+      margin-top: 0.75rem;
+    }
+
+    .circle-actions {
+      margin-top: 1rem;
+    }
+
+    .circle-review-notes {
+      margin-top: 1.5rem;
+      padding: 1rem 1.25rem;
+      border: 1px dashed #d1d5db;
+      border-radius: 12px;
+      background: #f9fafb;
+    }
+
+    .circle-review-notes h2 {
+      margin: 0 0 0.5rem;
+      font-size: 1rem;
+    }
+
+    .circle-review-notes ul {
+      margin: 0;
+      padding-left: 1.2rem;
+    }
+
+    :global(.circle-pattern h3) {
+      margin: 1.25rem 0 0.4rem;
+      font-size: 1.05rem;
+    }
+
+    :global(.circle-pattern h3:first-child) {
+      margin-top: 0;
+    }
+
+    :global(.circle-pattern p) {
+      margin: 0.4rem 0 0.75rem;
+    }
+
+    :global(.circle-checklist-block) {
+      margin: 0.5rem 0 1rem;
+    }
+
+    :global(.circle-checklist-actions) {
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: 0.35rem;
+    }
+
+    :global(.circle-checklist-clear) {
+      padding: 0.3rem 0.75rem;
+      border: 1px solid var(--kin-border, #d1d5db);
+      border-radius: 999px;
+      background: #fff;
+      color: #2f3a2f;
+      font: inherit;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    :global(.circle-checklist-clear:hover:not(:disabled)) {
+      background: #f4f6f1;
+      border-color: var(--kbm-green, #52682d);
+    }
+
+    :global(.circle-checklist-clear:focus-visible) {
+      outline: 2px solid var(--kbm-green, #52682d);
+      outline-offset: 2px;
+    }
+
+    :global(.circle-checklist-clear:disabled) {
+      color: #9ca3af;
+      border-color: #e5e7eb;
+      cursor: default;
+    }
+
+    .circle-print-footer {
+      display: none;
+    }
+
+    :global(.circle-checklist-card) {
+      margin: 0;
+      border: 1px solid var(--kin-border, #ddd);
+      border-radius: 12px;
+      background: #fff;
+      overflow-x: auto;
+    }
+
+    :global(.circle-checklist) {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9375rem;
+      line-height: 1.35;
+      font-variant-numeric: tabular-nums;
+      color: #1f2937;
+    }
+
+    :global(.circle-checklist td) {
+      color: inherit;
+    }
+
+    :global(.circle-checklist th),
+    :global(.circle-checklist td) {
+      text-align: left;
+      padding: 0.35rem 0.75rem;
+      border-bottom: 1px solid #e5e7eb;
+      vertical-align: middle;
+    }
+
+    :global(.circle-checklist thead th) {
+      background: #f4f6f1;
+      color: #1f2937;
+      font-weight: 600;
+      font-size: 0.875rem;
+    }
+
+    :global(.circle-checklist tbody tr:nth-child(even)) {
+      background: #f7f8f5;
+    }
+
+    :global(.circle-checklist tbody tr:last-child td) {
+      border-bottom: none;
+    }
+
+    :global(.circle-checklist .circle-checklist__check) {
+      width: 2.75rem;
+      padding: 0 0 0 0.35rem;
+      text-align: center;
+    }
+
+    :global(.circle-checklist__check-label) {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 2.25rem;
+      min-height: 2.25rem;
+      cursor: pointer;
+    }
+
+    :global(.circle-checklist__box) {
+      margin: 0;
+      inline-size: 1.15rem;
+      block-size: 1.15rem;
+      accent-color: var(--kbm-green, #52682d);
+      cursor: pointer;
+    }
+
+    :global(.circle-checklist tbody tr:has(.circle-checklist__box:checked) td:not(.circle-checklist__check)) {
+      color: #6b7280;
+    }
+
+    :global(#circleDiagram) {
+      container-type: inline-size;
+    }
+
+    :global(.circle-diagram-narrow) {
+      display: none;
+    }
+
+    /* Below this width the side labels of the wide diagram drop under about 13px. */
+    @container (max-width: 460px) {
+      :global(.circle-diagram-wide) {
+        display: none;
+      }
+
+      :global(.circle-diagram-narrow) {
+        display: block;
+        max-width: 420px;
+      }
+    }
+
+    :global(.circle-circumference) {
+      margin: 0.5rem 0 0;
+      font-weight: 600;
+      color: #1a1a1a;
+    }
+
+    @media (max-width: 640px) {
+      .circle-calculator-panel {
+        padding: 1.25rem;
+      }
+
+      .circle-setup {
+        grid-template-columns: 1fr;
+      }
+
+      :global(.circle-checklist) {
+        font-size: 0.875rem;
+      }
+
+      :global(.circle-checklist th),
+      :global(.circle-checklist td) {
+        padding: 0.3rem 0.45rem;
+      }
+
+      :global(.circle-checklist thead th) {
+        font-size: 0.8125rem;
+      }
+
+      :global(#circleResults .tool-result-card__inner > *) {
+        min-width: 0;
+      }
+    }
+
+    @media (max-width: 420px) {
+      :global(.circle-checklist th),
+      :global(.circle-checklist td) {
+        padding: 0.3rem 0.25rem;
+      }
+
+      :global(.circle-checklist thead th) {
+        font-size: 0.75rem;
+      }
+
+      :global(.circle-checklist .circle-checklist__check) {
+        width: 2rem;
+        padding: 0;
+      }
+
+      :global(.circle-checklist__check-label) {
+        min-width: 2rem;
+      }
+    }
+
+    @media print {
+      .no-print {
+        display: none !important;
+      }
+
+      :global(#circleResults[hidden]) {
+        display: none !important;
+      }
+
+      :global(.circle-diagram-wide) {
+        display: block !important;
+      }
+
+      :global(.circle-diagram-narrow) {
+        display: none !important;
+      }
+
+      :global(.circle-checklist-actions),
+      :global(#circleResults .pattern-print-footer),
+      :global(.tool-print-footer),
+      :global(memberstack-prebuilt-ui),
+      :global(.ms-inspector-badge) {
+        display: none !important;
+      }
+
+      .circle-print-footer {
+        display: block;
+        margin: 0.75rem 0 0;
+        font-size: 9pt;
+        color: #4b5563;
+        text-align: center;
+        break-before: avoid;
+        page-break-before: avoid;
+      }
+
+      :global(.circle-checklist-card) {
+        overflow: visible !important;
+        border-radius: 6px;
+        break-inside: auto;
+        page-break-inside: auto;
+      }
+
+      :global(.circle-checklist) {
+        font-size: 10pt !important;
+      }
+
+      :global(.circle-checklist thead) {
+        display: table-header-group;
+      }
+
+      :global(.circle-checklist tr) {
+        break-inside: avoid;
+        page-break-inside: avoid;
+      }
+
+      :global(.circle-checklist th),
+      :global(.circle-checklist td) {
+        padding: 0.2rem 0.5rem !important;
+        border: none !important;
+        border-bottom: 1px solid #d1d5db !important;
+      }
+
+      :global(.circle-checklist thead th) {
+        background: #eef0ea !important;
+        print-color-adjust: exact;
+        -webkit-print-color-adjust: exact;
+      }
+
+      :global(.circle-checklist tbody tr:nth-child(odd)) {
+        background: #fff !important;
+      }
+
+      :global(.circle-checklist tbody tr:nth-child(even)) {
+        background: #f3f4f1 !important;
+        print-color-adjust: exact;
+        -webkit-print-color-adjust: exact;
+      }
+
+      :global(.circle-checklist .circle-checklist__check) {
+        width: 1.75rem;
+      }
+
+      :global(.circle-checklist__check-label) {
+        min-width: 0;
+        min-height: 0;
+      }
+
+      :global(.circle-checklist tbody tr td) {
+        color: #111 !important;
+      }
+
+      :global(input.circle-checklist__box:checked) {
+        background: #111 !important;
+      }
+    }
+  </style>
+
+  <script>
+    import {
+      CIRCLE_CM_PER_INCH,
+      buildCircleCalculator,
+      circleCircumferenceText,
+      circleDiagramContent,
+      circleInstructionsHtml,
+    } from "../../lib/tools/circleCalculator";
+    import type {
+      CircleCalculatorInput,
+      CircleConstruction,
+      CircleLengthUnit,
+      CirclePlan,
+      CircleWedgeCount,
+      WedgeDirection,
+    } from "../../lib/tools/circleCalculator";
+    import { circleWedgeDiagramSvg } from "../../lib/tools/circleCalculatorDiagram";
+    import {
+      bindAvailableNeedlesFieldValidation,
+      setAvailableNeedlesFieldErrorState,
+      validateAvailableNeedlesFieldValue,
+    } from "../../lib/patterns/availableNeedlesFieldValidation";
+
+    const calculateButton = document.getElementById("calculateCircle");
+    const resultsPanel = document.getElementById("circleResults");
+    const patternEl = document.getElementById("circlePattern");
+    const diagramEl = document.getElementById("circleDiagram");
+    const reviewEl = document.getElementById("circleReviewNotes");
+    const validationEl = document.getElementById("circleValidation");
+    const directionFields = document.getElementById("circleDirection");
+    const diameterHint = document.getElementById("circleDiameterHint");
+    const diameterLabel = document.getElementById("circleDiameterLabel");
+    const needlesInput = document.getElementById("circle-available-needles");
+    const form = document.getElementById("circleForm");
+    let shown: { input: CircleCalculatorInput; plan: CirclePlan } | null = null;
+
+    function checklistBoxes(): HTMLInputElement[] {
+      return patternEl ? [...patternEl.querySelectorAll<HTMLInputElement>(".circle-checklist__box")] : [];
+    }
+
+    function updateClearButton(block: HTMLElement): void {
+      const button = block.querySelector<HTMLButtonElement>("[data-checklist-clear]");
+      if (button) button.disabled = !block.querySelector(".circle-checklist__box:checked");
+    }
+
+    patternEl?.addEventListener("change", (event) => {
+      const block = event.target instanceof Element ? event.target.closest<HTMLElement>(".circle-checklist-block") : null;
+      if (block) updateClearButton(block);
+    });
+
+    patternEl?.addEventListener("click", (event) => {
+      const button = event.target instanceof Element ? event.target.closest("[data-checklist-clear]") : null;
+      const block = button?.closest<HTMLElement>(".circle-checklist-block");
+      if (!block) return;
+      block.querySelectorAll<HTMLInputElement>(".circle-checklist__box").forEach((box) => {
+        box.checked = false;
+      });
+      updateClearButton(block);
+    });
+
+    function paint(displayUnit: CircleLengthUnit, keepChecks = false): void {
+      if (!shown) return;
+      const checked = keepChecks ? checklistBoxes().map((box) => box.checked) : [];
+      if (patternEl) patternEl.innerHTML = circleInstructionsHtml(shown.input, shown.plan, displayUnit);
+      checklistBoxes().forEach((box, index) => {
+        box.checked = checked[index] === true;
+      });
+      patternEl?.querySelectorAll<HTMLElement>(".circle-checklist-block").forEach(updateClearButton);
+      if (diagramEl) {
+        const content = circleDiagramContent(shown.plan, displayUnit);
+        diagramEl.innerHTML = `<div class="circle-diagram-wide">${circleWedgeDiagramSvg(content, "wide")}</div>
+          <div class="circle-diagram-narrow">${circleWedgeDiagramSvg(content, "narrow")}</div>
+          <p class="circle-circumference">${circleCircumferenceText(shown.plan, displayUnit)}</p>`;
+      }
+    }
+
+    function clearGeneratedPattern(): void {
+      shown = null;
+      if (resultsPanel instanceof HTMLElement) resultsPanel.hidden = true;
+      if (patternEl) patternEl.innerHTML = "";
+      if (diagramEl) diagramEl.innerHTML = "";
+      if (reviewEl instanceof HTMLElement) {
+        reviewEl.hidden = true;
+        reviewEl.innerHTML = "";
+      }
+    }
+
+    function clearValidation(): void {
+      if (!(validationEl instanceof HTMLElement)) return;
+      validationEl.hidden = true;
+      validationEl.textContent = "";
+    }
+
+    if (needlesInput instanceof HTMLInputElement) {
+      bindAvailableNeedlesFieldValidation(needlesInput);
+    }
+
+    function selectedValue(name: string): string {
+      const field = document.querySelector<HTMLInputElement>(`input[name="${name}"]:checked`);
+      return field?.value ?? "";
+    }
+
+    function currentUnit(): CircleLengthUnit {
+      const hidden = document.getElementById("circle-unit");
+      if (hidden instanceof HTMLInputElement && (hidden.value === "in" || hidden.value === "cm")) {
+        return hidden.value;
+      }
+      return "in";
+    }
+
+    function updateSizeField(unit: CircleLengthUnit = currentUnit()): void {
+      const shortRow = selectedValue("construction") === "short-row";
+      if (diameterLabel) diameterLabel.textContent = "Diameter";
+      if (!diameterHint) return;
+      const unitName = unit === "cm" ? "Centimeters" : "Inches";
+      diameterHint.textContent = shortRow
+        ? `${unitName}, the finished diameter.`
+        : `${unitName}, between opposite flat edges.`;
+    }
+
+    const previewLabels: Record<string, string> = {
+      "wedges-6": "Straight-sided hexagon divided into 6 wedges",
+      "wedges-8": "Straight-sided octagon divided into 8 wedges",
+      "short-row": "One piece, one seam, short rows",
+    };
+
+    function updateConstructionPreview(): void {
+      const preview = document.getElementById("circleConstructionPreview");
+      const key = selectedValue("construction") === "short-row" ? "short-row" : `wedges-${selectedValue("wedges")}`;
+      preview?.querySelectorAll<SVGElement>("[data-preview]").forEach((shape) => {
+        shape.classList.toggle("is-active", shape.getAttribute("data-preview") === key);
+      });
+      if (preview) preview.setAttribute("aria-label", previewLabels[key] ?? "");
+    }
+
+    function updateDirectionVisibility(): void {
+      if (!(directionFields instanceof HTMLElement)) return;
+      directionFields.hidden = selectedValue("construction") === "short-row";
+      updateSizeField();
+      updateConstructionPreview();
+    }
+
+    document.querySelectorAll('input[name="construction"], input[name="wedges"]').forEach((input) => {
+      input.addEventListener("change", updateDirectionVisibility);
+    });
+    updateDirectionVisibility();
+
+    window.addEventListener("kbm:units-change", (event: Event) => {
+      const detail = (event as CustomEvent<{ unit?: string; toggleId?: string }>).detail;
+      if (detail?.toggleId != null && detail.toggleId !== "circle") return;
+      const unit: CircleLengthUnit = detail?.unit === "cm" ? "cm" : "in";
+      updateSizeField(unit);
+      if (shown && resultsPanel instanceof HTMLElement && !resultsPanel.hidden) {
+        paint(unit, true);
+        return;
+      }
+      clearValidation();
+    });
+
+    form?.addEventListener("input", () => {
+      clearGeneratedPattern();
+      clearValidation();
+    });
+
+    calculateButton?.addEventListener("click", () => {
+      if (!(validationEl instanceof HTMLElement) || !(resultsPanel instanceof HTMLElement)) return;
+      const unit = currentUnit();
+      const stitches = Number((document.getElementById("circle-stitch-gauge") as HTMLInputElement | null)?.value);
+      const rows = Number((document.getElementById("circle-row-gauge") as HTMLInputElement | null)?.value);
+      const diameter = Number((document.getElementById("circleDiameter") as HTMLInputElement | null)?.value);
+      const construction = selectedValue("construction") as CircleConstruction;
+      const direction = selectedValue("direction") as WedgeDirection;
+      const wedges = Number(selectedValue("wedges")) as CircleWedgeCount;
+      const needlesField = needlesInput instanceof HTMLInputElement ? needlesInput : null;
+      const needlesCheck = validateAvailableNeedlesFieldValue(needlesField?.value ?? "");
+      setAvailableNeedlesFieldErrorState(needlesField, !needlesCheck.valid);
+      const result = buildCircleCalculator({
+        construction,
+        direction,
+        wedges,
+        stitches,
+        rows,
+        gaugeSpanInches: unit === "cm" ? 10 / CIRCLE_CM_PER_INCH : 4,
+        diameter,
+        unit,
+        availableNeedles: Number(needlesField?.value),
+      });
+
+      clearValidation();
+      if (!result.ok) {
+        clearGeneratedPattern();
+        validationEl.textContent = result.errors.join(" ");
+        validationEl.hidden = false;
+        return;
+      }
+
+      shown = {
+        input: {
+          construction,
+          direction,
+          wedges,
+          stitches,
+          rows,
+          gaugeSpanInches: unit === "cm" ? 10 / CIRCLE_CM_PER_INCH : 4,
+          diameter,
+          unit,
+          availableNeedles: Number(needlesField?.value),
+        },
+        plan: result.plan,
+      };
+      paint(unit);
+      if (reviewEl) {
+        reviewEl.innerHTML = `<h2>Review notes</h2><ul>${result.reviewNotes
+          .map((note) => `<li>${note.replace(/&/g, "&amp;").replace(/</g, "&lt;")}</li>`)
+          .join("")}</ul>`;
+        reviewEl.hidden = false;
+      }
+      resultsPanel.hidden = false;
+      resultsPanel.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+
+    const videoModal = document.getElementById("circleVideoModal");
+    const videoFrame = document.getElementById("circleVideoFrame");
+    let videoReturnFocus: HTMLElement | null = null;
+
+    function closeCircleVideo(): void {
+      if (!(videoModal instanceof HTMLElement) || !(videoFrame instanceof HTMLIFrameElement)) return;
+      videoModal.hidden = true;
+      videoFrame.removeAttribute("src");
+      videoReturnFocus?.focus();
+      videoReturnFocus = null;
+    }
+
+    function openCircleVideo(trigger: HTMLAnchorElement): void {
+      if (!(videoModal instanceof HTMLElement) || !(videoFrame instanceof HTMLIFrameElement)) return;
+      const contentId = trigger.getAttribute("data-video-id") || "";
+      if (!/^\d+$/.test(contentId)) return;
+      videoReturnFocus = trigger;
+      videoFrame.src = `/pages/videos/modal/${contentId}`;
+      videoModal.hidden = false;
+      videoModal.querySelector<HTMLElement>(".circle-video-modal__close")?.focus();
+    }
+
+    document.addEventListener("click", (event) => {
+      const target = event.target instanceof Element ? event.target : null;
+      const link = target?.closest("a.pattern-video-modal-link");
+      if (link instanceof HTMLAnchorElement && link.closest("#circlePattern")) {
+        event.preventDefault();
+        openCircleVideo(link);
+        return;
+      }
+      if (target?.closest("[data-circle-video-close]")) closeCircleVideo();
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && videoModal instanceof HTMLElement && !videoModal.hidden) closeCircleVideo();
+    });
+  </script>
+</Layout>
