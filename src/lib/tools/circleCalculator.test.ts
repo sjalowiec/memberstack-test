@@ -258,7 +258,7 @@ describe("flat short row", () => {
     );
     expect(result.patternHtml).not.toContain(">Step<");
     expect(result.patternHtml).not.toContain("Row counter after those rows");
-    expect(result.patternHtml).toContain("Knit 2 rows after each return.");
+    expect(result.patternHtml.match(/Knit across, wrap manually, and knit back\./g)).toHaveLength(2);
     const first = result.plan.steps[0]!;
     expect(result.patternHtml).toContain(
       `<td>${first.returnNeedles}</td><td>${first.rowCounterAfter}</td><td>${first.needlesWorking}</td></tr>`,
@@ -293,21 +293,26 @@ describe("flat short row", () => {
     const html = result.patternHtml;
     const text = html.replace(/<[^>]+>/g, "").replace(/\s+/g, " ");
     const order = [
-      "Scrap on 76 stitches with waste yarn. Change to the main yarn.",
-      "Knit 1 row before starting the shaping. After this row, set the row counter to 000.",
-      "Set the carriage to hold. Push all 76 needles to hold position.",
-      "Return 1 needle to work on the side opposite the carriage. This is the first row of the chart.",
-      "Return needles to work in 42 steps. For each chart row, return the listed number of needles to work on the side opposite the carriage. Knit 2 rows after each return.",
+      "Scrap on 76 stitches with waste yarn.",
+      "Change to the main yarn and knit 1 row.",
+      "Set the row counter to 000.",
+      "Set the carriage to hold and push all 76 needles into hold position.",
+      "Return the first group, 1 needle, to work next to the carriage. This is the first row of the chart.",
+      "Knit across, wrap manually, and knit back.",
+      "Return the next group of needles to work beside the needles already working.",
+      "Knit across, wrap manually, and knit back.",
+      "Continue following the chart until all 76 needles are back in work.",
+      "The chart lists the needles to return at each of the 42 steps.",
       "Wrap manually to prevent holes, as shown in the Short-row refresher video.",
       "The last 2 rows are knitted across all 76 stitches. The row counter shows 84.",
-      "For each remaining section, set the row counter to 000, keep the carriage set to hold, push all 76 needles to hold position, and work the chart again. Knit the 1 main-yarn row only once, at the start. Continue until 8 sections are complete.",
+      "For each remaining section, set the row counter to 000, set the carriage to hold, push all 76 needles into hold position, and repeat the short-row sequence. Knit the 1 main-yarn row only once, at the start of the piece. Continue until 8 sections are complete.",
       "After completing all 8 sections, scrap off with waste yarn. Do not bind off the main-yarn stitches.",
       "Graft the starting and finishing live edges together with the Kitchener join to form the circle's single seam. Remove the waste yarn as the live stitches are secured during grafting.",
       "Close the center separately:",
     ];
     let at = -1;
     for (const sentence of order) {
-      const next = text.indexOf(sentence);
+      const next = text.indexOf(sentence, at + 1);
       expect(next, sentence).toBeGreaterThan(at);
       at = next;
     }
@@ -324,7 +329,9 @@ describe("flat short row", () => {
     if (!wide.ok || wide.plan.kind !== "short-row") throw new Error("expected a short-row plan");
     const firstReturn = wide.plan.steps[0]!.returnNeedles;
     expect(firstReturn).toBeGreaterThan(1);
-    expect(wide.patternHtml).toContain(`Return ${firstReturn} needles to work on the side opposite the carriage.`);
+    expect(wide.patternHtml).toContain(`Return the first group, ${firstReturn} needles, to work next to the carriage.`);
+    expect(html).not.toContain("opposite the carriage");
+    expect(html.match(/main-yarn row|knit 1 row/gi)).toHaveLength(2);
     expect(wide.patternHtml).toContain(`<td>${firstReturn}</td><td>2</td>`);
   });
 });
