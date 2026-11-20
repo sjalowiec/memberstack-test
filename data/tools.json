@@ -351,5 +351,17 @@
     "help_text": "Use the Yarn Comparison Calculator to compare yarns based on ball band information.\n\nEnter yardage and weight to calculate yards per pound. This helps you understand how different yarns relate to each other and choose suitable substitutes for machine knitting.",
     "active": true,
     "embeddable": false
+  },
+  {
+    "id": 38,
+    "title": "Circle Calculator",
+    "href": "/tools/circle-calculator",
+    "icon": "circle.svg",
+    "description": "Calculate a flat circle in wedges or one short-row piece.",
+    "membersonly": true,
+    "category": "Shaping and Charting",
+    "help_text": "Enter your gauge and the finished diameter measured between opposite flat edges. Choose 6 or 8 wedges, then increase or decrease separate wedges, or knit one flat short-row piece with a single seam.",
+    "active": true,
+    "embeddable": false
   }
 ]
