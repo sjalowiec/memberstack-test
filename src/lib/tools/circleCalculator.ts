@@ -565,17 +565,26 @@ function shortRowPatternHtml(input: CircleCalculatorInput, plan: CircleShortRowP
     <h3>Work ${plan.wedges} short-row sections</h3>
     <p>${escapeHtml(gauge)}</p>
     <h3>Start</h3>
-    <p><a href="/glossary/scrap-and-ravel-cast-on/" class="glossary-link">Scrap on</a> ${plan.castOn} stitches with waste yarn. Change to the main yarn.</p>
-    <p>Knit ${plan.setupRows} row before starting the shaping. After this row, set the row counter to 000.</p>
-    <p>Set the carriage to hold. Push all ${plan.castOn} needles to hold position.</p>
-    <p>Return ${firstReturnNeedles} to work on the side opposite the carriage. This is the first row of the chart.</p>
-    <h3>Short rows</h3>
-    <p>Return needles to work in ${plan.steps.length} steps. For each chart row, return the listed number of needles to work on the side opposite the carriage. Knit 2 rows after each return.</p>
+    <ol>
+      <li><a href="/glossary/scrap-and-ravel-cast-on/" class="glossary-link">Scrap on</a> ${plan.castOn} stitches with waste yarn.</li>
+      <li>Change to the main yarn and knit ${plan.setupRows} row.</li>
+      <li>Set the row counter to 000.</li>
+      <li>Set the carriage to hold and push all ${plan.castOn} needles into hold position.</li>
+    </ol>
+    <h3>Short-row sequence</h3>
+    <ol>
+      <li>Return the first group, ${firstReturnNeedles}, to work next to the carriage. This is the first row of the chart.</li>
+      <li>Knit across, wrap manually, and knit back.</li>
+      <li>Return the next group of needles to work beside the needles already working.</li>
+      <li>Knit across, wrap manually, and knit back.</li>
+      <li>Continue following the chart until all ${plan.castOn} needles are back in work.</li>
+    </ol>
+    <p>The chart lists the needles to return at each of the ${plan.steps.length} steps.</p>
     <p>Wrap manually to prevent holes, as shown in the Short-row refresher video.</p>
     <p><a href="/videos/811" class="pattern-video-modal-link no-print" data-video-id="811" data-content-id="811"><i class="fa-solid fa-play" aria-hidden="true"></i> Short-row refresher</a></p>
     ${checklist}
     <p>The last 2 rows are knitted across all ${plan.castOn} stitches. The row counter shows ${plan.rowsPerWedge}.</p>
-    <p>For each remaining section, set the row counter to 000, keep the carriage set to hold, push all ${plan.castOn} needles to hold position, and work the chart again. Knit the ${plan.setupRows} main-yarn row only once, at the start. Continue until ${plan.wedges} sections are complete.</p>
+    <p>For each remaining section, set the row counter to 000, set the carriage to hold, push all ${plan.castOn} needles into hold position, and repeat the short-row sequence. Knit the ${plan.setupRows} main-yarn row only once, at the start of the piece. Continue until ${plan.wedges} sections are complete.</p>
     <h3>End</h3>
     <p>After completing all ${plan.wedges} sections, <a href="/glossary/scrap-off/" class="glossary-link">scrap off</a> with waste yarn. Do not bind off the main-yarn stitches.</p>
     <h3>Finishing</h3>
