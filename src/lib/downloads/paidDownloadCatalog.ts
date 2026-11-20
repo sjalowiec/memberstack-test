@@ -91,12 +91,26 @@ export const NEEDLE_SELECTION_PAID_DOWNLOAD: PaidDownloadCatalogEntry = entryFro
   },
 );
 
+/** Bookshelf item 77 / legacy store item 728. Not a shop printable. */
+export const HOOD_EBOOK_SLUG = "add-a-hood-to-any-knitting-pattern";
+
+export const HOOD_EBOOK_PAID_DOWNLOAD: PaidDownloadCatalogEntry = {
+  slug: HOOD_EBOOK_SLUG,
+  title: "Add a Hood to Any Knitting Pattern",
+  downloadUrl: "/downloads/shop/728_HOOD_WORKBOOK.pdf",
+  stripeProductId: "prod_U8maiMA6G6uD16",
+  stripePriceId: "price_1TAV1iCW7QxJHpQOxF855vQY",
+  stripePaymentLinkId: "plink_1TAV9YCW7QxJHpQOXtpKrbGH",
+  paymentLinkUrl: "https://buy.stripe.com/6oU5kC25E1Y76Lk1hU0oM0d",
+};
+
 /** Approved paid-download products recognized by the Stripe webhook. */
 export const PAID_DOWNLOAD_CATALOG: readonly PaidDownloadCatalogEntry[] = [
   CHARTING_RULERS_PAID_DOWNLOAD,
   TECHNIQUE_CARDS_PAID_DOWNLOAD,
   CUT_N_SEW_PAID_DOWNLOAD,
   NEEDLE_SELECTION_PAID_DOWNLOAD,
+  HOOD_EBOOK_PAID_DOWNLOAD,
 ];
 
 const BY_SLUG = new Map(PAID_DOWNLOAD_CATALOG.map((entry) => [entry.slug, entry]));

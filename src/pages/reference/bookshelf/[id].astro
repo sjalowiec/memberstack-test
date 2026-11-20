@@ -23,6 +23,7 @@ if (!resolved) {
 const showRating = hasRating(resolved);
 const ratingRounded = Math.round(resolved.avgRating);
 const findBookHref = bookFindUrl(resolved.url);
+const findBookLabel = resolved.id === "77" ? "Buy the ebook" : "Find this book";
 
 const metaDescription =
   resolved.descriptionText?.slice(0, 155) ||
@@ -95,7 +96,7 @@ const metaDescription =
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                Find this book
+                {findBookLabel}
                 <span aria-hidden="true">↗</span>
               </a>
             )}

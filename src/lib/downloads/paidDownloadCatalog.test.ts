@@ -11,6 +11,7 @@ import {
   getPaidDownloadByStripePaymentLinkId,
   getPaidDownloadByStripePriceId,
   getPaidDownloadByStripeProductId,
+  HOOD_EBOOK_PAID_DOWNLOAD,
   NEEDLE_SELECTION_PAID_DOWNLOAD,
   paidDownloadItemId,
   PAID_DOWNLOAD_CATALOG,
@@ -62,8 +63,9 @@ const EXPECTED = [
 
 describe("paid-download Stripe catalog", () => {
   it("catalogs all four printables from existing product data and supplied Stripe IDs", () => {
-    expect(PAID_DOWNLOAD_CATALOG).toHaveLength(4);
-    expect(PAID_DOWNLOAD_CATALOG).toEqual(EXPECTED.map((row) => row.entry));
+    expect(PAID_DOWNLOAD_CATALOG).toHaveLength(5);
+    expect(PAID_DOWNLOAD_CATALOG.slice(0, 4)).toEqual(EXPECTED.map((row) => row.entry));
+    expect(PAID_DOWNLOAD_CATALOG[4]).toBe(HOOD_EBOOK_PAID_DOWNLOAD);
 
     for (const row of EXPECTED) {
       const product = printable(row.slug);
@@ -106,6 +108,35 @@ describe("paid-download Stripe catalog", () => {
       expect(getPaidDownloadByStripePriceId(row.stripePriceId)).toBe(row.entry);
       expect(getPaidDownloadByStripePaymentLinkId(row.stripePaymentLinkId)).toBe(row.entry);
     }
+  });
+
+  it("recognizes the hood ebook payment link without treating it as a printable", () => {
+    expect(HOOD_EBOOK_PAID_DOWNLOAD).toMatchObject({
+      slug: "add-a-hood-to-any-knitting-pattern",
+      title: "Add a Hood to Any Knitting Pattern",
+      downloadUrl: "/downloads/shop/728_HOOD_WORKBOOK.pdf",
+      stripeProductId: "prod_U8maiMA6G6uD16",
+      stripePriceId: "price_1TAV1iCW7QxJHpQOxF855vQY",
+      stripePaymentLinkId: "plink_1TAV9YCW7QxJHpQOXtpKrbGH",
+      paymentLinkUrl: "https://buy.stripe.com/6oU5kC25E1Y76Lk1hU0oM0d",
+    });
+    expect(printables.some((row) => row.slug === HOOD_EBOOK_PAID_DOWNLOAD.slug)).toBe(false);
+    expect(getPaidDownloadBySlug(HOOD_EBOOK_PAID_DOWNLOAD.slug)).toBe(HOOD_EBOOK_PAID_DOWNLOAD);
+    expect(getPaidDownloadByStripeProductId("prod_U8maiMA6G6uD16")).toBe(
+      HOOD_EBOOK_PAID_DOWNLOAD,
+    );
+    expect(getPaidDownloadByStripePriceId("price_1TAV1iCW7QxJHpQOxF855vQY")).toBe(
+      HOOD_EBOOK_PAID_DOWNLOAD,
+    );
+    expect(getPaidDownloadByStripePaymentLinkId("plink_1TAV9YCW7QxJHpQOXtpKrbGH")).toBe(
+      HOOD_EBOOK_PAID_DOWNLOAD,
+    );
+    expect(
+      matchPaidDownloadCatalogEntry({
+        payment_link: "plink_1TAV9YCW7QxJHpQOXtpKrbGH",
+      })?.downloadUrl,
+    ).toBe("/downloads/shop/728_HOOD_WORKBOOK.pdf");
+    expect(existsSync(resolve("public/downloads/shop/728_HOOD_WORKBOOK.pdf"))).toBe(true);
   });
 
   it("does not match unrelated Stripe IDs or title/amount", () => {
