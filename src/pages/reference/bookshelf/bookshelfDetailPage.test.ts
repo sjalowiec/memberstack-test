@@ -35,6 +35,7 @@ describe("bookshelf detail page", () => {
     expect(pageSource).toContain("About this book");
     expect(pageSource).toContain("book-detail__cover");
     expect(pageSource).toContain("Find this book");
+    expect(pageSource).toContain('resolved.id === "77" ? "Buy the ebook" : "Find this book"');
     expect(pageSource).toContain("bookFindUrl");
     expect(pageSource).toContain("findBookHref");
     expect(pageSource).toContain("{findBookHref && (");
@@ -70,10 +71,17 @@ describe("bookshelf detail page", () => {
     expect(getBookById("42")?.url).toBe(amazon);
     expect(bookFindUrl(getBookById("42")?.url)).toBe(amazon);
 
-    const store =
-      "https://www.knititnow.com/store/product/728/add-a-hood-to-any-knitting-pattern/digitialdownload";
-    expect(getBookById("77")?.url).toBe(store);
-    expect(bookFindUrl(getBookById("77")?.url)).toBe(store);
+    const hoodCheckout = "https://buy.stripe.com/6oU5kC25E1Y76Lk1hU0oM0d";
+    const hood = getBookById("77");
+    expect(hood?.title).toContain("Add a Hood to ANY Knitting Pattern");
+    expect(hood?.description).toContain("8 hood styles");
+    expect(hood?.description).not.toContain("buy.stripe.com");
+    expect(hood?.description).not.toContain("/store/product/728/");
+    expect(hood?.url).toBe(hoodCheckout);
+    expect(bookFindUrl(hood?.url)).toBe(hoodCheckout);
+    expect(
+      getAllBooks().filter((book) => book.url === hoodCheckout).map((book) => book.id),
+    ).toEqual(["77"]);
 
     for (const book of getAllBooks()) {
       if (!book.url) {
@@ -144,5 +152,27 @@ describe("bookshelf detail page", () => {
       entry.description?.includes(deliveryNote),
     );
     expect(booksWithDeliveryNote.map((b) => b.id)).toEqual(["126"]);
+  });
+
+  it("sends the broken hood product URL to the bookshelf page", () => {
+    const redirectSource = readFileSync(
+      join(
+        pageDir,
+        "../../store/product/728/add-a-hood-to-any-knitting-pattern/digitialdownload.astro",
+      ),
+      "utf8",
+    );
+    expect(redirectSource).toContain("Astro.redirect(`/reference/bookshelf/77/${Astro.url.search}`, 301)");
+    expect(redirectSource).not.toContain("buy.stripe.com");
+  });
+
+  it("sends the hood Stripe success URL to the existing ebook download page", () => {
+    const thankYouSource = readFileSync(
+      join(pageDir, "../../thank-you-book.astro"),
+      "utf8",
+    );
+    expect(thankYouSource).toContain(
+      'Astro.redirect("/shop/thank-you-book?book=hoods", 302)',
+    );
   });
 });
