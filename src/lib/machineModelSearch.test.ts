@@ -31,6 +31,14 @@ describe("machine model search", () => {
     expect(collapseMachineModels("in 2024")).toBe("in 2024");
     expect(collapseMachineModels("fair-isle")).toBe("fair-isle");
     expect(collapseMachineModels("SK150 and LK150")).toBe("SK150 and LK150");
+    expect(collapseMachineModels("Passap E 6000")).toBe("Passap E6000");
+    expect(collapseMachineModels("E-6000")).toBe("E6000");
+    expect(collapseMachineModels("KH 950i")).toBe("KH950i");
+    expect(collapseMachineModels("KH-950i")).toBe("KH950i");
+    expect(collapseMachineModels("KH 950")).toBe("KH950");
+    expect(collapseMachineModels("F 370")).toBe("F370");
+    expect(collapseMachineModels("S 9")).toBe("S 9");
+    expect(collapseMachineModels("SRP 60N")).toBe("SRP60N");
   });
 
   it("adds a joined spelling only where a space would split the model", () => {
@@ -40,6 +48,18 @@ describe("machine model search", () => {
     expect(addMachineModelSearchAliases("<p>bind-off row 40</p>")).toBe("<p>bind-off row 40</p>");
     expect(addMachineModelSearchAliases("<p>SK 150</p>")).toContain("data-machine-model-alias=\"SK150\"> SK150");
     expect(addMachineModelSearchAliases("<p>SK 150</p>")).not.toContain("LK150");
+    expect(addMachineModelSearchAliases("<p>Passap E 6000</p>")).toContain(
+      'data-machine-model-alias="E6000"> E6000',
+    );
+    expect(addMachineModelSearchAliases("<p>E-6000</p>")).toBe("<p>E-6000</p>");
+    expect(addMachineModelSearchAliases("<p>KH 950i</p>")).toContain(
+      'data-machine-model-alias="KH950i"> KH950i',
+    );
+    expect(addMachineModelSearchAliases("<p>KH 950</p>")).toContain(
+      'data-machine-model-alias="KH950"> KH950',
+    );
+    expect(addMachineModelSearchAliases("<p>KH 950</p>")).not.toContain("KH950i");
+    expect(addMachineModelSearchAliases("<p>S 9</p>")).toBe("<p>S 9</p>");
 
     const spaced = addMachineModelSearchAliases("<p>LK&nbsp;150</p>");
     expect(spaced).toContain(alias);

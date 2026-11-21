@@ -7,12 +7,14 @@
  *
  * To extend the list, append another group. Hyphen and space are the same
  * phrase ("bind-off" and "bind off"). A joined spelling such as "bindoff"
- * is different and needs its own entry in the group.
+ * is different and needs its own entry in the group. Pagefind stores the
+ * hyphenated phrase as that joined word, so the joined entry is what lets a
+ * spaced search find it.
  *
  * Machine model names are separate: LK150, LK-150, and LK 150 are the same
  * model, while LK150 and SK150 stay different. See machineModelSearch.ts.
  */
-import { collapseMachineModels, isWholeMachineModel } from "./machineModelSearch";
+import { collapseMachineModels, shieldMachineModels } from "./machineModelSearch";
 
 export const SEARCH_SYNONYM_GROUPS: readonly (readonly string[])[] = [
   [
@@ -25,6 +27,9 @@ export const SEARCH_SYNONYM_GROUPS: readonly (readonly string[])[] = [
     "cast-off",
     "castoff",
   ],
+  ["short row", "short-row", "shortrow"],
+  ["short rows", "short-rows", "shortrows"],
+  ["cast on", "cast-on", "caston"],
 ];
 
 const DASHES = /[\u2010\u2011\u2012\u2013\u2014\u2015-]/g;
@@ -124,12 +129,9 @@ function searchQuery(value: string): string {
 }
 
 function matchesCollapsedText(haystack: string, query: string): boolean {
-  const hay = collapseMachineModels(haystack.toLowerCase());
-  const needle = collapseMachineModels(query.toLowerCase());
+  const needle = shieldMachineModels(query.toLowerCase());
   if (!needle) return false;
-  if (!isWholeMachineModel(needle)) return hay.includes(needle);
-  const model = new RegExp(`(?<![\\p{L}\\p{N}])${escapeRegExp(needle)}(?![\\p{L}\\p{N}])`, "u");
-  return model.test(hay);
+  return shieldMachineModels(haystack.toLowerCase()).includes(needle);
 }
 
 /**
@@ -182,9 +184,9 @@ export function rankSearchText(haystack: string, query: string): 0 | 1 | 2 {
   const hay = String(haystack ?? "");
   if (!span) return matchesCollapsedText(hay, trimmed) ? 2 : 0;
 
-  const normalizedHay = collapseMachineModels(normalizeSearchText(hay));
-  const before = collapseMachineModels(normalizeSearchText(collapsed.slice(0, span.start)));
-  const after = collapseMachineModels(normalizeSearchText(collapsed.slice(span.end)));
+  const normalizedHay = shieldMachineModels(normalizeSearchText(hay));
+  const before = shieldMachineModels(normalizeSearchText(collapsed.slice(0, span.start)));
+  const after = shieldMachineModels(normalizeSearchText(collapsed.slice(span.end)));
   if (before && !normalizedHay.includes(before)) return 0;
   if (after && !normalizedHay.includes(after)) return 0;
   if (normalizedHay.includes(span.normalized)) return 2;

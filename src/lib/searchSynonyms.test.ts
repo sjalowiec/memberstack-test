@@ -24,7 +24,33 @@ describe("search synonym groups", () => {
         "cast-off",
         "castoff",
       ],
+      ["short row", "short-row", "shortrow"],
+      ["short rows", "short-rows", "shortrows"],
+      ["cast on", "cast-on", "caston"],
     ]);
+  });
+
+  it("treats short-row and cast-on hyphen and space as the same phrase", () => {
+    const shortRow = "Use a short-row shoulder, or a short row on the other side.";
+    const shortRows = "Practice short rows before the short-rows lesson.";
+    const castOn = "The e-wrap cast-on is one cast on method.";
+    for (const query of ["short-row", "short row"]) {
+      expect(rankSearchText(shortRow, query)).toBe(2);
+      expect(rankSearchText("Bind off the neck.", query)).toBe(0);
+    }
+    for (const query of ["short-rows", "short rows"]) {
+      expect(rankSearchText(shortRows, query)).toBe(2);
+    }
+    for (const query of ["cast-on", "cast on"]) {
+      expect(rankSearchText(castOn, query)).toBe(2);
+      expect(rankSearchText("Bind off only.", query)).toBe(0);
+    }
+    expect(rankSearchText("fair isle punchcard", "fair-isle")).toBe(0);
+    expect(buildSearchQueryPlan("short-row").exact).toEqual(["short-row", "short row"]);
+    expect(buildSearchQueryPlan("short-row").synonym).toContain("shortrow");
+    expect(buildSearchQueryPlan("cast on").exact).toEqual(["cast on"]);
+    expect(buildSearchQueryPlan("cast on").synonym).toEqual(["caston"]);
+    expect(buildSearchQueryPlan("tension")).toEqual({ exact: ["tension"], synonym: [] });
   });
 
   it("finds the other forms for cast off, casting off, and bind-off", () => {
@@ -76,7 +102,16 @@ describe("search synonym groups", () => {
     expect(rankSearchText("The LK manual shows 150 needles.", "LK150")).toBe(0);
     expect(rankSearchText("The LK manual shows 150 needles.", "LK 150")).toBe(0);
     expect(rankSearchText("LK1500", "LK150")).toBe(0);
+    expect(rankSearchText("The LK150 sponge bar", "LK1500")).toBe(0);
+    expect(rankSearchText("Brother KH950i", "KH950")).toBe(0);
+    expect(rankSearchText("Brother KH950", "KH950i")).toBe(0);
+    expect(rankSearchText("Brother KH 950i", "KH-950i")).toBe(2);
+    expect(rankSearchText("Passap E 6000", "E-6000")).toBe(2);
+    expect(rankSearchText("The E6000 Reference Book", "E 6000")).toBe(2);
+    expect(rankSearchText("Studio F370", "F 370")).toBe(2);
+    expect(rankSearchText("S 9 needles", "S9")).toBe(0);
     expect(rankSearchText("Cast off on the LK150.", "cast off on the LK-150")).toBe(2);
+    expect(rankSearchText("Cast off on the LK1500.", "cast off on the LK-150")).toBe(0);
     expect(rankSearchText("Bind off on the LK 150.", "cast off on the LK-150")).toBe(1);
     expect(buildSearchQueryPlan("LK-150").exact).toEqual(["LK150"]);
     expect(buildSearchQueryPlan("LK 150").exact).toEqual(["LK150"]);
