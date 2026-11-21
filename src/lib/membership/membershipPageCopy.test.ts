@@ -24,6 +24,27 @@ describe("membership page copy", () => {
     );
   });
 
+  it("opens on annual billing and keeps both checkout prices", () => {
+    const monthlyInput =
+      pricingCard.match(/<input\b[\s\S]*?id="membership-billing-monthly"[\s\S]*?>/)?.[0] ?? "";
+    const annualInput =
+      pricingCard.match(/<input\b[\s\S]*?id="membership-billing-annual"[\s\S]*?>/)?.[0] ?? "";
+    expect(annualInput).toContain("checked");
+    expect(monthlyInput).not.toContain("checked");
+    expect(pricingCard).toContain("Equivalent to $");
+    expect(pricingCard).toContain("/month, billed annually");
+    expect(pricingCard).toContain("/year compared with monthly");
+    expect(pricingCard).toContain("/year with annual membership.");
+    expect(pricingCard).toContain("View annual option");
+    expect(pricingCard).toContain("data-membership-view-annual");
+    expect(pricingCard).toContain('data-join-checkout="monthly"');
+    expect(pricingCard).toContain('data-join-checkout="annual"');
+    expect(pricingCard).toContain("data-membership-price-id={MEMBERSHIP_PRICE_IDS.monthly}");
+    expect(pricingCard).toContain("data-membership-price-id={MEMBERSHIP_PRICE_IDS.annual}");
+    expect(pricingCard).toContain("MEMBERSHIPS.membership.prices.monthly.price");
+    expect(pricingCard).toContain("MEMBERSHIPS.membership.prices.annual.price");
+  });
+
   it("keeps the Pattern Builders FAQ question and uses the approved answer", () => {
     expect(membershipPage).toContain(
       "<summary>Do I keep access to the pattern builders?</summary>",
