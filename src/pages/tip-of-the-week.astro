@@ -23,7 +23,8 @@ import {
 import type { SavedContentMeta } from "../lib/favorites/savedContentCatalog";
 import { isWatsonSessionAuthenticated } from "../lib/watson/watsonAuth";
 import {
-  billboardMessageHasText,
+  billboardCopyHasRichMarkup,
+  billboardMessageHasContent,
   billboardMessagePlainText,
   sanitizeBillboardHtml,
 } from "../lib/whatsNew/sanitizeBillboardHtml";
@@ -59,17 +60,14 @@ const relatedLinks = featured?.relatedLinks ?? [];
 const availableThroughDisplay = featured?.availableThroughDisplay ?? "";
 const availabilityFooter = featured?.availabilityFooter ?? "";
 const tryCopyHtml = tip ? sanitizeBillboardHtml(tip.tryCopy) : "";
-const hasTryCopy = billboardMessageHasText(tryCopyHtml);
+const hasTryCopy = billboardMessageHasContent(tryCopyHtml);
 const sueTipHtml = tip ? sanitizeBillboardHtml(tip.sueTipCopy) : "";
-const hasSueTipCopy = billboardMessageHasText(sueTipHtml);
+const hasSueTipCopy = billboardMessageHasContent(sueTipHtml);
 const sueTipPlain = billboardMessagePlainText(sueTipHtml);
 const introHtml = tip ? sanitizeBillboardHtml(tip.intro) : "";
 const introPlain = billboardMessagePlainText(introHtml);
-const totwCopyHasRichMarkup = (html: string) =>
-  /<(?:strong|em|ul|ol|li|a|br)\b/i.test(html) ||
-  (html.match(/<p\b/gi) || []).length > 1;
-const introHasRichMarkup = totwCopyHasRichMarkup(introHtml);
-const sueHasRichMarkup = totwCopyHasRichMarkup(sueTipHtml);
+const introHasRichMarkup = billboardCopyHasRichMarkup(introHtml);
+const sueHasRichMarkup = billboardCopyHasRichMarkup(sueTipHtml);
 const pageTitle = tip?.title ?? "Tip of the Week";
 const pageDescription =
   introPlain ||
@@ -176,7 +174,7 @@ if (!isPreview) {
               </h2>
               <ul class="totw-learn-list">
                 {tip.learnPoints.map((point) => (
-                  <li>{point}</li>
+                  <li set:html={sanitizeBillboardHtml(point)} />
                 ))}
               </ul>
             </div>
@@ -530,6 +528,23 @@ if (!isPreview) {
     text-underline-offset: 2px;
   }
 
+  .totw-lede :global(img),
+  .totw-section__copy :global(img),
+  .totw-sue__copy :global(img),
+  .totw-learn-list :global(img) {
+    display: block;
+    max-width: 100%;
+    height: auto;
+  }
+
+  .totw-lede :global(img.center),
+  .totw-section__copy :global(img.center),
+  .totw-sue__copy :global(img.center),
+  .totw-learn-list :global(img.center) {
+    margin-left: auto;
+    margin-right: auto;
+  }
+
   .totw-video {
     margin: 0 0 0.25rem;
     max-width: 860px;
@@ -711,6 +726,16 @@ if (!isPreview) {
 
   .totw-learn-list li:last-child {
     margin-bottom: 0;
+  }
+
+  .totw-learn-list li :global(p) {
+    margin: 0;
+  }
+
+  .totw-learn-list li :global(ul),
+  .totw-learn-list li :global(ol) {
+    margin: 0.35rem 0;
+    padding-left: 1.2rem;
   }
 
   @media (max-width: 640px) {

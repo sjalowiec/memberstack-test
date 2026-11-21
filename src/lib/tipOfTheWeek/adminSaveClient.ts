@@ -2,7 +2,10 @@
  * Tip of the Week admin save helpers (browser + tests).
  * Keeps Save from failing silently when HTML5 validation or non-JSON errors occur.
  */
-import { sanitizeBillboardHtml } from "../whatsNew/sanitizeBillboardHtml";
+import {
+  billboardMessageHasContent,
+  sanitizeBillboardHtml,
+} from "../whatsNew/sanitizeBillboardHtml";
 
 export const TIP_ADMIN_FLASH_KEY = "watson-totw-flash";
 
@@ -26,7 +29,7 @@ export function htmlLooksEmpty(raw: unknown): boolean {
   if (raw == null) return true;
   if (typeof raw !== "string") return true;
   const html = sanitizeBillboardHtml(raw);
-  return !html;
+  return !billboardMessageHasContent(html);
 }
 
 export function clientTipAdminFieldErrors(

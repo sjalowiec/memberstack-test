@@ -23,7 +23,8 @@ export const TIP_INTRO_MAX = 1200;
 export const TIP_INTRO_GLOSSARY_SLUG_MAX = 80;
 export const TIP_COPY_MAX = 2000;
 export const TIP_ID_MAX = 80;
-export const TIP_LEARN_POINT_MAX = 240;
+/** Room for a formatted point, including one site image. Plain points stay short. */
+export const TIP_LEARN_POINT_MAX = 2000;
 export const TIP_LEARN_POINTS_MAX = 12;
 export const TIP_RELATED_LINKS_MAX = 8;
 export const TIP_RELATED_LABEL_MAX = 120;

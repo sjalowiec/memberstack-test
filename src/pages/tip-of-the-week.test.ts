@@ -79,7 +79,10 @@ describe("Tip of the Week page route", () => {
 
   it("renders sanitized Try It, Intro, and Sue’s Tip HTML safely", () => {
     expect(pageSource).toContain("sanitizeBillboardHtml");
-    expect(pageSource).toContain("billboardMessageHasText");
+    expect(pageSource).toContain("billboardMessageHasContent");
+    expect(pageSource).toContain("billboardCopyHasRichMarkup");
+    expect(pageSource).toContain("set:html={sanitizeBillboardHtml(point)}");
+    expect(pageSource).toContain("max-width: 100%");
     expect(pageSource).toContain("set:html={tryCopyHtml}");
     expect(pageSource).toContain("set:html={introHtml}");
     expect(pageSource).toContain("set:html={sueTipHtml}");
@@ -231,7 +234,10 @@ describe("Tip of the Week page route", () => {
     expect(pageSource).toContain('searchParams.get("preview")');
     expect(pageSource).toContain("totw-preview-banner");
     expect(pageSource).toContain("Watson preview");
-    expect(watsonPage).toContain("/tip-of-the-week?preview=");
+    expect(watsonPage).toContain("renderTipAdminBoardHtml");
+    expect(
+      readFileSync(join(pageDir, "../lib/tipOfTheWeek/adminList.ts"), "utf8"),
+    ).toContain("/tip-of-the-week?preview=");
   });
 
   it("wires accessible video trigger props when a catalog video is found", () => {
