@@ -17,8 +17,9 @@ import {
 } from "./videoCatalogSave";
 import { loadMergedVideoCatalog, saveVideoCatalogEdits, videoCatalogDatabaseEnabled } from "./videoCatalogStore";
 import { videoContentIdKey } from "./videoPosterOverrides";
+import { loadStoredGeneratedTranscriptTexts, saveGeneratedTranscriptDocuments, transcriptStorageErrorMessage } from "./videoTranscriptStore";
 
-/** Catalog and generated transcript JSON stay in the database. Transcript files can still be committed. */
+/** Catalog and generated transcript JSON are stored in the database. Transcript files can still be committed. */
 export function changesKeptForRepo(changes: readonly VideoRepoChange[], database: boolean): VideoRepoChange[] {
   if (!database) return [...changes];
   return changes.filter((change) => {
@@ -38,7 +39,21 @@ function catalogTextFromChanges(changes: readonly VideoRepoChange[]): string | n
 async function planningSnapshot(snapshot: VideoCatalogSnapshot): Promise<VideoCatalogSnapshot> {
   if (!videoCatalogDatabaseEnabled()) return snapshot;
   const merged = await loadMergedVideoCatalog();
-  return { ...snapshot, catalogRaw: `${JSON.stringify(merged, null, 2)}\n` };
+  let stored: Partial<Record<"public" | "member" | "audit", string>>;
+  try {
+    stored = await loadStoredGeneratedTranscriptTexts();
+  } catch (error) {
+    throw new Error(transcriptStorageErrorMessage(error, "The saved transcript could not be read. Nothing was saved."));
+  }
+  return {
+    ...snapshot,
+    catalogRaw: `${JSON.stringify(merged, null, 2)}\n`,
+    generated: {
+      public: stored.public ?? snapshot.generated.public,
+      member: stored.member ?? snapshot.generated.member,
+      audit: stored.audit ?? snapshot.generated.audit,
+    },
+  };
 }
 
 async function commitPlannedChanges(
@@ -48,7 +63,19 @@ async function commitPlannedChanges(
   message: string,
 ): Promise<VideoCatalogCommitResult> {
   const database = videoCatalogDatabaseEnabled();
-  const catalogText = database ? catalogTextFromChanges(changes) : null;
+  if (!database) return repo.commit(snapshot, changes, message);
+
+  // Store the transcript before the catalog row. A failed upload must not
+  // report success, and it must not publish a video whose transcript was dropped.
+  const fileChanges = changesKeptForRepo(changes, true);
+  await saveGeneratedTranscriptDocuments(changes);
+  let commit: VideoCatalogCommitResult = { persistedVia: "database" };
+  if (fileChanges.length > 0) {
+    const stored = await repo.commit(snapshot, fileChanges, message);
+    commit = { ...stored, persistedVia: "database" };
+  }
+
+  const catalogText = catalogTextFromChanges(changes);
   if (catalogText) {
     let next: unknown;
     try {
@@ -59,10 +86,6 @@ async function commitPlannedChanges(
     if (!Array.isArray(next)) throw new VideoSaveError("The video catalog could not be saved. Nothing was saved.");
     await saveVideoCatalogEdits(next as Record<string, unknown>[]);
   }
-  const fileChanges = changesKeptForRepo(changes, database);
-  if (database && catalogText && fileChanges.length === 0) return { persistedVia: "database" };
-  const commit = await repo.commit(snapshot, database && catalogText ? fileChanges : changes, message);
-  if (database && catalogText) return { ...commit, persistedVia: "database" };
   return commit;
 }
 
