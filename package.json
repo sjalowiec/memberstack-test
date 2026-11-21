@@ -7,7 +7,7 @@
     "prebuild": "node scripts/write-legacy-renewal-live-flag.mjs && node scripts/generate-public-manifests.mjs && vite-node scripts/generate-catalog-transcripts.ts --check",
     "transcripts:generate": "vite-node scripts/generate-catalog-transcripts.ts",
     "transcripts:check": "vite-node scripts/generate-catalog-transcripts.ts --check",
-    "build": "astro build && pagefind --site dist",
+    "build": "astro build && vite-node src/lib/addMachineModelSearchAliases.ts && pagefind --site dist",
     "preview": "astro preview",
     "astro": "astro",
     "prepare:transition-site": "node scripts/prepare-transition-site.mjs",

@@ -56,6 +56,37 @@ describe("search synonym groups", () => {
     expect(rankSearchText("Cast on with a latch tool.", "cast")).toBe(2);
   });
 
+  it("treats LK150, LK-150, and LK 150 as the same model", () => {
+    const pages = [
+      "LK150 Quick Start",
+      "LK-150 Fun",
+      "The LK 150 sponge bar",
+      "En dash LK\u2013150",
+      "Spaced hyphen LK - 150",
+    ];
+    const queries = ["LK150", "LK-150", "LK 150", "lk-150"];
+    for (const query of queries) {
+      expect(pages.map((page) => rankSearchText(page, query))).toEqual([2, 2, 2, 2, 2]);
+    }
+    expect(rankSearchText("The SK150 is a different machine.", "LK150")).toBe(0);
+    expect(rankSearchText("The SK-150 is a different machine.", "LK 150")).toBe(0);
+    expect(rankSearchText("SK150 patterning", "SK-150")).toBe(2);
+    expect(rankSearchText("KH930 and KH-940", "KH 930")).toBe(2);
+    expect(rankSearchText("KH930 and KH-940", "KH940")).toBe(2);
+    expect(rankSearchText("The LK manual shows 150 needles.", "LK150")).toBe(0);
+    expect(rankSearchText("The LK manual shows 150 needles.", "LK 150")).toBe(0);
+    expect(rankSearchText("LK1500", "LK150")).toBe(0);
+    expect(rankSearchText("Cast off on the LK150.", "cast off on the LK-150")).toBe(2);
+    expect(rankSearchText("Bind off on the LK 150.", "cast off on the LK-150")).toBe(1);
+    expect(buildSearchQueryPlan("LK-150").exact).toEqual(["LK150"]);
+    expect(buildSearchQueryPlan("LK 150").exact).toEqual(["LK150"]);
+    expect(buildSearchQueryPlan("lk 150").exact).toEqual(["lk150"]);
+    expect(buildSearchQueryPlan("LK150 quick start").exact).toEqual(["LK150 quick start"]);
+    const withSynonym = buildSearchQueryPlan("cast off on the LK 150");
+    expect(withSynonym.exact[0]).toBe("cast off on the LK150");
+    expect(withSynonym.synonym).toContain("bind off on the LK150");
+  });
+
   it("builds pagefind queries that keep the extra words", () => {
     const plan = buildSearchQueryPlan("latch tool cast off");
     expect(plan.exact).toEqual(["latch tool cast off"]);
