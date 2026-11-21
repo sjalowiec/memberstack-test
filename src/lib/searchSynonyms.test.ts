@@ -24,7 +24,33 @@ describe("search synonym groups", () => {
         "cast-off",
         "castoff",
       ],
+      ["short row", "short-row", "shortrow"],
+      ["short rows", "short-rows", "shortrows"],
+      ["cast on", "cast-on", "caston"],
     ]);
+  });
+
+  it("treats short-row and cast-on hyphen and space as the same phrase", () => {
+    const shortRow = "Use a short-row shoulder, or a short row on the other side.";
+    const shortRows = "Practice short rows before the short-rows lesson.";
+    const castOn = "The e-wrap cast-on is one cast on method.";
+    for (const query of ["short-row", "short row"]) {
+      expect(rankSearchText(shortRow, query)).toBe(2);
+      expect(rankSearchText("Bind off the neck.", query)).toBe(0);
+    }
+    for (const query of ["short-rows", "short rows"]) {
+      expect(rankSearchText(shortRows, query)).toBe(2);
+    }
+    for (const query of ["cast-on", "cast on"]) {
+      expect(rankSearchText(castOn, query)).toBe(2);
+      expect(rankSearchText("Bind off only.", query)).toBe(0);
+    }
+    expect(rankSearchText("fair isle punchcard", "fair-isle")).toBe(0);
+    expect(buildSearchQueryPlan("short-row").exact).toEqual(["short-row", "short row"]);
+    expect(buildSearchQueryPlan("short-row").synonym).toContain("shortrow");
+    expect(buildSearchQueryPlan("cast on").exact).toEqual(["cast on"]);
+    expect(buildSearchQueryPlan("cast on").synonym).toEqual(["caston"]);
+    expect(buildSearchQueryPlan("tension")).toEqual({ exact: ["tension"], synonym: [] });
   });
 
   it("finds the other forms for cast off, casting off, and bind-off", () => {
@@ -54,6 +80,46 @@ describe("search synonym groups", () => {
     expect(rankSearchText("fair isle punchcard", "fair  isle")).toBe(0);
     expect(rankSearchText(bindOffArticle, "cast")).toBe(0);
     expect(rankSearchText("Cast on with a latch tool.", "cast")).toBe(2);
+  });
+
+  it("treats LK150, LK-150, and LK 150 as the same model", () => {
+    const pages = [
+      "LK150 Quick Start",
+      "LK-150 Fun",
+      "The LK 150 sponge bar",
+      "En dash LK\u2013150",
+      "Spaced hyphen LK - 150",
+    ];
+    const queries = ["LK150", "LK-150", "LK 150", "lk-150"];
+    for (const query of queries) {
+      expect(pages.map((page) => rankSearchText(page, query))).toEqual([2, 2, 2, 2, 2]);
+    }
+    expect(rankSearchText("The SK150 is a different machine.", "LK150")).toBe(0);
+    expect(rankSearchText("The SK-150 is a different machine.", "LK 150")).toBe(0);
+    expect(rankSearchText("SK150 patterning", "SK-150")).toBe(2);
+    expect(rankSearchText("KH930 and KH-940", "KH 930")).toBe(2);
+    expect(rankSearchText("KH930 and KH-940", "KH940")).toBe(2);
+    expect(rankSearchText("The LK manual shows 150 needles.", "LK150")).toBe(0);
+    expect(rankSearchText("The LK manual shows 150 needles.", "LK 150")).toBe(0);
+    expect(rankSearchText("LK1500", "LK150")).toBe(0);
+    expect(rankSearchText("The LK150 sponge bar", "LK1500")).toBe(0);
+    expect(rankSearchText("Brother KH950i", "KH950")).toBe(0);
+    expect(rankSearchText("Brother KH950", "KH950i")).toBe(0);
+    expect(rankSearchText("Brother KH 950i", "KH-950i")).toBe(2);
+    expect(rankSearchText("Passap E 6000", "E-6000")).toBe(2);
+    expect(rankSearchText("The E6000 Reference Book", "E 6000")).toBe(2);
+    expect(rankSearchText("Studio F370", "F 370")).toBe(2);
+    expect(rankSearchText("S 9 needles", "S9")).toBe(0);
+    expect(rankSearchText("Cast off on the LK150.", "cast off on the LK-150")).toBe(2);
+    expect(rankSearchText("Cast off on the LK1500.", "cast off on the LK-150")).toBe(0);
+    expect(rankSearchText("Bind off on the LK 150.", "cast off on the LK-150")).toBe(1);
+    expect(buildSearchQueryPlan("LK-150").exact).toEqual(["LK150"]);
+    expect(buildSearchQueryPlan("LK 150").exact).toEqual(["LK150"]);
+    expect(buildSearchQueryPlan("lk 150").exact).toEqual(["lk150"]);
+    expect(buildSearchQueryPlan("LK150 quick start").exact).toEqual(["LK150 quick start"]);
+    const withSynonym = buildSearchQueryPlan("cast off on the LK 150");
+    expect(withSynonym.exact[0]).toBe("cast off on the LK150");
+    expect(withSynonym.synonym).toContain("bind off on the LK150");
   });
 
   it("builds pagefind queries that keep the extra words", () => {
