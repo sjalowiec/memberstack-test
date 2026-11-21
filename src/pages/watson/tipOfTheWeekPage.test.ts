@@ -3,6 +3,10 @@ import { describe, expect, it } from "vitest";
 
 describe("Watson Tip of the Week page", () => {
   const page = readFileSync("src/pages/watson/tip-of-the-week.astro", "utf8");
+  const editorHtml = readFileSync("src/lib/tipOfTheWeek/richTextFieldHtml.ts", "utf8");
+  const imageScript = readFileSync("src/scripts/watsonTipTryItRichText.ts", "utf8");
+  const sharedEditor = readFileSync("src/scripts/watsonRichTextEditor.ts", "utf8");
+  const helpHubEditor = readFileSync("src/lib/helpHub/adminEditorFormClient.ts", "utf8");
   const script = readFileSync("src/scripts/watsonTipOfTheWeek.ts", "utf8");
   const shell = readFileSync("src/components/watson/WatsonPageShell.astro", "utf8");
   const apiIndex = readFileSync(
@@ -140,31 +144,50 @@ describe("Watson Tip of the Week page", () => {
     expect(script).not.toContain("glossaryhelp");
   });
 
-  it("uses the billboard-style rich-text editor for Intro, Try It, and Sue’s Tip", () => {
+  it("uses the billboard-style rich-text editor for Intro, Try It, Sue’s Tip, and learning points", () => {
     expect(page).toContain("data-totw-intro-rte");
     expect(page).toContain("data-totw-try-rte");
     expect(page).toContain("data-totw-sue-rte");
-    expect(page).toContain('data-wn-rte-cmd="bold"');
-    expect(page).toContain('data-wn-rte-cmd="italic"');
-    expect(page).toContain('data-wn-rte-cmd="paragraph"');
-    expect(page).toContain('data-wn-rte-cmd="ul"');
-    expect(page).toContain('data-wn-rte-cmd="ol"');
-    expect(page).toContain('data-wn-rte-cmd="link"');
-    expect(page).toContain('name="intro"');
-    expect(page).toContain('name="tryCopy"');
-    expect(page).toContain('name="sueTipCopy"');
-    expect(page).toMatch(/name="intro"[^>]*hidden|hidden[^>]*name="intro"/);
-    expect(page).toMatch(/name="tryCopy"[^>]*hidden|hidden[^>]*name="tryCopy"/);
-    expect(page).toMatch(/name="sueTipCopy"[^>]*hidden|hidden[^>]*name="sueTipCopy"/);
+    expect(page).toContain('fieldName: "intro"');
+    expect(page).toContain('fieldName: "tryCopy"');
+    expect(page).toContain('fieldName: "sueTipCopy"');
+    expect(page).toContain("data-totw-image-dialog");
+    expect(page).toContain("data-totw-image-src");
+    expect(page).toContain("data-totw-image-alt");
+    expect(page).toContain("data-totw-image-width");
+    expect(page).toContain("data-totw-image-center");
+    expect(page).toContain("Choose image");
+    expect(editorHtml).toContain('data-wn-rte-cmd="bold"');
+    expect(editorHtml).toContain('data-wn-rte-cmd="italic"');
+    expect(editorHtml).toContain('data-wn-rte-cmd="paragraph"');
+    expect(editorHtml).toContain('data-wn-rte-cmd="ul"');
+    expect(editorHtml).toContain('data-wn-rte-cmd="ol"');
+    expect(editorHtml).toContain('data-wn-rte-cmd="link"');
+    expect(editorHtml).toContain('data-wn-rte-mode="visual"');
+    expect(editorHtml).toContain('data-wn-rte-mode="html"');
+    expect(editorHtml).toContain("Edit HTML");
+    expect(editorHtml).toContain("Insert image");
+    expect(editorHtml).toContain('name="${options.fieldName}"');
     expect(page).not.toMatch(/<textarea name="intro"[^>]*rows=/);
     expect(page).not.toMatch(/<textarea name="tryCopy"[^>]*rows=/);
     expect(page).not.toMatch(/<textarea name="sueTipCopy"[^>]*rows=/);
     expect(script).toContain("initWatsonTipTryItRichText");
+    expect(script).toContain("initWatsonTipImageInsert");
+    expect(script).toContain("data-learn-row");
+    expect(script).toContain("normalizeTipLearnPoint");
     expect(script).toContain("setTryCopy");
     expect(script).toContain("syncTryCopy");
     expect(script).toContain("setRteCopy");
     expect(script).toContain("syncAllRteCopy");
-    expect(script).toContain("sanitizeBillboardHtml");
+    expect(script).toContain("sanitizeTipSectionHtml");
+    expect(imageScript).toContain("labeledHtmlToggle: true");
+    expect(imageScript).not.toContain("preserveUntilEdit");
+    expect(imageScript).toContain("billboardImageTag");
+    expect(imageScript).toContain('"/api/admin/help-hub/images"');
+    expect(sharedEditor).toContain("preserveUntilEdit");
+    expect(sharedEditor).toContain("labeledHtmlToggle");
+    expect(helpHubEditor).toContain("preserveUntilEdit: true");
+    expect(helpHubEditor).toContain("labeledHtmlToggle: true");
   });
 
   it("lets Watson set an optional CTA text and URL", () => {

@@ -108,6 +108,41 @@ describe("validateTipOfTheWeekInput", () => {
     }
   });
 
+  it("keeps plain learning points as bullets and stores formatted points as safe HTML", () => {
+    const result = validateTipOfTheWeekInput({
+      ...base,
+      intro: "Hello&nbsp;there",
+      tryCopy: "<p>Knit&nbsp;a swatch.</p>",
+      learnPoints: [
+        "Why stockinette curls",
+        "<p><strong>Hold</strong> the edge</p>",
+        '<p><img src="/images/swatch.jpg" alt="Swatch" class="center" width="202"></p>',
+        "<script>alert(1)</script>",
+      ],
+    });
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.value.intro).toBe("<p>Hello\u00A0there</p>");
+    expect(result.value.tryCopy).toBe("<p>Knit\u00A0a swatch.</p>");
+    expect(validateTipOfTheWeekInput({ ...base, intro: result.value.intro }).ok).toBe(true);
+    expect(result.value.learnPoints).toEqual([
+      "Why stockinette curls",
+      "<p><strong>Hold</strong> the edge</p>",
+      '<p><img src="/images/swatch.jpg" alt="Swatch" class="center" width="202"></p>',
+    ]);
+    const again = validateTipOfTheWeekInput({
+      ...base,
+      intro: result.value.intro,
+      tryCopy: result.value.tryCopy,
+      learnPoints: result.value.learnPoints,
+    });
+    expect(again.ok).toBe(true);
+    if (!again.ok) return;
+    expect(again.value.intro).toBe(result.value.intro);
+    expect(again.value.tryCopy).toBe(result.value.tryCopy);
+    expect(again.value.learnPoints).toEqual(result.value.learnPoints);
+  });
+
   it("rejects overlapping scheduled/active ranges", () => {
     const result = validateTipOfTheWeekInput(
       { ...base, status: "scheduled" },

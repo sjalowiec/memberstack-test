@@ -22,9 +22,21 @@ import {
   resetTipAvailableThroughToSevenDays,
   type TipDateFormState,
 } from "../lib/tipOfTheWeek/schedule";
-import { sanitizeBillboardHtml } from "../lib/whatsNew/sanitizeBillboardHtml";
+import { normalizeTipLearnPoint } from "../lib/tipOfTheWeek/learnPointHtml";
+import {
+  sanitizeTipSectionHtml,
+  tipRichTextEditorHtml,
+} from "../lib/tipOfTheWeek/richTextFieldHtml";
 import { initSortableTable } from "../lib/watson/sortableTable";
-import { initWatsonTipTryItRichText } from "./watsonTipTryItRichText";
+import {
+  initWatsonTipImageInsert,
+  initWatsonTipTryItRichText,
+} from "./watsonTipTryItRichText";
+import {
+  resetCompactRichTextVisual,
+  syncCompactRichText,
+  writeCompactRichTextValue,
+} from "./watsonRichTextEditor";
 
 type TipStatus = "draft" | "scheduled" | "active" | "archived";
 
@@ -395,37 +407,28 @@ function showFieldError(form: HTMLFormElement, field: string | undefined, messag
 }
 
 function readLearnPoints(form: HTMLFormElement): string[] {
-  return Array.from(form.querySelectorAll<HTMLInputElement>("[data-learn-point]"))
-    .map((input) => input.value.trim())
-    .filter(Boolean);
+  const points: string[] = [];
+  form.querySelectorAll<HTMLElement>("[data-learn-row]").forEach((row) => {
+    const wrap = row.querySelector<HTMLElement>("[data-totw-rte]");
+    if (!wrap) return;
+    const html = syncCompactRichText(wrap, sanitizeTipSectionHtml);
+    const stored = normalizeTipLearnPoint(html);
+    if (stored) points.push(stored);
+  });
+  return points;
 }
 
 function emptyRelatedResource(): RelatedResource {
   return { type: "video", videoId: "", title: "", note: "" };
 }
 
-function rteParts(
-  form: HTMLFormElement,
-  wrapSelector: string,
-): {
-  editor: HTMLElement;
-  hidden: HTMLTextAreaElement;
-} | null {
-  const wrap = form.querySelector<HTMLElement>(wrapSelector);
-  if (!wrap) return null;
-  const editor = wrap.querySelector<HTMLElement>("[data-wn-rte-editor]");
-  const hidden = wrap.querySelector<HTMLTextAreaElement>("[data-wn-rte-input]");
-  if (!editor || !hidden) return null;
-  return { editor, hidden };
-}
-
-/** Seed a rich-text editor (and its hidden input) from stored plain text or HTML. */
+/** Seed a rich-text editor from stored plain text or HTML and return to Visual. */
 function setRteCopy(form: HTMLFormElement, wrapSelector: string, value: string): void {
-  const parts = rteParts(form, wrapSelector);
-  if (!parts) return;
-  const clean = sanitizeBillboardHtml(value || "");
-  parts.editor.innerHTML = clean || "<p><br></p>";
-  parts.hidden.value = clean;
+  const wrap = form.querySelector<HTMLElement>(wrapSelector);
+  if (!wrap) return;
+  const clean = sanitizeTipSectionHtml(value || "");
+  writeCompactRichTextValue(wrap, clean);
+  resetCompactRichTextVisual(wrap);
 }
 
 /** Seed the Try It editor (and its hidden input) from stored plain text or HTML. */
@@ -434,9 +437,9 @@ function setTryCopy(form: HTMLFormElement, value: string): void {
 }
 
 function syncRteCopy(form: HTMLFormElement, wrapSelector: string): void {
-  const parts = rteParts(form, wrapSelector);
-  if (!parts) return;
-  parts.hidden.value = sanitizeBillboardHtml(parts.editor.innerHTML);
+  const wrap = form.querySelector<HTMLElement>(wrapSelector);
+  if (!wrap) return;
+  syncCompactRichText(wrap, sanitizeTipSectionHtml);
 }
 
 /** Push the current editor HTML into the hidden field before reading the form. */
@@ -598,13 +601,26 @@ function renderLearnPoints(container: HTMLElement, points: string[]) {
   list.forEach((point, index) => {
     const row = document.createElement("div");
     row.className = "watson-totw__list-row";
+    row.setAttribute("data-learn-row", "");
+    const labelId = `totw-learn-point-${index + 1}`;
     row.innerHTML = `
-      <input type="text" data-learn-point maxlength="240" value="" aria-label="Learning point ${index + 1}" />
-      <button type="button" class="watson-totw__icon-btn" data-learn-remove aria-label="Remove learning point">×</button>
+      <div class="watson-totw__learn-editor">
+        <span class="watson-totw__sr" id="${labelId}">Learning point ${index + 1}</span>
+        ${tipRichTextEditorHtml({
+          labelId,
+          toolbarLabel: `Learning point ${index + 1} formatting`,
+          sourceLabel: `Learning point ${index + 1}`,
+          markers: "data-totw-rte data-learn-rte",
+        })}
+      </div>
+      <button type="button" class="watson-totw__icon-btn" data-learn-remove aria-label="Remove learning point ${index + 1}">×</button>
     `;
-    const input = row.querySelector("input");
-    if (input) input.value = point;
     container.appendChild(row);
+    initWatsonTipTryItRichText(row);
+    const wrap = row.querySelector<HTMLElement>("[data-totw-rte]");
+    if (!wrap) return;
+    writeCompactRichTextValue(wrap, sanitizeTipSectionHtml(point));
+    resetCompactRichTextVisual(wrap);
   });
 }
 
@@ -958,6 +974,7 @@ export function initWatsonTipOfTheWeek() {
   if (flash) showStatus(flash.message, flash.kind);
 
   initWatsonTipTryItRichText(form);
+  initWatsonTipImageInsert(form);
 
   const learnBox = el<HTMLElement>("[data-learn-points]", form);
   const relatedBox = el<HTMLElement>("[data-related-links]", form);
@@ -966,12 +983,12 @@ export function initWatsonTipOfTheWeek() {
     const target = event.target as HTMLElement | null;
     if (!target) return;
 
-    if (target.matches("[data-learn-add]") && learnBox) {
+    if (target.closest("[data-learn-add]") && learnBox) {
       renderLearnPoints(learnBox, [...readLearnPoints(form), ""]);
     }
-    if (target.matches("[data-learn-remove]") && learnBox) {
-      target.closest(".watson-totw__list-row")?.remove();
-      if (!learnBox.querySelector("[data-learn-point]")) renderLearnPoints(learnBox, [""]);
+    if (target.closest("[data-learn-remove]") && learnBox) {
+      target.closest("[data-learn-row]")?.remove();
+      if (!learnBox.querySelector("[data-learn-row]")) renderLearnPoints(learnBox, [""]);
     }
     if (target.matches("[data-related-add]") && relatedBox) {
       const current = readRelatedLinks(form);
@@ -1149,7 +1166,7 @@ export function initWatsonTipOfTheWeek() {
   });
 
   // Initial empty list rows
-  if (learnBox && !learnBox.querySelector("[data-learn-point]")) {
+  if (learnBox && !learnBox.querySelector("[data-learn-row]")) {
     renderLearnPoints(learnBox, [""]);
   }
   if (relatedBox && !relatedBox.querySelector("[data-related-row]")) {
