@@ -26,6 +26,12 @@ import {
   type VideoRepoFileEntry,
 } from "./videoCatalogGithub";
 import { loadMergedVideoCatalog } from "./videoCatalogStore";
+import {
+  applyStoredTranscriptFileChanges,
+  listStoredTranscriptFiles,
+  loadStoredGeneratedTranscriptTexts,
+  readStoredTranscriptFile,
+} from "./videoTranscriptStore";
 
 export type VideoCatalogSnapshot = {
   /** Commit the files were read from. Null on localhost. */
@@ -157,28 +163,34 @@ export function videoCatalogSiteEnvironment(hostname: string | null | undefined)
 
 /**
  * Catalog saves do not need GitHub. When the hosted GitHub settings are absent,
- * read the deployed catalog and transcript JSON and store the video in the database.
+ * read the deployed catalog and any stored transcripts, and write the video
+ * and its uploaded transcript to the database. An upload that is not stored
+ * is an error, not a successful save.
  */
 export function deployedVideoCatalogRepo(): VideoCatalogRepo {
   return {
     mode: "filesystem",
     async readSnapshot() {
       const merged = await loadMergedVideoCatalog();
+      const stored = await loadStoredGeneratedTranscriptTexts();
+      const transcripts = await listStoredTranscriptFiles();
       return {
         ref: null,
         catalogRaw: `${JSON.stringify(merged, null, 2)}\n`,
         generated: {
-          public: JSON.stringify(publicGenerated),
-          member: JSON.stringify(memberGenerated),
-          audit: JSON.stringify(auditGenerated),
+          public: stored.public ?? JSON.stringify(publicGenerated),
+          member: stored.member ?? JSON.stringify(memberGenerated),
+          audit: stored.audit ?? JSON.stringify(auditGenerated),
         },
-        transcripts: { published: [], drafts: [] },
+        transcripts,
       };
     },
-    async readFile() {
-      return null;
+    async readFile(path) {
+      return readStoredTranscriptFile(path);
     },
-    async commit() {
+    async commit(_snapshot, changes) {
+      if (changes.length === 0) return { persistedVia: "database" };
+      await applyStoredTranscriptFileChanges(changes);
       return { persistedVia: "database" };
     },
   };

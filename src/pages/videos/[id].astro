@@ -9,7 +9,8 @@ import Transcript from "../../components/media/Transcript.astro";
 import { resolveVideoDetailJumpLinks } from "../../lib/jumplinks/jumplinksByContent";
 import { catalogVimeoIframePlayerId } from "../../lib/videos/catalogVideoEmbedSrc";
 import publicCatalogTranscripts from "../../data/transcripts/generated/public.json";
-import { paragraphsForVimeoId } from "../../lib/transcripts/catalogTranscriptData";
+import { paragraphsForVimeoId, type CatalogTranscriptArtifact } from "../../lib/transcripts/catalogTranscriptData";
+import { loadDisplayedTranscriptArtifact } from "../../lib/videos/videoTranscriptStore";
 import { catalogVideoPlaybackAccess } from "../../lib/videos/catalogVideoPlaybackAccess";
 import {
   loadCurrentFeaturedTipVideoContentId,
@@ -85,8 +86,12 @@ const isOpenPlayback = effectiveAccessLevel === "open";
 const ssrJumpLinks = isOpenPlayback ? resolvedJumpLinks.links : [];
 const enableVideoChapterControls = hasJumpLinks;
 
+const publicTranscriptArtifact = await loadDisplayedTranscriptArtifact(
+  "public",
+  publicCatalogTranscripts as CatalogTranscriptArtifact,
+);
 const publicTranscriptParagraphs =
-  video && isOpenPlayback ? paragraphsForVimeoId(publicCatalogTranscripts, vimeoId) : [];
+  video && isOpenPlayback ? paragraphsForVimeoId(publicTranscriptArtifact, vimeoId) : [];
 const ssrTranscriptSections = publicTranscriptParagraphs.map((text) => ({ text }));
 const hasGatedTranscript = Boolean(video) && !isOpenPlayback && vimeoId.length > 0;
 ---
