@@ -42,7 +42,14 @@ describe("catalog transcript generation", () => {
       "a66776f8a7148e1744abb28a3ff9fcbf7f18b541a866c8cde43d936eaddbb421",
     );
     expect(docs.audit.publicCount).toBe(13);
-    expect(docs.audit.memberCount).toBe(238);
+    expect(docs.audit.memberCount).toBe(239);
+    const pinwheel = docs.memberDocument.records.find((record) => record.vimeoId === "151859578");
+    expect(pinwheel?.paragraphs.join(" ")).toContain("knit in circles using short rows");
+    expect(docs.publicDocument.records.some((record) => record.vimeoId === "151859578")).toBe(false);
+    expect(docs.audit.records.find((record) => record.vimeoId === "151859578")).toMatchObject({
+      access: "member",
+      contentIds: ["658"],
+    });
     expect(docs.memberDocument.records.some((record) => record.vimeoId === "1234021892")).toBe(
       true,
     );

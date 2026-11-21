@@ -3,7 +3,7 @@
   "kind": "audit",
   "sourceDirectory": "src/data/transcripts/en",
   "publicCount": 13,
-  "memberCount": 238,
+  "memberCount": 239,
   "records": [
     {
       "vimeoId": "151857129",
@@ -363,6 +363,16 @@
       "paragraphCount": 13,
       "contentIds": [
         "655"
+      ]
+    },
+    {
+      "vimeoId": "151859578",
+      "access": "member",
+      "sourceFile": "151859578.vtt",
+      "sourceSha256": "cbec9c73297c32bdea16f6665e70590f601b4a63bce2037f03ca4eaa06cdf943",
+      "paragraphCount": 12,
+      "contentIds": [
+        "658"
       ]
     },
     {

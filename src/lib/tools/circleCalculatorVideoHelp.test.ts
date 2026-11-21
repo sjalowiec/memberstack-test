@@ -93,7 +93,7 @@ describe("circle calculator video help", () => {
   });
 
   it("places the technique link by the construction choices and the section below the pattern", () => {
-    const linkAt = pageSource.indexOf("Watch the techniques");
+    const linkAt = pageSource.indexOf("Watch construction videos");
     const constructionAt = pageSource.indexOf('name="construction"');
     const directionAt = pageSource.indexOf('name="direction"');
     const resultsAt = pageSource.indexOf('id="circleResults"');
