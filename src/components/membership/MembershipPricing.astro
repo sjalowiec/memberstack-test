@@ -26,9 +26,7 @@ function formatMembershipAmount(amount: number): string {
 
 const monthlyAmount = formatMembershipAmount(monthlyPrice);
 const annualAmount = formatMembershipAmount(annualPrice);
-const annualEquivalentMonthly = formatMembershipAmount(annualPrice / 12);
-const annualEquivalentLine = `Equivalent to $${annualEquivalentMonthly}/month, billed annually`;
-const annualSavingsLine = `Save $${annualSavings}/year compared with monthly`;
+const annualSavingsLine = `Save $${annualSavings}/year.`;
 const monthlySavingsLine = `Save $${annualSavings}/year with annual membership.`;
 
 const membershipFeatures = [
@@ -158,7 +156,6 @@ const compactSummary =
           <p class="join-plan__price">
             ${annualAmount}<span class="join-plan__period">/year</span>
           </p>
-          <p class="join-plan__detail">{annualEquivalentLine}</p>
           <p class="join-plan__detail">{annualSavingsLine}</p>
           <button
             type="button"

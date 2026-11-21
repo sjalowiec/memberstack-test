@@ -31,9 +31,9 @@ describe("membership page copy", () => {
       pricingCard.match(/<input\b[\s\S]*?id="membership-billing-annual"[\s\S]*?>/)?.[0] ?? "";
     expect(annualInput).toContain("checked");
     expect(monthlyInput).not.toContain("checked");
-    expect(pricingCard).toContain("Equivalent to $");
-    expect(pricingCard).toContain("/month, billed annually");
-    expect(pricingCard).toContain("/year compared with monthly");
+    expect(pricingCard).not.toContain("billed annually");
+    expect(pricingCard).not.toContain("compared with monthly");
+    expect(pricingCard).toContain("Save $${annualSavings}/year.");
     expect(pricingCard).toContain("/year with annual membership.");
     expect(pricingCard).toContain("View annual option");
     expect(pricingCard).toContain("data-membership-view-annual");
