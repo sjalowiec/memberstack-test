@@ -5,6 +5,11 @@ import { adminAuthErrorBody, requireAdminForRequest } from "../../../lib/admin/r
 import { normalizeVideoForSave } from "../../../lib/videosPublicRecord";
 import { stableVideoKey, type PublicVideoRow } from "../../../lib/lessonVideo";
 import { catalogTranscriptVimeoId } from "../../../lib/transcripts/generateCatalogTranscripts";
+import publicCatalogTranscripts from "../../../data/transcripts/generated/public.json";
+import memberCatalogTranscripts from "../../../data/transcripts/generated/member.json";
+import type { CatalogTranscriptArtifact } from "../../../lib/transcripts/catalogTranscriptData";
+import { transcriptIsLive } from "../../../lib/videos/videoTranscriptAvailability";
+import { loadDisplayedTranscriptArtifact } from "../../../lib/videos/videoTranscriptStore";
 import {
   applyVideoPosterOverrides,
   planVideoPosterSave,
@@ -56,7 +61,8 @@ export const GET: APIRoute = async ({ request, cookies }) => {
 
   try {
     // Saved videos live in the database, over this deploy's catalog file.
-    // GitHub is only used to show whether a transcript file exists.
+    // File listings preserve draft state; displayed artifacts also include
+    // transcripts stored in the database or bundled with this deployment.
     const data = await loadMergedVideoCatalog();
     const save: { canSave: boolean; mode?: string; branch?: string; warning?: string } = {
       canSave: true,
@@ -83,12 +89,19 @@ export const GET: APIRoute = async ({ request, cookies }) => {
       }
     }
 
+    const [publicDocument, memberDocument] = await Promise.all([
+      loadDisplayedTranscriptArtifact("public", publicCatalogTranscripts as CatalogTranscriptArtifact),
+      loadDisplayedTranscriptArtifact("member", memberCatalogTranscripts as CatalogTranscriptArtifact),
+    ]);
+    const documents = { public: publicDocument, member: memberDocument };
     const transcripts: Record<string, VideoTranscriptState> = {};
-    if (snapshot) {
-      for (const video of data as Record<string, unknown>[]) {
-        const key = videoContentIdKey(video.content_id);
-        if (key) transcripts[key] = transcriptStateForVimeoId(snapshot, catalogTranscriptVimeoId(video as PublicVideoRow));
-      }
+    for (const video of data as Record<string, unknown>[]) {
+      const key = videoContentIdKey(video.content_id);
+      if (!key) continue;
+      const fileState = snapshot
+        ? transcriptStateForVimeoId(snapshot, catalogTranscriptVimeoId(video as PublicVideoRow))
+        : "none";
+      transcripts[key] = transcriptIsLive(video, documents) ? "published" : fileState;
     }
     return jsonResponse({
       ok: true,
