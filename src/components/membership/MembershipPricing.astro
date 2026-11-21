@@ -20,6 +20,15 @@ const monthlyPrice = MEMBERSHIPS.membership.prices.monthly.price;
 const annualPrice = MEMBERSHIPS.membership.prices.annual.price;
 const annualSavings = Math.round(monthlyPrice * 12 - annualPrice);
 
+function formatMembershipAmount(amount: number): string {
+  return Number.isInteger(amount) ? String(amount) : amount.toFixed(2);
+}
+
+const monthlyAmount = formatMembershipAmount(monthlyPrice);
+const annualAmount = formatMembershipAmount(annualPrice);
+const annualSavingsLine = `Save $${annualSavings}/year compared with monthly billing.`;
+const monthlySavingsLine = `Save $${annualSavings}/year with annual membership.`;
+
 const membershipFeatures = [
   "Instructional videos and Help Hub",
   "Tools, calculators, and Skill Builders",
@@ -44,7 +53,6 @@ const compactSummary =
           id="membership-billing-monthly"
           value="monthly"
           class="membership-billing-radio"
-          checked
         />
         <input
           type="radio"
@@ -52,6 +60,7 @@ const compactSummary =
           id="membership-billing-annual"
           value="annual"
           class="membership-billing-radio"
+          checked
         />
       </>
     ) : null
@@ -70,7 +79,13 @@ const compactSummary =
   }
 
   <div class="membership-billing-toggle-wrap">
-    <div class="membership-billing-toggle" role="radiogroup" aria-label="Billing period">
+    <div
+      class="membership-billing-toggle"
+      role="radiogroup"
+      aria-label="Billing period"
+      data-membership-billing-toggle
+      tabindex="-1"
+    >
       <label for="membership-billing-monthly" class="membership-billing-toggle__option">
         Monthly
       </label>
@@ -122,8 +137,12 @@ const compactSummary =
       <div class="join-plan__checkout">
         <div class="join-plan__billing join-plan__billing--monthly">
           <p class="join-plan__price">
-            ${monthlyPrice}<span class="join-plan__period">/month</span>
+            ${monthlyAmount}<span class="join-plan__period">/month</span>
           </p>
+          <p class="join-plan__detail">{monthlySavingsLine}</p>
+          <button type="button" class="join-plan__switch" data-membership-view-annual>
+            View annual option
+          </button>
           <button
             type="button"
             class="kbm-btn kbm-btn-primary join-plan__cta"
@@ -135,9 +154,9 @@ const compactSummary =
         </div>
         <div class="join-plan__billing join-plan__billing--annual">
           <p class="join-plan__price">
-            ${annualPrice}<span class="join-plan__period">/year</span>
+            ${annualAmount}<span class="join-plan__period">/year</span>
           </p>
-          <p class="join-plan__savings">Save ${annualSavings}/year</p>
+          <p class="join-plan__detail">{annualSavingsLine}</p>
           <button
             type="button"
             class="kbm-btn kbm-btn-primary join-plan__cta"
@@ -227,22 +246,35 @@ const compactSummary =
     box-shadow: 0 1px 3px rgba(82, 104, 45, 0.15);
   }
 
-  .join-plan__billing--annual {
+  :global(.membership-billing-scope:has(#membership-billing-monthly:focus-visible))
+    .membership-billing-toggle__option[for="membership-billing-monthly"],
+  :global(.membership-billing-scope:has(#membership-billing-annual:focus-visible))
+    .membership-billing-toggle__option[for="membership-billing-annual"] {
+    outline: 2px solid #2c3a57;
+    outline-offset: 2px;
+  }
+
+  .membership-billing-toggle:focus-visible {
+    outline: 2px solid #2c3a57;
+    outline-offset: 2px;
+  }
+
+  .join-plan__billing--monthly {
     display: none;
   }
 
-  :global(.membership-billing-scope:has(#membership-billing-annual:checked))
+  :global(.membership-billing-scope:has(#membership-billing-monthly:checked))
     .join-plan__billing--monthly,
-  :global(.membership-billing-scope[data-billing-period="annual"])
+  :global(.membership-billing-scope[data-billing-period="monthly"])
     .join-plan__billing--monthly {
-    display: none;
+    display: block;
   }
 
-  :global(.membership-billing-scope:has(#membership-billing-annual:checked))
+  :global(.membership-billing-scope:has(#membership-billing-monthly:checked))
     .join-plan__billing--annual,
-  :global(.membership-billing-scope[data-billing-period="annual"])
+  :global(.membership-billing-scope[data-billing-period="monthly"])
     .join-plan__billing--annual {
-    display: block;
+    display: none;
   }
 
   .join-checkout-status {
@@ -402,11 +434,49 @@ const compactSummary =
     color: #111827;
   }
 
-  .join-plan__savings {
-    margin: 0 0 0.65rem 0;
+  .join-plan__detail {
+    margin: 0;
     font-size: 0.85rem;
     font-weight: 600;
+    line-height: 1.4;
     color: #4d5a48;
+  }
+
+  .join-plan__detail + .join-plan__detail {
+    margin-top: 0.15rem;
+  }
+
+  .join-plan__switch {
+    display: inline-flex;
+    align-items: center;
+    margin: 0.15rem 0 0;
+    padding: 0.35rem 0;
+    border: 0;
+    background: transparent;
+    color: var(--kbm-green, #166534);
+    font: inherit;
+    font-size: 0.85rem;
+    font-weight: 600;
+    line-height: 1.4;
+    text-align: left;
+    text-decoration: underline;
+    text-underline-offset: 0.12em;
+    cursor: pointer;
+  }
+
+  .join-plan__switch:hover {
+    color: #2c3a57;
+  }
+
+  .join-plan__switch:focus-visible {
+    outline: 2px solid #2c3a57;
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+
+  .join-plan__detail + .join-plan__cta,
+  .join-plan__switch + .join-plan__cta {
+    margin-top: 0.65rem;
   }
 
   .join-plan__period {
