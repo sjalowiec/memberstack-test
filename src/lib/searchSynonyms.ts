@@ -7,8 +7,15 @@
  *
  * To extend the list, append another group. Hyphen and space are the same
  * phrase ("bind-off" and "bind off"). A joined spelling such as "bindoff"
- * is different and needs its own entry in the group.
+ * is different and needs its own entry in the group. Pagefind stores the
+ * hyphenated phrase as that joined word, so the joined entry is what lets a
+ * spaced search find it.
+ *
+ * Machine model names are separate: LK150, LK-150, and LK 150 are the same
+ * model, while LK150 and SK150 stay different. See machineModelSearch.ts.
  */
+import { collapseMachineModels, shieldMachineModels } from "./machineModelSearch";
+
 export const SEARCH_SYNONYM_GROUPS: readonly (readonly string[])[] = [
   [
     "bind off",
@@ -20,6 +27,9 @@ export const SEARCH_SYNONYM_GROUPS: readonly (readonly string[])[] = [
     "cast-off",
     "castoff",
   ],
+  ["short row", "short-row", "shortrow"],
+  ["short rows", "short-rows", "shortrows"],
+  ["cast on", "cast-on", "caston"],
 ];
 
 const DASHES = /[\u2010\u2011\u2012\u2013\u2014\u2015-]/g;
@@ -113,15 +123,30 @@ function cleanQuery(value: string): string {
   return value.replace(/\s+/g, " ").trim();
 }
 
+/** Same Pagefind words for LK150, LK-150, and LK 150. Other punctuation stays. */
+function searchQuery(value: string): string {
+  return cleanQuery(collapseMachineModels(value));
+}
+
+function matchesCollapsedText(haystack: string, query: string): boolean {
+  const needle = shieldMachineModels(query.toLowerCase());
+  if (!needle) return false;
+  return shieldMachineModels(haystack.toLowerCase()).includes(needle);
+}
+
 /**
  * Queries to send to a word search such as Pagefind.
- * The first exact query is the visitor's text. Synonym queries keep the other words.
+ * The first exact query is the visitor's text, with a machine model written as one word.
+ * Synonym queries keep the other words.
  */
 export function buildSearchQueryPlan(raw: string): SearchQueryPlan {
   const trimmed = cleanQuery(raw);
   if (!trimmed) return { exact: [], synonym: [] };
   const span = findSynonymSpan(trimmed);
-  if (!span) return { exact: [trimmed], synonym: [] };
+  if (!span) {
+    const exact = searchQuery(trimmed);
+    return exact ? { exact: [exact], synonym: [] } : { exact: [], synonym: [] };
+  }
 
   const prefix = trimmed.slice(0, span.start);
   const suffix = trimmed.slice(span.end);
@@ -129,7 +154,7 @@ export function buildSearchQueryPlan(raw: string): SearchQueryPlan {
   const synonym: string[] = [];
   const seen = new Set<string>();
   const push = (list: string[], query: string) => {
-    const cleaned = cleanQuery(query);
+    const cleaned = searchQuery(query);
     const key = cleaned.toLowerCase();
     if (!cleaned || seen.has(key)) return;
     seen.add(key);
@@ -148,6 +173,7 @@ export function buildSearchQueryPlan(raw: string): SearchQueryPlan {
 /**
  * 2 = the visitor's own phrase is present, 1 = another form from the group, 0 = no match.
  * Queries that do not use a synonym keep ordinary case-insensitive matching.
+ * A machine model still matches when only the hyphen or space differs.
  * Extra words on either side of the synonym still have to appear.
  */
 export function rankSearchText(haystack: string, query: string): 0 | 1 | 2 {
@@ -156,11 +182,11 @@ export function rankSearchText(haystack: string, query: string): 0 | 1 | 2 {
   const collapsed = cleanQuery(trimmed);
   const span = findSynonymSpan(collapsed);
   const hay = String(haystack ?? "");
-  if (!span) return hay.toLowerCase().includes(trimmed.toLowerCase()) ? 2 : 0;
+  if (!span) return matchesCollapsedText(hay, trimmed) ? 2 : 0;
 
-  const normalizedHay = normalizeSearchText(hay);
-  const before = normalizeSearchText(collapsed.slice(0, span.start));
-  const after = normalizeSearchText(collapsed.slice(span.end));
+  const normalizedHay = shieldMachineModels(normalizeSearchText(hay));
+  const before = shieldMachineModels(normalizeSearchText(collapsed.slice(0, span.start)));
+  const after = shieldMachineModels(normalizeSearchText(collapsed.slice(span.end)));
   if (before && !normalizedHay.includes(before)) return 0;
   if (after && !normalizedHay.includes(after)) return 0;
   if (normalizedHay.includes(span.normalized)) return 2;
