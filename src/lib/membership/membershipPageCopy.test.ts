@@ -32,8 +32,7 @@ describe("membership page copy", () => {
     expect(annualInput).toContain("checked");
     expect(monthlyInput).not.toContain("checked");
     expect(pricingCard).not.toContain("billed annually");
-    expect(pricingCard).not.toContain("compared with monthly");
-    expect(pricingCard).toContain("Save $${annualSavings}/year.");
+    expect(pricingCard).toContain("Save $${annualSavings}/year compared with monthly billing.");
     expect(pricingCard).toContain("/year with annual membership.");
     expect(pricingCard).toContain("View annual option");
     expect(pricingCard).toContain("data-membership-view-annual");
