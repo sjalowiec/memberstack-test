@@ -57,8 +57,36 @@ function decodeMarkupEntitiesOnce(text: string): string {
   });
 }
 
+/** Encoded non-breaking spaces, including forms already escaped on a previous save. */
+const NBSP_ENTITY = /&(?:amp;|#0*38;|#x0*26;)*nbsp;|&#0*160;|&#x0*a0;/i;
+
+/**
+ * Turn `&nbsp;` into a real non-breaking space before the text is escaped again.
+ * `&amp;nbsp;` is unwrapped in the same pass. Text with no nbsp entity is unchanged,
+ * so a later save does not add another `&amp;`.
+ */
+function unwrapNbspEntities(text: string): string {
+  if (!NBSP_ENTITY.test(text)) return text;
+  let current = text;
+  // Each earlier save wraps the whole entity in one more `&amp;`, so one pass
+  // peels one layer. Keep going until the non-breaking space is real.
+  for (let pass = 0; pass < 64; pass += 1) {
+    if (!NBSP_ENTITY.test(current)) break;
+    const next = current
+      .replace(/&amp;/g, "&")
+      .replace(/&#0*38;/g, "&")
+      .replace(/&#x0*26;/gi, "&")
+      .replace(/&nbsp;/gi, "\u00A0")
+      .replace(/&#0*160;/g, "\u00A0")
+      .replace(/&#x0*a0;/gi, "\u00A0");
+    if (next === current) break;
+    current = next;
+  }
+  return current;
+}
+
 function escapeTextNode(text: string): string {
-  return escapeText(decodeMarkupEntitiesOnce(text));
+  return escapeText(unwrapNbspEntities(decodeMarkupEntitiesOnce(text)));
 }
 
 function decodeBasicEntities(text: string): string {
@@ -217,16 +245,58 @@ export function billboardMessagePlainText(html: string): string {
     .replace(/<br\s*\/?>/gi, "\n")
     .replace(/<\/(?:p|li|div|h[1-6])>/gi, "\n")
     .replace(/<[^>]+>/g, "");
-  return decodeBasicEntities(withBreaks).replace(/\s+/g, " ").trim();
+  return decodeBasicEntities(unwrapNbspEntities(withBreaks)).replace(/\s+/g, " ").trim();
 }
 
 export function billboardMessageHasText(html: string): boolean {
   return billboardMessagePlainText(html).length > 0;
 }
 
+/** True when a message has visible text or a kept image. An image-only section still counts. */
+export function billboardMessageHasContent(html: string): boolean {
+  return billboardMessageHasText(html) || /<img\b/i.test(html);
+}
+
+/**
+ * Rich copy needs HTML rendering. A single plain paragraph stays text so glossary
+ * tooltips can still wrap the introduction. Images count, including an image-only block.
+ */
+export function billboardCopyHasRichMarkup(html: string): boolean {
+  return (
+    /<(?:strong|em|ul|ol|li|a|br|img)\b/i.test(html) ||
+    (html.match(/<p\b/gi) || []).length > 1
+  );
+}
+
+/**
+ * Site image tag for the shared editor. Null when the address is not a local path.
+ * Width is pixels (32–800) or a percent (10–100). Centering is class="center" only.
+ */
+export function billboardImageTag(options: {
+  src: string;
+  alt?: string;
+  width?: string;
+  center?: boolean;
+}): string | null {
+  const src = options.src.trim();
+  const alt = (options.alt ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/"/g, "&quot;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+  const width = (options.width ?? "").trim();
+  const classAttr = options.center ? ' class="center"' : "";
+  const widthAttr = width ? ` width="${width.replace(/"/g, "")}"` : "";
+  const clean = sanitizeBillboardHtml(
+    `<img src="${src.replace(/"/g, "")}" alt="${alt}"${classAttr}${widthAttr}>`,
+  );
+  const match = clean.match(/<img\b[^>]*>/i);
+  return match ? match[0] : null;
+}
+
 /** Normalize plain text into safe paragraph markup. */
 export function plainTextToBillboardHtml(text: string): string {
-  const normalized = text.replace(/\r\n/g, "\n").replace(/\r/g, "\n").trim();
+  const normalized = unwrapNbspEntities(text).replace(/\r\n/g, "\n").replace(/\r/g, "\n").trim();
   if (!normalized) return "";
   return normalized
     .split(/\n{2,}/)

@@ -66,6 +66,61 @@ export function writeCompactRichTextValue(wrap: ParentNode, html: string): void 
   if (source) source.value = html;
 }
 
+/** Insert HTML into the open view (source box or visual editor) and notify listeners. */
+export function insertCompactRichTextHtml(wrap: ParentNode, html: string): void {
+  const fragment = html.trim();
+  if (!fragment) return;
+  const editor = wrap.querySelector<HTMLElement>("[data-wn-rte-editor]");
+  const hidden = wrap.querySelector<HTMLTextAreaElement>("[data-wn-rte-input]");
+  const source = wrap.querySelector<HTMLTextAreaElement>("[data-wn-rte-source]");
+  if (source?.dataset.active === "true") {
+    const start = source.selectionStart ?? source.value.length;
+    const end = source.selectionEnd ?? start;
+    source.setRangeText(fragment, start, end, "end");
+    if (hidden) hidden.value = source.value;
+    source.dispatchEvent(new Event("input", { bubbles: true }));
+    return;
+  }
+  if (!editor) return;
+  editor.style.whiteSpace = "";
+  editor.focus();
+  const before = editor.innerHTML;
+  exec("insertHTML", fragment);
+  if (editor.innerHTML === before) editor.insertAdjacentHTML("beforeend", fragment);
+  if (hidden) hidden.value = editor.innerHTML;
+  editor.dispatchEvent(new Event("input", { bubbles: true }));
+}
+
+/** Return the editor to the visual view without changing the stored HTML. */
+export function resetCompactRichTextVisual(wrap: ParentNode): void {
+  const editor = wrap.querySelector<HTMLElement>("[data-wn-rte-editor]");
+  const source = wrap.querySelector<HTMLTextAreaElement>("[data-wn-rte-source]");
+  const toolbar = wrap.querySelector<HTMLElement>("[data-wn-rte-toolbar]");
+  if (editor) {
+    editor.hidden = false;
+    editor.style.display = "";
+    editor.style.whiteSpace = "";
+  }
+  if (toolbar) toolbar.hidden = false;
+  if (source) {
+    source.hidden = true;
+    source.style.display = "none";
+    source.dataset.active = "false";
+    delete source.dataset.dirty;
+  }
+  wrap.querySelectorAll<HTMLButtonElement>("[data-wn-rte-mode]").forEach((button) => {
+    const visual = button.dataset.wnRteMode === "visual";
+    button.classList.toggle("is-active", visual);
+    button.setAttribute("aria-pressed", visual ? "true" : "false");
+  });
+  const htmlButton = wrap.querySelector<HTMLButtonElement>("[data-wn-rte-html]");
+  if (htmlButton) {
+    htmlButton.textContent = "Edit HTML";
+    htmlButton.title = "Edit the message HTML";
+    htmlButton.setAttribute("aria-pressed", "false");
+  }
+}
+
 /** Sanitize whichever view is open and store that as the value that will be saved. */
 export function syncCompactRichText(
   wrap: ParentNode,
@@ -110,6 +165,10 @@ function wireLabeledHtmlToggle(
   const source = wrap.querySelector<HTMLTextAreaElement>("[data-wn-rte-source]");
   if (!visualButton || !htmlButton || !source) return;
 
+  // A stylesheet display:block would otherwise ignore the hidden attribute.
+  source.hidden = true;
+  source.style.display = "none";
+
   const setPressed = (htmlMode: boolean): void => {
     visualButton.setAttribute("aria-pressed", htmlMode ? "false" : "true");
     htmlButton.setAttribute("aria-pressed", htmlMode ? "true" : "false");
@@ -125,6 +184,7 @@ function wireLabeledHtmlToggle(
     source.dataset.active = "true";
     editor.hidden = true;
     source.hidden = false;
+    source.style.display = "block";
     toolbar.hidden = true;
     setPressed(true);
     source.focus();
@@ -142,6 +202,7 @@ function wireLabeledHtmlToggle(
     }
     source.dataset.active = "false";
     source.hidden = true;
+    source.style.display = "none";
     editor.hidden = false;
     toolbar.hidden = false;
     setPressed(false);

@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  billboardCopyHasRichMarkup,
+  billboardImageTag,
+  billboardMessageHasContent,
   billboardMessageHasText,
   billboardMessagePlainText,
   plainTextToBillboardHtml,
@@ -118,5 +121,52 @@ describe("sanitizeBillboardHtml", () => {
     expect(billboardMessageHasText("<p><br></p>")).toBe(false);
     expect(billboardMessageHasText("<p>Hi</p>")).toBe(true);
     expect(billboardMessagePlainText("<p>A &amp; B</p>")).toBe("A & B");
+  });
+
+  it("turns nbsp into a non-breaking space without escaping it again", () => {
+    const once = sanitizeBillboardHtml("<p>Hello&nbsp;world</p>");
+    expect(once).toBe("<p>Hello\u00A0world</p>");
+    expect(sanitizeBillboardHtml(once)).toBe(once);
+    expect(sanitizeBillboardHtml("<p>Hello&amp;nbsp;world</p>")).toBe(once);
+    expect(sanitizeBillboardHtml("<p>Hello&amp;amp;nbsp;world</p>")).toBe(once);
+    expect(sanitizeBillboardHtml("Hello&nbsp;world")).toBe(once);
+    const stacked = `<p>Hello${"&" + "amp;".repeat(12)}nbsp;world</p>`;
+    expect(sanitizeBillboardHtml(stacked)).toBe(once);
+    expect(sanitizeBillboardHtml(sanitizeBillboardHtml(stacked))).toBe(once);
+    expect(sanitizeBillboardHtml("<p>A &amp; B</p>")).toBe("<p>A &amp; B</p>");
+    expect(sanitizeBillboardHtml(sanitizeBillboardHtml("<p>A &amp; B</p>"))).toBe(
+      "<p>A &amp; B</p>",
+    );
+  });
+
+  it("keeps an image-only message and treats images as rich content", () => {
+    const image = '<p><img src="/images/swatch.jpg" alt="Swatch"></p>';
+    expect(sanitizeBillboardHtml('<img src="/images/swatch.jpg" alt="Swatch">')).toBe(image);
+    expect(billboardMessageHasText(image)).toBe(false);
+    expect(billboardMessageHasContent(image)).toBe(true);
+    expect(billboardCopyHasRichMarkup(image)).toBe(true);
+    expect(billboardCopyHasRichMarkup("<p>Hello</p>")).toBe(false);
+    expect(billboardCopyHasRichMarkup("<p>One</p><p>Two</p>")).toBe(true);
+  });
+
+  it("builds a safe centered image tag with a width", () => {
+    expect(
+      billboardImageTag({
+        src: "/images/swatch.jpg",
+        alt: 'A "swatch"',
+        width: "202",
+        center: true,
+      }),
+    ).toBe('<img src="/images/swatch.jpg" alt="A &quot;swatch&quot;" class="center" width="202">');
+    expect(
+      billboardImageTag({ src: "/images/swatch.jpg", alt: "Swatch", width: "70%" }),
+    ).toBe('<img src="/images/swatch.jpg" alt="Swatch" style="width: 70%">');
+    expect(billboardImageTag({ src: "https://evil.test/a.jpg", alt: "No" })).toBeNull();
+    expect(sanitizeBillboardHtml(billboardImageTag({
+      src: "/images/swatch.jpg",
+      alt: "Swatch",
+      width: "202",
+      center: true,
+    })!)).toContain('width="202"');
   });
 });

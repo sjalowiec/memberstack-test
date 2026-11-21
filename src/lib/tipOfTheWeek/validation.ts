@@ -1,6 +1,7 @@
 /**
  * Tip of the Week input validation (Watson create/update).
  */
+import { normalizeTipLearnPoint } from "./learnPointHtml";
 import { normalizeWhatsNewDestinationUrl } from "../whatsNew/destinationUrl";
 import { sanitizeBillboardHtml } from "../whatsNew/sanitizeBillboardHtml";
 import { normalizeRelatedResource, resolveVideoForTip } from "./map";
@@ -175,13 +176,15 @@ function parseLearnPoints(raw: unknown): TipValidationResult<string[]> {
     }
     const trimmed = item.trim();
     if (!trimmed) continue;
-    if (trimmed.length > TIP_LEARN_POINT_MAX) {
+    const stored = normalizeTipLearnPoint(trimmed);
+    if (!stored) continue;
+    if (stored.length > TIP_LEARN_POINT_MAX) {
       return {
         ok: false,
         error: `Learning points must be ${TIP_LEARN_POINT_MAX} characters or fewer.`,
       };
     }
-    points.push(trimmed);
+    points.push(stored);
   }
   return { ok: true, value: points };
 }
