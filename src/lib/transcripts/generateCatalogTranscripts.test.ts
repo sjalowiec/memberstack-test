@@ -40,8 +40,8 @@ describe("catalog transcript generation", () => {
     expect(memberProof?.sourceSha256).toBe(
       "a66776f8a7148e1744abb28a3ff9fcbf7f18b541a866c8cde43d936eaddbb421",
     );
-    expect(docs.audit.publicCount).toBe(13);
-    expect(docs.audit.memberCount).toBe(237);
+    expect(docs.audit.publicCount).toBe(14);
+    expect(docs.audit.memberCount).toBe(238);
     expect(docs.memberDocument.records.some((record) => record.vimeoId === "1234021892")).toBe(
       true,
     );

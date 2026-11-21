@@ -84,7 +84,8 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       return jsonResponse({ ok: false, error: `${error.message} Try saving again.`, step: "save" }, 409);
     }
     const message = error instanceof Error ? error.message : "The video could not be saved.";
-    return jsonResponse({ ok: false, error: `${message} Nothing was saved.`, step: "save" }, 502);
+    const errorText = /nothing was saved\.?$/i.test(message.trim()) ? message : `${message} Nothing was saved.`;
+    return jsonResponse({ ok: false, error: errorText, step: "save" }, 502);
   }
 
   // Keep the stored thumbnail in step with the saved record, so pages show the

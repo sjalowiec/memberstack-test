@@ -1,7 +1,16 @@
 import type { APIRoute } from "astro";
 import { adminAuthErrorBody, requireAdminForRequest } from "../../../../lib/admin/requireAdminRequest";
+import publicCatalogTranscripts from "../../../../data/transcripts/generated/public.json";
+import memberCatalogTranscripts from "../../../../data/transcripts/generated/member.json";
+import type { CatalogTranscriptArtifact } from "../../../../lib/transcripts/catalogTranscriptData";
+import {
+  loadCurrentFeaturedTipVideoContentId,
+  markCurrentFeaturedTipForPlayback,
+} from "../../../../lib/videos/featuredTipPlayback";
 import { loadMergedVideoCatalog } from "../../../../lib/videos/videoCatalogStore";
 import { videoContentIdKey } from "../../../../lib/videos/videoPosterOverrides";
+import { transcriptIsLive } from "../../../../lib/videos/videoTranscriptAvailability";
+import { loadDisplayedTranscriptArtifact } from "../../../../lib/videos/videoTranscriptStore";
 
 export const prerender = false;
 
@@ -32,11 +41,20 @@ export const GET: APIRoute = async ({ request, cookies, url }) => {
         videoContentIdKey((video as Record<string, unknown>).content_id) === key,
     );
     if (!saved) return jsonResponse({ ok: false, error: `Video ${key} is not in the saved catalog.` }, 404);
+    const featuredTipVideoContentId = await loadCurrentFeaturedTipVideoContentId();
+    const [forPlayback] = markCurrentFeaturedTipForPlayback([saved], featuredTipVideoContentId);
+    const [publicDocument, memberDocument] = await Promise.all([
+      loadDisplayedTranscriptArtifact("public", publicCatalogTranscripts as CatalogTranscriptArtifact),
+      loadDisplayedTranscriptArtifact("member", memberCatalogTranscripts as CatalogTranscriptArtifact),
+    ]);
     return jsonResponse({
       ok: true,
       contentId: key,
       record: "live",
-      transcriptLive: true,
+      transcriptLive: transcriptIsLive(forPlayback as Record<string, unknown>, {
+        public: publicDocument,
+        member: memberDocument,
+      }),
       live: true,
     });
   } catch (error) {
