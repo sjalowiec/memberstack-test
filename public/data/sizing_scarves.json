@@ -1,0 +1,27 @@
+[
+  {
+    "size": "Child",
+    "width": 6,
+    "length": 45
+  },
+  {
+    "size": "Teen or narrow adult",
+    "width": 6,
+    "length": 60
+  },
+  {
+    "size": "Classic adult",
+    "width": 8,
+    "length": 60
+  },
+  {
+    "size": "Long adult",
+    "width": 8,
+    "length": 72
+  },
+  {
+    "size": "Wide adult",
+    "width": 12,
+    "length": 72
+  }
+]
