@@ -145,6 +145,7 @@ export const ALL_SIZING_CHART_DATA_URLS: Record<string, string> = {
   hats: "/data/sizing_hats.json",
   mittens: "/data/sizing_mittens.json",
   socks: "/data/sizing_socks.json",
+  scarves: "/data/sizing_scarves.json",
   blankets: "/data/sizing_blankets.json",
   pillows: "/data/sizing_pillows.json",
   xmas_stockings: "/data/sizing_xmas_stockings.json",
@@ -160,6 +161,11 @@ export const ALL_SIZING_CHART_METADATA: Record<string, { label: string; icon: st
   hats: { label: "Hats Sizing Chart", icon: "/images/hat.svg", hash: "hats-chart" },
   mittens: { label: "Mittens Sizing Chart", icon: "/images/mitten.svg", hash: "mittens-chart" },
   socks: { label: "Socks Sizing Chart", icon: "/images/sock.svg", hash: "socks-chart" },
+  scarves: {
+    label: "Suggested Finished Scarf Sizes",
+    icon: "/images/scarf.svg",
+    hash: "scarves-chart",
+  },
   blankets: { label: "Blankets Sizing Chart", icon: "/images/blanket.svg", hash: "blankets-chart" },
   pillows: { label: "Pillows Sizing Chart", icon: "/images/pillow.svg", hash: "pillows-chart" },
   xmas_stockings: {
