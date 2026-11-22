@@ -57,6 +57,20 @@ const toolPrintTitle = tool?.title ?? "Rectangle / Square Calculator";
                 step={0.01}
               />
             </div>
+            <aside class="rectangle-size-help" aria-labelledby="rectangle-size-help-title">
+              <p id="rectangle-size-help-title" class="rectangle-size-help__title">Need help choosing a size?</p>
+              <ul class="rectangle-size-help__links">
+                <li>
+                  <button type="button" data-sizing-chart-open="scarves">Scarf sizes</button>
+                </li>
+                <li>
+                  <button type="button" data-sizing-chart-open="blankets">Blanket sizes</button>
+                </li>
+                <li>
+                  <button type="button" data-sizing-chart-open="pillows">Pillow sizes</button>
+                </li>
+              </ul>
+            </aside>
             <FloatingInput
               id="availableNeedlesInput"
               name="availableNeedles"
@@ -82,6 +96,18 @@ const toolPrintTitle = tool?.title ?? "Rectangle / Square Calculator";
         <div class="rectangle-diagram" slot="diagram" set:html={rectangleDiagram}></div>
       </ToolResultCard>
     </div>
+    <dialog class="sizing-chart-modal" data-sizing-chart-modal aria-labelledby="sizing-chart-modal-title">
+      <div class="sizing-chart-modal__bar">
+        <div class="units-toggle" role="group" aria-label="Units">
+          <button type="button" class="unit-btn" data-sizing-chart-unit="in" aria-pressed="true">Inches</button>
+          <button type="button" class="unit-btn" data-sizing-chart-unit="cm" aria-pressed="false">Centimeters</button>
+        </div>
+        <button type="button" class="sizing-chart-modal__close" data-sizing-chart-close>Close</button>
+      </div>
+      <div class="sizing-chart-modal__scroll" data-sizing-chart-body>
+        <h2 id="sizing-chart-modal-title">Sizing chart</h2>
+      </div>
+    </dialog>
   </main>
 
   <style>
@@ -131,6 +157,62 @@ const toolPrintTitle = tool?.title ?? "Rectangle / Square Calculator";
       .rectangle-input-row--dimensions,
       .rectangle-input-row--gauge {
         grid-template-columns: 1fr;
+      }
+    }
+
+    .rectangle-size-help {
+      margin: 0;
+      padding: 12px 14px;
+      border-radius: 8px;
+      background: rgba(82, 104, 45, 0.06);
+    }
+
+    .rectangle-size-help__title {
+      margin: 0 0 6px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #52682D;
+    }
+
+    .rectangle-size-help__links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px 18px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .rectangle-size-help__links button {
+      display: inline-flex;
+      align-items: center;
+      min-height: 44px;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      color: #52682D;
+      font: inherit;
+      font-weight: 600;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      cursor: pointer;
+    }
+
+    .rectangle-size-help__links button:hover,
+    .rectangle-size-help__links button:focus-visible {
+      color: #445925;
+    }
+
+    @media (max-width: 640px) {
+      .rectangle-size-help__links {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0;
+      }
+
+      .rectangle-size-help__links button {
+        width: 100%;
+        justify-content: flex-start;
       }
     }
 
@@ -231,6 +313,118 @@ const toolPrintTitle = tool?.title ?? "Rectangle / Square Calculator";
       margin: 6px 0 0;
       font-size: 0.95rem;
       line-height: 1.5;
+    }
+  </style>
+  <style is:global>
+    .sizing-chart-modal {
+      width: min(42rem, calc(100vw - 1.5rem));
+      max-height: min(90dvh, calc(100% - 1.5rem));
+      margin: auto;
+      padding: 0;
+      border: none;
+      border-radius: 12px;
+      color: #1f2937;
+    }
+
+    .sizing-chart-modal::backdrop {
+      background: rgba(17, 24, 39, 0.45);
+    }
+
+    .sizing-chart-modal__bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px 16px 8px;
+    }
+
+    .sizing-chart-modal__close {
+      min-height: 44px;
+      padding: 0.45rem 0.95rem;
+      border: 1px solid #52682D;
+      border-radius: 6px;
+      background: #fff;
+      color: #52682D;
+      font: inherit;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .sizing-chart-modal__close:hover,
+    .sizing-chart-modal__close:focus-visible {
+      background: #52682D;
+      color: #fff;
+    }
+
+    .sizing-chart-modal__scroll {
+      overflow: auto;
+      max-height: calc(90dvh - 5.5rem);
+      padding: 0 16px 18px;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .sizing-chart-modal h2 {
+      margin: 0 0 0.75rem;
+      color: #52682D;
+      font-size: 1.35rem;
+      line-height: 1.3;
+    }
+
+    .sizing-chart-modal .chart-intro,
+    .sizing-chart-modal .chart-notes p {
+      margin: 0 0 0.75rem;
+      line-height: 1.5;
+    }
+
+    .sizing-chart-modal .chart-measurement-note {
+      margin: 0 0 1rem;
+      line-height: 1.5;
+    }
+
+    .sizing-chart-modal .sizing-grid {
+      overflow-x: auto;
+    }
+
+    .sizing-chart-modal table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.95rem;
+    }
+
+    .sizing-chart-modal th,
+    .sizing-chart-modal td {
+      padding: 0.55rem 0.65rem;
+      border-bottom: 1px solid #e5e7eb;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    .sizing-chart-modal th {
+      color: #52682D;
+    }
+
+    .sizing-chart-modal__status {
+      margin: 0.5rem 0 1rem;
+    }
+
+    @media (max-width: 640px) {
+      .sizing-chart-modal {
+        width: calc(100vw - 1rem);
+        max-height: calc(100dvh - 1rem);
+      }
+
+      .sizing-chart-modal__bar {
+        align-items: flex-start;
+      }
+
+      .sizing-chart-modal__scroll {
+        max-height: calc(100dvh - 6.5rem);
+      }
+
+      .sizing-chart-modal th,
+      .sizing-chart-modal td {
+        padding: 0.5rem 0.4rem;
+      }
     }
   </style>
 
@@ -388,5 +582,9 @@ const toolPrintTitle = tool?.title ?? "Rectangle / Square Calculator";
       setSvgText("height-label", "Height");
       setSvgText("height-measure", heightText);
     });
+  </script>
+  <script>
+    import { initProjectSizingChartModal } from "../../lib/sizing/projectSizingChartModal";
+    initProjectSizingChartModal();
   </script>
 </Layout>
