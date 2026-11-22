@@ -1,6 +1,9 @@
 ---
+import { readFileSync } from "node:fs";
 import Layout from "../../layouts/Layout.astro";
 import ReferencePageShell from "../../components/ReferencePageShell.astro";
+
+const scarfIconSvg = readFileSync(new URL("../../../public/images/scarf.svg", import.meta.url), "utf8").trim();
 ---
 
 <Layout
@@ -46,6 +49,7 @@ import ReferencePageShell from "../../components/ReferencePageShell.astro";
           <img src="/images/sock.svg" alt="" class="button-icon" />
           Socks
         </button>
+        <button data-type="scarves" set:html={`${scarfIconSvg}Scarves`}></button>
         <button data-type="blankets">
           <img src="/images/blanket.svg" alt="" class="button-icon" />
           Blankets
@@ -67,6 +71,7 @@ import ReferencePageShell from "../../components/ReferencePageShell.astro";
       <div class="sizing-table-stage">
         <div id="sizingGrid" class="sizing-grid"></div>
       </div>
+      <div id="chartNotes" class="chart-notes" hidden></div>
       <p id="errorMsg" class="error-message" style="display:none;">Error loading data.</p>
     </div>
   </ReferencePageShell>
@@ -153,6 +158,12 @@ import ReferencePageShell from "../../components/ReferencePageShell.astro";
       filter: brightness(0) invert(1);
     }
 
+    .project-pills button .scarf-icon,
+    .project-pills button:hover .scarf-icon,
+    .project-pills button.active .scarf-icon {
+      filter: none;
+    }
+
     .unit-toggle-wrapper {
       display: flex;
       align-items: center;
@@ -232,9 +243,48 @@ import ReferencePageShell from "../../components/ReferencePageShell.astro";
       margin: 0;
     }
 
-    .chart-header img {
+    .chart-header img,
+    .chart-header .scarf-icon {
       width: 42px;
       height: 42px;
+    }
+
+    .chart-intro {
+      max-width: 42rem;
+      margin: 12px auto 0;
+      font-size: 1rem;
+      line-height: 1.5;
+      font-weight: 400;
+      color: #333;
+    }
+
+    .chart-measurement-note {
+      box-sizing: border-box;
+      width: 100%;
+      margin: 0.75rem 0 0;
+      padding: 0.3rem 0.75rem;
+      font-size: 0.875rem;
+      line-height: 1.4;
+      color: var(--kbm-green);
+      text-align: center;
+      background: rgba(82, 104, 45, 0.06);
+    }
+
+    .chart-notes {
+      max-width: 42rem;
+      margin: 20px auto 0;
+    }
+
+    .chart-notes p {
+      margin: 0 0 0.75rem;
+      font-size: 0.95rem;
+      line-height: 1.5;
+      text-align: center;
+      color: #333;
+    }
+
+    .sizing-grid td.sizing-pair {
+      white-space: nowrap;
     }
 
     .chart-header-dropdown {
@@ -414,6 +464,7 @@ import ReferencePageShell from "../../components/ReferencePageShell.astro";
       .chart-header h2 {
         justify-content: center;
         text-align: center;
+        flex-wrap: wrap;
       }
 
       .project-controls {
@@ -452,6 +503,7 @@ import ReferencePageShell from "../../components/ReferencePageShell.astro";
       hats: '/data/sizing_hats.json',
       mittens: '/data/sizing_mittens.json',
       socks: '/data/sizing_socks.json',
+      scarves: '/data/sizing_scarves.json',
       blankets: '/data/sizing_blankets.json',
       pillows: '/data/sizing_pillows.json',
       xmas_stockings: '/data/sizing_xmas_stockings.json'
@@ -467,6 +519,7 @@ import ReferencePageShell from "../../components/ReferencePageShell.astro";
       hats: { label: 'Hats Sizing Chart', icon: '/images/hat.svg', hash: 'hats-chart' },
       mittens: { label: 'Mittens Sizing Chart', icon: '/images/mitten.svg', hash: 'mittens-chart' },
       socks: { label: 'Socks Sizing Chart', icon: '/images/sock.svg', hash: 'socks-chart' },
+      scarves: { label: 'Suggested Finished Scarf Sizes', icon: '/images/scarf.svg', hash: 'scarves-chart' },
       blankets: { label: 'Blankets Sizing Chart', icon: '/images/blanket.svg', hash: 'blankets-chart' },
       pillows: { label: 'Pillows Sizing Chart', icon: '/images/pillow.svg', hash: 'pillows-chart' },
       xmas_stockings: { label: 'Christmas Stockings Sizing Chart', icon: '/images/stocking.svg', hash: 'xmas-stockings-chart' }
@@ -539,6 +592,33 @@ import ReferencePageShell from "../../components/ReferencePageShell.astro";
         .join(' ');
     }
 
+    const SCARF_INTRO = 'Use these sizes as a starting point. Choose the width and length to suit the person, the fabric, and the way the scarf will be worn.';
+    const SCARF_MEASUREMENT_NOTE = 'All sizes are width × length. Measurements refer to the finished scarf body, excluding fringe. Centimeters are rounded.';
+    const SCARF_NOTES = [
+      'Have a scarf you enjoy wearing? Measure it and use those dimensions for your own design.',
+      'The chart describes finished wearing dimensions. If a scarf is folded or seamed into a double layer, allow for that construction when drafting the fabric width.'
+    ];
+
+    function scarfIntroHtml() {
+      if (currentType !== 'scarves') return '';
+      return `
+        <p class="chart-intro">${SCARF_INTRO}</p>
+        <p class="chart-measurement-note"><strong>${SCARF_MEASUREMENT_NOTE}</strong></p>
+      `;
+    }
+
+    function updateChartNotes() {
+      const notes = document.getElementById('chartNotes');
+      if (!notes) return;
+      if (currentType !== 'scarves') {
+        notes.innerHTML = '';
+        notes.hidden = true;
+        return;
+      }
+      notes.hidden = false;
+      notes.innerHTML = SCARF_NOTES.map(note => `<p>${note}</p>`).join('');
+    }
+
     // Update the chart header with icon and title
     function updateChartHeader() {
       const chartHeader = document.getElementById('chartHeader');
@@ -546,6 +626,7 @@ import ReferencePageShell from "../../components/ReferencePageShell.astro";
       const bodyMeasurementsNote = BODY_MEASUREMENT_CHART_TYPES.has(currentType)
         ? '<p class="chart-header-body-measurements-note">These charts show <strong>body measurements</strong> for sizing, not finished item measurements.</p>'
         : '';
+      const scarfIntro = scarfIntroHtml();
 
       if (metadata) {
         // Check if this is a sweater chart - if so, add dropdown
@@ -570,6 +651,7 @@ ${subCategory === 'misses' ? 'Misses' : subCategory === 'plus' ? 'Women' : forma
               </div>
             </h2>
             ${bodyMeasurementsNote}
+            ${scarfIntro}
           `;
           
           const dropdown = chartHeader.querySelector('.chart-header-dropdown');
@@ -604,15 +686,42 @@ ${subCategory === 'misses' ? 'Misses' : subCategory === 'plus' ? 'Women' : forma
           });
         } else {
           // Non-sweater charts - simple header
+          const iconMarkup = currentType === 'scarves'
+            ? (document.querySelector('.project-pills .scarf-icon')?.outerHTML ?? '')
+            : `<img src="${metadata.icon}" alt="" />`;
           chartHeader.innerHTML = `
             <h2 id="${metadata.hash}">
-              <img src="${metadata.icon}" alt="" />
+              ${iconMarkup}
               ${metadata.label}
             </h2>
             ${bodyMeasurementsNote}
+            ${scarfIntro}
           `;
         }
       }
+      updateChartNotes();
+    }
+
+    function formatMeasurement(value) {
+      if (typeof value !== 'number' || Number.isNaN(value)) {
+        return '—';
+      }
+      const displayValue = isMetric ? toCm(value) : value;
+      const unit = isMetric ? ' cm' : '″';
+      return `${displayValue}${unit}`;
+    }
+
+    function renderScarfTable(grid, data) {
+      let html = '<table><thead><tr><th>Scarf</th><th>Width × length</th></tr></thead><tbody>';
+      data.forEach(row => {
+        const displayLabel = row.extended_label || row.label || row.size;
+        html += '<tr>';
+        html += `<td>${displayLabel}</td>`;
+        html += `<td class="sizing-pair">${formatMeasurement(row.width)} × ${formatMeasurement(row.length)}</td>`;
+        html += '</tr>';
+      });
+      html += '</tbody></table>';
+      grid.innerHTML = html;
     }
 
     // Render the sizing table
@@ -630,6 +739,11 @@ ${subCategory === 'misses' ? 'Misses' : subCategory === 'plus' ? 'Women' : forma
       
       if (!data || data.length === 0) {
         grid.innerHTML = '<p style="text-align: center; padding: 40px;">No data available for this category.</p>';
+        return;
+      }
+
+      if (currentType === 'scarves') {
+        renderScarfTable(grid, data);
         return;
       }
 
@@ -741,6 +855,7 @@ ${subCategory === 'misses' ? 'Misses' : subCategory === 'plus' ? 'Women' : forma
       // Remove active from all buttons
       document.querySelectorAll('.project-pills button').forEach(btn => {
         btn.classList.remove('active');
+        btn.setAttribute('aria-pressed', 'false');
       });
       
       // Find the button to activate based on the type
@@ -755,6 +870,7 @@ ${subCategory === 'misses' ? 'Misses' : subCategory === 'plus' ? 'Women' : forma
       const activeButton = document.querySelector(buttonSelector);
       if (activeButton) {
         activeButton.classList.add('active');
+        activeButton.setAttribute('aria-pressed', 'true');
       }
     }
 
