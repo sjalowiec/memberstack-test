@@ -1,9 +1,9 @@
 ---
-import { readFileSync } from "node:fs";
 import Layout from "../../layouts/Layout.astro";
 import ReferencePageShell from "../../components/ReferencePageShell.astro";
+import scarfIconSource from "../../../public/images/scarf.svg?raw";
 
-const scarfIconSvg = readFileSync(new URL("../../../public/images/scarf.svg", import.meta.url), "utf8").trim();
+const scarfIconSvg = scarfIconSource.trim();
 ---
 
 <Layout
