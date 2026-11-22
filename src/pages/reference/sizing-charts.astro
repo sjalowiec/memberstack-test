@@ -283,6 +283,19 @@ const scarfIconSvg = scarfIconSource.trim();
       color: #333;
     }
 
+    .chart-notes a {
+      color: #52682D;
+      font-weight: 600;
+    }
+
+    .chart-pattern-link a {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 44px;
+      padding: 0 8px;
+    }
+
     .sizing-grid td.sizing-pair {
       white-space: nowrap;
     }
@@ -492,6 +505,10 @@ const scarfIconSvg = scarfIconSource.trim();
     }
   </style>
 
+  <script>
+    import { installProjectSizingCharts } from "../../lib/sizing/projectSizingChart";
+    installProjectSizingCharts();
+  </script>
   <script is:inline>
     // Sizing chart data URLs - using local files
     const DATA_URLS = {
@@ -592,19 +609,9 @@ const scarfIconSvg = scarfIconSource.trim();
         .join(' ');
     }
 
-    const SCARF_INTRO = 'Use these sizes as a starting point. Choose the width and length to suit the person, the fabric, and the way the scarf will be worn.';
-    const SCARF_MEASUREMENT_NOTE = 'All sizes are width × length. Measurements refer to the finished scarf body, excluding fringe. Centimeters are rounded.';
-    const SCARF_NOTES = [
-      'Have a scarf you enjoy wearing? Measure it and use those dimensions for your own design.',
-      'The chart describes finished wearing dimensions. If a scarf is folded or seamed into a double layer, allow for that construction when drafting the fabric width.'
-    ];
-
     function scarfIntroHtml() {
       if (currentType !== 'scarves') return '';
-      return `
-        <p class="chart-intro">${SCARF_INTRO}</p>
-        <p class="chart-measurement-note"><strong>${SCARF_MEASUREMENT_NOTE}</strong></p>
-      `;
+      return window.KinProjectSizing.guidanceHtml('scarves');
     }
 
     function updateChartNotes() {
@@ -616,7 +623,23 @@ const scarfIconSvg = scarfIconSource.trim();
         return;
       }
       notes.hidden = false;
-      notes.innerHTML = SCARF_NOTES.map(note => `<p>${note}</p>`).join('');
+      notes.innerHTML = window.KinProjectSizing.notesHtml('scarves')
+        + '<p class="chart-pattern-link"><a href="/tools/rectangle-tool">Create your scarf pattern</a></p>';
+    }
+
+    let revealHashOnRender = true;
+
+    function revealHashedChart() {
+      if (!revealHashOnRender) return;
+      const hash = location.hash.replace(/^#/, '');
+      if (!hash) {
+        revealHashOnRender = false;
+        return;
+      }
+      const target = document.getElementById(hash);
+      if (!target) return;
+      revealHashOnRender = false;
+      target.scrollIntoView({ block: 'start' });
     }
 
     // Update the chart header with icon and title
@@ -700,28 +723,7 @@ ${subCategory === 'misses' ? 'Misses' : subCategory === 'plus' ? 'Women' : forma
         }
       }
       updateChartNotes();
-    }
-
-    function formatMeasurement(value) {
-      if (typeof value !== 'number' || Number.isNaN(value)) {
-        return '—';
-      }
-      const displayValue = isMetric ? toCm(value) : value;
-      const unit = isMetric ? ' cm' : '″';
-      return `${displayValue}${unit}`;
-    }
-
-    function renderScarfTable(grid, data) {
-      let html = '<table><thead><tr><th>Scarf</th><th>Width × length</th></tr></thead><tbody>';
-      data.forEach(row => {
-        const displayLabel = row.extended_label || row.label || row.size;
-        html += '<tr>';
-        html += `<td>${displayLabel}</td>`;
-        html += `<td class="sizing-pair">${formatMeasurement(row.width)} × ${formatMeasurement(row.length)}</td>`;
-        html += '</tr>';
-      });
-      html += '</tbody></table>';
-      grid.innerHTML = html;
+      revealHashedChart();
     }
 
     // Render the sizing table
@@ -742,8 +744,8 @@ ${subCategory === 'misses' ? 'Misses' : subCategory === 'plus' ? 'Women' : forma
         return;
       }
 
-      if (currentType === 'scarves') {
-        renderScarfTable(grid, data);
+      if (window.KinProjectSizing.isProjectChart(currentType)) {
+        grid.innerHTML = window.KinProjectSizing.tableHtml(currentType, data, isMetric);
         return;
       }
 
@@ -874,24 +876,20 @@ ${subCategory === 'misses' ? 'Misses' : subCategory === 'plus' ? 'Women' : forma
       }
     }
 
-    // Initialize
-    document.addEventListener('DOMContentLoaded', () => {
-      // Check if URL has a hash and load that chart
+    function startSizingCharts() {
       const hashType = getTypeFromHash();
       if (hashType) {
         currentType = hashType;
       }
-      
-      // Load initial data and sync UI
+
       loadData(currentType);
       updateActiveStates(currentType);
 
-      // Handle button clicks (only top navigation pills)
       document.querySelectorAll('.project-pills button').forEach(button => {
         button.addEventListener('click', (e) => {
           e.stopPropagation();
           const type = button.dataset.type;
-          
+
           if (type) {
             currentType = type;
             updateURL(type);
@@ -901,21 +899,26 @@ ${subCategory === 'misses' ? 'Misses' : subCategory === 'plus' ? 'Women' : forma
         });
       });
 
-      // Handle unit toggle
       document.getElementById('unitToggle').addEventListener('change', (e) => {
         isMetric = e.target.checked;
         renderTable(currentData);
       });
 
-      // Listen for hash changes (if user manually changes URL)
       window.addEventListener('hashchange', () => {
         const newType = getTypeFromHash();
         if (newType && newType !== currentType) {
+          revealHashOnRender = true;
           currentType = newType;
           updateActiveStates(newType);
           loadData(currentType);
         }
       });
-    });
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', startSizingCharts);
+    } else {
+      startSizingCharts();
+    }
   </script>
 </Layout>
