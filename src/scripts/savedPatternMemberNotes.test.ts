@@ -195,12 +195,21 @@ describe("My Notes editor", () => {
     expect(ui.dialog.open).toBe(true);
     expect(ui.button.getAttribute("aria-expanded")).toBe("true");
     expect(ui.status.textContent).toBe("");
+    expect(ui.textarea.readOnly).toBe(false);
+    const blockedWhileLoading = { preventDefault: vi.fn() };
+    ui.textarea.emit("beforeinput", blockedWhileLoading);
+    expect(blockedWhileLoading.preventDefault).toHaveBeenCalledTimes(1);
     await flush();
     expect(ui.textarea.value).toBe("Blue yarn");
     expect(ui.printBody.textContent).toBe("Blue yarn");
     expect(ui.printSection.hidden).toBe(false);
     expect(ui.textarea.readOnly).toBe(false);
     expect(ui.save.disabled).toBe(false);
+    expect(focused).toBe(ui.textarea);
+    const allowed = { preventDefault: vi.fn() };
+    ui.textarea.emit("beforeinput", allowed);
+    expect(allowed.preventDefault).not.toHaveBeenCalled();
+    ui.textarea.emit("pointerup");
     expect(focused).toBe(ui.textarea);
 
     ui.textarea.value = "Blue yarn and a lifeline";
@@ -210,6 +219,10 @@ describe("My Notes editor", () => {
     });
     ui.form.emit("submit", { preventDefault() {} });
     expect(ui.status.textContent).toBe("Saving…");
+    expect(ui.textarea.readOnly).toBe(false);
+    const blockedWhileSaving = { preventDefault: vi.fn() };
+    ui.textarea.emit("beforeinput", blockedWhileSaving);
+    expect(blockedWhileSaving.preventDefault).toHaveBeenCalledTimes(1);
     await flush();
     expect(patchCustomPatternProjectMemberNotes).toHaveBeenCalledWith(
       "proj-1",
