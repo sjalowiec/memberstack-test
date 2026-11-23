@@ -6,6 +6,7 @@ import { hasAuthoritativeSidewaysCardiganConstruction } from "./sidewaysCardigan
 import {
   isChristmasStockingCustomPatternProject,
   isHatCustomPatternProject,
+  isMittenCustomPatternProject,
   isSockCustomPatternProject,
   isTriangleScarfCustomPatternProject,
 } from "./patternSystemId";
@@ -33,6 +34,8 @@ export const SOCK_OPEN_PATTERN_HREF = "/patterns/socks/pattern/";
 export const SOCK_SUMMARY_EDIT_HREF = "/patterns/socks/edit/";
 export const CHRISTMAS_STOCKING_OPEN_PATTERN_HREF = "/patterns/christmas-stocking/pattern/";
 export const CHRISTMAS_STOCKING_SUMMARY_EDIT_HREF = "/patterns/christmas-stocking/edit/";
+export const MITTEN_OPEN_PATTERN_HREF = "/patterns/mittens/pattern/";
+export const MITTEN_SUMMARY_EDIT_HREF = "/patterns/mittens/summary/?edit=1";
 
 /**
  * Query flag appended to {@link OPEN_PATTERN_HREF} when the knitter chose Edit (not View).
@@ -67,6 +70,9 @@ export const SOCK_OPEN_PATTERN_EDIT_WORKSPACE_HREF =
 
 export const CHRISTMAS_STOCKING_OPEN_PATTERN_EDIT_WORKSPACE_HREF =
   `${CHRISTMAS_STOCKING_SUMMARY_EDIT_HREF}?${PATTERN_WORKSPACE_EDIT_QUERY}`;
+
+/** Saved mitten Summary page. Measurements stay editable there. */
+export const MITTEN_OPEN_PATTERN_EDIT_WORKSPACE_HREF = MITTEN_SUMMARY_EDIT_HREF;
 
 /** Query flag for first arrival on the workspace after builder completion (see handoff module). */
 export const PATTERN_WORKSPACE_GENERATED_QUERY = `${PATTERN_WORKSPACE_BUILDER_HANDOFF_QUERY}=1`;
@@ -133,6 +139,15 @@ function triangleScarfEditHrefForProject(
     : TRIANGLE_SCARF_OPEN_PATTERN_EDIT_WORKSPACE_HREF;
 }
 
+function mittenEditHrefForProject(
+  project: Pick<CustomPatternProject, "pattern" | "customOverrides"> & { id?: string },
+): string {
+  const id = project.id?.trim() ?? "";
+  return id
+    ? withSavedPatternProjectId(MITTEN_OPEN_PATTERN_EDIT_WORKSPACE_HREF, id)
+    : MITTEN_OPEN_PATTERN_EDIT_WORKSPACE_HREF;
+}
+
 function christmasStockingEditHrefForProject(
   project: Pick<CustomPatternProject, "pattern" | "customOverrides"> & { id?: string },
 ): string {
@@ -166,6 +181,9 @@ export function getContinueEditingHref(
   }
   if (project && isChristmasStockingCustomPatternProject(project)) {
     return christmasStockingEditHrefForProject(project);
+  }
+  if (project && isMittenCustomPatternProject(project)) {
+    return mittenEditHrefForProject(project);
   }
   if (project && isSockCustomPatternProject(project)) {
     return sockEditHrefForProject(project);
@@ -222,6 +240,7 @@ export function getOpenPatternHrefForProject(
   if (isHatCustomPatternProject(project)) return HAT_OPEN_PATTERN_HREF;
   if (isTriangleScarfCustomPatternProject(project)) return TRIANGLE_SCARF_OPEN_PATTERN_HREF;
   if (isChristmasStockingCustomPatternProject(project)) return CHRISTMAS_STOCKING_OPEN_PATTERN_HREF;
+  if (isMittenCustomPatternProject(project)) return MITTEN_OPEN_PATTERN_HREF;
   if (isSockCustomPatternProject(project)) return SOCK_OPEN_PATTERN_HREF;
   if (isSidewaysCardiganCustomPatternProject(project)) return SIDEWAYS_CARDIGAN_OPEN_PATTERN_HREF;
   if (isSetInSleeveCustomPatternProject(project)) return SET_IN_SLEEVE_OPEN_PATTERN_HREF;
@@ -259,6 +278,9 @@ export function getSavedCustomPatternOpenHref(
   }
   if (project && isChristmasStockingCustomPatternProject(project)) {
     return christmasStockingEditHrefForProject(project);
+  }
+  if (project && isMittenCustomPatternProject(project)) {
+    return mittenEditHrefForProject(project);
   }
   if (project && isSockCustomPatternProject(project)) {
     return sockEditHrefForProject(project);

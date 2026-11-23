@@ -1,0 +1,44 @@
+---
+/**
+ * One pattern-catalog card image at the desktop catalog size.
+ * Artwork stays in its own file. The paper background and square frame
+ * come from the shared catalog card media styles.
+ */
+import "../../styles/patterns/pattern-catalog-card-media.css";
+
+interface Props {
+  src: string;
+  alt: string;
+  width?: number;
+  height?: number;
+}
+
+const { src, alt, width = 1254, height = 1254 } = Astro.props;
+---
+
+<div class="pattern-catalog-card-slot" data-testid="pattern-catalog-card-slot">
+  <div class="catalog-card">
+    <div class="catalog-card__media">
+      <img src={src} alt={alt} width={width} height={height} />
+    </div>
+  </div>
+</div>
+
+<style>
+  /* Desktop catalog column: 1000px content box, 20px grid gaps, 3 columns. */
+  .pattern-catalog-card-slot {
+    width: calc((1000px - 40px) / 3);
+    max-width: 100%;
+    margin: 0 0 1.25rem;
+  }
+
+  .pattern-catalog-card-slot .catalog-card {
+    display: flex;
+    flex-direction: column;
+    border-radius: 12px;
+    background: #fff;
+    border: 1px solid #d6dbc9;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+  }
+</style>

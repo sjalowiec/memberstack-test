@@ -1,0 +1,149 @@
+---
+/**
+ * Finished slotted-mitten pattern.
+ * Online and print use the same instruction HTML.
+ * Account save, edit, copy, and My Notes use the shared pattern project tools.
+ * Public catalog access stays undecided, so this page is not membership-gated.
+ */
+import Layout from "../../../layouts/Layout.astro";
+import PatternPrintFooter from "../../../components/common/PatternPrintFooter.astro";
+import PatternPrintPersonalization from "../../../components/common/PatternPrintPersonalization.astro";
+import SavedPatternHeader from "../../../components/patterns/SavedPatternHeader.astro";
+import SavedPatternStickyNav from "../../../components/patterns/SavedPatternStickyNav.astro";
+import { MITTEN_BUILDER_HREF } from "../../../lib/patterns/mitten/mittenDraft";
+import { MITTEN_SUMMARY_EDIT_HREF } from "../../../lib/patterns/customPatternProjectNavigation";
+
+import "../../../styles/wizard.css";
+import "../../../styles/patterns/sleeveless-pattern-shared.css";
+import "../../../styles/patterns/pattern-app-shell.css";
+import "../../../styles/print.css";
+
+---
+
+<Layout
+  title="Slotted Mitten Pattern | Knit it Now"
+  description="Slotted machine-knit mitten instructions for a mirrored pair."
+  bodyClass="pattern-print-global-footer"
+  patternWorkspace={true}
+>
+  <PatternPrintFooter footerBottomLeftExtra=" · KnitItNow.com/patterns/mittens" />
+  <main class="wizard-page pattern-app-shell mitten-pattern-page" data-testid="mitten-pattern-page" data-mitten-pattern>
+    <div class="wizard-container">
+      <p class="no-print"><a href={MITTEN_BUILDER_HREF}>Back to Builder</a></p>
+      <SavedPatternHeader
+        part="intro"
+        title="Slotted mittens"
+        titleAttr="data-mitten-pattern-heading"
+        showNotes={false}
+        hideTitleOnPrint
+        thumbnailSrc="/images/patterns/mittens.png"
+        thumbnailAlt="Slotted mittens"
+        tipsStorageKey="mittens-show-tips"
+        tipsScopeSelector="#mitten-pattern-root"
+        printOriginLabel="Created with the Knit It Now Mitten Pattern Builder"
+        printOriginUrl="KnitItNow.com/patterns/mittens"
+      >
+        <PatternPrintPersonalization slot="print-personalization">
+          <div slot="print-summary" class="sg-pattern-print-at-a-glance" data-mitten-print-basics></div>
+        </PatternPrintPersonalization>
+      </SavedPatternHeader>
+      <div id="pattern-content" data-pattern-content>
+        <SavedPatternStickyNav actionsAttrs={["data-mitten-pattern-actions"]} includePrint>
+          <a
+            href={MITTEN_SUMMARY_EDIT_HREF}
+            class="sleeveless-pattern-edit-action no-print"
+            data-mitten-edit-open
+            data-testid="button-edit-pattern"
+            hidden
+          >
+            Edit Pattern
+          </a>
+        </SavedPatternStickyNav>
+        <div class="mitten-tabs no-print" role="tablist" aria-label="Mittens">
+          <button type="button" data-mitten-tab="right-edge" class="is-selected" aria-selected="true">Right-edge slot</button>
+          <button type="button" data-mitten-tab="left-edge" aria-selected="false">Left-edge slot</button>
+        </div>
+        <div id="mitten-pattern-root" data-testid="mitten-pattern-root">
+          <p>Loading your mitten pattern…</p>
+        </div>
+      </div>
+    </div>
+  </main>
+</Layout>
+
+<script>
+  import { initMittenPatternPage } from "../../../scripts/mitten-pattern-page";
+  void initMittenPatternPage();
+</script>
+
+<style>
+  .mitten-pattern-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+  }
+  .mitten-pattern-toolbar h1 {
+    margin: 0;
+  }
+  .mitten-tabs {
+    display: flex;
+    gap: 0.5rem;
+    margin: 1rem 0;
+  }
+  .mitten-tabs button {
+    font: inherit;
+    padding: 0.45rem 0.8rem;
+    border: 1px solid #52682d;
+    background: #fff;
+    border-radius: 999px;
+  }
+  .mitten-tabs button.is-selected {
+    background: #52682d;
+    color: #fff;
+  }
+  .mitten-counts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 0.6rem;
+    margin: 1rem 0;
+  }
+  .mitten-count {
+    margin: 0;
+    padding: 0.65rem 0.75rem;
+    background: #f4f7ef;
+  }
+  .mitten-count dt {
+    font-size: 0.8rem;
+  }
+  .mitten-count dd {
+    margin: 0.15rem 0 0;
+    font-weight: 650;
+  }
+  .mitten-panel {
+    margin-top: 0.5rem;
+  }
+  .mitten-panel h2 {
+    margin-bottom: 0.25rem;
+  }
+  .mitten-preview-note {
+    padding: 0.75rem 1rem;
+    background: #f8f5ea;
+    border-left: 4px solid #8a6a2f;
+  }
+  @media print {
+    :global(.mitten-panel[hidden]) {
+      display: block !important;
+    }
+    :global(.mitten-panel) {
+      break-before: page;
+    }
+    :global(.mitten-panel:first-of-type) {
+      break-before: auto;
+    }
+    :global(.mitten-diagrams),
+    :global(.mitten-diagrams svg) {
+      break-inside: avoid;
+    }
+  }
+</style>

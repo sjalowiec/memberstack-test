@@ -11,6 +11,7 @@ import { readTriangleScarfActiveProjectId } from "./triangleScarf/triangleScarfS
 import { pathnameFromHref } from "./savedPatternViewRoute";
 import { readSavedPatternProjectIdFromUrl } from "./savedPatternViewUrl";
 import { readSockActiveProjectId } from "./sock/sockSavedProject";
+import { readMittenActiveProjectId } from "./mitten/mittenSavedProject";
 
 export const MEMBER_NOTES_MAX_LENGTH = 8000;
 
@@ -25,6 +26,7 @@ export type SavedPatternMemberNotesActiveIds = {
   socks: string;
   stocking: string;
   sweater: string;
+  mittens: string;
 };
 
 export type MemberNotesLoadResult =
@@ -41,10 +43,11 @@ export type MemberNotesFeedback = {
   tone: "neutral" | "error" | "saved";
 };
 
-type NotesViewKind = "hat" | "triangle-scarf" | "socks" | "stocking" | "sweater";
+type NotesViewKind = "hat" | "triangle-scarf" | "socks" | "stocking" | "sweater" | "mittens";
 
 function notesViewKind(pathname: string): NotesViewKind | null {
   if (/^\/patterns\/hat\/pattern\/?$/.test(pathname)) return "hat";
+  if (/^\/patterns\/mittens\/pattern\/?$/.test(pathname)) return "mittens";
   if (/^\/patterns\/triangle-scarf\/pattern\/?$/.test(pathname)) return "triangle-scarf";
   if (/^\/patterns\/socks\/pattern\/?$/.test(pathname)) return "socks";
   if (/^\/patterns\/christmas-stocking\/pattern\/?$/.test(pathname)) return "stocking";
@@ -185,6 +188,8 @@ export function resolveSavedPatternMemberNotesTarget(
       ? activeIds.hat
       : kind === "triangle-scarf"
         ? activeIds.triangleScarf
+        : kind === "mittens"
+          ? activeIds.mittens
         : kind === "socks"
         ? activeIds.socks
         : kind === "stocking"
@@ -205,6 +210,7 @@ export function readSavedPatternMemberNotesTarget(
     socks: readSockActiveProjectId(),
     stocking: readStockingActiveProjectId(),
     sweater: readActiveCustomPatternProjectId(),
+    mittens: readMittenActiveProjectId(),
   });
 }
 

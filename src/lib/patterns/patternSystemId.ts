@@ -39,7 +39,8 @@ export type PatternSystemId =
   | "raglan"
   | "socks"
   | "christmas-stocking"
-  | "triangle-scarf";
+  | "triangle-scarf"
+  | "mittens";
 
 export const PATTERN_SYSTEM_IDS: readonly PatternSystemId[] = [
   "sleeveless",
@@ -52,6 +53,7 @@ export const PATTERN_SYSTEM_IDS: readonly PatternSystemId[] = [
   "socks",
   "christmas-stocking",
   "triangle-scarf",
+  "mittens",
 ];
 
 /** User-facing pattern system names for copy and toasts. */
@@ -66,6 +68,7 @@ export const PATTERN_SYSTEM_DISPLAY_NAMES: Record<PatternSystemId, string> = {
   socks: "Socks",
   "christmas-stocking": "Christmas Stocking",
   "triangle-scarf": "Weekend Triangle Scarf",
+  mittens: "Mittens",
 };
 
 export function patternSystemDisplayName(systemId: PatternSystemId): string {
@@ -98,6 +101,11 @@ function isTriangleScarfPatternBlob(pattern: unknown): boolean {
   return o.patternType === "triangle-scarf" || o.patternSystem === "triangle-scarf";
 }
 
+function isMittenPatternBlob(pattern: unknown): boolean {
+  const o = section(pattern);
+  return o.patternType === "mittens" || o.patternSystem === "mittens";
+}
+
 /** True when a saved Custom Pattern project is a Hat Pattern. */
 export function isHatCustomPatternProject(
   project: { pattern?: unknown } | null | undefined,
@@ -119,6 +127,13 @@ export function isChristmasStockingCustomPatternProject(
   return isChristmasStockingPatternBlob(project?.pattern);
 }
 
+/** True when a saved Custom Pattern project is a mitten. */
+export function isMittenCustomPatternProject(
+  project: { pattern?: unknown } | null | undefined,
+): boolean {
+  return isMittenPatternBlob(project?.pattern);
+}
+
 /** True when a saved Custom Pattern project is a Weekend Triangle Scarf. */
 export function isTriangleScarfCustomPatternProject(
   project: { pattern?: unknown } | null | undefined,
@@ -132,6 +147,7 @@ export function resolvePatternSystemFromProject(
 ): PatternSystemId {
   if (isHatPatternBlob(project.pattern)) return "hat";
   if (isTriangleScarfPatternBlob(project.pattern)) return "triangle-scarf";
+  if (isMittenPatternBlob(project.pattern)) return "mittens";
   if (isChristmasStockingPatternBlob(project.pattern)) return "christmas-stocking";
   if (isSockPatternBlob(project.pattern)) return "socks";
   if (
@@ -168,6 +184,7 @@ export function resolvePatternSystemFromPatternRecord(
 ): PatternSystemId {
   if (isHatPatternBlob(pattern)) return "hat";
   if (isTriangleScarfPatternBlob(pattern)) return "triangle-scarf";
+  if (isMittenPatternBlob(pattern)) return "mittens";
   if (isChristmasStockingPatternBlob(pattern)) return "christmas-stocking";
   if (isSockPatternBlob(pattern)) return "socks";
   if (hasAuthoritativeSidewaysCardiganConstruction(section(pattern.style), customOverrides)) {
@@ -214,6 +231,9 @@ function resolvePatternSystemFromPageUrlAndDom(doc?: Document): PatternSystemId 
   }
   if (/\/patterns\/triangle-scarf(?:\/|$)/.test(pathname)) {
     return "triangle-scarf";
+  }
+  if (/\/patterns\/mittens(?:\/|$)/.test(pathname)) {
+    return "mittens";
   }
   if (/\/patterns\/christmas-stocking(?:\/|$)/.test(pathname)) {
     return "christmas-stocking";

@@ -317,7 +317,8 @@ export function shouldOfferSavedPatternRename(patternSystem: PatternSystemId): b
     patternSystem === "hat" ||
     patternSystem === "socks" ||
     patternSystem === "christmas-stocking" ||
-    patternSystem === "triangle-scarf"
+    patternSystem === "triangle-scarf" ||
+    patternSystem === "mittens"
   );
 }
 
