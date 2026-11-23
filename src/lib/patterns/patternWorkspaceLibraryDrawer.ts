@@ -44,6 +44,7 @@ export function formatCustomPatternProjectType(project: CustomPatternProjectSumm
   if (system === "triangle-scarf") return patternSystemDisplayName("triangle-scarf");
   if (system === "socks") return "Socks";
   if (system === "christmas-stocking") return patternSystemDisplayName("christmas-stocking");
+  if (system === "mittens") return patternSystemDisplayName("mittens");
   if (system === "sideways-cardigan") return patternSystemDisplayName("sideways-cardigan");
   if (system === "drop-shoulder") return "Drop Shoulder";
   if (system === "sleeveless") return "Sleeveless";

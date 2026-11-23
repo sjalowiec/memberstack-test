@@ -73,6 +73,7 @@ export function applySavedPatternUnavailableMessage(root: ParentNode = document)
       "[data-christmas-stocking-pattern-empty-message]",
       "[data-christmas-stocking-edit-empty-message]",
       "[data-hat-pattern-empty-message]",
+      "[data-mitten-pattern-empty-message]",
       "[data-hat-summary-empty-message]",
       "[data-triangle-scarf-pattern-empty-message]",
       "[data-triangle-scarf-summary-empty-message]",

@@ -88,6 +88,12 @@ describe("resolvePatternSystemFromPage", () => {
     expect(resolvePatternSystemFromPage(stubPathname("/patterns/hat/summary/"))).toBe("hat");
   });
 
+  it("uses the mitten pathname for the builder, summary, and pattern", () => {
+    expect(resolvePatternSystemFromPage(stubPathname("/patterns/mittens/builder"))).toBe("mittens");
+    expect(resolvePatternSystemFromPage(stubPathname("/patterns/mittens/summary/"))).toBe("mittens");
+    expect(resolvePatternSystemFromPage(stubPathname("/patterns/mittens/pattern/"))).toBe("mittens");
+  });
+
   it("uses socks pathname for future sock builder and pattern pages", () => {
     expect(resolvePatternSystemFromPage(stubPathname("/patterns/socks/builder"))).toBe("socks");
     expect(resolvePatternSystemFromPage(stubPathname("/patterns/socks/pattern/"))).toBe("socks");
@@ -281,6 +287,16 @@ describe("resolvePatternSystemFromProject", () => {
     expect(resolvePatternSystemFromProject(hat)).toBe("hat");
     expect(resolvePatternSystemFromProject(sock)).toBe("socks");
     expect(patternSystemDisplayName("socks")).toBe("Socks");
+    expect(
+      resolvePatternSystemFromProject({
+        pattern: {
+          patternType: "mittens",
+          patternSystem: "mittens",
+        } as CustomPatternProject["pattern"],
+        customOverrides: {},
+      }),
+    ).toBe("mittens");
+    expect(patternSystemDisplayName("mittens")).toBe("Mittens");
   });
 
   it("classifies sideways-cardigan saved projects separately from drop-shoulder and sleeveless", () => {

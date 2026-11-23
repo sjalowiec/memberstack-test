@@ -1,0 +1,149 @@
+---
+/**
+ * Slotted mitten preview builder.
+ * Ungated local preview. Membership policy is not decided.
+ */
+import Layout from "../../../layouts/Layout.astro";
+import GaugeInput from "../../../components/wizards/GaugeInput.astro";
+import PatternCatalogCardMedia from "../../../components/patterns/PatternCatalogCardMedia.astro";
+import PatternPhoneWorkspaceNotice from "../../../components/patterns/PatternPhoneWorkspaceNotice.astro";
+import { MITTEN_SIZING_CHART, THUMB_LENGTH_DEFINITION, THUMB_VALUE_SOURCES } from "../../../lib/patterns/mitten/mittenSizingChart";
+
+import "../../../styles/sleeveless-express-builder-cards.css";
+import "../../../styles/sleeveless-express-wizard-layout.css";
+import "../../../styles/wizard.css";
+
+const steps = [
+  { step: 1, label: "Size" },
+  { step: 2, label: "Measurements" },
+  { step: 3, label: "Gauge" },
+] as const;
+---
+
+<Layout
+  title="Mitten Pattern Builder | Knit it Now"
+  description="Preview a slotted machine-knit mitten pattern from your gauge and the KIN mitten chart."
+  patternWorkspace={true}
+>
+  <main
+    class="express-page wizard-page sleeveless-express-page mitten-builder-page"
+    data-express-page="mitten-builder"
+    data-mitten-builder
+    data-testid="mitten-builder-page"
+  >
+    <div class="wizard-container express-wizard">
+      <PatternCatalogCardMedia src="/images/patterns/mittens.png" alt="Slotted mittens" />
+      <div class="calculator-card mitten-builder-inputs">
+        <PatternPhoneWorkspaceNotice />
+        <p class="mitten-preview-banner">
+          Choose a slotted thumb or a gored thumb. Thumb length stays editable, and both styles use the same web-to-tip measurement.
+        </p>
+        <nav class="express-step-nav" aria-label="Mitten pattern steps">
+          <ol class="express-step-nav__list">
+            {
+              steps.map((item) => (
+                <li class="express-step-nav__item">
+                  <span class="express-step-nav__btn is-current">{item.step}. {item.label}</span>
+                </li>
+              ))
+            }
+          </ol>
+        </nav>
+
+        <section class="mitten-field-group" aria-labelledby="mitten-size-heading">
+          <h2 id="mitten-size-heading">Size</h2>
+          <label for="mitten-thumb-style">Thumb construction</label>
+          <select id="mitten-thumb-style" data-testid="mitten-thumb-style">
+            <option value="slotted">Slotted thumb</option>
+            <option value="gored">Gored thumb</option>
+          </select>
+          <label for="mitten-size">Chart size</label>
+          <select id="mitten-size" data-testid="mitten-size">
+            <option value="">Choose a size</option>
+            {MITTEN_SIZING_CHART.map((row) => <option value={row.size}>{row.label}</option>)}
+          </select>
+        </section>
+
+        <section class="mitten-field-group" aria-labelledby="mitten-measure-heading">
+          <h2 id="mitten-measure-heading">Measurements</h2>
+          <p>Inches, with no ease added. Hand 2 defaults to two-thirds of the hand length.</p>
+          <p>{THUMB_LENGTH_DEFINITION} {THUMB_VALUE_SOURCES}</p>
+          <div class="mitten-fields">
+            <label>Cuff circumference <input id="mitten-cuff-circ" type="number" min="0" step="0.01" /></label>
+            <label>Cuff length <input id="mitten-cuff-length" type="number" min="0" step="0.01" /></label>
+            <label>Hand circumference <input id="mitten-hand-circ" type="number" min="0" step="0.01" /></label>
+            <label>Hand length <input id="mitten-hand-length" type="number" min="0" step="0.01" /></label>
+            <label>Hand above the thumb <input id="mitten-hand2" type="number" min="0" step="0.01" /></label>
+            <label>Thumb length, web to tip <input id="mitten-thumb-length" type="number" min="0" step="0.01" /></label>
+            <label>Thumb circumference, temporary <input id="mitten-thumb-circ" type="number" min="0" step="0.01" /></label>
+          </div>
+        </section>
+
+        <section class="mitten-field-group" aria-labelledby="mitten-gauge-heading">
+          <h2 id="mitten-gauge-heading">Gauge</h2>
+          <p>Enter the swatch over 4 inches. 28 stitches and 40 rows is 7 stitches and 10 rows per inch.</p>
+          <GaugeInput id="mitten" showTitle={false} showToggle={false} formFields={true} flatRow={true} />
+        </section>
+
+        <div class="express-generate-wrap express-generate-wrap--footer">
+          <button type="button" class="express-generate" id="create-pattern-btn" data-testid="create-pattern-btn">
+            Review My Pattern
+          </button>
+          <p id="create-pattern-feedback" class="create-pattern-feedback" role="status" hidden></p>
+        </div>
+      </div>
+    </div>
+  </main>
+</Layout>
+
+<script>
+  import { initMittenBuilderPage } from "../../../scripts/mitten-builder-page";
+  initMittenBuilderPage();
+</script>
+
+<style>
+  .mitten-preview-banner {
+    margin: 0 0 1rem;
+    padding: 0.75rem 1rem;
+    background: #f4f7ef;
+    border-left: 4px solid #52682d;
+  }
+  .mitten-field-group {
+    margin: 1.25rem 0;
+  }
+  .mitten-field-group h2 {
+    margin: 0 0 0.35rem;
+    font-size: 1.15rem;
+  }
+  .mitten-fields {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 0.75rem 1rem;
+  }
+  .mitten-fields label,
+  .mitten-field-group > label {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    font-size: 0.95rem;
+  }
+  .mitten-builder-page input,
+  .mitten-builder-page select {
+    font: inherit;
+    padding: 0.55rem 0.65rem;
+    border: 1px solid #c5cdd4;
+    border-radius: 6px;
+  }
+  .create-pattern-feedback {
+    margin-top: 0.75rem;
+  }
+  .express-generate {
+    background: #52682d;
+    color: #fff;
+    border: 0;
+    border-radius: 6px;
+    padding: 0.8rem 1.2rem;
+    font: inherit;
+    cursor: pointer;
+  }
+</style>

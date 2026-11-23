@@ -3,6 +3,7 @@
  * Call after loading a project from Blob storage so stale Express keys cannot overwrite another pattern.
  */
 import { hydrateHatSavedProject, isHatCustomPatternProject } from "./hat/hatSavedProject";
+import { hydrateMittenSavedProject, isMittenCustomPatternProject } from "./mitten/mittenSavedProject";
 import { hydrateSockSavedProject, isSockCustomPatternProject } from "./sock/sockSavedProject";
 import {
   hydrateTriangleScarfSavedProject,
@@ -125,6 +126,10 @@ export function hydrateSavedCustomPatternProjectSession(
 ): void {
   if (isHatCustomPatternProject(project)) {
     hydrateHatSavedProject(project);
+    return;
+  }
+  if (isMittenCustomPatternProject(project)) {
+    hydrateMittenSavedProject(project);
     return;
   }
   if (isTriangleScarfCustomPatternProject(project)) {

@@ -16,7 +16,7 @@ import {
   savedPatternHasMemberNotes,
 } from "./savedPatternMemberNotes";
 
-const emptyIds = { hat: "", triangleScarf: "", socks: "", stocking: "", sweater: "" };
+const emptyIds = { hat: "", triangleScarf: "", socks: "", stocking: "", sweater: "", mittens: "" };
 
 describe("saved pattern My Notes", () => {
   it("uses the same length limit as the saved-project store", () => {

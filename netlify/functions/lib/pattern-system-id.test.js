@@ -92,6 +92,17 @@ describe("resolvePatternSystemFromProject (server index classifier)", () => {
     expect(patternSystemDisplayName("christmas-stocking")).toBe("Christmas Stocking");
   });
 
+  it("classifies mittens stored under family sleeveless", () => {
+    expect(
+      resolvePatternSystemFromProject({
+        family: "sleeveless",
+        pattern: { patternType: "mittens", patternSystem: "mittens" },
+        customOverrides: {},
+      }),
+    ).toBe("mittens");
+    expect(patternSystemDisplayName("mittens")).toBe("Mittens");
+  });
+
   it("classifies Socks stored under family sleeveless by patternType/patternSystem", () => {
     expect(
       resolvePatternSystemFromProject({
