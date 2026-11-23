@@ -306,6 +306,59 @@ describe("resolveAccountMembershipPanelView", () => {
     expect(view.annualSwitchWarning).toBeNull();
   });
 
+  it("lets a renewing Monthly Subscription take precedence over a separate canceling KIN Membership", () => {
+    const cancelAtDate = 1787055395;
+    const nextBillingDate = 1797836305;
+    const connections = [
+      {
+        planId: MEMBERSHIPS.membership.memberstackPlanId,
+        status: "ACTIVE",
+        active: true,
+        payment: {
+          priceId: MEMBERSHIPS.membership.prices.monthly.memberstackPriceId,
+          nextBillingDate: cancelAtDate,
+          cancelAtDate,
+        },
+      },
+      {
+        planId: "pln_legacy-designaknit-and-lace-ffg0j0k",
+        status: "ACTIVE",
+        active: true,
+        type: "FREE",
+      },
+      {
+        planId: LEGACY_MEMBERSHIPS.monthlySubscription.memberstackPlanId,
+        status: "ACTIVE",
+        active: true,
+        payment: {
+          priceId: RETIRED_MONTHLY_SUBSCRIPTION_PRICE_ID,
+          nextBillingDate,
+          cancelAtDate: null,
+        },
+      },
+    ];
+    const member = memberWithPlans(connections);
+    const view = resolveAccountMembershipPanelView(member);
+
+    expect(hasMemberAccess(member)).toBe(true);
+    expect(memberHasActivePaidMembership(member)).toBe(true);
+    expect(view).toMatchObject({
+      kind: "member",
+      planDisplayLabel: "Monthly Membership",
+      statusLabel: "Active",
+      billingInterval: "monthly",
+      billingLabel: "Monthly",
+      isCanceling: false,
+      activeUntilMessage: null,
+      autoRenewNote: "Membership renews automatically each month.",
+      annualSwitchWarning: null,
+      visibleActions: ["manageBilling"],
+    });
+    expect(view.renewsLabel).toBe(expectedLocalDateLabel(nextBillingDate));
+    expect(member.data.id).toBe("mem_test");
+    expect(member.data.planConnections).toEqual(connections);
+  });
+
   it("does not show Switch to Annual for canceling monthly who already has annual", () => {
     const cancelAtDate = 1787055395;
     const member = memberWithPlans([
