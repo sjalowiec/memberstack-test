@@ -162,7 +162,7 @@ describe("neckband needle-limit warning", () => {
     expect(neckbandNeedleLimitWarning(80, 81)).toBeNull();
     expect(neckbandNeedleLimitWarning(80, 80)).toBeNull();
     expect(neckbandNeedleLimitWarning(80, 79)).toBe(
-      "The neckband needs 80 needles and the machine has 79.",
+      "Your neckband needs approximately 80 stitches, but your machine has 79 needles. Before you start knitting, adjust the neckline depth and check the updated count, or plan to knit the neckband in two pieces.",
     );
     expect(neckbandNeedleLimitWarning(80, null)).toBeNull();
   });
@@ -182,7 +182,7 @@ describe("neckband needle-limit warning", () => {
       const below = renderedFinishing(builder.pattern(need + 1), builder.generate);
       const exact = renderedFinishing(builder.pattern(need), builder.generate);
       const above = renderedFinishing(builder.pattern(need - 1), builder.generate);
-      const message = `The neckband needs ${need} needles and the machine has ${need - 1}.`;
+      const message = `Your neckband needs approximately ${need} stitches, but your machine has ${need - 1} needles. Before you start knitting, adjust the neckline depth and check the updated count, or plan to knit the neckband in two pieces.`;
 
       expect(below.pickup.needleLimitWarning, builder.name).toBeUndefined();
       expect(exact.pickup.needleLimitWarning, builder.name).toBeUndefined();
@@ -227,7 +227,7 @@ describe("neckband needle-limit warning", () => {
     expect(above.pickup.pickupStitches).toBe(need);
     expect(above.pickup.primaryText).toBe(probe.pickup.primaryText);
     expect(above.html).toContain(
-      `The neckband needs ${need} needles and the machine has ${need - 1}.`,
+      `Your neckband needs approximately ${need} stitches, but your machine has ${need - 1} needles. Before you start knitting, adjust the neckline depth and check the updated count, or plan to knit the neckband in two pieces.`,
     );
     expect(above.print).toContain("print-warnings");
   });
@@ -245,7 +245,7 @@ describe("neckband needle-limit warning", () => {
     const below = sweater(need + 1);
     const exact = sweater(need);
     const above = sweater(need - 1);
-    const message = `The neckband needs ${need} needles and the machine has ${need - 1}.`;
+    const message = `Your neckband needs approximately ${need} stitches, but your machine has ${need - 1} needles. Before you start knitting, adjust the neckline depth and check the updated count, or plan to knit the neckband in two pieces.`;
 
     expect(below.body.neckline.openingStitches).toBe(probe.body.neckline.openingStitches);
     expect(exact.body.stitchesAtUnderarm).toBe(probe.body.stitchesAtUnderarm);
@@ -261,8 +261,8 @@ describe("neckband needle-limit warning", () => {
     expect(belowText).toContain(pickupLine!);
     expect(exactText).toContain(pickupLine!);
     expect(aboveText).toContain(pickupLine!);
-    expect(belowText).not.toContain("The neckband needs");
-    expect(exactText).not.toContain("The neckband needs");
+    expect(belowText).not.toContain("Your neckband needs approximately");
+    expect(exactText).not.toContain("Your neckband needs approximately");
     expect(aboveText.split(message).length - 1).toBe(1);
     expect(aboveText.indexOf(message)).toBeGreaterThan(aboveText.indexOf(pickupLine!));
   });
