@@ -154,7 +154,40 @@ export type NeckbandPickupInstructionViewModel = {
   /** Pullover round section totals (for tests / debugging). */
   frontPickupStitches?: number;
   backPickupStitches?: number;
+  /**
+   * Present only when {@link neckbandNeedleLimitWarning} finds the pickup total
+   * larger than the machine. Instruction text and stitch counts stay as calculated.
+   */
+  needleLimitWarning?: string;
 };
+
+/** Positive whole needle count, or null when the machine limit was not entered. */
+export function positiveWholeNeedleCount(raw: unknown): number | null {
+  if (typeof raw === "number") {
+    return Number.isInteger(raw) && raw > 0 ? raw : null;
+  }
+  if (typeof raw !== "string") return null;
+  const trimmed = raw.trim();
+  if (!trimmed) return null;
+  const n = Number(trimmed);
+  return Number.isInteger(n) && n > 0 ? n : null;
+}
+
+/**
+ * Warning when the calculated neckband pickup needs more needles than the machine has.
+ * Equal and smaller counts fit, so they return null. A missing limit also returns null.
+ */
+export function neckbandNeedleLimitWarning(
+  requiredNeedles: number,
+  availableNeedles: number | null | undefined,
+): string | null {
+  if (!Number.isInteger(requiredNeedles) || requiredNeedles <= 0) return null;
+  if (availableNeedles == null || !Number.isInteger(availableNeedles) || availableNeedles <= 0) {
+    return null;
+  }
+  if (requiredNeedles <= availableNeedles) return null;
+  return `Your neckband needs approximately ${requiredNeedles} stitches, but your machine has ${availableNeedles} needles. Before you start knitting, adjust the neckline depth and check the updated count, or plan to knit the neckband in two pieces.`;
+}
 
 /** Canonical round-neck estimate note (single source of wording). */
 export const NECKBAND_ROUND_PICKUP_ESTIMATE_NOTE =

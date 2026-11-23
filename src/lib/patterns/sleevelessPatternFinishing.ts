@@ -1,5 +1,7 @@
 import {
+  neckbandNeedleLimitWarning,
   neckbandPickupInstructionFromDebug,
+  positiveWholeNeedleCount,
   type NeckbandPickupInstructionViewModel,
   type NeckbandPickupNecklineKind,
 } from "./legoBlocks/neckbandPickup";
@@ -130,6 +132,35 @@ export type SleevelessFinishingNeckbandDebug = {
   secondFrontHorizontalStitches?: number;
 };
 
+function sectionRecord(value: unknown): Record<string, unknown> | null {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  return value as Record<string, unknown>;
+}
+
+/** Same order as pattern storage: yarn-and-gauge entry, then the merged machine field. */
+function availableNeedlesRawFromPattern(patternData: unknown): unknown {
+  const pattern = sectionRecord(patternData);
+  if (!pattern) return undefined;
+  const yarnGaugeMachine = sectionRecord(pattern.yarnGaugeMachine);
+  if (yarnGaugeMachine && yarnGaugeMachine.availableNeedles != null) {
+    return yarnGaugeMachine.availableNeedles;
+  }
+  return sectionRecord(pattern.machine)?.availableNeedles;
+}
+
+function withNeckbandNeedleLimitWarning(
+  pickup: NeckbandPickupInstructionViewModel | null,
+  patternData: unknown,
+): NeckbandPickupInstructionViewModel | null {
+  if (!pickup) return null;
+  const warning = neckbandNeedleLimitWarning(
+    pickup.pickupStitches,
+    positiveWholeNeedleCount(availableNeedlesRawFromPattern(patternData)),
+  );
+  if (!warning) return pickup;
+  return { ...pickup, needleLimitWarning: warning };
+}
+
 export function sleevelessFinishingFromPattern(
   patternData: unknown,
   debug: SleevelessFinishingNeckbandDebug,
@@ -148,10 +179,13 @@ export function sleevelessFinishingFromPattern(
     isCardigan && cardiganFrontEdgeFinishingMode === "pickup"
       ? debug.cardiganFrontEdgePickupSts ?? cardiganFrontEdgePickupStitchesFromDebug(debug)
       : undefined;
-  const neckbandPickup = neckbandPickupInstructionFromDebug(
-    sleevelessNeckbandPickupNecklineKind(patternData),
-    debug,
-    isCardigan ? "cardigan" : "pullover",
+  const neckbandPickup = withNeckbandNeedleLimitWarning(
+    neckbandPickupInstructionFromDebug(
+      sleevelessNeckbandPickupNecklineKind(patternData),
+      debug,
+      isCardigan ? "cardigan" : "pullover",
+    ),
+    patternData,
   );
   return {
     isCardigan,
