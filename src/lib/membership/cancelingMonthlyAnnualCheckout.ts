@@ -50,7 +50,9 @@ function hasValidCancelAtDate(connection: PlanConnection): boolean {
 
 /**
  * True when the member has a paid monthly subscription canceling at period end
- * and does not already have an active annual subscription.
+ * and does not already have an active annual subscription or a separate
+ * renewing paid membership. A renewing plan takes precedence, so this does not
+ * start another checkout. It does not cancel or modify either subscription.
  */
 export function canPurchaseAnnualWhileCancelingMonthly(
   memberOrPayload: unknown,
@@ -58,6 +60,7 @@ export function canPurchaseAnnualWhileCancelingMonthly(
   const priceIndex = buildPriceIndex();
   let hasCancelingMonthly = false;
   let hasActiveAnnual = false;
+  let hasRenewingPaid = false;
 
   for (const conn of planConnectionsFromPayload(memberOrPayload)) {
     const record = asRecord(conn);
@@ -70,12 +73,15 @@ export function canPurchaseAnnualWhileCancelingMonthly(
     const interval = priceId ? priceIndex.get(priceId)?.interval : undefined;
     if (interval === "annual") {
       hasActiveAnnual = true;
-    } else if (interval === "monthly" && hasValidCancelAtDate(connection)) {
+    }
+    if (!hasValidCancelAtDate(connection)) {
+      hasRenewingPaid = true;
+    } else if (interval === "monthly") {
       hasCancelingMonthly = true;
     }
   }
 
-  return hasCancelingMonthly && !hasActiveAnnual;
+  return hasCancelingMonthly && !hasActiveAnnual && !hasRenewingPaid;
 }
 
 /** Overlap notice for the Account panel; uses a pre-formatted active-through date. */
