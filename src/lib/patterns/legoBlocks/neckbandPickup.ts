@@ -186,7 +186,7 @@ export function neckbandNeedleLimitWarning(
     return null;
   }
   if (requiredNeedles <= availableNeedles) return null;
-  return `The neckband needs ${requiredNeedles} needles and the machine has ${availableNeedles}.`;
+  return `Your neckband needs approximately ${requiredNeedles} stitches, but your machine has ${availableNeedles} needles. Before you start knitting, adjust the neckline depth and check the updated count, or plan to knit the neckband in two pieces.`;
 }
 
 /** Canonical round-neck estimate note (single source of wording). */
