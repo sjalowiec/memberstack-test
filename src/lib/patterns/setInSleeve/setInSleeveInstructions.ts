@@ -15,6 +15,7 @@ import {
 } from "../dropShoulderSleeveShaping";
 import {
   NECKBAND_ROUND_PICKUP_ESTIMATE_NOTE,
+  neckbandNeedleLimitWarning,
   neckbandPickupInstructionFromDebug,
 } from "../legoBlocks/neckbandPickup";
 import {
@@ -1117,11 +1118,15 @@ function finishingLines(result: SetInSleeveSweaterSuccess): string[] {
     frontCenterNeckBindOffStitches: result.body.neckline.front.centerBindOff,
     centerNeckBindOffStitches: result.body.neckline.back.centerBindOff,
   });
+  const needleLimitWarning = pickup
+    ? neckbandNeedleLimitWarning(pickup.pickupStitches, result.needles.available)
+    : null;
   return [
     "Block the pieces if you want to set the measurements before seaming.",
     "Lightly steam the pieces to the finished measurements. Allow the pieces to dry completely before assembly.",
     "Join one shoulder using your preferred method: linker, crochet slip stitch, or the machine bind-off method.",
     ...(pickup ? [pickup.primaryText, NECKBAND_ROUND_PICKUP_ESTIMATE_NOTE] : []),
+    ...(needleLimitWarning ? [needleLimitWarning] : []),
     "Work the neckline trim or neckband.",
     "Finish the neckband as desired.",
     "Join the remaining shoulder seam and neckband seam.",
