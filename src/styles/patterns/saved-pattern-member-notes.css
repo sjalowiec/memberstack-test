@@ -33,6 +33,17 @@
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.22);
 }
 
+/*
+ * Safari's dialog:modal rule sets overflow: auto. On iPadOS 27 that scrollport
+ * takes the tap meant for the notes textarea, so no caret and no keyboard.
+ * Title and sweater inputs sit outside this dialog. Specificity has to beat
+ * the user-agent `dialog:modal` rule.
+ */
+dialog.saved-pattern-member-notes-dialog,
+dialog.saved-pattern-member-notes-dialog:modal {
+  overflow: visible;
+}
+
 .saved-pattern-member-notes-dialog::backdrop {
   background: rgba(17, 24, 39, 0.45);
 }
@@ -93,7 +104,12 @@
   opacity: 0.65;
 }
 
+.saved-pattern-member-notes-dialog__field {
+  min-width: 0;
+}
+
 .saved-pattern-member-notes-dialog__input {
+  display: block;
   box-sizing: border-box;
   width: 100%;
   min-height: 8.5rem;
@@ -105,6 +121,8 @@
   font-size: 0.95rem;
   line-height: 1.45;
   resize: vertical;
+  -webkit-user-select: text;
+  user-select: text;
 }
 
 .saved-pattern-member-notes-dialog__input:focus-visible {

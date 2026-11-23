@@ -40,7 +40,13 @@ function applyFeedback(
 ): void {
   const viewOnly = isSavedPatternReadOnlyDocument();
   els.textarea.value = feedback.draft;
-  els.textarea.readOnly = viewOnly || phase !== "ready";
+  /*
+   * Keep readOnly for a view-only pattern only. Loading and saving used to flip
+   * it on, then off. iPadOS 27 Safari never restores the caret or keyboard after
+   * that flip, so a tap on this textarea does nothing. Pattern title and sweater
+   * fields are inputs and are not locked this way.
+   */
+  els.textarea.readOnly = viewOnly;
   const canEdit = !viewOnly && phase === "ready";
   const canSave = feedback.canSave && canEdit;
   els.save.disabled = !canSave;
@@ -91,6 +97,29 @@ export function bindSavedPatternMemberNotes(doc: Document = document): void {
   let requestToken = 0;
   let phase: "loading" | "ready" | "saving" = "ready";
   let stored: string | null = null;
+
+  function notesCanEdit(): boolean {
+    return phase === "ready" && !textarea.readOnly;
+  }
+
+  textarea.addEventListener("beforeinput", (event) => {
+    if (notesCanEdit()) return;
+    event.preventDefault();
+  });
+
+  /*
+   * A tap is a user gesture. focus() after the notes request returns is not,
+   * and iPadOS 27 will not open the keyboard for it. Focusing inside the tap
+   * does, including when the modal dialog's scrollport would otherwise ignore
+   * the textarea.
+   */
+  const focusNotesFromTap = (): void => {
+    if (!notesCanEdit()) return;
+    if (textarea.ownerDocument?.activeElement === textarea) return;
+    textarea.focus();
+  };
+  textarea.addEventListener("touchend", focusNotesFromTap);
+  textarea.addEventListener("pointerup", focusNotesFromTap);
 
   function renderIndicator(projectId: string): void {
     const current = readSavedPatternMemberNotesTarget();
