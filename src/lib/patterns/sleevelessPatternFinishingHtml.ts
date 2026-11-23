@@ -149,9 +149,12 @@ function finishNecklineBody(
   listItems.push("<li>Work the neckline trim or neckband.</li>");
   listItems.push("<li>Finish the neckband as desired.</li>");
   listItems.push("<li>Join the remaining shoulder seam and neckband seam.</li>");
+  const warningHtml = neckbandPickup?.needleLimitWarning
+    ? `\n    <p class="sg-pattern-soft-warning" role="status">${deps.escapeHtml(neckbandPickup.needleLimitWarning)}</p>`
+    : "";
   return `<ul>
       ${listItems.join("\n      ")}
-    </ul>
+    </ul>${warningHtml}
     ${deps.neckFinishingLeadHtml}
     <p class="pattern-finishing-video-help pattern-help-link no-print">
       <span class="pattern-finishing-video-help__lead"><i class="fa-solid fa-play"></i> Helpful video for finishing:</span>
@@ -382,7 +385,13 @@ function finishNecklinePrintLine(
     neckbandPickup.estimateNoteText !== undefined
       ? ` ${neckbandPickup.estimateNoteText}`
       : "";
-  return `${stepNumber}. Finish the neckline: ${neckbandPickup.primaryText}${note} Work trim or neckband, finish as desired, join the remaining shoulder and neckband seams.`;
+  const instructions = `${stepNumber}. Finish the neckline: ${neckbandPickup.primaryText}${note} Work trim or neckband, finish as desired, join the remaining shoulder and neckband seams.`;
+  if (!neckbandPickup.needleLimitWarning) return instructions;
+  return `${instructions}<p class="print-warnings" role="status">${escapePrintText(neckbandPickup.needleLimitWarning)}</p>`;
+}
+
+function escapePrintText(value: string): string {
+  return value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
 export function buildSleevelessFinishingPrintListHtml(options: {
