@@ -106,14 +106,16 @@ for (const name of actionAttrNames) actionsAttrs[name] = "";
         Insert Date
       </button>
     </div>
-    <textarea
-      id="saved-pattern-member-notes-input"
-      class="saved-pattern-member-notes-dialog__input"
-      name="memberNotes"
-      rows="8"
-      maxlength="8000"
-      autocomplete="off"
-    ></textarea>
+    <div class="saved-pattern-member-notes-dialog__field">
+      <textarea
+        id="saved-pattern-member-notes-input"
+        class="saved-pattern-member-notes-dialog__input"
+        name="memberNotes"
+        rows="8"
+        maxlength="8000"
+        autocomplete="off"
+      ></textarea>
+    </div>
     <p
       class="saved-pattern-member-notes-dialog__status"
       data-saved-pattern-member-notes-status
