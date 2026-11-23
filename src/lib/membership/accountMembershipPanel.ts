@@ -257,21 +257,31 @@ export function portalEligibleStatusLabel(connection: PlanConnection): string {
   return PORTAL_STATUS_LABEL[status] ?? "Past Due";
 }
 
-/** Active paid membership connection, if any. */
+/**
+ * Active paid membership connection used for Account status and billing dates.
+ * A renewing paid plan (no scheduled cancel date) takes precedence over a
+ * separate canceling paid plan. Course plans and free plans are ignored.
+ * This does not remove connections or change billing.
+ */
 export function activePaidPlanConnection(
   memberOrPayload: unknown,
 ): PlanConnection | null {
   if (!memberHasActivePaidMembership(memberOrPayload)) return null;
 
+  let firstActive: PlanConnection | null = null;
   for (const conn of planConnectionsFromPayload(memberOrPayload)) {
     const record = asRecord(conn);
     if (!isActiveMemberstackPlanConnection(record)) continue;
     const planId = planIdFromConnection(record);
     if (!planId || !paidPlanIdSet.has(planId)) continue;
-    return record as PlanConnection;
+    const connection = record as PlanConnection;
+    if (!firstActive) firstActive = connection;
+    if (!formatMemberstackUnixDate(connection.payment?.cancelAtDate)) {
+      return connection;
+    }
   }
 
-  return null;
+  return firstActive;
 }
 
 /**

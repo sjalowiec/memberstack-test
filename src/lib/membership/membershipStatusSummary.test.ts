@@ -575,6 +575,43 @@ describe("buildMembershipStatusSummary", () => {
     expect(membershipStatusPanelHeading(result)).toBe("Your membership is active");
   });
 
+  it("lets a renewing paid plan take precedence over a separate canceling membership", () => {
+    const cancelAt = Math.floor(Date.UTC(2026, 10, 26) / 1000);
+    const connections = [
+      connection({
+        planId: MEMBERSHIPS.membership.memberstackPlanId,
+        planName: "KIN Membership",
+        status: "ACTIVE",
+        active: true,
+        payment: { cancelAtDate: cancelAt },
+      }),
+      connection({
+        planId: "pln_legacy-designaknit-and-lace-ffg0j0k",
+        planName: "Legacy: DesignaKnit and Lace",
+        status: "ACTIVE",
+        active: true,
+      }),
+      connection({
+        planId: LEGACY_MEMBERSHIPS.monthlySubscription.memberstackPlanId,
+        planName: "Monthly Subscription to Knititnow",
+        status: "ACTIVE",
+        active: true,
+        payment: { nextBillingDate: Math.floor(Date.UTC(2026, 11, 21) / 1000) },
+      }),
+    ];
+    const result = summaryWithLegacy({
+      ymd: "2026-07-16",
+      connections,
+      memberId: "mem_renewing_over_canceling",
+    });
+    expect(result.currentStatus).toBe("active");
+    expect(result.accountType).toBe("paid_membership");
+    expect(result.currentPlanName).toBe(MEMBERSHIPS.membership.name);
+    expect(result.activeThroughDate).toBeNull();
+    expect(result.recommendedAction).toBe("manage");
+    expect(membershipStatusAllowsPurchase(result)).toBe(false);
+  });
+
   it("canceling-but-active Memberstack wins regardless of future legacy expiration", () => {
     const cancelAt = Math.floor(Date.UTC(2026, 7, 18) / 1000);
     const connections = [

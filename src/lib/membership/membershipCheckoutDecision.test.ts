@@ -3,6 +3,7 @@ import {
   LEGACY_MEMBERSHIPS,
   MEMBERSHIPS,
   REMOVED_BASIC_MEMBERSHIP_PLAN_ID,
+  RETIRED_MONTHLY_SUBSCRIPTION_PRICE_ID,
 } from "../../config/memberships";
 import {
   memberHasActivePaidMembership,
@@ -183,6 +184,34 @@ describe("resolveMembershipCheckoutDecision", () => {
     expect(resolveMembershipCheckoutDecision(cancelingMonthly, "monthly")).toEqual({
       action: "current",
     });
+  });
+
+  it("keeps a renewing Monthly Subscription current when a separate KIN Membership is canceling", () => {
+    const member = memberWithPlans([
+      {
+        planId: MEMBERSHIPS.membership.memberstackPlanId,
+        status: "ACTIVE",
+        payment: {
+          priceId: MEMBERSHIPS.membership.prices.monthly.memberstackPriceId,
+          cancelAtDate: 1787055395,
+        },
+      },
+      {
+        planId: LEGACY_MEMBERSHIPS.monthlySubscription.memberstackPlanId,
+        status: "ACTIVE",
+        payment: {
+          priceId: RETIRED_MONTHLY_SUBSCRIPTION_PRICE_ID,
+          cancelAtDate: null,
+        },
+      },
+    ]);
+    expect(resolveMembershipCheckoutDecision(member, "monthly")).toEqual({
+      action: "current",
+    });
+    expect(resolveMembershipCheckoutDecision(member, "annual")).toEqual({
+      action: "current",
+    });
+    expect(member.data.planConnections).toHaveLength(2);
   });
 
   it("still blocks annual for active monthly and canceling annual", () => {

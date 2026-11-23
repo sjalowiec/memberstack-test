@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { MEMBERSHIPS } from "../../config/memberships";
+import { LEGACY_MEMBERSHIPS, MEMBERSHIPS, RETIRED_MONTHLY_SUBSCRIPTION_PRICE_ID } from "../../config/memberships";
 import {
   annualSwitchOverlapWarning,
   canPurchaseAnnualWhileCancelingMonthly,
@@ -64,6 +64,31 @@ describe("canPurchaseAnnualWhileCancelingMonthly", () => {
       },
     ]);
     expect(canPurchaseAnnualWhileCancelingMonthly(member)).toBe(false);
+  });
+
+  it("rejects canceling monthly when a separate renewing monthly subscription exists", () => {
+    const member = memberWithPlans([
+      {
+        planId: PLAN_ID,
+        status: "ACTIVE",
+        payment: { priceId: MONTHLY_PRICE, cancelAtDate: CANCEL_AT },
+      },
+      {
+        planId: "pln_course-th160-legacy-lp1o10vtq",
+        status: "ACTIVE",
+        active: true,
+      },
+      {
+        planId: LEGACY_MEMBERSHIPS.monthlySubscription.memberstackPlanId,
+        status: "ACTIVE",
+        payment: {
+          priceId: RETIRED_MONTHLY_SUBSCRIPTION_PRICE_ID,
+          cancelAtDate: null,
+        },
+      },
+    ]);
+    expect(canPurchaseAnnualWhileCancelingMonthly(member)).toBe(false);
+    expect(member.data.planConnections).toHaveLength(3);
   });
 
   it("rejects canceling monthly when an active annual also exists", () => {
