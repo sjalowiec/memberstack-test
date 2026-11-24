@@ -37,5 +37,13 @@ describe("customer help videos", () => {
     expect(page).toContain("controls={true}");
     expect(page).toContain('name="robots" content="noindex, nofollow"');
     expect(page).toContain('import Layout from "../../layouts/Layout.astro"');
+    expect(page).toContain("findPublishedCustomerHelpVideo");
+    expect(page).toContain('Cache-Control", "no-store"');
+    expect(page).not.toContain("requireAdmin");
+    const admin = readFileSync(join(root, "src/pages/admin/support-videos.astro"), "utf8");
+    expect(admin).toContain('name="title"');
+    expect(admin).toContain('name="vimeoUrl"');
+    expect(admin).toContain("Copy customer link");
+    expect(admin).not.toContain("GatedVimeoEmbed");
   });
 });

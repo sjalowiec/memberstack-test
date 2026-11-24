@@ -3,6 +3,7 @@ import BaseLayout from "./BaseLayout.astro";
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
 import ToolPrintFooter from "../components/tools/ToolPrintFooter.astro";
+import { isExcludedFromSearchDiscovery } from "../lib/seo/siteIndexing";
 
 interface Props {
   title?: string;
@@ -53,6 +54,7 @@ const {
 
 /** Pattern workspaces hide the corner CTA by default (SSR — no flash). */
 const hideMembershipCorner = hideMembershipCornerProp ?? patternWorkspace;
+const excludeFromSearch = isExcludedFromSearchDiscovery(Astro.url.pathname);
 
 // Onboarding and marketing pages get a body hook so the minimal header height is
 // respected without touching the global header offset used by the rest of the site.
@@ -134,7 +136,13 @@ const resolvedBodyClass = [
     })();
   </script>
 
-  <main class="site-content" data-pagefind-body style="padding-top: calc(var(--header-offset, 136px) + var(--header-buffer, 24px) + var(--kbm-env-banner-h, 0px));">
+  <main
+    class="site-content"
+    {...(excludeFromSearch
+      ? { "data-pagefind-ignore": "true" }
+      : { "data-pagefind-body": "true" })}
+    style="padding-top: calc(var(--header-offset, 136px) + var(--header-buffer, 24px) + var(--kbm-env-banner-h, 0px));"
+  >
     <slot />
     {onboarding && (
       <nav class="onboarding-skip" aria-label="Skip onboarding">

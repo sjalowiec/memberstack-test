@@ -1,12 +1,15 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 import VimeoEmbed from "../../components/media/VimeoEmbed.astro";
-import { findCustomerHelpVideo } from "../../data/customerHelpVideos";
+import { findPublishedCustomerHelpVideo } from "../../lib/supportVideos/customerHelpVideoStore";
 
 export const prerender = false;
 
+Astro.response.headers.set("Cache-Control", "no-store");
+Astro.response.headers.set("Netlify-CDN-Cache-Control", "no-store");
+
 const slug = typeof Astro.params.slug === "string" ? Astro.params.slug : "";
-const video = findCustomerHelpVideo(slug);
+const video = await findPublishedCustomerHelpVideo(slug);
 
 if (!video) {
   return new Response("Not found", {
@@ -29,7 +32,7 @@ const privacyHash = video.privacyHash?.trim() || undefined;
     <meta name="robots" content="noindex, nofollow" />
   </Fragment>
 
-  <article class="video-help" data-pagefind-ignore>
+  <article class="video-help">
     <h1>{video.title}</h1>
     <p class="video-help__intro">{video.intro}</p>
     <VimeoEmbed

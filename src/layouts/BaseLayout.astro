@@ -10,6 +10,7 @@ import ToolPrintFooter from "../components/tools/ToolPrintFooter.astro";
 import EnvBanner from "../components/EnvBanner.astro";
 import MembershipCornerControl from "../components/membership/MembershipCornerControl.astro";
 import RobotsMeta from "../components/seo/RobotsMeta.astro";
+import { isExcludedFromSearchDiscovery } from "../lib/seo/siteIndexing";
 import TurnstileScript from "../components/TurnstileScript.astro";
 import WhatsNewAnnouncementPopup from "../components/whatsNew/WhatsNewAnnouncementPopup.astro";
 
@@ -59,6 +60,8 @@ const useWatsonFavicon = isWatsonPage || isAdminPage;
 
 const isProduction =
   (import.meta.env.PUBLIC_SITE_ENV || "").toLowerCase() === "production";
+
+const excludeFromSearch = isExcludedFromSearchDiscovery(pathname);
 ---
 <html lang="en">
   <head>
@@ -274,7 +277,7 @@ const isProduction =
 
   
 
-  <body class={bodyClass}>
+  <body class={bodyClass} {...(excludeFromSearch ? { "data-pagefind-ignore": "true" } : {})}>
     {(isAdminPage || isWatsonPage) && (
       <nav aria-label="Administration" style="position:relative;z-index:10001;display:flex;gap:1.25rem;align-items:center;padding:.6rem 1rem;background:#243015;color:white;font:16px system-ui;">
         <a href="/admin" style="color:white;font-weight:700;">All administration</a>

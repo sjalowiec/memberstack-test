@@ -1,10 +1,9 @@
 /**
- * Public customer help videos.
+ * Customer help videos that ship with the site.
  *
- * Each entry becomes one page at /video-help/{slug}/.
- * The page plays only videos listed here. A Vimeo id in the URL is ignored.
- *
- * To add a video, copy an entry and fill in slug, title, intro, and vimeoId.
+ * Each entry is a public page at /video-help/{slug}/. A Vimeo id in the URL
+ * is ignored. Add the next video in Admin → Support Videos. That save is
+ * stored for the live site and does not require a new deploy.
  * Add privacyHash only when the Vimeo video is Unlisted.
  */
 export type CustomerHelpVideo = {
@@ -15,11 +14,14 @@ export type CustomerHelpVideo = {
   privacyHash?: string;
 };
 
+export const CUSTOMER_HELP_VIDEO_INTRO =
+  "Click the play button below to watch. You can pause and replay any step.";
+
 export const customerHelpVideos: readonly CustomerHelpVideo[] = [
   {
     slug: "save-designaknit-file",
     title: "How to save a file in DesignaKnit",
-    intro: "Click the play button below to watch. You can pause and replay any step.",
+    intro: CUSTOMER_HELP_VIDEO_INTRO,
     vimeoId: "1249450856",
   },
 ];

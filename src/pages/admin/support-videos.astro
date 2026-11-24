@@ -1,0 +1,300 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { customerHelpAdminRows } from "../../lib/supportVideos/customerHelpVideoCatalog";
+import {
+  customerHelpBlobForRuntime,
+  readCustomerHelpCatalog,
+} from "../../lib/supportVideos/customerHelpVideoStore";
+
+export const prerender = false;
+
+Astro.response.headers.set("Cache-Control", "no-store");
+
+const read = await readCustomerHelpCatalog(customerHelpBlobForRuntime());
+const videos = customerHelpAdminRows(read.ok ? read.catalog : { videos: [] });
+const loadError = read.ok ? "" : read.error;
+---
+
+<BaseLayout
+  title="Support Videos | Knit it Now"
+  description="Add a customer support video and copy its public link."
+>
+  <main class="page-wrap support-videos-admin">
+    <header>
+      <h1>Support Videos</h1>
+      <p>
+        Enter the title and the full Vimeo link. Save, then copy the customer link.
+        The customer page works right away and does not require a login or a new deploy.
+        For an Unlisted video, paste the full link Vimeo gives you, including the privacy code.
+      </p>
+    </header>
+
+    <p>
+      <a href="/admin">Back to Creator Control Panel</a>
+    </p>
+
+    {loadError ? <p role="alert">{loadError}</p> : null}
+
+    <form id="support-video-form">
+      <label>
+        Title
+        <input name="title" type="text" required maxlength="200" autocomplete="off" />
+      </label>
+      <label>
+        Vimeo link
+        <input
+          name="vimeoUrl"
+          type="url"
+          required
+          maxlength="500"
+          placeholder="https://vimeo.com/123456789/privacycode"
+          autocomplete="off"
+        />
+      </label>
+      <p class="support-videos-admin__hint">
+        A public link looks like <code>https://vimeo.com/123456789</code>. An Unlisted link
+        also has a privacy code, like <code>https://vimeo.com/123456789/ab12cd34</code>.
+      </p>
+      <p>
+        <button class="kbm-btn kbm-btn-primary" type="submit">Save support video</button>
+      </p>
+      <p id="support-video-status" role="status"></p>
+    </form>
+
+    <section id="support-video-result" hidden aria-label="Customer link">
+      <h2>Customer link</h2>
+      <div class="support-videos-admin__copy">
+        <input id="support-video-link" type="text" readonly />
+        <button class="kbm-btn kbm-btn-outline" type="button" id="support-video-copy">
+          Copy customer link
+        </button>
+        <span id="support-video-copy-status" role="status"></span>
+      </div>
+    </section>
+
+    <section aria-labelledby="support-video-list-heading">
+      <h2 id="support-video-list-heading">Customer pages</h2>
+      <table class="support-videos-admin__table">
+        <thead>
+          <tr>
+            <th>Title</th>
+            <th>Customer link</th>
+          </tr>
+        </thead>
+        <tbody id="support-video-rows">
+          {
+            videos.map((video) => (
+              <tr data-video-slug={video.slug}>
+                <td>
+                  {video.title}
+                  {video.builtIn ? <span class="support-videos-admin__note"> Included with the site</span> : null}
+                  {video.unlisted ? <span class="support-videos-admin__note"> Unlisted</span> : null}
+                </td>
+                <td>
+                  <a href={video.path}>{video.path}</a>
+                  <button class="kbm-btn kbm-btn-outline" type="button" data-copy-path={video.path}>
+                    Copy
+                  </button>
+                </td>
+              </tr>
+            ))
+          }
+        </tbody>
+      </table>
+    </section>
+  </main>
+</BaseLayout>
+
+<script>
+  import { fetchAdminJson } from "../../lib/admin/adminAuthClient";
+
+  const form = document.querySelector<HTMLFormElement>("#support-video-form");
+  const status = document.querySelector<HTMLElement>("#support-video-status");
+  const result = document.querySelector<HTMLElement>("#support-video-result");
+  const linkField = document.querySelector<HTMLInputElement>("#support-video-link");
+  const copyButton = document.querySelector<HTMLButtonElement>("#support-video-copy");
+  const copyStatus = document.querySelector<HTMLElement>("#support-video-copy-status");
+  const rows = document.querySelector<HTMLElement>("#support-video-rows");
+
+  type SavedVideo = {
+    slug?: string;
+    title?: string;
+    path?: string;
+    unlisted?: boolean;
+  };
+
+  function absoluteUrl(path: string): string {
+    return new URL(path, window.location.origin).toString();
+  }
+
+  async function copyText(value: string, target: HTMLElement | null): Promise<void> {
+    let copied = false;
+    try {
+      await navigator.clipboard.writeText(value);
+      copied = true;
+    } catch {
+      const field = document.createElement("textarea");
+      field.value = value;
+      field.setAttribute("readonly", "");
+      field.style.position = "fixed";
+      field.style.left = "-9999px";
+      document.body.append(field);
+      field.select();
+      try {
+        copied = document.execCommand("copy");
+      } catch {
+        copied = false;
+      }
+      field.remove();
+    }
+    if (target) target.textContent = copied ? "Copied" : "Select the link and copy it.";
+  }
+
+  function showCustomerLink(video: SavedVideo, message: string): void {
+    if (!video.path || !linkField || !result || !status) return;
+    const url = absoluteUrl(video.path);
+    linkField.value = url;
+    result.hidden = false;
+    status.textContent = message;
+    if (copyStatus) copyStatus.textContent = "";
+    linkField.focus();
+    linkField.select();
+  }
+
+  function addRow(video: SavedVideo): void {
+    if (!rows || !video.slug || !video.path || !video.title) return;
+    if (rows.querySelector(`[data-video-slug="${CSS.escape(video.slug)}"]`)) return;
+    const row = document.createElement("tr");
+    row.dataset.videoSlug = video.slug;
+    const titleCell = document.createElement("td");
+    titleCell.textContent = video.title;
+    if (video.unlisted) {
+      const note = document.createElement("span");
+      note.className = "support-videos-admin__note";
+      note.textContent = " Unlisted";
+      titleCell.append(note);
+    }
+    const linkCell = document.createElement("td");
+    const anchor = document.createElement("a");
+    anchor.href = video.path;
+    anchor.textContent = video.path;
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "kbm-btn kbm-btn-outline";
+    button.dataset.copyPath = video.path;
+    button.textContent = "Copy";
+    linkCell.append(anchor, button);
+    row.append(titleCell, linkCell);
+    rows.append(row);
+  }
+
+  form?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    if (!form || !status) return;
+    status.textContent = "Saving…";
+    const data = new FormData(form);
+    const result = await fetchAdminJson<{
+      created?: boolean;
+      changed?: boolean;
+      video?: SavedVideo;
+    }>("/api/admin/support-videos", {
+      method: "POST",
+      body: {
+        title: String(data.get("title") ?? ""),
+        vimeoUrl: String(data.get("vimeoUrl") ?? ""),
+      },
+    });
+    if (!result.ok || !result.data.video?.path) {
+      status.textContent = result.error || "Could not save the support video.";
+      return;
+    }
+    const video = result.data.video;
+    const message = result.data.created
+      ? "Saved. Copy the customer link. The page is ready now."
+      : result.data.changed
+        ? "Updated the existing page. The customer link is unchanged."
+        : "This video already has a customer page.";
+    showCustomerLink(video, message);
+    if (result.data.created) addRow(video);
+  });
+
+  copyButton?.addEventListener("click", () => {
+    if (!linkField) return;
+    void copyText(linkField.value, copyStatus);
+  });
+
+  rows?.addEventListener("click", (event) => {
+    const button = (event.target as HTMLElement | null)?.closest<HTMLButtonElement>("[data-copy-path]");
+    if (!button?.dataset.copyPath) return;
+    const label = "Copy";
+    void copyText(absoluteUrl(button.dataset.copyPath), button).then(() => {
+      window.setTimeout(() => {
+        button.textContent = label;
+      }, 1500);
+    });
+  });
+</script>
+
+<style>
+  .support-videos-admin {
+    max-width: 46rem;
+  }
+
+  .support-videos-admin form {
+    display: grid;
+    gap: 0.85rem;
+    margin: 1.5rem 0 2rem;
+  }
+
+  .support-videos-admin label {
+    display: grid;
+    gap: 0.35rem;
+    font-weight: 600;
+  }
+
+  .support-videos-admin input[type="text"],
+  .support-videos-admin input[type="url"] {
+    width: 100%;
+    font: inherit;
+    font-weight: 400;
+    padding: 0.55rem 0.7rem;
+  }
+
+  .support-videos-admin__hint {
+    margin: 0;
+    font-size: 0.95rem;
+  }
+
+  .support-videos-admin__copy {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+  }
+
+  .support-videos-admin__copy input {
+    flex: 1 1 16rem;
+  }
+
+  .support-videos-admin__table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .support-videos-admin__table th,
+  .support-videos-admin__table td {
+    text-align: left;
+    vertical-align: top;
+    padding: 0.55rem 0.75rem 0.55rem 0;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  }
+
+  .support-videos-admin__table .kbm-btn {
+    margin-left: 0.6rem;
+  }
+
+  .support-videos-admin__note {
+    font-weight: 400;
+    color: #52682d;
+  }
+</style>
