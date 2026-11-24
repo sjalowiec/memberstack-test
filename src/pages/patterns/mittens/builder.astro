@@ -102,8 +102,8 @@ const expressNavSteps = MITTEN_BUILDER_STEPS;
               <img
                 src="/images/patterns/mittens.png"
                 alt="A pair of machine-knit mittens"
-                width="640"
-                height="480"
+                width="1312"
+                height="1199"
                 loading="lazy"
                 decoding="async"
                 class="sg-pattern-hero-image mitten-pattern-hero-image"
@@ -248,6 +248,17 @@ const expressNavSteps = MITTEN_BUILDER_STEPS;
                         data-value="slotted"
                         aria-pressed="false"
                       >
+                        <span class="mitten-thumb-picker__frame">
+                          <img
+                            src="/images/patterns/mittens/picker/slotted-thumb.webp"
+                            alt="Slotted thumb mitten, with the thumb slot marked on the side of the hand"
+                            class="hat-length-picker__img sg-picker-img mitten-thumb-picker__img"
+                            width="320"
+                            height="320"
+                            loading="lazy"
+                            decoding="async"
+                          />
+                        </span>
                         <span class="hat-length-picker__option-label">Slotted thumb</span>
                       </button>
                       <button
@@ -258,6 +269,17 @@ const expressNavSteps = MITTEN_BUILDER_STEPS;
                         data-value="gored"
                         aria-pressed="false"
                       >
+                        <span class="mitten-thumb-picker__frame">
+                          <img
+                            src="/images/patterns/mittens/picker/gored-thumb.webp"
+                            alt="Gored thumb, picked up from both edges of the mitten"
+                            class="hat-length-picker__img sg-picker-img mitten-thumb-picker__img"
+                            width="320"
+                            height="320"
+                            loading="lazy"
+                            decoding="async"
+                          />
+                        </span>
                         <span class="hat-length-picker__option-label">Gored thumb</span>
                       </button>
                     </div>
@@ -379,6 +401,33 @@ const expressNavSteps = MITTEN_BUILDER_STEPS;
 
   .mitten-express-builder-page .mitten-thumb-picker__grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: stretch;
+  }
+
+  .mitten-express-builder-page .mitten-thumb-picker__grid .hat-length-picker__option {
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    border-width: 3px;
+  }
+
+  .mitten-express-builder-page .mitten-thumb-picker__frame {
+    position: relative;
+    display: block;
+    width: 100%;
+    aspect-ratio: 1;
+    min-height: 0;
+    box-sizing: border-box;
+  }
+
+  .mitten-express-builder-page .mitten-thumb-picker__frame .hat-length-picker__img.sg-picker-img {
+    position: absolute;
+    inset: 8px;
+    width: calc(100% - 16px);
+    height: calc(100% - 16px);
+    max-width: none;
+    object-fit: contain;
+    object-position: center;
   }
 
   .mitten-express-builder-page #create-pattern-btn.button-disabled,
