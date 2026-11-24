@@ -43,7 +43,7 @@ export type MittenDiagramMeasurements = {
   straightLengthIn: number;
   setupRowIn: number;
   fingertipDepthIn: number;
-  /** Hand 2, from the thumb slot through the setup row and fingertip shaping. */
+  /** From the thumb slot through the setup row and fingertip shaping. */
   slotToFingertipIn: number;
   slotWidthIn: number;
   thumbKnittedWidthIn: number;
@@ -477,6 +477,69 @@ function rotatedText(x: number, y: number, content: string, size = PATTERN_FS): 
   return `<text x="0" y="0" transform="translate(${f(x)} ${f(y)}) rotate(-90)" font-family="${FONT}" font-size="${size}" fill="${DIM}" text-anchor="middle">${escapeXml(content)}</text>`;
 }
 
+/** Push vertical labels apart. Longer names stay at the same type size. */
+function spreadRotatedColumn(labels: { text: string; y: number }[]): void {
+  const ordered = [...labels].sort((a, b) => a.y - b.y);
+  for (let index = 1; index < ordered.length; index++) {
+    const prev = ordered[index - 1];
+    const curr = ordered[index];
+    if (!prev || !curr) continue;
+    const minGap = textWidth(prev.text, PATTERN_FS) / 2 + textWidth(curr.text, PATTERN_FS) / 2 + 8;
+    if (curr.y < prev.y + minGap) curr.y = prev.y + minGap;
+  }
+}
+
+/**
+ * Thumb circumference sits beside the thumb opening, inward of the length label.
+ * The length column moves outward only when that is what keeps the two apart.
+ */
+function placeThumbSideLabels(input: {
+  baseX: number;
+  baseY: number;
+  sign: number;
+  thumbW: number;
+  thumbLen: number;
+  thumbColumnX: number;
+  thumbLenCenter: number;
+  circLabel: string;
+  circValue: string;
+}): {
+  lengthX: number;
+  lengthNameY: number;
+  lengthValueY: number;
+  circX: number;
+  circNameY: number;
+  circValueY: number;
+} {
+  const angleRad = (THUMB_ANGLE * Math.PI) / 180;
+  const boxHalf = (size: number) => size * 0.7;
+  const lengthBox = Math.max(boxHalf(PATTERN_FS), boxHalf(PATTERN_FS_SM));
+  const circBox = Math.max(boxHalf(PATTERN_FS), boxHalf(PATTERN_FS_SM));
+  const openingOuter = input.thumbW * 0.78;
+  let lengthOffset = Math.abs(input.thumbColumnX - input.baseX);
+  const circValueHalf = textWidth(input.circValue, PATTERN_FS) / 2;
+  const circNameHalf = textWidth(input.circLabel, PATTERN_FS_SM) / 2;
+  // The length arrow ends just below the thumb web. Keep the circumference
+  // value under that arrow, beside the opening, with the name directly below it.
+  const lengthArrowBottom = input.baseY + (input.thumbW / 2 + 14) * Math.sin(angleRad);
+  const circValueY = lengthArrowBottom + 10 + circValueHalf;
+  const circNameY = circValueY + circValueHalf + 12 + circNameHalf;
+  let circOffset = openingOuter + circBox + 8;
+  if (lengthOffset < circOffset + circBox + 12 + lengthBox) {
+    lengthOffset = circOffset + circBox + 12 + lengthBox;
+  }
+  const lengthNameY = input.thumbLenCenter - 48;
+  const lengthValueY = input.thumbLenCenter + 48;
+  return {
+    lengthX: input.baseX + input.sign * lengthOffset,
+    lengthNameY,
+    lengthValueY,
+    circX: input.baseX + input.sign * circOffset,
+    circNameY,
+    circValueY,
+  };
+}
+
 /** One upright mitten. The second mitten mirrors the thumb side. */
 export function buildMittenDiagramSvg(
   calc: MittenCalc,
@@ -518,10 +581,6 @@ export function buildMittenDiagramSvg(
     `A ${f(thumbW / 2)} ${f(cap)} 0 0 1 ${f(thumbW / 2)} ${f(-straight)} ` +
     `L ${f(thumbW / 2)} 0`;
   const angleRad = (THUMB_ANGLE * Math.PI) / 180;
-  const tipReach = Math.sin(angleRad) * thumbLen;
-  const outerEdge = baseX + sign * (thumbW / 2 + tipReach);
-  const innerSep = outerEdge + sign * 12;
-  const outerSep = innerSep + sign * 12;
   const tipY = baseY - Math.cos(angleRad) * thumbLen;
   const edge = slotRight ? handLeft : handRight;
   const outward = slotRight ? -1 : 1;
@@ -534,28 +593,16 @@ export function buildMittenDiagramSvg(
   const circ = formatMittenDiagramInches;
   const sectionLabels = [
     { text: `Fingertip ${len(m.fingertipDepthIn)} in`, y: (yTip + yDomeBase) / 2, x: nearLabelX },
-    { text: `Hand 2 ${len(m.slotToFingertipIn)} in`, y: (yDomeBase + ySlot) / 2, x: farLabelX },
-    { text: `Hand 1 ${len(m.hand1LengthIn)} in`, y: (ySlot + yCuffTop) / 2, x: nearLabelX },
+    { text: `Above thumb ${len(m.slotToFingertipIn)} in`, y: (yDomeBase + ySlot) / 2, x: farLabelX },
+    { text: `Below thumb ${len(m.hand1LengthIn)} in`, y: (ySlot + yCuffTop) / 2, x: nearLabelX },
     { text: `Cuff ${len(m.cuffLengthIn)} in`, y: (yCuffTop + yBottom) / 2, x: farLabelX },
   ];
   const totalText = `Total ${len(m.totalLengthIn)} in`;
-  const farLabels = sectionLabels.filter((label) => label.x === farLabelX);
-  const totalHalf = textWidth(totalText, PATTERN_FS) / 2;
-  let totalLabelY = (yTip + yBottom) / 2;
-  const totalHits = farLabels.some(
-    (label) => Math.abs(totalLabelY - label.y) < totalHalf + textWidth(label.text, PATTERN_FS) / 2 + 8,
-  );
-  if (totalHits && farLabels.length >= 2) {
-    const ordered = [...farLabels].sort((a, b) => a.y - b.y);
-    const upper = ordered[0];
-    const lower = ordered[1];
-    if (upper && lower) {
-      const top = upper.y + textWidth(upper.text, PATTERN_FS) / 2 + totalHalf + 8;
-      const bottom = lower.y - textWidth(lower.text, PATTERN_FS) / 2 - totalHalf - 8;
-      if (bottom > top) totalLabelY = (top + bottom) / 2;
-    }
-  }
+  const totalLabel = { text: totalText, y: (yTip + yBottom) / 2, x: farLabelX };
+  spreadRotatedColumn(sectionLabels.filter((label) => label.x === nearLabelX));
+  spreadRotatedColumn([...sectionLabels.filter((label) => label.x === farLabelX), totalLabel]);
   const totalLabelX = farLabelX;
+  const totalLabelY = totalLabel.y;
   const handCirc = "Hand circumference";
   const handIn = `${circ(m.handCircumferenceIn)} in`;
   const thumbCirc = "Thumb circumference";
@@ -564,24 +611,31 @@ export function buildMittenDiagramSvg(
   const thumbInLen = `${len(m.thumbLengthIn)} in`;
   const thumbDimLocalX = sign * (thumbW / 2 + 14);
   const thumbTipX = baseX + sign * (Math.sin(angleRad) * thumbLen + (thumbW / 2) * Math.cos(angleRad));
-  const thumbColumnX = thumbTipX + sign * 22;
   const thumbLenCenter = (tipY + baseY) / 2;
-  const thumbCircY = yBottom + 22;
-  const thumbInY = thumbCircY + 30;
+  const thumbSide = placeThumbSideLabels({
+    baseX,
+    baseY,
+    sign,
+    thumbW,
+    thumbLen,
+    thumbColumnX: thumbTipX + sign * 22,
+    thumbLenCenter,
+    circLabel: thumbCirc,
+    circValue: thumbIn,
+  });
 
   const ink: InkBox[] = [
     { x: cuffLeft, y: yTip, w: cuffW, h: yBottom - yTip },
     { x: handLeft, y: yTip, w: handW, h: ySlot - yTip },
     { x: Math.min(baseX, thumbTipX) - thumbW / 2, y: Math.min(tipY, baseY), w: Math.abs(thumbTipX - baseX) + thumbW, h: Math.abs(baseY - tipY) + THUMB_OVAL_RY },
     { x: Math.min(fingertipX, sectionX, totalX) - 6, y: yTip, w: 12, h: yBottom - yTip },
-    { x: Math.min(innerSep, outerSep) - 4, y: Math.min(tipY, yDomeBase), w: 20, h: Math.max(baseY, yCuffTop) - Math.min(tipY, yDomeBase) },
     horizontalTextBox(handMid, ySlot - HAND_OVAL_RY - 44, handCirc, "middle", PATTERN_FS_SM),
     horizontalTextBox(handMid, ySlot - HAND_OVAL_RY - 14, handIn, "middle", PATTERN_FS),
-    horizontalTextBox(handMid, thumbCircY, thumbCirc, "middle", PATTERN_FS_SM),
-    horizontalTextBox(handMid, thumbInY, thumbIn, "middle", PATTERN_FS),
     rotatedTextBox(totalLabelX, totalLabelY, totalText, PATTERN_FS),
-    rotatedTextBox(thumbColumnX, thumbLenCenter - 48, thumbLength, PATTERN_FS_SM),
-    rotatedTextBox(thumbColumnX, thumbLenCenter + 48, thumbInLen, PATTERN_FS),
+    rotatedTextBox(thumbSide.lengthX, thumbSide.lengthNameY, thumbLength, PATTERN_FS_SM),
+    rotatedTextBox(thumbSide.lengthX, thumbSide.lengthValueY, thumbInLen, PATTERN_FS),
+    rotatedTextBox(thumbSide.circX, thumbSide.circNameY, thumbCirc, PATTERN_FS_SM),
+    rotatedTextBox(thumbSide.circX, thumbSide.circValueY, thumbIn, PATTERN_FS),
     ...sectionLabels.map((label) => rotatedTextBox(label.x, label.y, label.text, PATTERN_FS)),
   ];
   const view = fitViewBox(ink);
@@ -615,12 +669,14 @@ export function buildMittenDiagramSvg(
     ${thumbDim}
   </g>
   <ellipse data-opening="thumb" cx="${f(baseX)}" cy="${f(baseY)}" rx="${f(thumbW * 0.78)}" ry="${THUMB_OVAL_RY}" fill="none" stroke="${STROKE}" stroke-width="1.75"/>
-  ${text(handMid, thumbCircY, thumbCirc, "middle", PATTERN_FS_SM)}
-  ${text(handMid, thumbInY, thumbIn, "middle", PATTERN_FS)}
-  ${rotatedText(thumbColumnX, thumbLenCenter - 48, thumbLength, PATTERN_FS_SM)}
-  ${rotatedText(thumbColumnX, thumbLenCenter + 48, thumbInLen, PATTERN_FS)}
-  <line data-separation="inner" x1="${f(innerSep)}" y1="${f(tipY - 4)}" x2="${f(innerSep)}" y2="${f(baseY + 22)}" stroke="${STROKE}" stroke-width="1.5"/>
-  <line data-separation="outer" x1="${f(outerSep)}" y1="${f(yDomeBase)}" x2="${f(outerSep)}" y2="${f(yCuffTop)}" stroke="${STROKE}" stroke-width="1.5"/>
+  <g data-label="thumb-circumference">
+    ${rotatedText(thumbSide.circX, thumbSide.circNameY, thumbCirc, PATTERN_FS_SM)}
+    ${rotatedText(thumbSide.circX, thumbSide.circValueY, thumbIn, PATTERN_FS)}
+  </g>
+  <g data-label="thumb-length">
+    ${rotatedText(thumbSide.lengthX, thumbSide.lengthNameY, thumbLength, PATTERN_FS_SM)}
+    ${rotatedText(thumbSide.lengthX, thumbSide.lengthValueY, thumbInLen, PATTERN_FS)}
+  </g>
   ${vMeasure(fingertipX, yTip, yDomeBase, "fingertip")}
   ${vMeasure(sectionX, ySlot, yTip, "hand-2")}
   ${vMeasure(sectionX, yCuffTop, ySlot, "hand-1")}

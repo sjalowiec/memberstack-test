@@ -55,6 +55,33 @@ function stack(
     .join("");
 }
 
+/**
+ * The two fingertip phases differ only by the leading sign.
+ * The phase name sits on the line above its existing token so the type stays readable.
+ * The center working-stitch count stays between them.
+ */
+function fingertipPhaseLines(tokens: readonly string[], gap: number): { text: string; dy: number }[] {
+  const intoHold = tokens[0] ?? "";
+  const working = tokens[1] ?? "";
+  const returnToWork = tokens[2] ?? "";
+  if (!intoHold || !returnToWork) {
+    return tokens.map((text, index) => ({ text, dy: index * 24 }));
+  }
+  const pair = Math.min(gap, 20);
+  const between = gap;
+  const tokenIn = pair;
+  const workingY = tokenIn + between;
+  const returnLabel = workingY + between;
+  const tokenOut = returnLabel + pair;
+  return [
+    { text: "Into hold:", dy: 0 },
+    { text: intoHold, dy: tokenIn },
+    { text: working, dy: workingY },
+    { text: "Return to work:", dy: returnLabel },
+    { text: returnToWork, dy: tokenOut },
+  ];
+}
+
 export function buildMittenShapingNotationSvg(calc: MittenCalc, slotEdge: MittenSlotEdge): string {
   const notation = buildMittenShapingNotation(calc);
   const frame = mittenPatternSketchFrame(calc, slotEdge);
@@ -159,8 +186,14 @@ export function buildMittenShapingNotationSvg(calc: MittenCalc, slotEdge: Mitten
   const thumbNoteY = gapBottom - gapTop >= stackSpan
     ? gapTop + (gapBottom - gapTop - stackSpan) / 2
     : (lowerRc?.labelY ?? frame.baseY) + NOTATION_FS + 10;
+  const phaseStart = frame.yTip + 2;
+  const thumbRcLimit = thumbPlaced.length
+    ? Math.min(...thumbPlaced.map((mark) => mark.labelY - NOTATION_FS * 0.9))
+    : phaseStart + 120;
+  const phaseGap = Math.min(24, Math.max(18, (thumbRcLimit - 8 - phaseStart) / 4));
+  const fingertipLines = fingertipPhaseLines(notation.fingertip, phaseGap);
   const labelBoxes = [
-    ...[notation.castOn, notation.cuffRows, notation.handIncrease, notation.handStsLabel, notation.hand1Rows, notation.straightRows, notation.markerRows, ...notation.fingertip, ...thumbLines].filter(Boolean),
+    ...[notation.castOn, notation.cuffRows, notation.handIncrease, notation.handStsLabel, notation.hand1Rows, notation.straightRows, notation.markerRows, ...fingertipLines.map((line) => line.text), ...thumbLines].filter(Boolean),
   ];
   const widest = Math.max(...labelBoxes.map((line) => textWidth(line)));
   const thumbWidest = Math.max(...thumbLines.map((line) => textWidth(line)), 0);
@@ -184,7 +217,7 @@ export function buildMittenShapingNotationSvg(calc: MittenCalc, slotEdge: Mitten
     shapedAnchor === "start" ? shapedX + widest : shapedX,
     handMid + textWidth(notation.castOn) / 2,
   );
-  const minY = Math.min(frame.yTip, frame.baseY - frame.thumbLen, ...handPlaced.map((mark) => mark.labelY - NOTATION_FS), ...thumbPlaced.map((mark) => mark.labelY - NOTATION_FS)) - 16;
+  const minY = Math.min(frame.yTip - NOTATION_FS, frame.baseY - frame.thumbLen, ...handPlaced.map((mark) => mark.labelY - NOTATION_FS), ...thumbPlaced.map((mark) => mark.labelY - NOTATION_FS)) - 8;
   const maxY = Math.max(frame.yBottom + 28, thumbNoteY + stackSpan + NOTATION_FS, ...handPlaced.map((mark) => mark.labelY + NOTATION_FS), ...thumbPlaced.map((mark) => mark.labelY + 8)) + 12;
   const boxX = minX - 10;
   const boxW = maxX - minX + 20;
@@ -203,7 +236,7 @@ export function buildMittenShapingNotationSvg(calc: MittenCalc, slotEdge: Mitten
   ${text(handMid, (frame.ySlot + frame.yCuffTop) / 2, notation.hand1Rows, "middle", "hand-1-rows")}
   ${notation.markerRows ? text(shapedX, frame.ySlot - 8, notation.markerRows, shapedAnchor, "thumb-markers") : ""}
   ${text(handMid, (frame.yDomeBase + frame.ySlot) / 2, notation.straightRows, "middle", "straight-rows")}
-  ${stack(shapedX, frame.yTip + 8, notation.fingertip, shapedAnchor, "fingertip-shaping")}
+  ${fingertipLines.map((line) => text(shapedX, phaseStart + line.dy, line.text, shapedAnchor, "fingertip-shaping")).join("")}
   ${stack(thumbNoteX, thumbNoteY, thumbLines, thumbAnchor, "thumb-shaping")}
   ${renderShapingNotationRcLeaders({ placed: handPlaced, fill: DS_MUTED, font: DS_FONT, escape: escapeXml, formatNumber: f })}
   ${renderShapingNotationRcLeaders({ placed: thumbPlaced, fill: DS_MUTED, font: DS_FONT, escape: escapeXml, formatNumber: f })}
