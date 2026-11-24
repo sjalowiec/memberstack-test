@@ -58,9 +58,12 @@ describe("slotted mitten instructions", () => {
   it("transfers ribber stitches after the cuff and before the increase", () => {
     const knit = right.indexOf("Knit 26 rows");
     const transfer = right.indexOf("If needed, transfer the ribber stitches to the main bed.");
-    const increase = right.indexOf("Increase 4 stitches evenly across the row.");
+    const increase = right.indexOf('data-glossary-id="645"');
     expect(knit).toBeLessThan(transfer);
     expect(transfer).toBeLessThan(increase);
+    expect(block(right, "increase")).toContain("Increase evenly");
+    expect(block(right, "increase")).toContain('data-glossary-id="645"');
+    expect(block(right, "increase")).toContain("4 stitches across the row.");
     expect(block(right, "increase")).toContain("Leave 1 needle empty at 4 points");
     expect(block(right, "increase")).toContain("picking up the strand from the row below");
     expect(block(right, "increase")).not.toContain(RESET_ROW_COUNTER_TEXT);
@@ -161,6 +164,32 @@ describe("slotted mitten instructions", () => {
     expect(html).not.toContain("insurance");
     expect(html).not.toContain("single row of ravel cord");
     expect(html).not.toContain("Do not use a single row");
+    expect(html).not.toContain("After removing the stitches from the machine");
+  });
+
+  it("uses the sweater instruction blocks, stitch counts, and garment diagrams", () => {
+    expect(right).toContain('class="pattern-section');
+    expect(right).toContain('class="pattern-section__collapse"');
+    expect(right).toContain("Garment Dimensions");
+    expect(right).toContain("Stitches &amp; Rows");
+    expect(right).toContain("Shaping Notation");
+    expect(right).toContain('data-pattern-diagram-panel="sts-rows"');
+    expect(right).toContain('data-pattern-diagram-panel="shaping-notation"');
+    expect(right).toContain('data-diagram="mitten-sketch"');
+    expect(right).toContain('data-diagram="mitten-shaping-notation"');
+    expect(right).toContain("co46");
+    expect(right).toContain("+4s-1r-1x");
+    expect(right).toContain("-1s-1r-16x");
+    expect(right).toContain("+1s-1r-16x");
+    expect(right).toContain("9 sts");
+    expect(block(right, "cast-on")).toContain(">46 sts<");
+    expect(block(right, "increase")).toContain(">50 sts<");
+    expect(block(right, "hand-1")).toContain(">50 sts<");
+    expect(block(right, "straight")).toContain(">50 sts<");
+    expect(block(right, "thumb")).toContain(">21 sts<");
+    expect(left).toContain('data-slot-edge="left"');
+    expect(right).toContain('data-slot-edge="right"');
+    expect(right).not.toContain("decrease");
   });
 
   it("lists calculated lengths separately from the requested measurements", () => {
@@ -222,6 +251,9 @@ describe("gored thumb instructions", () => {
     );
     expect(rightThumb.toLowerCase()).not.toContain("decrease");
     expect(rightThumb).not.toContain("ravel cord");
+    expect(right).toContain("+2s-1r-6x");
+    expect(right).toContain('data-diagram="mitten-shaping-notation"');
+    expect(left).toContain('data-slot-edge="left"');
     expect(block(right, "markers")).toContain("10 rows apart");
     expect(block(right, "markers")).toContain("half the thumb circumference");
     expect(right).not.toContain("work the");
