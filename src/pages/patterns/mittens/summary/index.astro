@@ -1,68 +1,157 @@
 ---
 /**
- * Mitten summary / edit checkpoint between the builder and the finished pattern.
+ * Mitten Summary/Edit. Shared workspace: choices and gauge on the left,
+ * diagram measurement chips on the right.
  */
 import Layout from "../../../../layouts/Layout.astro";
+import PatternProjectDetails from "../../../../components/patterns/PatternProjectDetails.astro";
+import PatternSummaryDiagramStage from "../../../../components/patterns/PatternSummaryDiagramStage.astro";
+import PatternSummaryEditWorkspace from "../../../../components/patterns/PatternSummaryEditWorkspace.astro";
+import PatternSummaryMeasurementChip from "../../../../components/patterns/PatternSummaryMeasurementChip.astro";
 import { MITTEN_BUILDER_HREF } from "../../../../lib/patterns/mitten/mittenDraft";
-import { MITTEN_SIZING_CHART, THUMB_LENGTH_DEFINITION, THUMB_VALUE_SOURCES } from "../../../../lib/patterns/mitten/mittenSizingChart";
+import { MITTEN_SUMMARY_MEASUREMENT_FIELDS } from "../../../../lib/patterns/mitten/mittenSummaryFields";
+import { MITTEN_SIZING_CHART } from "../../../../lib/patterns/mitten/mittenSizingChart";
 
 import "../../../../styles/wizard.css";
 import "../../../../styles/patterns/sleeveless-pattern-shared.css";
 import "../../../../styles/patterns/pattern-app-shell.css";
+import "../../../../styles/patterns/pattern-editable-pencil.css";
 ---
 
 <Layout
-  title="Review Mitten Pattern | Knit it Now"
-  description="Review slotted mitten counts before opening the finished pattern."
+  title="Edit Mitten Pattern | Knit it Now"
+  description="Review and change your mitten size, thumb, gauge, and measurements."
   bodyClass="pattern-print-global-footer"
   patternWorkspace={true}
 >
-  <main class="wizard-page pattern-app-shell mitten-summary-page" data-mitten-summary data-testid="mitten-summary-page">
+  <main
+    class="wizard-page sleeveless-pattern-page sleeveless-workspace-subpage pattern-app-shell mitten-summary-page"
+    data-mitten-summary
+    data-testid="mitten-summary-page"
+  >
     <div class="wizard-container">
-      <p class="no-print"><a href={MITTEN_BUILDER_HREF}>Back to Builder</a></p>
-      <h1>Review your mitten</h1>
-      <p>The lengths above include the fingertip setup row at your row gauge. The fields below are the measurements you entered.</p>
-      <dl id="mitten-summary-counts" class="mitten-counts" data-testid="mitten-summary-counts"></dl>
-      <div id="mitten-summary-diagrams" class="mitten-summary-diagrams" data-testid="mitten-summary-diagrams"></div>
-      <p id="mitten-summary-feedback" role="status" hidden></p>
-
-      <section class="mitten-summary-edit">
-        <h2>Measurements and gauge</h2>
-        <p>{THUMB_LENGTH_DEFINITION} {THUMB_VALUE_SOURCES}</p>
-        <label>Pattern name <input id="mitten-pattern-name" type="text" autocomplete="off" /></label>
-        <label>Thumb construction
-          <select id="mitten-thumb-style" data-testid="mitten-thumb-style">
-            <option value="slotted">Slotted thumb</option>
-            <option value="gored">Gored thumb</option>
-          </select>
-        </label>
-        <label>Size
-          <select id="mitten-size">
-            <option value="">Custom</option>
-            {MITTEN_SIZING_CHART.map((row) => <option value={row.size}>{row.label}</option>)}
-          </select>
-        </label>
-        <div class="mitten-fields">
-          <label>Cuff circumference <input id="mitten-cuff-circ" type="number" min="0" step="0.01" /></label>
-          <label>Cuff length <input id="mitten-cuff-length" type="number" min="0" step="0.01" /></label>
-          <label>Hand circumference <input id="mitten-hand-circ" type="number" min="0" step="0.01" /></label>
-          <label>Hand length <input id="mitten-hand-length" type="number" min="0" step="0.01" /></label>
-          <label>Hand above the thumb <input id="mitten-hand2" type="number" min="0" step="0.01" /></label>
-          <label>Thumb length, web to tip <input id="mitten-thumb-length" type="number" min="0" step="0.01" /></label>
-          <label>Thumb circumference, temporary <input id="mitten-thumb-circ" type="number" min="0" step="0.01" /></label>
-          <label>Stitches over 4 inches <input id="mitten-stitch-gauge" type="number" min="0" step="0.1" /></label>
-          <label>Rows over 4 inches <input id="mitten-row-gauge" type="number" min="0" step="0.1" /></label>
+      <div class="calculator-card hat-builder-inputs">
+        <div class="mitten-summary-empty" data-mitten-summary-empty role="status" hidden>
+          <h1 class="mitten-summary-empty__title">Mitten Pattern</h1>
+          <p class="mitten-summary-empty__message" data-mitten-summary-empty-message>
+            Create a mitten pattern first, then come back to edit the measurements.
+          </p>
+          <a href={MITTEN_BUILDER_HREF} class="kbm-btn kbm-btn-accent">Go to Mitten Builder</a>
         </div>
-      </section>
 
-      <p class="mitten-summary-actions no-print">
-        <button type="button" id="mitten-save-pattern" class="express-generate" data-testid="mitten-save-pattern">
-          Save to My Patterns
-        </button>
-        <button type="button" id="mitten-view-pattern" class="express-generate" data-testid="mitten-view-pattern">
-          View My Pattern
-        </button>
-      </p>
+        <div class="mitten-summary-workspace" data-mitten-summary-workspace data-testid="mitten-summary-workspace" hidden>
+          <PatternSummaryEditWorkspace
+            measurePaneAttr="data-mitten-measure-pane"
+            actionsAttr="data-mitten-edit-actions"
+            testId="mitten-summary-edit"
+          >
+            <Fragment slot="quick">
+              <PatternProjectDetails
+                titleId="mitten-pattern-name"
+                notesId="mitten-edit-notes"
+                notesRegionId="mitten-edit-notes-region"
+                titlePlaceholder="Mittens"
+                titleInputAttr="data-mitten-edit-title"
+                titleTestId="mitten-edit-title"
+                notesInputAttr="data-mitten-edit-notes"
+                notesTestId="mitten-edit-notes"
+              />
+
+              <section class="sl-edit-section sl-edit-units-section" aria-labelledby="mitten-edit-units-heading">
+                <h3 class="sl-edit-section__title" id="mitten-edit-units-heading">Units</h3>
+                <div class="sl-edit-units-toggle" role="group" aria-labelledby="mitten-edit-units-heading">
+                  <button type="button" class="sl-edit-unit-btn is-active" data-mitten-edit-unit="inches" aria-pressed="true">
+                    Inches
+                  </button>
+                  <button type="button" class="sl-edit-unit-btn" data-mitten-edit-unit="cm" aria-pressed="false">
+                    Centimeters
+                  </button>
+                </div>
+              </section>
+
+              <section class="sl-edit-section" aria-labelledby="mitten-edit-choices-heading">
+                <h3 class="sl-edit-section__title" id="mitten-edit-choices-heading">Pattern choices</h3>
+                <div class="sl-edit-field">
+                  <label class="sl-edit-sublabel" for="mitten-size">Size</label>
+                  <select id="mitten-size" class="sl-edit-input sl-edit-select" data-testid="mitten-size">
+                    <option value="">Custom measurements</option>
+                    {MITTEN_SIZING_CHART.map((row) => <option value={row.size}>{row.label}</option>)}
+                  </select>
+                </div>
+                <div class="sl-edit-field">
+                  <label class="sl-edit-sublabel" for="mitten-thumb-style">Thumb construction</label>
+                  <select id="mitten-thumb-style" class="sl-edit-input sl-edit-select" data-testid="mitten-thumb-style">
+                    <option value="slotted">Slotted thumb</option>
+                    <option value="gored">Gored thumb</option>
+                  </select>
+                </div>
+              </section>
+
+              <section class="sl-edit-section" aria-labelledby="mitten-edit-gauge-heading">
+                <h3 class="sl-edit-section__title" id="mitten-edit-gauge-heading">Gauge</h3>
+                <p class="sl-edit-ease" data-mitten-edit-gauge-help>stitches / rows over 4 inches</p>
+                <div class="mitten-edit-gauge-grid">
+                  <div class="sl-edit-field">
+                    <label class="sl-edit-sublabel" for="mitten-stitch-gauge">Stitch gauge</label>
+                    <input
+                      id="mitten-stitch-gauge"
+                      class="sl-edit-input"
+                      type="number"
+                      inputmode="decimal"
+                      step="0.1"
+                      min="0"
+                      data-testid="mitten-edit-stitch-gauge"
+                    />
+                  </div>
+                  <div class="sl-edit-field">
+                    <label class="sl-edit-sublabel" for="mitten-row-gauge">Row gauge</label>
+                    <input
+                      id="mitten-row-gauge"
+                      class="sl-edit-input"
+                      type="number"
+                      inputmode="decimal"
+                      step="0.1"
+                      min="0"
+                      data-testid="mitten-edit-row-gauge"
+                    />
+                  </div>
+                </div>
+              </section>
+            </Fragment>
+
+            <Fragment slot="notes">
+              <p class="sl-edit-error-note" id="mitten-summary-feedback" data-mitten-summary-feedback hidden role="alert"></p>
+            </Fragment>
+
+            <Fragment slot="actions">
+              <a class="sl-edit-btn sl-edit-btn--ghost" href={MITTEN_BUILDER_HREF} data-testid="mitten-back-to-builder">
+                Back to Builder
+              </a>
+              <button type="button" class="sl-edit-btn sl-edit-btn--ghost" id="mitten-save-pattern" data-testid="mitten-save-pattern">
+                Save to My Patterns
+              </button>
+              <button type="button" class="sl-edit-btn sl-edit-btn--primary" id="mitten-view-pattern" data-testid="mitten-view-pattern">
+                View My Pattern
+              </button>
+            </Fragment>
+
+            <span slot="hint">Change a measurement on the diagram, then view or save the pattern.</span>
+
+            <Fragment slot="diagram">
+              <PatternSummaryDiagramStage
+                stageTestId="mitten-edit-diagram-area"
+                diagramAttr="data-mitten-edit-diagram"
+                overlayAttr="data-mitten-edit-overlay"
+                stageInnerAttr="data-mitten-edit-stage"
+              >
+                {MITTEN_SUMMARY_MEASUREMENT_FIELDS.map((field) => (
+                  <PatternSummaryMeasurementChip field={field} />
+                ))}
+              </PatternSummaryDiagramStage>
+            </Fragment>
+          </PatternSummaryEditWorkspace>
+        </div>
+      </div>
     </div>
   </main>
 </Layout>
@@ -73,65 +162,35 @@ import "../../../../styles/patterns/pattern-app-shell.css";
 </script>
 
 <style>
-  .mitten-counts {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 0.75rem;
-    margin: 1rem 0 1.5rem;
+  .mitten-summary-empty {
+    max-width: 36rem;
+    margin: 1.5rem auto;
+    padding: 1.5rem 1rem;
+    text-align: center;
   }
-  .mitten-count {
-    margin: 0;
-    padding: 0.75rem;
-    background: #f4f7ef;
+
+  .mitten-summary-empty__title {
+    margin: 0 0 0.65rem;
+    font-size: 1.45rem;
+    font-weight: 700;
+    color: var(--kbm-green, #52682d);
   }
-  .mitten-count dt {
-    font-size: 0.85rem;
+
+  .mitten-summary-empty__message {
+    margin: 0 0 1.1rem;
+    font-size: 0.98rem;
+    line-height: 1.5;
     color: #4b5563;
   }
-  .mitten-count dd {
-    margin: 0.2rem 0 0;
-    font-size: 1.25rem;
-    font-weight: 650;
+
+  .mitten-summary-workspace[hidden],
+  .mitten-summary-empty[hidden] {
+    display: none;
   }
-  .mitten-fields {
+
+  .mitten-edit-gauge-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 0.75rem;
-  }
-  .mitten-summary-edit label {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-  }
-  .mitten-summary-page input,
-  .mitten-summary-page select {
-    font: inherit;
-    padding: 0.5rem 0.6rem;
-  }
-  .mitten-summary-diagrams {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 1.25rem;
-    margin: 0 0 1.5rem;
-  }
-  .mitten-summary-diagrams :global(svg) {
-    width: 100%;
-    height: auto;
-  }
-  .mitten-summary-diagrams :global(.mitten-diagram-note) {
-    font-size: 0.95rem;
-    line-height: 1.45;
-  }
-  .mitten-summary-actions {
-    margin-top: 1.25rem;
-  }
-  .express-generate {
-    background: #52682d;
-    color: #fff;
-    border: 0;
-    border-radius: 6px;
-    padding: 0.8rem 1.2rem;
-    font: inherit;
-    cursor: pointer;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.55rem;
   }
 </style>

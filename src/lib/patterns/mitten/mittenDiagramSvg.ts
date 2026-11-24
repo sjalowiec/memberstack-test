@@ -101,10 +101,11 @@ function text(
   return `<text x="${f(x)}" y="${f(y)}" font-family="${FONT}" font-size="${size}" fill="${DIM}" text-anchor="${anchor}">${escapeXml(content)}</text>`;
 }
 
-function vMeasure(x: number, yTop: number, yBottom: number, name: string): string {
+function vMeasure(x: number, yTop: number, yBottom: number, name: string, id?: string): string {
   const s = 5;
+  const idAttr = id ? ` id="${id}"` : "";
   return (
-    `<g data-dimension="${name}" fill="none" stroke="${DIM}" stroke-width="1.35">` +
+    `<g${idAttr} data-dimension="${name}" fill="none" stroke="${DIM}" stroke-width="1.35">` +
     `<line x1="${f(x)}" y1="${f(yTop)}" x2="${f(x)}" y2="${f(yBottom)}"/>` +
     `<polyline points="${f(x - s)},${f(yTop + s)} ${f(x)},${f(yTop)} ${f(x + s)},${f(yTop + s)}"/>` +
     `<polyline points="${f(x - s)},${f(yBottom - s)} ${f(x)},${f(yBottom)} ${f(x + s)},${f(yBottom - s)}"/>` +
@@ -134,8 +135,24 @@ function spreadCenters(desired: number[], gap: number): number[] {
   return placed;
 }
 
+export type MittenDiagramMode = "pattern" | "summary";
+
+export const MITTEN_SUMMARY_TARGETS = {
+  cuffCircumference: "target_mitten_cuff_circ",
+  cuffLength: "target_mitten_cuff_length",
+  handCircumference: "target_mitten_hand_circ",
+  handLength: "target_mitten_hand_length",
+  hand2Length: "target_mitten_hand2",
+  thumbLength: "target_mitten_thumb_length",
+  thumbCircumference: "target_mitten_thumb_circ",
+} as const;
+
 /** One upright mitten. The second mitten mirrors the thumb side. */
-export function buildMittenDiagramSvg(calc: MittenCalc, slotEdge: MittenSlotEdge): string {
+export function buildMittenDiagramSvg(
+  calc: MittenCalc,
+  slotEdge: MittenSlotEdge,
+  mode: MittenDiagramMode = "pattern",
+): string {
   const m = mittenDiagramMeasurements(calc);
   const scale = HAND_PX / m.handDisplayIn;
   const slotRight = slotEdge === "right";
@@ -202,6 +219,14 @@ export function buildMittenDiagramSvg(calc: MittenCalc, slotEdge: MittenSlotEdge
   const len = formatMittenDiagramLength;
   const circ = formatMittenDiagramInches;
   const vbH = yBottom + 28;
+  const summary = mode === "summary";
+  const label = (
+    x: number,
+    y: number,
+    content: string,
+    anchor: "start" | "middle" | "end",
+    size = FS,
+  ) => (summary ? "" : text(x, y, content, anchor, size));
 
   const body =
     `M ${f(cuffLeft)} ${f(yBottom)} L ${f(cuffRight)} ${f(yBottom)} ` +
@@ -211,7 +236,7 @@ export function buildMittenDiagramSvg(calc: MittenCalc, slotEdge: MittenSlotEdge
     `L ${f(handLeft)} ${f(yCuffTop)} L ${f(cuffLeft)} ${f(yCuffTop)} Z`;
 
   const thumbDim =
-    `<g data-dimension="thumb-length" fill="none" stroke="${DIM}" stroke-width="1.35">` +
+    `<g${summary ? ` id="${MITTEN_SUMMARY_TARGETS.thumbLength}"` : ""} data-dimension="thumb-length" fill="none" stroke="${DIM}" stroke-width="1.35">` +
     `<line x1="${f(thumbDimLocalX)}" y1="0" x2="${f(thumbDimLocalX)}" y2="${f(-thumbLen)}"/>` +
     `<polyline points="${f(thumbDimLocalX - 5)},-5 ${f(thumbDimLocalX)},0 ${f(thumbDimLocalX + 5)},-5"/>` +
     `<polyline points="${f(thumbDimLocalX - 5)},${f(-thumbLen + 5)} ${f(thumbDimLocalX)},${f(-thumbLen)} ${f(thumbDimLocalX + 5)},${f(-thumbLen + 5)}"/>` +
@@ -222,30 +247,32 @@ export function buildMittenDiagramSvg(calc: MittenCalc, slotEdge: MittenSlotEdge
   <title>${construction}, ${slotEdge}-edge thumb</title>
   <rect x="0" y="0" width="${VB_W}" height="${f(vbH)}" fill="#fff"/>
   <path data-mitten-outline="hand" d="${body}" fill="none" stroke="${STROKE}" stroke-width="2" stroke-linejoin="round"/>
-  <ellipse data-opening="hand" cx="${f(handMid)}" cy="${f(ySlot)}" rx="${f(handW * 0.42)}" ry="${HAND_OVAL_RY}" fill="none" stroke="${STROKE}" stroke-width="1.75"/>
-  ${text(handMid, ySlot - HAND_OVAL_RY - 28, "Hand circumference", "middle", FS_SM)}
-  ${text(handMid, ySlot - HAND_OVAL_RY - 8, `${circ(m.handCircumferenceIn)} in`, "middle", FS_SM)}
+  <ellipse${summary ? ` id="${MITTEN_SUMMARY_TARGETS.handCircumference}"` : ""} data-opening="hand" cx="${f(handMid)}" cy="${f(ySlot)}" rx="${f(handW * 0.42)}" ry="${HAND_OVAL_RY}" fill="none" stroke="${STROKE}" stroke-width="1.75"/>
+  ${label(handMid, ySlot - HAND_OVAL_RY - 28, "Hand circumference", "middle", FS_SM)}
+  ${label(handMid, ySlot - HAND_OVAL_RY - 8, `${circ(m.handCircumferenceIn)} in`, "middle", FS_SM)}
   <g data-mitten-outline="thumb" transform="translate(${f(baseX)} ${f(baseY)}) rotate(${f(angle)})">
     <path d="${thumbOutline}" fill="none" stroke="${STROKE}" stroke-width="2" stroke-linejoin="round"/>
     ${thumbDim}
   </g>
-  <ellipse data-opening="thumb" cx="${f(baseX)}" cy="${f(baseY)}" rx="${f(thumbW * 0.78)}" ry="${THUMB_OVAL_RY}" fill="none" stroke="${STROKE}" stroke-width="1.75"/>
-  ${text(baseX + sign * (thumbW * 0.95), baseY + THUMB_OVAL_RY + 16, "Thumb circumference", slotRight ? "start" : "end", FS_SM)}
-  ${text(baseX + sign * (thumbW * 0.95), baseY + THUMB_OVAL_RY + 34, `${circ(m.thumbCircumferenceIn)} in`, slotRight ? "start" : "end", FS_SM)}
+  <ellipse${summary ? ` id="${MITTEN_SUMMARY_TARGETS.thumbCircumference}"` : ""} data-opening="thumb" cx="${f(baseX)}" cy="${f(baseY)}" rx="${f(thumbW * 0.78)}" ry="${THUMB_OVAL_RY}" fill="none" stroke="${STROKE}" stroke-width="1.75"/>
+  ${label(baseX + sign * (thumbW * 0.95), baseY + THUMB_OVAL_RY + 16, "Thumb circumference", slotRight ? "start" : "end", FS_SM)}
+  ${label(baseX + sign * (thumbW * 0.95), baseY + THUMB_OVAL_RY + 34, `${circ(m.thumbCircumferenceIn)} in`, slotRight ? "start" : "end", FS_SM)}
   <line data-separation="inner" x1="${f(innerSep)}" y1="${f(tipY - 4)}" x2="${f(innerSep)}" y2="${f(baseY + 22)}" stroke="${STROKE}" stroke-width="1.5"/>
   <line data-separation="outer" x1="${f(outerSep)}" y1="${f(yDomeBase)}" x2="${f(outerSep)}" y2="${f(yCuffTop)}" stroke="${STROKE}" stroke-width="1.5"/>
   ${vMeasure(fingertipX, yTip, yDomeBase, "fingertip")}
-  ${vMeasure(sectionX, ySlot, yTip, "hand-2")}
+  ${vMeasure(sectionX, ySlot, yTip, "hand-2", summary ? MITTEN_SUMMARY_TARGETS.hand2Length : undefined)}
   ${vMeasure(sectionX, yCuffTop, ySlot, "hand-1")}
-  ${vMeasure(sectionX, yBottom, yCuffTop, "cuff")}
+  ${vMeasure(sectionX, yBottom, yCuffTop, "cuff", summary ? MITTEN_SUMMARY_TARGETS.cuffLength : undefined)}
   ${vMeasure(totalX, yTip, yBottom, "total")}
-  ${text(sectionLabelX, (tipLabelY ?? 0) + 4, `Fingertip ${len(m.fingertipDepthIn)} in`, labelAnchor)}
-  ${text(sectionLabelX, (hand2LabelY ?? 0) + 4, `Hand 2 ${len(m.slotToFingertipIn)} in`, labelAnchor)}
-  ${text(sectionLabelX, (hand1LabelY ?? 0) + 4, `Hand 1 ${len(m.hand1LengthIn)} in`, labelAnchor)}
-  ${text(sectionLabelX, (cuffLabelY ?? 0) + 4, `Cuff ${len(m.cuffLengthIn)} in`, labelAnchor)}
-  ${text(totalLabelX, totalLabelY, `Total ${len(m.totalLengthIn)} in`, labelAnchor)}
-  ${text(thumbLabelX, thumbLabelY - 8, "Thumb length", thumbLabelAnchor, FS_SM)}
-  ${text(thumbLabelX, thumbLabelY + 10, `${len(m.thumbLengthIn)} in`, thumbLabelAnchor, FS_SM)}
+  ${summary ? `<rect id="${MITTEN_SUMMARY_TARGETS.cuffCircumference}" x="${f((cuffLeft + cuffRight) / 2)}" y="${f((yCuffTop + yBottom) / 2)}" width="2" height="2" fill="none"/>` : ""}
+  ${summary ? `<rect id="${MITTEN_SUMMARY_TARGETS.handLength}" x="${f(sectionX)}" y="${f((yTip + yCuffTop) / 2)}" width="2" height="2" fill="none"/>` : ""}
+  ${label(sectionLabelX, (tipLabelY ?? 0) + 4, `Fingertip ${len(m.fingertipDepthIn)} in`, labelAnchor)}
+  ${label(sectionLabelX, (hand2LabelY ?? 0) + 4, `Hand 2 ${len(m.slotToFingertipIn)} in`, labelAnchor)}
+  ${label(sectionLabelX, (hand1LabelY ?? 0) + 4, `Hand 1 ${len(m.hand1LengthIn)} in`, labelAnchor)}
+  ${label(sectionLabelX, (cuffLabelY ?? 0) + 4, `Cuff ${len(m.cuffLengthIn)} in`, labelAnchor)}
+  ${label(totalLabelX, totalLabelY, `Total ${len(m.totalLengthIn)} in`, labelAnchor)}
+  ${label(thumbLabelX, thumbLabelY - 8, "Thumb length", thumbLabelAnchor, FS_SM)}
+  ${label(thumbLabelX, thumbLabelY + 10, `${len(m.thumbLengthIn)} in`, thumbLabelAnchor, FS_SM)}
 </svg>`;
 }
 
