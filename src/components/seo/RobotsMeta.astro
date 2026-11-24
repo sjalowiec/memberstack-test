@@ -1,7 +1,7 @@
 ---
-import { isSiteNoindexEnabled } from "../../lib/seo/siteIndexing";
+import { shouldEmitRobotsNoindex } from "../../lib/seo/siteIndexing";
 
-const noindex = isSiteNoindexEnabled();
+const noindex = shouldEmitRobotsNoindex(Astro.url.pathname);
 ---
 
 {noindex && <meta name="robots" content="noindex, nofollow" />}

@@ -1,5 +1,6 @@
 ---
 import BaseLayout from "./BaseLayout.astro";
+import { isExcludedFromSearchDiscovery } from "../lib/seo/siteIndexing";
 
 export interface TabsEnabled {
   pattern?: boolean;
@@ -32,6 +33,7 @@ const showWalkthrough = tabsEnabled.walkthrough ?? true;
 const showReference = tabsEnabled.reference ?? true;
 const showAskShare = tabsEnabled.askShare ?? true;
 const showInspiration = tabsEnabled.inspiration ?? true;
+const excludeFromSearch = isExcludedFromSearchDiscovery(Astro.url.pathname);
 ---
 
 <BaseLayout title={title} description={description}>
@@ -356,7 +358,12 @@ const showInspiration = tabsEnabled.inspiration ?? true;
     }
   </style>
 
-  <main class="page-wrap" data-pagefind-body>
+  <main
+    class="page-wrap"
+    {...(excludeFromSearch
+      ? { "data-pagefind-ignore": "true" }
+      : { "data-pagefind-body": "true" })}
+  >
     <slot name="hero" />
 
     {!hideTabs && (

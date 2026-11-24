@@ -10,6 +10,7 @@ import ToolPrintFooter from "../components/tools/ToolPrintFooter.astro";
 import EnvBanner from "../components/EnvBanner.astro";
 import MembershipCornerControl from "../components/membership/MembershipCornerControl.astro";
 import RobotsMeta from "../components/seo/RobotsMeta.astro";
+import { isExcludedFromSearchDiscovery } from "../lib/seo/siteIndexing";
 import TurnstileScript from "../components/TurnstileScript.astro";
 import WhatsNewAnnouncementPopup from "../components/whatsNew/WhatsNewAnnouncementPopup.astro";
 
@@ -59,6 +60,8 @@ const useWatsonFavicon = isWatsonPage || isAdminPage;
 
 const isProduction =
   (import.meta.env.PUBLIC_SITE_ENV || "").toLowerCase() === "production";
+
+const excludeFromSearch = isExcludedFromSearchDiscovery(pathname);
 ---
 <html lang="en">
   <head>
@@ -273,7 +276,7 @@ const isProduction =
 
   
 
-  <body class={bodyClass}>
+  <body class={bodyClass} {...(excludeFromSearch ? { "data-pagefind-ignore": "true" } : {})}>
     <EnvBanner />
     {import.meta.env.DEV && (
       <div class="preview-banner" id="preview-banner"></div>

@@ -1,0 +1,65 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import VimeoEmbed from "../../components/media/VimeoEmbed.astro";
+import { findPublishedCustomerHelpVideo } from "../../lib/supportVideos/customerHelpVideoStore";
+
+export const prerender = false;
+
+Astro.response.headers.set("Cache-Control", "no-store");
+Astro.response.headers.set("Netlify-CDN-Cache-Control", "no-store");
+
+const slug = typeof Astro.params.slug === "string" ? Astro.params.slug : "";
+const video = await findPublishedCustomerHelpVideo(slug);
+
+if (!video) {
+  return new Response("Not found", {
+    status: 404,
+    headers: {
+      "Content-Type": "text/plain; charset=utf-8",
+      "X-Robots-Tag": "noindex, nofollow",
+    },
+  });
+}
+
+Astro.response.headers.set("X-Robots-Tag", "noindex, nofollow");
+
+const pageTitle = `${video.title} | Knit it Now`;
+const privacyHash = video.privacyHash?.trim() || undefined;
+---
+
+<Layout title={pageTitle} description={video.intro}>
+  <Fragment slot="head">
+    <meta name="robots" content="noindex, nofollow" />
+  </Fragment>
+
+  <article class="video-help">
+    <h1>{video.title}</h1>
+    <p class="video-help__intro">{video.intro}</p>
+    <VimeoEmbed
+      vimeoId={video.vimeoId.trim()}
+      privacyHash={privacyHash}
+      title={video.title}
+      autoplay={false}
+      controls={true}
+      showPlayerTitle={false}
+      loading="eager"
+    />
+  </article>
+</Layout>
+
+<style>
+  .video-help {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 0 1.25rem 3rem;
+  }
+
+  .video-help h1 {
+    margin-bottom: 0.5rem;
+  }
+
+  .video-help__intro {
+    max-width: 40rem;
+    margin-bottom: 0.5rem;
+  }
+</style>

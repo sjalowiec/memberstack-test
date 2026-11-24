@@ -1,7 +1,9 @@
 ---
 import RobotsMeta from "../components/seo/RobotsMeta.astro";
+import { isExcludedFromSearchDiscovery } from "../lib/seo/siteIndexing";
 
 const { title, description } = Astro.props;
+const excludeFromSearch = isExcludedFromSearchDiscovery(Astro.url.pathname);
 ---
 
 <html lang="en">
@@ -22,7 +24,12 @@ const { title, description } = Astro.props;
         </a>
       </header>
 
-      <main class="sales-main" data-pagefind-body>
+      <main
+        class="sales-main"
+        {...(excludeFromSearch
+          ? { "data-pagefind-ignore": "true" }
+          : { "data-pagefind-body": "true" })}
+      >
         <slot />
       </main>
     </div>
