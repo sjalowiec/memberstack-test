@@ -258,7 +258,7 @@ export function calculateMittenPattern(input: MittenCalcInput): MittenCalcResult
   if (hand1Rows < 0 || hand1Rows % 2 !== 0) {
     return {
       ok: false,
-      message: "Hand 1 rows must be an even number so the carriage stays opposite the slot.",
+      message: "Hand 1 rows must be an even number so the carriage returns to the right.",
     };
   }
 
@@ -278,7 +278,7 @@ export function calculateMittenPattern(input: MittenCalcInput): MittenCalcResult
     return {
       ok: false,
       message:
-        "Straight rows after the slot must be even so the carriage finishes opposite the slot.",
+        "Straight rows after the thumb opening must be even so the carriage returns to the right.",
     };
   }
 

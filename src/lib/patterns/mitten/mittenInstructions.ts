@@ -17,6 +17,7 @@ import { sleevelessHelpVideoFromCatalog } from "../sleevelessCatalogHelpVideo";
 import { sockHoldOrientation, type SockInstructionStep, type SockOfPair } from "../sock/sockInstructionModel";
 import { sockEnsureCarriageInstruction } from "../sock/sockInstructionRender";
 import { buildSockShortRowInstructionSection } from "../sock/sockShortRowInstructions";
+import type { PatternInpageNavItem } from "../patternInpageNav";
 import { buildMittenDiagramTabsHtml } from "./mittenPatternDiagramTabs";
 import {
   MITTEN_INCREASE_EVENLY_GLOSSARY_ID,
@@ -41,8 +42,6 @@ export type MittenInstructionSide = {
   id: "right-edge" | "left-edge";
   title: string;
   slotEdge: MittenSlotEdge;
-  /** Carriage side for the first counted cuff row. Opposite the slot. */
-  cuffCarriageSide: "left" | "right";
   sock: SockOfPair;
 };
 
@@ -56,20 +55,18 @@ export const MITTEN_INSTRUCTION_SIDES: readonly MittenInstructionSide[] = [
     id: "right-edge",
     title: "Right-edge slot",
     slotEdge: "right",
-    cuffCarriageSide: "left",
     sock: 1,
   },
   {
     id: "left-edge",
     title: "Left-edge slot",
     slotEdge: "left",
-    cuffCarriageSide: "right",
     sock: 2,
   },
 ];
 
-export const MITTEN_PREVIEW_ORIENTATION_NOTE =
-  "This preview pairs the right-edge slot with fingertip shaping on the right half, and the left-edge slot with fingertip shaping on the left half. Which hand each mitten fits, and which face is the palm, is not decided.";
+export const MITTEN_CUFF_START_CARRIAGE =
+  "At RC: 000, the carriage is on the RIGHT.";
 
 export const MITTEN_SECOND_MITTEN_INTRO =
   "Knit the second mitten the same way, working the slot at the opposite edge and the fingertip shaping on the opposite side.";
@@ -77,10 +74,30 @@ export const MITTEN_SECOND_MITTEN_INTRO =
 export const MITTEN_GORED_SECOND_MITTEN_INTRO =
   "Knit the second mitten the same way, working the thumb markers at the opposite edge and the fingertip shaping on the opposite side.";
 
-export const MITTEN_GORED_PREVIEW_ORIENTATION_NOTE =
-  "This preview pairs the right-edge thumb with fingertip shaping on the right half, and the left-edge thumb with fingertip shaping on the left half. Which hand each mitten fits, and which face is the palm, is not decided.";
-
 const SIDE_LABEL = { left: "LEFT", right: "RIGHT" } as const;
+
+/** Section id produced by the shared pattern renderer for one mitten. */
+export function mittenPatternSectionId(sideId: MittenInstructionSide["id"], slug: string): string {
+  return `sg-${sideId}-${slug}`;
+}
+
+/** Sticky section links for the mitten currently on screen. */
+export function mittenPatternInpageNavItems(
+  sideId: MittenInstructionSide["id"],
+  thumbStyle: MittenCalc["thumbStyle"],
+): PatternInpageNavItem[] {
+  const sections = [
+    { label: "Cuff", slug: "cast-on-and-cuff" },
+    { label: "Hand", slug: "hand-below-the-thumb" },
+    { label: "Fingertips", slug: "fingertips" },
+    { label: "Thumb", slug: thumbStyle === "gored" ? "gored-thumb" : "rehang-and-knit-the-thumb" },
+    { label: "Finishing", slug: "seaming" },
+  ];
+  return sections.map((section) => ({
+    label: section.label,
+    ids: [mittenPatternSectionId(sideId, section.slug)],
+  }));
+}
 
 type InstructionBlock = Extract<SleevelessPatternDisplayRow, { kind: "block" }>;
 
@@ -415,7 +432,6 @@ function seamRows(calc: MittenCalc): SleevelessPatternDisplayRow[] {
 
 function mittenRows(calc: MittenCalc, side: MittenInstructionSide): SleevelessPatternDisplayRow[] {
   const slotLabel = SIDE_LABEL[side.slotEdge];
-  const carriageLabel = SIDE_LABEL[side.cuffCarriageSide];
   const gore = calc.gore;
   const title = gore ? (side.slotEdge === "right" ? "Right-edge thumb" : "Left-edge thumb") : side.title;
   const slotVideo = mittenVideoButton(MITTEN_SLOT_VIDEO_CONTENT_ID, "data-mitten-slot-video");
@@ -443,12 +459,12 @@ function mittenRows(calc: MittenCalc, side: MittenInstructionSide): SleevelessPa
           blockMarker("cast-on"),
           `Cast on ${calc.cuffSts} stitches.`,
           "Complete cast-on setup before the counted cuff rows.",
-          `Begin the counted cuff rows with the carriage on the ${carriageLabel}.`,
         ],
         stitchCount: calc.cuffSts,
       }),
       instructionBlock({
         lines: [
+          MITTEN_CUFF_START_CARRIAGE,
           `Knit ${calc.cuffRows} rows in your choice of cuff pattern.`,
           rcLine(calc.cuffRows),
         ],
@@ -530,12 +546,10 @@ function oneMittenHtml(
 /** One instruction document for the screen and for print. */
 export function buildMittenPatternHtml(calc: MittenCalc): string {
   const secondIntro = calc.gore ? MITTEN_GORED_SECOND_MITTEN_INTRO : MITTEN_SECOND_MITTEN_INTRO;
-  const previewNote = calc.gore ? MITTEN_GORED_PREVIEW_ORIENTATION_NOTE : MITTEN_PREVIEW_ORIENTATION_NOTE;
   const panels = MITTEN_INSTRUCTION_SIDES.map((side, index) =>
     oneMittenHtml(calc, side, index === 1 ? secondIntro : "", index > 0),
   ).join("\n");
   return `<div class="mitten-instructions" data-testid="mitten-instructions" data-print-source="mitten-instructions" data-thumb-style="${calc.thumbStyle}">
-  <p class="mitten-preview-note">${escapeHtml(previewNote)}</p>
   ${panels}
 </div>`;
 }
