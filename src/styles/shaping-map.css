@@ -125,6 +125,19 @@
   overflow: visible;
 }
 
+/* The mitten map stays in the instruction column. Scroll that column when
+   the grid is wider than the column, and do not crop the scroll box. */
+#pattern-content .shaping-map[data-mitten-top-shaping-map],
+#pattern-content .shaping-map[data-mitten-top-shaping-map] .shaping-map__scroll {
+  max-width: 100%;
+  min-width: 0;
+}
+
+#pattern-content .pattern-section:has([data-mitten-top-shaping-map]),
+#pattern-content .sleeveless-pattern-row:has([data-mitten-top-shaping-map]) {
+  overflow: visible;
+}
+
 /* Right-side row numbers — same size/weight as step labels; Y aligns to the grid row. */
 .shaping-map-row-number {
   fill: #111111;
@@ -455,9 +468,10 @@ button.ns-visual-guides__preview:focus-visible .ns-visual-guides__zoom {
     page-break-inside: avoid;
   }
 
-  /* Large stockings are taller than one page. Let this map print instead of
-   * being dropped by a keep-together rule. */
-  .shaping-map[data-heel-toe-shaping-map] {
+  /* Large stockings and mitten tops are taller than one page. Let this map
+   * print instead of being dropped by a keep-together rule. */
+  .shaping-map[data-heel-toe-shaping-map],
+  .shaping-map[data-mitten-top-shaping-map] {
     break-inside: auto;
     page-break-inside: auto;
   }
@@ -475,7 +489,8 @@ button.ns-visual-guides__preview:focus-visible .ns-visual-guides__zoom {
   }
 
   /* The map is tall. Let the instruction section break so the map can keep its own page. */
-  #pattern-content .sock-pattern-section:has(.shaping-map) {
+  #pattern-content .sock-pattern-section:has(.shaping-map),
+  #pattern-content .pattern-section:has([data-mitten-top-shaping-map]) {
     break-inside: auto;
     page-break-inside: auto;
   }

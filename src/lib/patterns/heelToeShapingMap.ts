@@ -4,6 +4,7 @@
  * Draws the short-row needle actions already written in the instruction
  * steps. It does not apply the one-third rule or any other sizing formula.
  * Heel and toe share one map only when those actions are the same.
+ * One sequence, such as a mitten top, uses the same replay and drawing.
  *
  * Carriage-pass numbers on the map are local. They are not the pattern row
  * counter.
@@ -16,6 +17,9 @@ import type {
 } from "./sock/sockInstructionModel";
 
 export const HEEL_TOE_SHAPING_MAP_TITLE = "Heel & Toe Shaping Map";
+export const MITTEN_TOP_SHAPING_MAP_TITLE = "Mitten Top Shaping Map";
+
+export type ShortRowShapingMapMarker = "heel-toe" | "mitten-top";
 
 /** Square cells, same proportion as the neckline shaping map. */
 const CELL = 18;
@@ -40,9 +44,10 @@ export type HeelToeShapingMapPass = {
 };
 
 export type HeelToeShapingMapModel = {
-  title: typeof HEEL_TOE_SHAPING_MAP_TITLE;
-  sock: SockInstructionDocument["sock"];
-  constructionDirection: SockInstructionDocument["constructionDirection"];
+  title: string;
+  marker: ShortRowShapingMapMarker;
+  sock?: SockInstructionDocument["sock"];
+  constructionDirection?: SockInstructionDocument["constructionDirection"];
   carriageStartSide: SockNeedleHalf;
   workingStitches: number;
   remainingStitches: number;
@@ -185,6 +190,44 @@ function firstShortRowSection(doc: SockInstructionDocument): SockInstructionSect
   return doc.sections.find((section) => section.steps.some((step) => step.type === "short-row-in"));
 }
 
+function shapingMapFromActions(
+  actions: ShortRowActions,
+  presentation: {
+    title: string;
+    marker: ShortRowShapingMapMarker;
+    sock?: SockInstructionDocument["sock"];
+    constructionDirection?: SockInstructionDocument["constructionDirection"];
+  },
+): HeelToeShapingMapResult {
+  const passes = replayShortRowActions(actions);
+  if (typeof passes === "string") return { ok: false, reasons: [passes] };
+  return {
+    ok: true,
+    map: {
+      title: presentation.title,
+      marker: presentation.marker,
+      ...(presentation.sock != null ? { sock: presentation.sock } : {}),
+      ...(presentation.constructionDirection != null
+        ? { constructionDirection: presentation.constructionDirection }
+        : {}),
+      carriageStartSide: actions.carriageStartSide,
+      workingStitches: actions.workingStitches,
+      remainingStitches: actions.remainingStitches,
+      passes,
+    },
+  };
+}
+
+/** One written short-row sequence. Does not require a matching second section. */
+export function buildSingleShortRowShapingMap(
+  section: SockInstructionSection,
+  presentation: { title: string; marker: "mitten-top" },
+): HeelToeShapingMapResult {
+  const actions = readShortRowActions(section);
+  if (typeof actions === "string") return { ok: false, reasons: [actions] };
+  return shapingMapFromActions(actions, presentation);
+}
+
 export function buildHeelToeShapingMap(doc: SockInstructionDocument): HeelToeShapingMapResult {
   const heel = doc.sections.find((section) => section.id === "heel");
   const toe = doc.sections.find((section) => section.id === "toe");
@@ -207,20 +250,12 @@ export function buildHeelToeShapingMap(doc: SockInstructionDocument): HeelToeSha
     };
   }
   const shownActions = shown.id === "heel" ? heelActions : toeActions;
-  const passes = replayShortRowActions(shownActions);
-  if (typeof passes === "string") return { ok: false, reasons: [passes] };
-  return {
-    ok: true,
-    map: {
-      title: HEEL_TOE_SHAPING_MAP_TITLE,
-      sock: doc.sock,
-      constructionDirection: doc.constructionDirection,
-      carriageStartSide: shownActions.carriageStartSide,
-      workingStitches: shownActions.workingStitches,
-      remainingStitches: shownActions.remainingStitches,
-      passes,
-    },
-  };
+  return shapingMapFromActions(shownActions, {
+    title: HEEL_TOE_SHAPING_MAP_TITLE,
+    marker: "heel-toe",
+    sock: doc.sock,
+    constructionDirection: doc.constructionDirection,
+  });
 }
 
 function stitchLabel(count: number, singular: string, plural: string): string {
@@ -420,12 +455,23 @@ export function renderHeelToeShapingMapHtml(map: HeelToeShapingMapModel): string
   const svg = renderHeelToeShapingMapSvg(map);
   const note =
     "Read from the bottom upward. Each grid row is one carriage pass. Numbers on the right count those passes for this map only. -1 places a needle into hold. +1 returns a needle to work.";
+  const body =
+    `<h5 class="shaping-map__title">${escapeXml(map.title)}</h5>` +
+    `<p class="shaping-map__note">${escapeXml(note)}</p>` +
+    `<div class="shaping-map__scroll">${svg}</div>`;
+  if (map.marker === "mitten-top") {
+    return (
+      `<div class="pattern-print-keep-charts">` +
+      `<div class="shaping-map" data-heel-toe-shaping-map data-mitten-top-shaping-map ` +
+      `data-carriage-start="${map.carriageStartSide}">` +
+      body +
+      `</div></div>`
+    );
+  }
   return (
     `<div class="shaping-map" data-heel-toe-shaping-map data-sock="${map.sock}" ` +
     `data-construction="${map.constructionDirection}" data-carriage-start="${map.carriageStartSide}">` +
-    `<h5 class="shaping-map__title">${escapeXml(map.title)}</h5>` +
-    `<p class="shaping-map__note">${escapeXml(note)}</p>` +
-    `<div class="shaping-map__scroll">${svg}</div>` +
+    body +
     `</div>`
   );
 }
