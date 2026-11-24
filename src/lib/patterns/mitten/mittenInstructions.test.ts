@@ -304,7 +304,7 @@ describe("gored thumb instructions", () => {
 });
 
 const SHAPING_MAP_NOTE =
-  "Read from the bottom upward. Each grid row is one carriage pass. Numbers on the right count those passes for this map only. -1 places a needle into hold. +1 returns a needle to work.";
+  "Read from the bottom upward. Each grid row is one carriage pass. The row counter remains stopped during fingertip shaping. Numbers on this map show the order of carriage passes, starting at 1. -1 places a needle into hold. +1 returns a needle to work.";
 
 function mapMarkup(panelHtml: string): string {
   const start = panelHtml.indexOf("data-mitten-top-shaping-map");
@@ -358,6 +358,9 @@ function expectFingertipMap(calc: MittenCalc, side: MittenInstructionSide, panel
   expect(panelHtml.slice(asideAt)).not.toContain("data-mitten-top-shaping-map");
 
   expect(fingertips).toContain(SHAPING_MAP_NOTE);
+  expect(fingertips).toContain(STOP_ROW_COUNTER_TEXT);
+  expect(fingertips).not.toContain("row counter was reset");
+  expect(fingertips).not.toContain("RESET ROW COUNTER");
   expect(fingertips).toContain("pattern-print-keep-charts");
   expect(fingertips).toContain('class="shaping-map__svg shaping-map__svg--heel-toe"');
   expect(fingertips).toContain("shaping-map__scroll");
