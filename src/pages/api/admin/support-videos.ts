@@ -37,6 +37,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
   const saved = await createCustomerHelpVideo(customerHelpBlobForRuntime(), {
     title: record.title,
     vimeoUrl: record.vimeoUrl,
+    message: record.message,
   });
   if (!saved.ok) return json({ ok: false, error: saved.error }, 400);
   return json(

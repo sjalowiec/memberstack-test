@@ -23,7 +23,8 @@ const loadError = read.ok ? "" : read.error;
     <header>
       <h1>Support Videos</h1>
       <p>
-        Enter the title and the full Vimeo link. Save, then copy the customer link.
+        Enter the title and the full Vimeo link. Add a customer message when you want
+        one shown above the video. Save, then copy the customer link.
         The customer page works right away and does not require a login or a new deploy.
         For an Unlisted video, paste the full link Vimeo gives you, including the privacy code.
       </p>
@@ -54,6 +55,13 @@ const loadError = read.ok ? "" : read.error;
       <p class="support-videos-admin__hint">
         A public link looks like <code>https://vimeo.com/123456789</code>. An Unlisted link
         also has a privacy code, like <code>https://vimeo.com/123456789/ab12cd34</code>.
+      </p>
+      <label>
+        Customer message (optional)
+        <textarea name="message" maxlength="1000" rows="4"></textarea>
+      </label>
+      <p class="support-videos-admin__hint">
+        This appears above the video. Leave it blank to show only the title and play instructions.
       </p>
       <p>
         <button class="kbm-btn kbm-btn-primary" type="submit">Save support video</button>
@@ -202,6 +210,7 @@ const loadError = read.ok ? "" : read.error;
       body: {
         title: String(data.get("title") ?? ""),
         vimeoUrl: String(data.get("vimeoUrl") ?? ""),
+        message: String(data.get("message") ?? ""),
       },
     });
     if (!result.ok || !result.data.video?.path) {
@@ -253,11 +262,16 @@ const loadError = read.ok ? "" : read.error;
   }
 
   .support-videos-admin input[type="text"],
-  .support-videos-admin input[type="url"] {
+  .support-videos-admin input[type="url"],
+  .support-videos-admin textarea {
     width: 100%;
     font: inherit;
     font-weight: 400;
     padding: 0.55rem 0.7rem;
+  }
+
+  .support-videos-admin textarea {
+    resize: vertical;
   }
 
   .support-videos-admin__hint {

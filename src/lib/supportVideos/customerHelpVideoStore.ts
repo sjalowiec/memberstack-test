@@ -81,7 +81,7 @@ export type CreateCustomerHelpVideoResult =
 
 export async function createCustomerHelpVideo(
   blob: CustomerHelpBlob,
-  input: { title: unknown; vimeoUrl: unknown; now?: string },
+  input: { title: unknown; vimeoUrl: unknown; message?: unknown; now?: string },
 ): Promise<CreateCustomerHelpVideoResult> {
   const read = await readCustomerHelpCatalog(blob);
   if (!read.ok) return read;

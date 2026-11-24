@@ -17,6 +17,7 @@ export const CUSTOMER_HELP_VIDEO_KEY = "catalog";
 const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const VIMEO_ID = /^\d{6,20}$/;
 const PRIVACY_HASH = /^[A-Za-z0-9]+$/;
+const MAX_CUSTOMER_MESSAGE = 1000;
 
 export type SavedCustomerHelpVideo = CustomerHelpVideo & {
   sourceUrl: string;
@@ -58,6 +59,7 @@ function parseSavedVideo(entry: unknown): SavedCustomerHelpVideo | null {
   const vimeoId = cleanString(record.vimeoId);
   const sourceUrl = cleanString(record.sourceUrl);
   const privacyHash = cleanString(record.privacyHash);
+  const message = cleanString(record.message).slice(0, MAX_CUSTOMER_MESSAGE);
   const createdAt = cleanString(record.createdAt);
   const updatedAt = cleanString(record.updatedAt);
   if (!SLUG.test(slug) || !title || title.length > 200 || !VIMEO_ID.test(vimeoId)) return null;
@@ -67,6 +69,7 @@ function parseSavedVideo(entry: unknown): SavedCustomerHelpVideo | null {
     slug,
     title,
     intro: intro || CUSTOMER_HELP_VIDEO_INTRO,
+    ...(message ? { message } : {}),
     vimeoId,
     ...(privacyHash ? { privacyHash } : {}),
     sourceUrl,
@@ -149,15 +152,31 @@ export type CustomerHelpVideoDraft = {
   changed: boolean;
 };
 
+function customerMessageFromInput(
+  value: unknown,
+): { ok: true; message: string } | { ok: false; error: string } {
+  if (value == null || value === "") return { ok: true, message: "" };
+  if (typeof value !== "string") return { ok: false, error: "Enter the customer message as text." };
+  const message = value.trim();
+  if (message.length > MAX_CUSTOMER_MESSAGE) {
+    return { ok: false, error: "Customer message must be at most 1000 characters." };
+  }
+  return { ok: true, message };
+}
+
 export function addCustomerHelpVideo(
   catalog: CustomerHelpVideoCatalog,
-  input: { title: unknown; vimeoUrl: unknown; now?: string },
+  input: { title: unknown; vimeoUrl: unknown; message?: unknown; now?: string },
 ): CustomerHelpVideoDraft | { ok: false; error: string } {
   if (typeof input.title !== "string" || !input.title.trim()) {
     return { ok: false, error: "Enter a title." };
   }
   const title = input.title.trim();
   if (title.length > 200) return { ok: false, error: "Title must be at most 200 characters." };
+
+  const messageResult = customerMessageFromInput(input.message);
+  if (!messageResult.ok) return messageResult;
+  const message = messageResult.message;
 
   const vimeo = normalizeVimeoUrl(input.vimeoUrl);
   if (!vimeo || !VIMEO_ID.test(vimeo.vimeoId)) {
@@ -193,12 +212,15 @@ export function addCustomerHelpVideo(
       sourceUrl: vimeo.originalVimeoUrl,
       updatedAt: now,
       ...(privacyHash ? { privacyHash } : {}),
+      ...(message ? { message } : {}),
     };
     if (!privacyHash) delete next.privacyHash;
+    if (!message) delete next.message;
     const changed =
       next.title !== saved.title ||
       next.privacyHash !== saved.privacyHash ||
-      next.sourceUrl !== saved.sourceUrl;
+      next.sourceUrl !== saved.sourceUrl ||
+      (next.message ?? "") !== (saved.message ?? "");
     return { ok: true, created: false, changed, video: next };
   }
 
@@ -218,6 +240,7 @@ export function addCustomerHelpVideo(
       slug,
       title,
       intro: CUSTOMER_HELP_VIDEO_INTRO,
+      ...(message ? { message } : {}),
       vimeoId: vimeo.vimeoId,
       ...(vimeo.privacyHash ? { privacyHash: vimeo.privacyHash } : {}),
       sourceUrl: vimeo.originalVimeoUrl,

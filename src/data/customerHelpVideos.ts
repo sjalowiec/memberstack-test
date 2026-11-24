@@ -10,6 +10,8 @@ export type CustomerHelpVideo = {
   slug: string;
   title: string;
   intro: string;
+  /** Optional note written for the customer. Shown above the video. */
+  message?: string;
   vimeoId: string;
   privacyHash?: string;
 };
