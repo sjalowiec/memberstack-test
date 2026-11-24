@@ -444,9 +444,9 @@ function seamRows(calc: MittenCalc): SleevelessPatternDisplayRow[] {
       <li>Seam from the upper thumb marker to the closed fingertips.</li>
     </ol>`
     : `<ol class="sleeveless-pattern-line">
-      <li>Seam from the cast-on edge through the cuff and Hand 1 to the thumb opening.</li>
+      <li>Seam from the cast-on edge through the cuff and the hand below the thumb to the thumb opening.</li>
       <li>Seam the thumb edges.</li>
-      <li>Seam Hand 2 from the thumb opening to the closed fingertips.</li>
+      <li>Seam the hand above the thumb from the thumb opening to the closed fingertips.</li>
     </ol>`;
   return section("Seaming", [
     instructionBlock({

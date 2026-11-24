@@ -149,13 +149,21 @@ describe("slotted mitten instructions", () => {
     expect(thumb).toContain("Knit 24 rows.");
     expect(thumb).toContain("RC: 024");
     expect(thumb).toContain("leaving a 12\" tail");
-    expect(block(right, "seam")).toContain(
-      "Seam from the cast-on edge through the cuff and Hand 1 to the thumb opening.",
-    );
-    expect(block(right, "seam")).toContain("Seam the thumb edges.");
-    expect(block(right, "seam")).toContain(
-      "Seam Hand 2 from the thumb opening to the closed fingertips.",
-    );
+    for (const sideHtml of [right, left]) {
+      const seam = block(sideHtml, "seam");
+      expect(seam).toContain(
+        "Seam from the cast-on edge through the cuff and the hand below the thumb to the thumb opening.",
+      );
+      expect(seam).toContain("Seam the thumb edges.");
+      expect(seam).toContain(
+        "Seam the hand above the thumb from the thumb opening to the closed fingertips.",
+      );
+      expect(seam.indexOf("hand below the thumb")).toBeLessThan(seam.indexOf("Seam the thumb edges."));
+      expect(seam.indexOf("Seam the thumb edges.")).toBeLessThan(seam.indexOf("hand above the thumb"));
+      expect(seam).toContain("Using mattress stitch or your preferred method:");
+      expect(seam).not.toContain("Hand 1");
+      expect(seam).not.toContain("Hand 2");
+    }
     expect(block(right, "close")).toContain("using Kitchener stitch, by hand or on the machine.");
     expect(left).toContain(MITTEN_SECOND_MITTEN_INTRO);
     expect(right).not.toContain(MITTEN_SECOND_MITTEN_INTRO);
