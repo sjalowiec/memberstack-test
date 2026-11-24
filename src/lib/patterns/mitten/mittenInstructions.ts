@@ -418,7 +418,7 @@ function slottedThumbRows(calc: MittenCalc): SleevelessPatternDisplayRow[] {
         `Remove the ravel cord and rehang the waste yarn stitches with the wrong side facing. Leave one empty needle in the center, with ${calc.slotSts} stitches on each side of it.`,
         "Unknit the waste yarn.",
         `Pick up two purl bumps from the row below and place both on the center needle. (${calc.thumbSts} stitches)`,
-        "Continue knitting the mitten.",
+        "Continue knitting the thumb.",
       ],
       stitchCount: calc.thumbSts,
     }),
