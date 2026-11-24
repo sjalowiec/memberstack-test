@@ -78,12 +78,22 @@ describe("slotted mitten instructions", () => {
     const increase = right.indexOf('data-glossary-id="645"');
     expect(knit).toBeLessThan(transfer);
     expect(transfer).toBeLessThan(increase);
-    expect(block(right, "increase")).toContain("Increase evenly");
-    expect(block(right, "increase")).toContain('data-glossary-id="645"');
-    expect(block(right, "increase")).toContain("4 stitches across the row.");
-    expect(block(right, "increase")).toContain("Leave 1 needle empty at 4 points");
-    expect(block(right, "increase")).toContain("picking up the strand from the row below");
-    expect(block(right, "increase")).not.toContain(RESET_ROW_COUNTER_TEXT);
+    const calc = womanSmallPreviewCalc();
+    for (const sideHtml of [right, left]) {
+      const increase = block(sideHtml, "increase");
+      expect(increase).toContain("Increase evenly");
+      expect(increase).toContain('data-glossary-id="645"');
+      expect(increase).toContain(`${calc.increaseSts} stitches across the row.`);
+      expect(increase).toContain(
+        "Transfer stitches outward to create the required number of empty needles, spaced evenly across the work.",
+      );
+      expect(increase).toContain(
+        "Bring each empty needle into working position and fill it by picking up the strand from the row below.",
+      );
+      expect(increase).toContain(`(${calc.handSts} stitches)`);
+      expect(increase).not.toContain("Leave 1 needle empty");
+      expect(increase).not.toContain(RESET_ROW_COUNTER_TEXT);
+    }
   });
 
   it("keeps the slot rows uncounted and makes the next full-width row row 1 of the straight rows", () => {
@@ -500,6 +510,13 @@ describe("mitten top shaping map", () => {
     for (const side of MITTEN_INSTRUCTION_SIDES) {
       expectFingertipMap(child.calc, side, panel(childHtml, side.id));
     }
+    const childIncrease = block(panel(childHtml, "right-edge"), "increase");
+    expect(childIncrease).toContain(`${child.calc.increaseSts} stitches across the row.`);
+    expect(childIncrease).toContain(`(${child.calc.handSts} stitches)`);
+    expect(childIncrease).toContain(
+      "Transfer stitches outward to create the required number of empty needles, spaced evenly across the work.",
+    );
+    expect(child.calc.handSts).not.toBe(woman.calc.handSts);
   });
 
   it("prints with the shared shaping-map rules", () => {
