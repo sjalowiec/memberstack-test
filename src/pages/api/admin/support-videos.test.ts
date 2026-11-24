@@ -54,6 +54,7 @@ describe("support video admin API", () => {
         body: JSON.stringify({
           title: "How to load a DesignaKnit file",
           vimeoUrl: "https://vimeo.com/1249798150/Ab12cd34",
+          message: "Start with the red lever.",
         }),
       }),
       cookies,
@@ -70,6 +71,8 @@ describe("support video admin API", () => {
       },
     });
     expect(JSON.stringify(body)).not.toContain("Ab12cd34");
+    const stored = memory.get("catalog") as { videos: Array<{ message?: string }> };
+    expect(stored.videos[0]?.message).toBe("Start with the red lever.");
 
     const list = await GET({
       request: new Request("https://kin-dev.netlify.app/api/admin/support-videos"),

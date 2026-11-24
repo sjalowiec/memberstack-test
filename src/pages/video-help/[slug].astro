@@ -34,6 +34,7 @@ const privacyHash = video.privacyHash?.trim() || undefined;
 
   <article class="video-help">
     <h1>{video.title}</h1>
+    {video.message ? <p class="video-help__message">{video.message}</p> : null}
     <p class="video-help__intro">{video.intro}</p>
     <VimeoEmbed
       vimeoId={video.vimeoId.trim()}
@@ -58,8 +59,14 @@ const privacyHash = video.privacyHash?.trim() || undefined;
     margin-bottom: 0.5rem;
   }
 
+  .video-help__message,
   .video-help__intro {
     max-width: 40rem;
     margin-bottom: 0.5rem;
+  }
+
+  .video-help__message {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
   }
 </style>

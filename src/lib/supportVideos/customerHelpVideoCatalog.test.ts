@@ -81,6 +81,45 @@ describe("customer help video catalog", () => {
     expect(listCustomerHelpVideos(next).map((video) => video.slug)).toEqual(["save-designaknit-file"]);
   });
 
+  it("stores an optional customer message and can clear it on a later save", () => {
+    const added = addCustomerHelpVideo(catalog(), {
+      title: "Needle selection error",
+      vimeoUrl: "https://vimeo.com/1249798150/ea9f53ac2e",
+      message: "  Watch the first step before you change the needle.  ",
+      now,
+    });
+    expect(added.ok && added.video.message).toBe("Watch the first step before you change the needle.");
+    if (!added.ok) return;
+    const stored = catalogWithVideo(catalog(), added.video);
+    expect(findListedCustomerHelpVideo(added.video.slug, stored)?.message).toBe(added.video.message);
+
+    const blank = addCustomerHelpVideo(catalog(), {
+      title: "No extra note",
+      vimeoUrl: "https://vimeo.com/1249798151",
+      message: "   ",
+      now,
+    });
+    expect(blank.ok && blank.video.message).toBeUndefined();
+
+    const cleared = addCustomerHelpVideo(stored, {
+      title: "Needle selection error",
+      vimeoUrl: "https://vimeo.com/1249798150/ea9f53ac2e",
+      message: "",
+      now: "2026-11-24T13:00:00.000Z",
+    });
+    expect(cleared.ok && cleared.changed).toBe(true);
+    expect(cleared.ok && cleared.video.message).toBeUndefined();
+    expect(cleared.ok && cleared.video.slug).toBe("needle-selection-error");
+
+    const tooLong = addCustomerHelpVideo(catalog(), {
+      title: "Too long",
+      vimeoUrl: "https://vimeo.com/1249798152",
+      message: "a".repeat(1001),
+      now,
+    });
+    expect(tooLong.ok).toBe(false);
+  });
+
   it("keeps the same customer link when the same video is saved again", () => {
     const first = addCustomerHelpVideo(catalog(), {
       title: "Cast on review",
