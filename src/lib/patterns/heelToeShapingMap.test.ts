@@ -157,8 +157,16 @@ describe("heel and toe share one short-row map", () => {
     expect(sockHtml).not.toContain("data-mitten-top-shaping-map");
     expect(sockHtml).not.toContain("pattern-print-keep-charts");
     expect(sockHtml).toContain("Heel &amp; Toe Shaping Map");
+    expect(sockHtml).toContain(
+      "Numbers on the right count those passes for this map only. -1 places a needle into hold. +1 returns a needle to work.",
+    );
+    expect(sockHtml).not.toContain("The row counter remains stopped during fingertip shaping.");
     const singleHtml = renderHeelToeShapingMapHtml(single.map);
     expect(singleHtml).toContain(MITTEN_TOP_SHAPING_MAP_TITLE);
+    expect(singleHtml).toContain(
+      "The row counter remains stopped during fingertip shaping. Numbers on this map show the order of carriage passes, starting at 1.",
+    );
+    expect(singleHtml).not.toContain("Numbers on the right count those passes for this map only.");
     expect(renderHeelToeShapingMapSvg(shared.map)).toBe(renderHeelToeShapingMapSvg({ ...single.map, title: shared.map.title, marker: "heel-toe" }));
   });
 });

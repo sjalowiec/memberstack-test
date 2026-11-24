@@ -19,6 +19,14 @@ import type {
 export const HEEL_TOE_SHAPING_MAP_TITLE = "Heel & Toe Shaping Map";
 export const MITTEN_TOP_SHAPING_MAP_TITLE = "Mitten Top Shaping Map";
 
+/** Sock and stocking maps. Left unchanged. */
+export const HEEL_TOE_SHAPING_MAP_NOTE =
+  "Read from the bottom upward. Each grid row is one carriage pass. Numbers on the right count those passes for this map only. -1 places a needle into hold. +1 returns a needle to work.";
+
+/** Both mitten tops, on screen and in print. */
+export const MITTEN_TOP_SHAPING_MAP_NOTE =
+  "Read from the bottom upward. Each grid row is one carriage pass. The row counter remains stopped during fingertip shaping. Numbers on this map show the order of carriage passes, starting at 1. -1 places a needle into hold. +1 returns a needle to work.";
+
 export type ShortRowShapingMapMarker = "heel-toe" | "mitten-top";
 
 /** Square cells, same proportion as the neckline shaping map. */
@@ -453,8 +461,7 @@ export function renderHeelToeShapingMapSvg(map: HeelToeShapingMapModel): string 
 
 export function renderHeelToeShapingMapHtml(map: HeelToeShapingMapModel): string {
   const svg = renderHeelToeShapingMapSvg(map);
-  const note =
-    "Read from the bottom upward. Each grid row is one carriage pass. Numbers on the right count those passes for this map only. -1 places a needle into hold. +1 returns a needle to work.";
+  const note = map.marker === "mitten-top" ? MITTEN_TOP_SHAPING_MAP_NOTE : HEEL_TOE_SHAPING_MAP_NOTE;
   const body =
     `<h5 class="shaping-map__title">${escapeXml(map.title)}</h5>` +
     `<p class="shaping-map__note">${escapeXml(note)}</p>` +
