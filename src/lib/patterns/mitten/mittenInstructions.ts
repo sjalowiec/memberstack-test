@@ -123,10 +123,6 @@ function fingertipSetupInstruction(side: "left" | "right"): string {
   return sockEnsureCarriageInstruction("heel", side).replace("the heel", "the fingertips");
 }
 
-function pointWord(count: number): string {
-  return count === 1 ? "point" : "points";
-}
-
 function needleWord(count: number): string {
   return count === 1 ? "needle" : "needles";
 }
@@ -171,8 +167,8 @@ function increaseLines(calc: MittenCalc): string[] {
   );
   return [
     `${increaseEvenly} ${calc.increaseSts} stitches across the row. ` +
-      `Leave 1 needle empty at ${calc.increaseSts} ${pointWord(calc.increaseSts)} across the row, spacing them evenly. ` +
-      `Put the empty needles back into work and fill each one by picking up the strand from the row below. ` +
+      `Transfer stitches outward to create the required number of empty needles, spaced evenly across the work. ` +
+      `Bring each empty needle into working position and fill it by picking up the strand from the row below. ` +
       `(${calc.handSts} stitches)`,
   ];
 }
