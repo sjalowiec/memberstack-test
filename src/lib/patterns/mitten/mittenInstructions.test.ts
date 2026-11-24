@@ -144,10 +144,16 @@ describe("slotted mitten instructions", () => {
       thumb.indexOf("Pick up two purl bumps from the row below and place both on the center needle. (21 stitches)"),
     );
     expect(thumb.indexOf("place both on the center needle")).toBeLessThan(
-      thumb.indexOf("Continue knitting the mitten."),
+      thumb.indexOf("Continue knitting the thumb."),
     );
-    expect(thumb).toContain("Knit 24 rows.");
-    expect(thumb).toContain("RC: 024");
+    for (const sideHtml of [right, left]) {
+      const sideThumb = block(sideHtml, "thumb");
+      expect(sideThumb).toContain("Continue knitting the thumb.");
+      expect(sideThumb).not.toContain("Continue knitting the mitten.");
+      expect(sideThumb).toContain("Knit 24 rows.");
+      expect(sideThumb).toContain("RC: 024");
+      expect(sideThumb).toContain("RESET ROW COUNTER TO 000");
+    }
     expect(thumb).toContain("leaving a 12\" tail");
     for (const sideHtml of [right, left]) {
       const seam = block(sideHtml, "seam");
