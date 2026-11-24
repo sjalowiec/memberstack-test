@@ -90,6 +90,11 @@ function expectSketch(size: string) {
       measures.cuffDisplayIn / measures.handDisplayIn,
       2,
     );
+    const view = svg.match(/viewBox="([^"]+)"/)?.[1]?.split(/[\s,]+/).map(Number) ?? [];
+    const viewW = view[2] ?? 0;
+    expect(viewW, `${size} ${edge} viewBox`).toBeGreaterThan(0);
+    expect(viewW).toBeLessThan(640);
+    expect(attr(svg, "hand-width-px") / viewW).toBeGreaterThan(0.28);
   }
 }
 
@@ -209,10 +214,14 @@ describe("mitten summary measurement layout", () => {
         if (!result.ok) continue;
         const pattern = buildMittenDiagramSvg(result.calc, "right");
         const summary = buildMittenDiagramSvg(result.calc, "right", "summary");
-        expect(attr(summary, "hand-width-px")).toBeCloseTo(attr(pattern, "hand-width-px"), 2);
-        expect(attr(summary, "total-height-px")).toBeCloseTo(attr(pattern, "total-height-px"), 2);
-        expect(attr(summary, "thumb-width-px")).toBeCloseTo(attr(pattern, "thumb-width-px"), 2);
-        expect(attr(summary, "thumb-length-px")).toBeCloseTo(attr(pattern, "thumb-length-px"), 2);
+        expect(attr(summary, "hand-width-px") / attr(summary, "total-height-px")).toBeCloseTo(
+          attr(pattern, "hand-width-px") / attr(pattern, "total-height-px"),
+          2,
+        );
+        expect(attr(summary, "thumb-width-px") / attr(summary, "thumb-length-px")).toBeCloseTo(
+          attr(pattern, "thumb-width-px") / attr(pattern, "thumb-length-px"),
+          2,
+        );
         expect(summary).not.toContain('data-separation="inner"');
         expect(summary).not.toContain("Fingertip");
         expect(summary).not.toContain("Starts at two-thirds");
