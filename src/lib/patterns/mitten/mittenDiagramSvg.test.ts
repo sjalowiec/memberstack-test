@@ -4,7 +4,10 @@ import {
   buildMittenDiagramSvg,
   formatMittenDiagramInches,
   formatMittenDiagramLength,
+  MITTEN_SUMMARY_CHIP,
+  MITTEN_SUMMARY_TARGETS,
   mittenDiagramMeasurements,
+  mittenSummaryMinPxPerUnit,
 } from "./mittenDiagramSvg";
 import {
   calculateMittenPattern,
@@ -180,5 +183,92 @@ describe("slotted mitten diagrams", () => {
     expect(summary).toContain('id="target_mitten_hand_circ"');
     expect(summary).not.toContain("Thumb length");
     expect(summary).not.toContain("Hand circumference");
+    expect(summary).toContain('data-diagram-mode="summary"');
+    expect(pattern).not.toContain('data-diagram-mode="summary"');
+  });
+});
+
+function circle(svg: string, id: string): { x: number; y: number } {
+  const match = svg.match(new RegExp(`id="${id}"[^>]*cx="([^"]+)" cy="([^"]+)"`));
+  expect(match, id).toBeTruthy();
+  return { x: Number(match?.[1]), y: Number(match?.[2]) };
+}
+
+describe("mitten summary measurement layout", () => {
+  it("keeps the mitten proportions and parks the seven anchors outside the outline", () => {
+    for (const size of ["child_2_4", "man_lg"]) {
+      for (const thumbStyle of ["slotted", "gored"] as const) {
+        const row = mittenSizingRow(size);
+        const result = calculateMittenPattern({
+          ...measurementsFromSizingRow(row!),
+          stitchGaugePerInch: 7,
+          rowGaugePerInch: 10,
+          thumbStyle,
+        });
+        expect(result.ok, `${size} ${thumbStyle}`).toBe(true);
+        if (!result.ok) continue;
+        const pattern = buildMittenDiagramSvg(result.calc, "right");
+        const summary = buildMittenDiagramSvg(result.calc, "right", "summary");
+        expect(attr(summary, "hand-width-px")).toBeCloseTo(attr(pattern, "hand-width-px"), 2);
+        expect(attr(summary, "total-height-px")).toBeCloseTo(attr(pattern, "total-height-px"), 2);
+        expect(attr(summary, "thumb-width-px")).toBeCloseTo(attr(pattern, "thumb-width-px"), 2);
+        expect(attr(summary, "thumb-length-px")).toBeCloseTo(attr(pattern, "thumb-length-px"), 2);
+        expect(summary).not.toContain('data-separation="inner"');
+        expect(summary).not.toContain("Fingertip");
+        expect(summary).not.toContain("Starts at two-thirds");
+
+        const handLeft = attr(summary, "hand-mid-x") - attr(summary, "hand-width-px") / 2;
+        const handRight = handLeft + attr(summary, "hand-width-px");
+        const yTip = attr(summary, "y-tip");
+        const yBottom = attr(summary, "y-bottom");
+        const thumbBase = attr(summary, "thumb-base-x");
+        const targets = MITTEN_SUMMARY_TARGETS;
+        const cuffCirc = circle(summary, targets.cuffCircumference);
+        const cuffLen = circle(summary, targets.cuffLength);
+        const handCirc = circle(summary, targets.handCircumference);
+        const handLen = circle(summary, targets.handLength);
+        const hand2 = circle(summary, targets.hand2Length);
+        const thumbLen = circle(summary, targets.thumbLength);
+        const thumbCirc = circle(summary, targets.thumbCircumference);
+
+        expect(handCirc.y).toBeLessThan(yTip);
+        expect(cuffCirc.y).toBeGreaterThan(yBottom);
+        expect(cuffLen.x).toBeLessThan(handLeft);
+        expect(handLen.x).toBeLessThan(handLeft);
+        expect(hand2.x).toBeLessThan(handLeft);
+        expect(thumbLen.x).toBeGreaterThan(thumbBase);
+        expect(thumbCirc.x).toBeGreaterThan(thumbBase);
+
+        const px = mittenSummaryMinPxPerUnit(Number(summary.match(/viewBox="0 0 ([^ ]+)/)?.[1]));
+        const minSep =
+          (MITTEN_SUMMARY_CHIP.chipHeightPx + MITTEN_SUMMARY_CHIP.chipGapPx) / px - 0.5;
+        const leftYs = [hand2.y, handLen.y, cuffLen.y].sort((a, b) => a - b);
+        const rightYs = [thumbLen.y, thumbCirc.y].sort((a, b) => a - b);
+        expect(leftYs[1]! - leftYs[0]!).toBeGreaterThanOrEqual(minSep);
+        expect(leftYs[2]! - leftYs[1]!).toBeGreaterThanOrEqual(minSep);
+        expect(rightYs[1]! - rightYs[0]!).toBeGreaterThanOrEqual(minSep);
+
+        const vb = summary.match(/viewBox="0 0 ([^ ]+) ([^"]+)"/);
+        const vbW = Number(vb?.[1]);
+        const vbH = Number(vb?.[2]);
+        const chipW = MITTEN_SUMMARY_CHIP.chipWidthPx / px;
+        const chipH = MITTEN_SUMMARY_CHIP.chipHeightPx / px;
+        const boxes = [
+          { x: cuffLen.x - 10 / px - chipW, y: cuffLen.y - chipH / 2 },
+          { x: handLen.x - 10 / px - chipW, y: handLen.y - chipH / 2 },
+          { x: hand2.x - 10 / px - chipW, y: hand2.y - chipH / 2 },
+          { x: thumbLen.x + 10 / px, y: thumbLen.y - chipH / 2 },
+          { x: thumbCirc.x + 10 / px, y: thumbCirc.y - chipH / 2 },
+          { x: handCirc.x - chipW / 2, y: handCirc.y - 10 / px - chipH },
+          { x: cuffCirc.x - chipW / 2, y: cuffCirc.y + 10 / px },
+        ];
+        for (const box of boxes) {
+          expect(box.x).toBeGreaterThanOrEqual(-0.5);
+          expect(box.y).toBeGreaterThanOrEqual(-0.5);
+          expect(box.x + chipW).toBeLessThanOrEqual(vbW + 0.5);
+          expect(box.y + chipH).toBeLessThanOrEqual(vbH + 0.5);
+        }
+      }
+    }
   });
 });

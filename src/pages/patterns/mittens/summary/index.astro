@@ -148,6 +148,14 @@ import "../../../../styles/patterns/pattern-editable-pencil.css";
                   <PatternSummaryMeasurementChip field={field} />
                 ))}
               </PatternSummaryDiagramStage>
+              <div class="mitten-summary-notes" data-mitten-measure-notes>
+                <p>
+                  <strong>Hand above the thumb.</strong> Starts at two-thirds of the hand length.
+                </p>
+                <p>
+                  <strong>Thumb length.</strong> From the thumb web to the thumb tip. The gore is not added.
+                </p>
+              </div>
             </Fragment>
           </PatternSummaryEditWorkspace>
         </div>
@@ -192,5 +200,26 @@ import "../../../../styles/patterns/pattern-editable-pencil.css";
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 0.55rem;
+  }
+
+  /*
+   * Shared desktop padding keeps a wide right gutter for sweater chips.
+   * Mitten lanes are inside the diagram, so this page uses even padding.
+   * 0.5rem matches MITTEN_SUMMARY_CHIP.stagePaddingPx at a 16px root.
+   */
+  :global(.mitten-summary-page .ps-measure-stage__inner[data-measurement-overlay-mode="desktop"]) {
+    padding: 0.5rem;
+  }
+
+  .mitten-summary-notes {
+    margin: 0.85rem 0 0;
+    max-width: 36rem;
+    color: #4b5563;
+    font-size: 0.85rem;
+    line-height: 1.45;
+  }
+
+  .mitten-summary-notes p {
+    margin: 0.2rem 0;
   }
 </style>
