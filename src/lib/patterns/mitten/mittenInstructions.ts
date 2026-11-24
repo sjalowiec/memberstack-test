@@ -2,19 +2,26 @@
  * Mitten instructions for a slotted thumb and a gored thumb.
  * Online and print both use {@link buildMittenPatternHtml}.
  * Fingertip steps come from the shared sock short-row builder.
- * Heel and toe wording is left unchanged.
+ * The finished page uses the sweater instruction blocks and Garment Dimensions panel.
  */
 
+import { buildGlossaryTooltipPlaceholderHtml } from "../../glossary/glossaryTooltipPrint";
+import { inlineRcHeadingLine } from "../inlineRcHeading";
+import {
+  formatRowCounterResetGarmentRcLabel,
+  rowCounterStopBlockHtml,
+} from "../rowCounterReset";
+import type { SleevelessPatternDisplayRow } from "../sleevelessPatternOutput";
+import { renderPatternDisplayRowsHtml } from "../sleevelessPatternDisplayHtml";
+import { sleevelessHelpVideoFromCatalog } from "../sleevelessCatalogHelpVideo";
 import { sockHoldOrientation, type SockInstructionStep, type SockOfPair } from "../sock/sockInstructionModel";
 import { sockEnsureCarriageInstruction } from "../sock/sockInstructionRender";
 import { buildSockShortRowInstructionSection } from "../sock/sockShortRowInstructions";
+import { buildMittenDiagramTabsHtml } from "./mittenPatternDiagramTabs";
 import {
-  formatRowCounterResetGarmentRcLabel,
-  rowCounterResetBlockHtml,
-  rowCounterStopBlockHtml,
-} from "../rowCounterReset";
-import { sleevelessHelpVideoFromCatalog } from "../sleevelessCatalogHelpVideo";
-import { mittenDiagramFigureHtml } from "./mittenDiagramSvg";
+  MITTEN_INCREASE_EVENLY_GLOSSARY_ID,
+  MITTEN_INCREASE_EVENLY_GLOSSARY_TERM,
+} from "./mittenShapingNotation";
 import {
   formatMittenLengthInches,
   mittenPhysicalLengths,
@@ -75,6 +82,8 @@ export const MITTEN_GORED_PREVIEW_ORIENTATION_NOTE =
 
 const SIDE_LABEL = { left: "LEFT", right: "RIGHT" } as const;
 
+type InstructionBlock = Extract<SleevelessPatternDisplayRow, { kind: "block" }>;
+
 function escapeHtml(value: string): string {
   return value
     .replace(/&/g, "&amp;")
@@ -91,70 +100,69 @@ function pointWord(count: number): string {
   return count === 1 ? "point" : "points";
 }
 
-function increaseParagraph(calc: MittenCalc): string {
+function needleWord(count: number): string {
+  return count === 1 ? "needle" : "needles";
+}
+
+function blockMarker(name: string): string {
+  return `<div data-block="${name}" hidden></div>`;
+}
+
+function rcLine(rows: number): string {
+  return inlineRcHeadingLine(formatRowCounterResetGarmentRcLabel(rows));
+}
+
+function instructionBlock(args: {
+  lines: string[];
+  stitchCount?: number;
+  stitchCensus?: { working: number; held: number; total: number };
+  reset?: boolean;
+}): InstructionBlock {
+  return {
+    kind: "block",
+    trustedParagraphs: args.lines,
+    ...(args.stitchCount !== undefined ? { stitchCount: args.stitchCount } : {}),
+    ...(args.stitchCensus && args.stitchCensus.held > 0 ? { stitchCensus: args.stitchCensus } : {}),
+    ...(args.reset ? { rowCounterReset: true, rowCounterResetGarmentRc: 0 } : {}),
+  };
+}
+
+function section(title: string, blocks: InstructionBlock[]): SleevelessPatternDisplayRow[] {
+  return [{ kind: "section", title }, ...blocks];
+}
+
+function increaseLines(calc: MittenCalc): string[] {
   if (calc.increaseSts === 0) {
-    return `<p data-block-line="increase">The cuff and hand stitch counts match. Continue on ${calc.handSts} stitches.</p>`;
+    return [`The cuff and hand stitch counts match. Continue on ${calc.handSts} stitches.`];
   }
-  return (
-    `<p data-block-line="increase">Increase ${calc.increaseSts} stitches evenly across the row. ` +
-    `Leave 1 needle empty at ${calc.increaseSts} ${pointWord(calc.increaseSts)} across the row, spacing them evenly. ` +
-    `Put the empty needles back into work and fill each one by picking up the strand from the row below. ` +
-    `(${calc.handSts} stitches)</p>`
+  const increaseEvenly = buildGlossaryTooltipPlaceholderHtml(
+    MITTEN_INCREASE_EVENLY_GLOSSARY_ID,
+    "Increase evenly",
+    escapeHtml,
+    escapeHtml,
+    { ariaLabel: MITTEN_INCREASE_EVENLY_GLOSSARY_TERM },
   );
+  return [
+    `${increaseEvenly} ${calc.increaseSts} stitches across the row. ` +
+      `Leave 1 needle empty at ${calc.increaseSts} ${pointWord(calc.increaseSts)} across the row, spacing them evenly. ` +
+      `Put the empty needles back into work and fill each one by picking up the strand from the row below. ` +
+      `(${calc.handSts} stitches)`,
+  ];
 }
 
-function renderFingertipStep(step: SockInstructionStep, calc: MittenCalc): string {
-  switch (step.type) {
-    case "stop-rc":
-      return `<div data-step="stop-rc">${rowCounterStopBlockHtml(step.garmentRc ?? calc.handEndRc)}</div>`;
-    case "ensure-carriage":
-      return `<p data-step="ensure-carriage">${escapeHtml(fingertipSetupInstruction(step.side))}</p>`;
-    case "place-hold":
-      return (
-        `<p data-step="place-hold">Begin with the carriage on the ${SIDE_LABEL[step.orientation.carriageStartSide]}. ` +
-        `Put the ${SIDE_LABEL[step.orientation.holdHalf]} half of the needles (${step.holdStitches} stitches), opposite the carriage, into hold. ` +
-        `The ${SIDE_LABEL[step.orientation.workHalf]} half (${step.workStitches} stitches) remains in work. Set the carriage to HOLD.</p>`
-      );
-    case "short-row-in":
-      return (
-        `<p data-step="short-row-in">On the carriage side, put 1 needle into hold, automatic wrap, and knit across. ` +
-        `Repeat every row until ${step.remainingStitches} center stitches remain.</p>`
-      );
-    case "short-row-out":
-      return (
-        `<p data-step="short-row-out">Opposite the carriage, return 1 needle to work and knit across. ` +
-        `Repeat every row until all ${step.endWorkingStitches} working stitches are back in work.</p>`
-      );
-    case "cancel-hold-return":
-      return (
-        `<p data-step="cancel-hold-return">Cancel HOLD. Return the previously held half (${step.heldStitches} stitches) to working position. ` +
-        `(${step.tubeStitches} stitches)</p>`
-      );
-    default:
-      throw new Error(`Mitten fingertips received an unexpected shared step: ${step.type}`);
-  }
+function stepWrap(step: string, inner: string): string {
+  return `<div data-step="${step}">${inner}</div>`;
 }
 
-function fingertipSection(calc: MittenCalc, side: MittenInstructionSide): string {
-  const orientation = sockHoldOrientation(side.sock, "heel");
-  const section = buildSockShortRowInstructionSection({
-    part: "heel",
-    shaping: calc.fingertip,
-    orientation,
-    tubeStitches: calc.handSts,
-    constructionDirection: "cuff-to-toe",
-    sock: side.sock,
-    arriveRc: calc.handEndRc,
-  });
-  const steps = section.steps.map((step) => renderFingertipStep(step, calc)).join("\n");
-  return `<section data-block="fingertips"><h3>Fingertips</h3>\n${steps}</section>`;
+function stepLine(step: string, text: string): string {
+  return stepWrap(step, `<p class="sleeveless-pattern-line">${escapeHtml(text)}</p>`);
 }
 
 function mittenVideoButton(contentId: number, hook: string): string {
   const video = sleevelessHelpVideoFromCatalog(contentId);
   if (!video) return "";
   return (
-    `<p class="pattern-help-link no-print">` +
+    `<div class="pattern-help-link no-print">` +
     `<button type="button" class="video-button kbm-kin-catalog-video pattern-help-link__button"` +
     ` data-vimeo-id="${escapeHtml(video.id)}"` +
     ` data-video-title="${escapeHtml(video.title)}"` +
@@ -163,16 +171,8 @@ function mittenVideoButton(contentId: number, hook: string): string {
     ` data-vimeo-defer` +
     ` ${hook}` +
     ` aria-haspopup="dialog">` +
-    `<i class="fa-solid fa-play" aria-hidden="true"></i> Watch: ${escapeHtml(video.title)}</button></p>`
+    `<i class="fa-solid fa-play" aria-hidden="true"></i> Watch: ${escapeHtml(video.title)}</button></div>`
   );
-}
-
-function rcEnd(name: string, rows: number): string {
-  return `<p class="mitten-rc-end" data-rc-end="${name}">${formatRowCounterResetGarmentRcLabel(rows)}</p>`;
-}
-
-function needleWord(count: number): string {
-  return count === 1 ? "needle" : "needles";
 }
 
 function goreMarkerSplit(calc: MittenCalc, gore: GoreThumbPlan): {
@@ -191,57 +191,323 @@ function goreMarkerSplit(calc: MittenCalc, gore: GoreThumbPlan): {
   };
 }
 
-function goredMarkerSection(calc: MittenCalc, gore: GoreThumbPlan): string {
+function fingertipBlock(step: SockInstructionStep, calc: MittenCalc, lead: string[]): InstructionBlock {
+  switch (step.type) {
+    case "stop-rc":
+      return instructionBlock({
+        lines: [...lead, stepWrap("stop-rc", rowCounterStopBlockHtml(step.garmentRc ?? calc.handEndRc))],
+        stitchCount: calc.handSts,
+      });
+    case "ensure-carriage":
+      return instructionBlock({
+        lines: [...lead, stepLine("ensure-carriage", fingertipSetupInstruction(step.side))],
+        stitchCount: calc.handSts,
+      });
+    case "place-hold":
+      return instructionBlock({
+        lines: [
+          ...lead,
+          stepLine(
+            "place-hold",
+            `Begin with the carriage on the ${SIDE_LABEL[step.orientation.carriageStartSide]}. ` +
+              `Put the ${SIDE_LABEL[step.orientation.holdHalf]} half of the needles (${step.holdStitches} stitches), opposite the carriage, into hold. ` +
+              `The ${SIDE_LABEL[step.orientation.workHalf]} half (${step.workStitches} stitches) remains in work. Set the carriage to HOLD.`,
+          ),
+        ],
+        stitchCensus: {
+          working: step.workStitches,
+          held: step.holdStitches,
+          total: step.workStitches + step.holdStitches,
+        },
+      });
+    case "short-row-in":
+      return instructionBlock({
+        lines: [
+          ...lead,
+          stepLine(
+            "short-row-in",
+            `On the carriage side, put 1 needle into hold, automatic wrap, and knit across. ` +
+              `Repeat every row until ${step.remainingStitches} center stitches remain.`,
+          ),
+        ],
+        stitchCensus: {
+          working: step.remainingStitches,
+          held: calc.handSts - step.remainingStitches,
+          total: calc.handSts,
+        },
+      });
+    case "short-row-out":
+      return instructionBlock({
+        lines: [
+          ...lead,
+          stepLine(
+            "short-row-out",
+            `Opposite the carriage, return 1 needle to work and knit across. ` +
+              `Repeat every row until all ${step.endWorkingStitches} working stitches are back in work.`,
+          ),
+        ],
+        stitchCensus: {
+          working: step.endWorkingStitches,
+          held: calc.handSts - step.endWorkingStitches,
+          total: calc.handSts,
+        },
+      });
+    case "cancel-hold-return":
+      return instructionBlock({
+        lines: [
+          ...lead,
+          stepLine(
+            "cancel-hold-return",
+            `Cancel HOLD. Return the previously held half (${step.heldStitches} stitches) to working position. ` +
+              `(${step.tubeStitches} stitches)`,
+          ),
+        ],
+        stitchCount: step.tubeStitches,
+      });
+    default:
+      throw new Error(`Mitten fingertips received an unexpected shared step: ${step.type}`);
+  }
+}
+
+function fingertipRows(calc: MittenCalc, side: MittenInstructionSide): SleevelessPatternDisplayRow[] {
+  const sectionSteps = buildSockShortRowInstructionSection({
+    part: "heel",
+    shaping: calc.fingertip,
+    orientation: sockHoldOrientation(side.sock, "heel"),
+    tubeStitches: calc.handSts,
+    constructionDirection: "cuff-to-toe",
+    sock: side.sock,
+    arriveRc: calc.handEndRc,
+  });
+  return section(
+    "Fingertips",
+    sectionSteps.steps.map((step, index) =>
+      fingertipBlock(step, calc, index === 0 ? [blockMarker("fingertips")] : []),
+    ),
+  );
+}
+
+function markerRows(calc: MittenCalc, gore: GoreThumbPlan): SleevelessPatternDisplayRow[] {
   const split = goreMarkerSplit(calc, gore);
   const placeLower =
     split.intoHand1 === 0
-      ? `<p>At the end of Hand 1, place the lower thumb marker on each edge. This marker is nearest the cuff.</p>`
-      : `<p>During Hand 1, place the lower thumb marker on each edge at ${formatRowCounterResetGarmentRcLabel(split.lowerAt)}. This marker is nearest the cuff.</p>`;
-  return `<section data-block="markers">
-    <h3>Thumb markers</h3>
-    ${placeLower}
-    <p>On each hand edge, the lower and upper markers are ${gore.markerRows} rows apart. That distance is half the thumb circumference.</p>
-  </section>`;
+      ? "At the end of Hand 1, place the lower thumb marker on each edge. This marker is nearest the cuff."
+      : `During Hand 1, place the lower thumb marker on each edge at ${formatRowCounterResetGarmentRcLabel(split.lowerAt)}. This marker is nearest the cuff.`;
+  return section("Thumb markers", [
+    instructionBlock({
+      lines: [
+        blockMarker("markers"),
+        placeLower,
+        `On each hand edge, the lower and upper markers are ${gore.markerRows} rows apart. That distance is half the thumb circumference.`,
+      ],
+      stitchCount: calc.handSts,
+    }),
+  ]);
 }
 
-function goredStraightSection(calc: MittenCalc, gore: GoreThumbPlan): string {
+function straightRows(calc: MittenCalc, gore: GoreThumbPlan | null): SleevelessPatternDisplayRow[] {
+  if (!gore) {
+    return section("Hand above the thumb", [
+      instructionBlock({
+        lines: [
+          blockMarker("straight"),
+          `Knit ${calc.straightRows} rows across all ${calc.handSts} stitches with the main yarn. Row 1 is the full-width row immediately after the slot.`,
+          rcLine(calc.handEndRc),
+        ],
+        stitchCount: calc.handSts,
+      }),
+    ]);
+  }
   const split = goreMarkerSplit(calc, gore);
-  const placeUpper =
+  const lines = [blockMarker("straight")];
+  lines.push(
     split.upperInStraight > 0
-      ? `<p>Knit ${split.upperInStraight} rows across all ${calc.handSts} stitches, then place the upper thumb marker on each edge.</p>`
-      : `<p>Place the upper thumb marker on each edge at the start of this section.</p>`;
-  const rest =
-    split.afterUpper > 0
-      ? `<p>Knit ${split.afterUpper} more rows across all ${calc.handSts} stitches.</p>`
-      : "";
-  return `<section data-block="straight">
-    <h3>Hand above the thumb</h3>
-    ${placeUpper}
-    ${rest}
-    ${rcEnd("straight", calc.handEndRc)}
-  </section>`;
+      ? `Knit ${split.upperInStraight} rows across all ${calc.handSts} stitches, then place the upper thumb marker on each edge.`
+      : "Place the upper thumb marker on each edge at the start of this section.",
+  );
+  if (split.afterUpper > 0) {
+    lines.push(`Knit ${split.afterUpper} more rows across all ${calc.handSts} stitches.`);
+  }
+  lines.push(rcLine(calc.handEndRc));
+  return section("Hand above the thumb", [
+    instructionBlock({ lines, stitchCount: calc.handSts }),
+  ]);
 }
 
-function goredThumbSection(calc: MittenCalc, gore: GoreThumbPlan): string {
-  const start =
-    gore.heldEachSide === 0
-      ? `<p>Return ${gore.startWorkingNeedles} center ${needleWord(gore.startWorkingNeedles)} to working position. All ${gore.pickupNeedles} needles are working.</p>`
-      : `<p>Return ${gore.startWorkingNeedles} center needles to working position. Arrange the starting group in the center. ${gore.heldEachSide} needles stay in hold on each side.</p>
-    <p>Knit across and wrap the first held needle.</p>
-    <p>Opposite the carriage, return 2 needles to working position. Knit across and wrap the first held needle at that edge if one remains. Repeat, alternating sides, until all needles are working. When fewer than 2 needles remain in hold at that edge, return only those needles.</p>`;
-  return `<section data-block="thumb">
-    <h3>Gored thumb</h3>
-    <p>With the wrong side facing, rehang the first edge between the markers on the left needles. Position the marker nearest the cuff at machine zero. Rehang ${gore.firstEdgeStitches} stitches from this edge.</p>
-    <p>Fold the mitten, push the cuff away, and rehang the other edge on the right needles. Rehang ${gore.otherEdgeStitches} stitches from this edge. Double up on the center needle to prevent a hole. This does not add another needle. (${gore.pickupNeedles} needles)</p>
-    <p>The ${gore.pickupNeedles} stitches rehung from both edges are the thumb circumference times the stitch gauge, plus 2 seam stitches. Spread them between the markers. Do not pick up one stitch for every row.</p>
-    <p>Put all needles into hold and set the carriage to HOLD.</p>
-    ${start}
-    <p>Cancel HOLD and knit ${calc.thumbRows} rows. This is the thumb length from the web to the tip. The gore is below the web, so these rows do not include the gore short rows.</p>
-    ${rcEnd("thumb", calc.thumbRows)}
-    <p>Before the final closing row, transfer every other stitch to its neighbor and knit one row.</p>
-    <p>Break the yarn, thread the tail through the remaining stitches, gather the tip, and use the tail to seam.</p>
-    ${mittenVideoButton(MITTEN_GATHERED_THUMB_VIDEO_CONTENT_ID, 'data-mitten-gathered-thumb-video')}
-  </section>`;
+function goredThumbRows(calc: MittenCalc, gore: GoreThumbPlan): SleevelessPatternDisplayRow[] {
+  const lines = [
+    blockMarker("thumb"),
+    "With the wrong side facing, rehang the first edge between the markers on the left needles. Position the marker nearest the cuff at machine zero. Rehang " +
+      `${gore.firstEdgeStitches} stitches from this edge.`,
+    `Fold the mitten, push the cuff away, and rehang the other edge on the right needles. Rehang ${gore.otherEdgeStitches} stitches from this edge. Double up on the center needle to prevent a hole. This does not add another needle. (${gore.pickupNeedles} needles)`,
+    `The ${gore.pickupNeedles} stitches rehung from both edges are the thumb circumference times the stitch gauge, plus 2 seam stitches. Spread them between the markers. Do not pick up one stitch for every row.`,
+    "Put all needles into hold and set the carriage to HOLD.",
+  ];
+  if (gore.heldEachSide === 0) {
+    lines.push(
+      `Return ${gore.startWorkingNeedles} center ${needleWord(gore.startWorkingNeedles)} to working position. All ${gore.pickupNeedles} needles are working.`,
+    );
+  } else {
+    lines.push(
+      `Return ${gore.startWorkingNeedles} center needles to working position. Arrange the starting group in the center. ${gore.heldEachSide} needles stay in hold on each side.`,
+      "Knit across and wrap the first held needle.",
+      "Opposite the carriage, return 2 needles to working position. Knit across and wrap the first held needle at that edge if one remains. Repeat, alternating sides, until all needles are working. When fewer than 2 needles remain in hold at that edge, return only those needles.",
+    );
+  }
+  lines.push(
+    `Cancel HOLD and knit ${calc.thumbRows} rows. This is the thumb length from the web to the tip. The gore is below the web, so these rows do not include the gore short rows.`,
+    rcLine(calc.thumbRows),
+    "Before the final closing row, transfer every other stitch to its neighbor and knit one row.",
+    "Break the yarn, thread the tail through the remaining stitches, gather the tip, and use the tail to seam.",
+  );
+  const video = mittenVideoButton(MITTEN_GATHERED_THUMB_VIDEO_CONTENT_ID, "data-mitten-gathered-thumb-video");
+  if (video) lines.push(video);
+  return section("Gored thumb", [
+    instructionBlock({ lines, stitchCount: gore.pickupNeedles }),
+  ]);
+}
+
+function slottedThumbRows(calc: MittenCalc): SleevelessPatternDisplayRow[] {
+  const video = mittenVideoButton(MITTEN_GATHERED_THUMB_VIDEO_CONTENT_ID, "data-mitten-gathered-thumb-video");
+  return section("Rehang and knit the thumb", [
+    instructionBlock({
+      lines: [
+        blockMarker("thumb"),
+        `Remove the ravel cord and rehang the waste yarn stitches with the wrong side facing. Leave one empty needle in the center, with ${calc.slotSts} stitches on each side of it.`,
+        "Unknit the waste yarn.",
+        `Pick up two purl bumps from the row below and place both on the center needle. (${calc.thumbSts} stitches)`,
+        "Continue knitting the mitten.",
+      ],
+      stitchCount: calc.thumbSts,
+    }),
+    instructionBlock({
+      lines: [
+        `Knit ${calc.thumbRows} rows.`,
+        rcLine(calc.thumbRows),
+        `Break the yarn, leaving a 12" tail. Thread the tail through the remaining ${calc.thumbSts} stitches and remove the stitches from the machine. Pull the tail firmly to gather the top of the thumb and secure.`,
+        ...(video ? [video] : []),
+      ],
+      stitchCount: calc.thumbSts,
+      reset: true,
+    }),
+  ]);
+}
+
+function seamRows(calc: MittenCalc): SleevelessPatternDisplayRow[] {
+  const items = calc.gore
+    ? `<ol class="sleeveless-pattern-line">
+      <li>Seam from the cast-on edge through the cuff and Hand 1 to the lower thumb marker.</li>
+      <li>The gore joins the edges between the markers as those stitches are rehung.</li>
+      <li>Use the thumb tail to seam the thumb.</li>
+      <li>Seam from the upper thumb marker to the closed fingertips.</li>
+    </ol>`
+    : `<ol class="sleeveless-pattern-line">
+      <li>Seam from the cast-on edge through the cuff and Hand 1 to the thumb opening.</li>
+      <li>Seam the thumb edges.</li>
+      <li>Seam Hand 2 from the thumb opening to the closed fingertips.</li>
+    </ol>`;
+  return section("Seaming", [
+    instructionBlock({
+      lines: [blockMarker("seam"), "Using mattress stitch or your preferred method:", items],
+    }),
+  ]);
+}
+
+function mittenRows(calc: MittenCalc, side: MittenInstructionSide): SleevelessPatternDisplayRow[] {
+  const slotLabel = SIDE_LABEL[side.slotEdge];
+  const carriageLabel = SIDE_LABEL[side.cuffCarriageSide];
+  const gore = calc.gore;
+  const title = gore ? (side.slotEdge === "right" ? "Right-edge thumb" : "Left-edge thumb") : side.title;
+  const slotVideo = mittenVideoButton(MITTEN_SLOT_VIDEO_CONTENT_ID, "data-mitten-slot-video");
+  const handAbove = gore
+    ? [...markerRows(calc, gore), ...straightRows(calc, gore)]
+    : [
+        ...section("Thumb slot", [
+          instructionBlock({
+            lines: [
+              blockMarker("slot"),
+              `Starting at the outermost needle on the ${slotLabel}, work the ${calc.slotSts} slot stitches by hand: knit 1 row with waste yarn, 1 row with ravel cord, then 1 row with waste yarn.`,
+              "These hand-worked rows do not count on the row counter.",
+              ...(slotVideo ? [slotVideo] : []),
+            ],
+            stitchCount: calc.slotSts,
+          }),
+        ]),
+        ...straightRows(calc, null),
+      ];
+  return [
+    { kind: "piece", title },
+    ...section("Cast on and cuff", [
+      instructionBlock({
+        lines: [
+          blockMarker("cast-on"),
+          `Cast on ${calc.cuffSts} stitches.`,
+          "Complete cast-on setup before the counted cuff rows.",
+          `Begin the counted cuff rows with the carriage on the ${carriageLabel}.`,
+        ],
+        stitchCount: calc.cuffSts,
+      }),
+      instructionBlock({
+        lines: [
+          `Knit ${calc.cuffRows} rows in your choice of cuff pattern.`,
+          rcLine(calc.cuffRows),
+        ],
+        stitchCount: calc.cuffSts,
+        reset: true,
+      }),
+    ]),
+    ...section("Transfer", [
+      instructionBlock({
+        lines: [blockMarker("transfer"), "If needed, transfer the ribber stitches to the main bed."],
+        stitchCount: calc.cuffSts,
+      }),
+    ]),
+    ...section("Increase to hand width", [
+      instructionBlock({
+        lines: [blockMarker("increase"), ...increaseLines(calc)],
+        stitchCount: calc.handSts,
+      }),
+    ]),
+    ...section("Hand below the thumb", [
+      instructionBlock({
+        lines: [
+          blockMarker("hand-1"),
+          `Knit ${calc.hand1Rows} rows. (${calc.handSts} stitches)`,
+          rcLine(calc.hand1Rows),
+        ],
+        stitchCount: calc.handSts,
+        reset: true,
+      }),
+    ]),
+    ...handAbove,
+    ...fingertipRows(calc, side),
+    ...section("Close the top", [
+      instructionBlock({
+        lines: [
+          blockMarker("close"),
+          `Scrap all ${calc.handSts} stitches off the machine with contrasting waste yarn and remove the work from the machine.`,
+          `Join the ${calc.fingertip.workingStitches} stitches of the shaped half to the ${calc.fingertip.heldStitches} stitches of the other half using Kitchener stitch, by hand or on the machine.`,
+        ],
+        stitchCount: calc.handSts,
+      }),
+    ]),
+    ...(gore ? goredThumbRows(calc, gore) : slottedThumbRows(calc)),
+    ...seamRows(calc),
+  ];
+}
+
+function readingLayout(instructionsHtml: string, diagramHtml: string): string {
+  return `<div class="sleeveless-piece-layout">
+  <div class="pattern-layout pattern-layout--garment-columns sleeveless-piece-split sleeveless-pattern-reading-layout" data-sleeveless-pattern-reading-layout>
+  <div class="pattern-layout__content sleeveless-piece-split__text sleeveless-pattern-reading-layout__instructions">${instructionsHtml}</div>
+  <aside class="pattern-layout__sidebar sleeveless-piece-split__diagram sleeveless-pattern-reading-layout__diagram" aria-label="Garment dimensions">
+    <div class="sleeveless-piece-split__diagram-inner sleeveless-pattern-diagram-panel sleeveless-piece-split__diagram-inner--back-panel">
+      <h3 class="sleeveless-pattern-diagram-panel__title no-print">Garment Dimensions</h3>
+      ${diagramHtml}
+    </div>
+  </aside>
+</div>
+</div>`;
 }
 
 function oneMittenHtml(
@@ -250,100 +516,14 @@ function oneMittenHtml(
   intro: string,
   hidden: boolean,
 ): string {
-  const slotLabel = SIDE_LABEL[side.slotEdge];
-  const carriageLabel = SIDE_LABEL[side.cuffCarriageSide];
-  const shaped = calc.fingertip.workingStitches;
-  const held = calc.fingertip.heldStitches;
-  const gore = calc.gore;
-  const title = gore
-    ? side.slotEdge === "right"
-      ? "Right-edge thumb"
-      : "Left-edge thumb"
-    : side.title;
-  const introHtml = intro ? `<p data-block-line="second-mitten">${escapeHtml(intro)}</p>` : "";
-  const handAbove = gore
-    ? `${goredMarkerSection(calc, gore)}
-  ${goredStraightSection(calc, gore)}`
-    : `<section data-block="slot">
-    <h3>Thumb slot</h3>
-    <p>Starting at the outermost needle on the ${slotLabel}, work the ${calc.slotSts} slot stitches by hand: knit 1 row with waste yarn, 1 row with ravel cord, then 1 row with waste yarn.</p>
-    <p>These hand-worked rows do not count on the row counter.</p>
-    ${mittenVideoButton(MITTEN_SLOT_VIDEO_CONTENT_ID, 'data-mitten-slot-video')}
-  </section>
-  <section data-block="straight">
-    <h3>Hand above the thumb</h3>
-    <p>Knit ${calc.straightRows} rows across all ${calc.handSts} stitches with the main yarn. Row 1 is the full-width row immediately after the slot.</p>
-    ${rcEnd("straight", calc.handEndRc)}
-  </section>`;
-  const thumb = gore
-    ? goredThumbSection(calc, gore)
-    : `<section data-block="thumb">
-    <h3>Rehang and knit the thumb</h3>
-    <p>Remove the ravel cord and rehang the waste yarn stitches with the wrong side facing. Leave one empty needle in the center, with ${calc.slotSts} stitches on each side of it.</p>
-    <p>Unknit the waste yarn.</p>
-    <p>Pick up two purl bumps from the row below and place both on the center needle. (${calc.thumbSts} stitches)</p>
-    <p>Continue knitting the mitten.</p>
-    <div data-step="thumb-reset">${rowCounterResetBlockHtml(0)}</div>
-    <p>Knit ${calc.thumbRows} rows.</p>
-    ${rcEnd("thumb", calc.thumbRows)}
-    <p>Break the yarn, leaving a 12" tail. Thread the tail through the remaining ${calc.thumbSts} stitches and remove the stitches from the machine. Pull the tail firmly to gather the top of the thumb and secure.</p>
-    ${mittenVideoButton(MITTEN_GATHERED_THUMB_VIDEO_CONTENT_ID, 'data-mitten-gathered-thumb-video')}
-  </section>`;
-  const seam = gore
-    ? `<ol>
-      <li>Seam from the cast-on edge through the cuff and Hand 1 to the lower thumb marker.</li>
-      <li>The gore joins the edges between the markers as those stitches are rehung.</li>
-      <li>Use the thumb tail to seam the thumb.</li>
-      <li>Seam from the upper thumb marker to the closed fingertips.</li>
-    </ol>`
-    : `<ol>
-      <li>Seam from the cast-on edge through the cuff and Hand 1 to the thumb opening.</li>
-      <li>Seam the thumb edges.</li>
-      <li>Seam Hand 2 from the thumb opening to the closed fingertips.</li>
-    </ol>`;
+  const introHtml = intro
+    ? `<p class="sleeveless-pattern-line" data-block-line="second-mitten">${escapeHtml(intro)}</p>`
+    : "";
+  const instructions = renderPatternDisplayRowsHtml(mittenRows(calc, side), {
+    pieceSectionId: side.id,
+  });
   return `<section class="mitten-panel" data-mitten="${side.id}" data-testid="mitten-${side.id}"${hidden ? " hidden" : ""}>
-  <h2>${escapeHtml(title)}</h2>
-  <div class="mitten-pattern-split">
-  ${mittenDiagramFigureHtml(calc, side.slotEdge)}
-  <div class="mitten-instruction-copy">
-  ${introHtml}
-  <section data-block="cast-on">
-    <h3>Cast on and cuff</h3>
-    <p>Cast on ${calc.cuffSts} stitches.</p>
-    <p>Complete cast-on setup before the counted cuff rows.</p>
-    <p data-carriage="cuff">Begin the counted cuff rows with the carriage on the ${carriageLabel}.</p>
-    <div data-step="cuff-reset">${rowCounterResetBlockHtml(0)}</div>
-    <p>Knit ${calc.cuffRows} rows in your choice of cuff pattern.</p>
-    ${rcEnd("cuff", calc.cuffRows)}
-  </section>
-  <section data-block="transfer">
-    <p>If needed, transfer the ribber stitches to the main bed.</p>
-  </section>
-  <section data-block="increase">
-    <h3>Increase to hand width</h3>
-    ${increaseParagraph(calc)}
-  </section>
-  <section data-block="hand-1">
-    <h3>Hand below the thumb</h3>
-    <div data-step="hand-reset">${rowCounterResetBlockHtml(0)}</div>
-    <p>Knit ${calc.hand1Rows} rows. (${calc.handSts} stitches)</p>
-    ${rcEnd("hand-1", calc.hand1Rows)}
-  </section>
-  ${handAbove}
-  ${fingertipSection(calc, side)}
-  <section data-block="close">
-    <h3>Close the top</h3>
-    <p>Scrap all ${calc.handSts} stitches off the machine with contrasting waste yarn and remove the work from the machine.</p>
-    <p>Join the ${shaped} stitches of the shaped half to the ${held} stitches of the other half using Kitchener stitch, by hand or on the machine.</p>
-  </section>
-  ${thumb}
-  <section data-block="seam">
-    <h3>Seaming</h3>
-    <p>Using mattress stitch or your preferred method:</p>
-    ${seam}
-  </section>
-  </div>
-  </div>
+  ${readingLayout(`${introHtml}${instructions}`, buildMittenDiagramTabsHtml(calc, side.slotEdge))}
 </section>`;
 }
 
@@ -355,20 +535,6 @@ export function buildMittenPatternHtml(calc: MittenCalc): string {
     oneMittenHtml(calc, side, index === 1 ? secondIntro : "", index > 0),
   ).join("\n");
   return `<div class="mitten-instructions" data-testid="mitten-instructions" data-print-source="mitten-instructions" data-thumb-style="${calc.thumbStyle}">
-  <style>
-    .mitten-pattern-split { display: grid; grid-template-columns: minmax(260px, 46%) minmax(0, 1fr); gap: 1.25rem; align-items: start; }
-    .mitten-diagrams { margin: 0; }
-    .mitten-diagrams svg { width: 100%; height: auto; display: block; }
-    .mitten-diagram-note { margin: 0.75rem 0 0; font-size: 0.95rem; line-height: 1.45; color: #1a1a1a; }
-    @media (max-width: 860px) {
-      .mitten-pattern-split { grid-template-columns: 1fr; }
-    }
-    @media print {
-      .mitten-panel[hidden] { display: block !important; }
-      .mitten-pattern-split { grid-template-columns: 1fr; }
-      .mitten-diagrams, .mitten-diagram-note { break-inside: avoid; }
-    }
-  </style>
   <p class="mitten-preview-note">${escapeHtml(previewNote)}</p>
   ${panels}
 </div>`;

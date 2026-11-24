@@ -1,3 +1,10 @@
+import { hydrateGlossaryTooltipPlaceholders } from "../lib/glossary/glossaryTooltipHydrate";
+import { initPatternDiagramTabs } from "../lib/patterns/patternDiagramTabs";
+import { bindPatternSectionCollapse } from "../lib/patterns/sleevelessPatternDisplayHtml";
+import {
+  bindSleevelessDiagramZoom,
+  ensureSleevelessDiagramModal,
+} from "../lib/patterns/sleevelessDiagramModal";
 import { mittenCountSummary, buildMittenPatternHtml } from "../lib/patterns/mitten/mittenInstructions";
 import { buildMittenDiagramSvg, mittenDiagramFigureHtml } from "../lib/patterns/mitten/mittenDiagramSvg";
 import { draftForBuilderSize } from "../lib/patterns/mitten/mittenBuilderState";
@@ -341,7 +348,7 @@ export async function initMittenPatternPage(): Promise<void> {
     return;
   }
   body.innerHTML = buildMittenPatternHtml(result.calc);
-  bindMittenTabs(root);
+  bindMittenPatternChrome(root);
   const heading = document.querySelector("[data-mitten-pattern-heading]");
   if (heading) heading.textContent = resolveMittenPatternDisplayName(draft);
   const glance = document.querySelector("[data-mitten-print-basics]");
@@ -385,11 +392,31 @@ export function renderMittenPatternFromDraft(target: HTMLElement): void {
     return;
   }
   target.innerHTML = buildMittenPatternHtml(result.calc);
-  bindMittenTabs(target);
+  bindMittenPatternChrome(target);
+}
+
+function bindMittenPatternChrome(scope: ParentNode): void {
+  bindMittenTabs(scope);
+  bindPatternSectionCollapse(scope);
+  hydrateGlossaryTooltipPlaceholders(scope);
+  initPatternDiagramTabs(scope);
+  const zoomRoot =
+    scope instanceof HTMLElement ? scope : document.querySelector<HTMLElement>("[data-mitten-pattern]");
+  if (zoomRoot instanceof HTMLElement) {
+    ensureSleevelessDiagramModal();
+    bindSleevelessDiagramZoom(zoomRoot);
+  }
 }
 
 export function bindMittenTabs(scope: ParentNode): void {
+  const thumbStyle = scope.querySelector("[data-thumb-style]")?.getAttribute("data-thumb-style");
   const tabs = scope.querySelectorAll<HTMLButtonElement>("[data-mitten-tab]");
+  if (thumbStyle === "gored") {
+    tabs.forEach((tab) => {
+      const id = tab.getAttribute("data-mitten-tab");
+      tab.textContent = id === "left-edge" ? "Left-edge thumb" : "Right-edge thumb";
+    });
+  }
   const panels = scope.querySelectorAll<HTMLElement>("[data-mitten]");
   tabs.forEach((tab) => {
     tab.addEventListener("click", () => {

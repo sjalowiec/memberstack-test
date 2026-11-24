@@ -1,0 +1,65 @@
+import { describe, expect, it } from "vitest";
+import { formatShapingSegment } from "../shapingNotationCompress";
+import { goredThumbReturns } from "./mittenMath";
+import {
+  buildMittenShapingNotation,
+  mittenFingertipShortRowNotation,
+  mittenGoreShortRowNotation,
+  mittenHandIncreaseNotation,
+} from "./mittenShapingNotation";
+import { buildMittenShapingNotationSvg } from "./mittenShapingNotationDiagramSvg";
+import { calculateMittenPattern, womanSmallPreviewCalc, womanSmallPreviewInput } from "./mittenMath";
+
+describe("mitten shaping notation", () => {
+  const calc = womanSmallPreviewCalc();
+
+  it("uses the shared notation tokens from the approved calc", () => {
+    const notation = buildMittenShapingNotation(calc);
+    expect(notation.castOn).toBe("co46");
+    expect(notation.cuffRows).toBe("26r");
+    expect(notation.handIncrease).toBe(`+${formatShapingSegment(calc.increaseSts, 1, 1)}`);
+    expect(notation.hand1Rows).toBe("20r");
+    expect(notation.straightRows).toBe("24r");
+    expect(notation.fingertip).toEqual(mittenFingertipShortRowNotation(calc.fingertip));
+    expect(notation.thumbRows).toBe("24r");
+    expect(notation.goreShortRows).toEqual([]);
+    expect(mittenHandIncreaseNotation(0)).toBe("");
+  });
+
+  it("groups gored returns without a new thumb formula", () => {
+    expect(mittenGoreShortRowNotation(goredThumbReturns(6))).toEqual([
+      `+${formatShapingSegment(2, 1, 6)}`,
+    ]);
+    expect(mittenGoreShortRowNotation(goredThumbReturns(5))).toEqual([
+      `+${formatShapingSegment(2, 1, 4)}`,
+      `+${formatShapingSegment(1, 1, 2)}`,
+    ]);
+  });
+
+  it("draws both edges and both thumb constructions", () => {
+    for (const edge of ["right", "left"] as const) {
+      const svg = buildMittenShapingNotationSvg(calc, edge);
+      expect(svg).toContain('aria-label="Mitten shaping notation"');
+      expect(svg).toContain(`data-slot-edge="${edge}"`);
+      expect(svg).toContain("+4s-1r-1x");
+      expect(svg).toContain("-1s-1r-16x");
+      expect(svg).not.toContain("decrease");
+      const thumbX = Number(svg.match(/data-thumb-base-x="([^"]+)"/)?.[1]);
+      const handMid = Number(svg.match(/data-hand-mid-x="([^"]+)"/)?.[1]);
+      if (edge === "right") expect(thumbX).toBeGreaterThan(handMid);
+      else expect(thumbX).toBeLessThan(handMid);
+    }
+
+    const gored = calculateMittenPattern({
+      ...womanSmallPreviewInput(),
+      thumbCircumferenceInches: 2,
+      thumbLengthInches: 2,
+      thumbStyle: "gored",
+    });
+    if (!gored.ok) throw new Error(gored.message);
+    const svg = buildMittenShapingNotationSvg(gored.calc, "right");
+    expect(svg).toContain("+2s-1r-6x");
+    expect(svg).toContain("10r");
+    expect(svg).not.toContain("bo");
+  });
+});
