@@ -14,7 +14,17 @@ import {
 import type { SleevelessPatternDisplayRow } from "../sleevelessPatternOutput";
 import { renderPatternDisplayRowsHtml } from "../sleevelessPatternDisplayHtml";
 import { sleevelessHelpVideoFromCatalog } from "../sleevelessCatalogHelpVideo";
-import { sockHoldOrientation, type SockInstructionStep, type SockOfPair } from "../sock/sockInstructionModel";
+import {
+  buildSingleShortRowShapingMap,
+  MITTEN_TOP_SHAPING_MAP_TITLE,
+  renderHeelToeShapingMapHtml,
+} from "../heelToeShapingMap";
+import {
+  sockHoldOrientation,
+  type SockInstructionSection,
+  type SockInstructionStep,
+  type SockOfPair,
+} from "../sock/sockInstructionModel";
 import { sockEnsureCarriageInstruction } from "../sock/sockInstructionRender";
 import { buildSockShortRowInstructionSection } from "../sock/sockShortRowInstructions";
 import type { PatternInpageNavItem } from "../patternInpageNav";
@@ -286,8 +296,8 @@ function fingertipBlock(step: SockInstructionStep, calc: MittenCalc, lead: strin
   }
 }
 
-function fingertipRows(calc: MittenCalc, side: MittenInstructionSide): SleevelessPatternDisplayRow[] {
-  const sectionSteps = buildSockShortRowInstructionSection({
+function fingertipSection(calc: MittenCalc, side: MittenInstructionSide): SockInstructionSection {
+  return buildSockShortRowInstructionSection({
     part: "heel",
     shaping: calc.fingertip,
     orientation: sockHoldOrientation(side.sock, "heel"),
@@ -296,12 +306,27 @@ function fingertipRows(calc: MittenCalc, side: MittenInstructionSide): Sleeveles
     sock: side.sock,
     arriveRc: calc.handEndRc,
   });
-  return section(
-    "Fingertips",
-    sectionSteps.steps.map((step, index) =>
-      fingertipBlock(step, calc, index === 0 ? [blockMarker("fingertips")] : []),
-    ),
-  );
+}
+
+function mittenTopShapingMapHtml(section: SockInstructionSection): string {
+  const built = buildSingleShortRowShapingMap(section, {
+    title: MITTEN_TOP_SHAPING_MAP_TITLE,
+    marker: "mitten-top",
+  });
+  return built.ok ? renderHeelToeShapingMapHtml(built.map) : "";
+}
+
+function fingertipRows(calc: MittenCalc, side: MittenInstructionSide): SleevelessPatternDisplayRow[] {
+  const sectionSteps = fingertipSection(calc, side);
+  const mapHtml = mittenTopShapingMapHtml(sectionSteps);
+  const blocks: InstructionBlock[] = [];
+  sectionSteps.steps.forEach((step, index) => {
+    blocks.push(fingertipBlock(step, calc, index === 0 ? [blockMarker("fingertips")] : []));
+    if (step.type === "ensure-carriage" && mapHtml) {
+      blocks.push(instructionBlock({ lines: [mapHtml] }));
+    }
+  });
+  return section("Fingertips", blocks);
 }
 
 function markerRows(calc: MittenCalc, gore: GoreThumbPlan): SleevelessPatternDisplayRow[] {

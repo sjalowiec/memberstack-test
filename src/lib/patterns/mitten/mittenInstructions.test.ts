@@ -1,17 +1,34 @@
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
+import {
+  buildSingleShortRowShapingMap,
+  describeHeelToeDepthAlignment,
+  MITTEN_TOP_SHAPING_MAP_TITLE,
+} from "../heelToeShapingMap";
 import { STOP_ROW_COUNTER_TEXT, RESET_ROW_COUNTER_TEXT } from "../rowCounterReset";
 import { sockEnsureCarriageInstruction } from "../sock/sockInstructionRender";
 import { buildSockShortRowInstructionSection } from "../sock/sockShortRowInstructions";
 import { sockHoldOrientation } from "../sock/sockInstructionModel";
 import {
   MITTEN_CUFF_START_CARRIAGE,
+  MITTEN_INSTRUCTION_SIDES,
   MITTEN_SECOND_MITTEN_INTRO,
   buildMittenPatternHtml,
   mittenCountSummary,
   mittenPatternInpageNavItems,
   mittenPatternSectionId,
+  type MittenInstructionSide,
 } from "./mittenInstructions";
-import { calculateMittenPattern, womanSmallPreviewCalc, womanSmallPreviewInput } from "./mittenMath";
+import {
+  calculateMittenPattern,
+  measurementsFromSizingRow,
+  mittenPhysicalLengths,
+  womanSmallPreviewCalc,
+  womanSmallPreviewInput,
+  type MittenCalc,
+} from "./mittenMath";
+import { MITTEN_SIZING_CHART } from "./mittenSizingChart";
 
 function panel(html: string, id: "right-edge" | "left-edge"): string {
   const start = html.indexOf(`data-mitten="${id}"`);
@@ -283,5 +300,197 @@ describe("gored thumb instructions", () => {
     expect(html).not.toContain("which face is the palm");
     expect(right).not.toContain("work the");
     expect(right).not.toContain("slot stitches");
+  });
+});
+
+const SHAPING_MAP_NOTE =
+  "Read from the bottom upward. Each grid row is one carriage pass. Numbers on the right count those passes for this map only. -1 places a needle into hold. +1 returns a needle to work.";
+
+function mapMarkup(panelHtml: string): string {
+  const start = panelHtml.indexOf("data-mitten-top-shaping-map");
+  expect(start).toBeGreaterThanOrEqual(0);
+  const end = panelHtml.indexOf("</svg>", start);
+  return panelHtml.slice(start, end + "</svg>".length);
+}
+
+function mapAttr(svg: string, name: string): string {
+  const match = svg.match(new RegExp(`${name}="([^"]+)"`));
+  expect(match, name).toBeTruthy();
+  return match?.[1] ?? "";
+}
+
+function expectFingertipMap(calc: MittenCalc, side: MittenInstructionSide, panelHtml: string): void {
+  const section = buildSockShortRowInstructionSection({
+    part: "heel",
+    shaping: calc.fingertip,
+    orientation: sockHoldOrientation(side.sock, "heel"),
+    tubeStitches: calc.handSts,
+    constructionDirection: "cuff-to-toe",
+    sock: side.sock,
+    arriveRc: calc.handEndRc,
+  });
+  const built = buildSingleShortRowShapingMap(section, {
+    title: MITTEN_TOP_SHAPING_MAP_TITLE,
+    marker: "mitten-top",
+  });
+  expect(built.ok).toBe(true);
+  if (!built.ok) return;
+  const inn = section.steps.find((step) => step.type === "short-row-in");
+  const out = section.steps.find((step) => step.type === "short-row-out");
+  const place = section.steps.find((step) => step.type === "place-hold");
+  const ensure = section.steps.find((step) => step.type === "ensure-carriage");
+  if (!inn || inn.type !== "short-row-in" || !out || out.type !== "short-row-out") {
+    throw new Error("written short-row steps");
+  }
+  if (!place || place.type !== "place-hold" || !ensure || ensure.type !== "ensure-carriage") {
+    throw new Error("written setup steps");
+  }
+
+  const fingertips = block(panelHtml, "fingertips");
+  const setupAt = fingertips.indexOf('data-step="ensure-carriage"');
+  const mapAt = fingertips.indexOf("data-mitten-top-shaping-map");
+  const holdAt = fingertips.indexOf('data-step="place-hold"');
+  expect(setupAt).toBeGreaterThanOrEqual(0);
+  expect(setupAt).toBeLessThan(mapAt);
+  expect(mapAt).toBeLessThan(holdAt);
+  const asideAt = panelHtml.indexOf('aria-label="Garment dimensions"');
+  expect(panelHtml.indexOf(MITTEN_TOP_SHAPING_MAP_TITLE)).toBeLessThan(asideAt);
+  expect(panelHtml.slice(asideAt)).not.toContain("data-mitten-top-shaping-map");
+
+  expect(fingertips).toContain(SHAPING_MAP_NOTE);
+  expect(fingertips).toContain("pattern-print-keep-charts");
+  expect(fingertips).toContain('class="shaping-map__svg shaping-map__svg--heel-toe"');
+  expect(fingertips).toContain("shaping-map__scroll");
+  expect(fingertips).toContain("Knitting order");
+  expect(fingertips).toContain(ensure.side === "right" ? "Carriage right" : "Carriage left");
+
+  const svg = mapMarkup(fingertips);
+  expect(mapAttr(svg, "data-grid-columns")).toBe(String(calc.fingertip.workingStitches));
+  expect(mapAttr(svg, "data-grid-columns")).not.toBe(String(calc.handSts));
+  expect(mapAttr(svg, "data-center-stitches")).toBe(String(inn.remainingStitches));
+  expect(mapAttr(svg, "data-working-stitches")).toBe(String(inn.startWorkingStitches));
+  expect(mapAttr(svg, "data-hold-passes")).toBe(String(inn.rows));
+  expect(mapAttr(svg, "data-return-passes")).toBe(String(out.rows));
+  expect(mapAttr(svg, "data-grid-rows")).toBe(String(inn.rows + out.rows));
+  expect(mapAttr(svg, "data-carriage-start")).toBe(ensure.side);
+  expect(place.workStitches).toBe(built.map.workingStitches);
+  expect(place.holdStitches).toBe(calc.fingertip.heldStitches);
+  expect(built.map.workingStitches + place.holdStitches).toBe(calc.handSts);
+  expect(Math.min(...built.map.passes.map((pass) => pass.inWorkStitches))).toBe(inn.remainingStitches);
+  expect(built.map.passes.at(-1)?.inWorkStitches).toBe(out.endWorkingStitches);
+  expect(built.map.passes.length).toBe(calc.fingertip.shortRowKnittingRows);
+  expect(built.map.passes.length).toBe(calc.fingertip.shortRowDepthRows * 2);
+  expect(built.map.passes.length).not.toBe(calc.handEndRc);
+
+  const rendered = [
+    ...svg.matchAll(/data-shaping-action="(hold|return)" data-pass="(\d+)" data-side="(left|right)"/g),
+  ].map((match) => ({ action: match[1], pass: Number(match[2]), side: match[3] }));
+  expect(rendered).toEqual(
+    built.map.passes.map((pass) => ({ action: pass.action, pass: pass.pass, side: pass.side })),
+  );
+  expect(rendered[0]?.side).toBe(ensure.side);
+  const holds = rendered.filter((pass) => pass.action === "hold");
+  const returns = rendered.filter((pass) => pass.action === "return");
+  for (let index = 1; index < holds.length; index += 1) {
+    expect(holds[index]?.side).not.toBe(holds[index - 1]?.side);
+  }
+  for (let index = 1; index < returns.length; index += 1) {
+    expect(returns[index]?.side).not.toBe(returns[index - 1]?.side);
+  }
+  expect(returns[0]?.side).toBe(holds.at(-1)?.side);
+  expect(rendered.filter((pass) => pass.action === "hold")).toHaveLength(inn.rows);
+  expect(rendered.filter((pass) => pass.action === "return")).toHaveLength(out.rows);
+  expect(svg).toContain(`${inn.remainingStitches} center stitches remain`);
+  expect(svg).toContain(`${inn.startWorkingStitches} working stitches`);
+  expect(svg).not.toContain("RC");
+  expect(svg).not.toContain(STOP_ROW_COUNTER_TEXT);
+  const numbered = [...svg.matchAll(/class="shaping-map-row-number"[^>]*>(\d+)</g)].map((match) =>
+    Number(match[1]),
+  );
+  expect(numbered[0]).toBe(2);
+  expect(numbered.at(-1)).toBe(inn.rows + out.rows);
+
+  const alignment = describeHeelToeDepthAlignment({
+    mapPasses: built.map.passes.length,
+    holdPasses: inn.rows,
+    returnPasses: out.rows,
+    instructionInRows: inn.rows,
+    instructionOutRows: out.rows,
+    depthRows: calc.fingertip.shortRowDepthRows,
+    knittingRows: calc.fingertip.shortRowKnittingRows,
+    depthInches: mittenPhysicalLengths(calc).fingertipDepthIn,
+    rowGaugePerInch: calc.rowGaugePerInch,
+  });
+  expect(alignment.disagreements).toEqual([]);
+  expect(panelHtml).toContain('data-diagram="mitten-sketch"');
+  expect(panelHtml).toContain('data-diagram="mitten-shaping-notation"');
+}
+
+describe("mitten top shaping map", () => {
+  it("places the Woman Small map in the instruction column for both mirrored mittens", () => {
+    const calc = womanSmallPreviewCalc();
+    const html = buildMittenPatternHtml(calc);
+    expect(calc.fingertip.workingStitches).toBe(25);
+    expect(calc.fingertip.remainingStitches).toBe(9);
+    expect(calc.fingertip.shortRowInSteps).toBe(16);
+    expect(calc.fingertip.shortRowOutSteps).toBe(16);
+    expect(calc.fingertip.shortRowKnittingRows).toBe(32);
+    const sides = MITTEN_INSTRUCTION_SIDES.map((side) => panel(html, side.id));
+    expect(sides[0]?.match(/data-mitten-top-shaping-map/g)).toHaveLength(1);
+    expect(sides[1]?.match(/data-mitten-top-shaping-map/g)).toHaveLength(1);
+    MITTEN_INSTRUCTION_SIDES.forEach((side, index) => {
+      expectFingertipMap(calc, side, sides[index] ?? "");
+    });
+    const rightSides = [...mapMarkup(sides[0] ?? "").matchAll(/data-side="(left|right)"/g)].map(
+      (match) => match[1],
+    );
+    const leftSides = [...mapMarkup(sides[1] ?? "").matchAll(/data-side="(left|right)"/g)].map(
+      (match) => match[1],
+    );
+    expect(mapAttr(mapMarkup(sides[0] ?? ""), "data-carriage-start")).toBe("right");
+    expect(mapAttr(mapMarkup(sides[1] ?? ""), "data-carriage-start")).toBe("left");
+    expect(leftSides).toEqual(rightSides.map((side) => (side === "right" ? "left" : "right")));
+    expect(sides[0]).toContain("-1s-1r-16x");
+    expect(sides[0]).toContain("+1s-1r-16x");
+  });
+
+  it("uses the same fingertip map for a gored thumb and a different calculated size", () => {
+    const woman = calculateMittenPattern({
+      ...womanSmallPreviewInput(),
+      thumbStyle: "gored",
+    });
+    expect(woman.ok).toBe(true);
+    if (!woman.ok) return;
+    const womanHtml = buildMittenPatternHtml(woman.calc);
+    expect(womanHtml).toContain('data-thumb-style="gored"');
+    for (const side of MITTEN_INSTRUCTION_SIDES) {
+      expectFingertipMap(woman.calc, side, panel(womanHtml, side.id));
+    }
+
+    const childRow = MITTEN_SIZING_CHART.find((entry) => entry.size === "child_2_4");
+    expect(childRow).toBeTruthy();
+    if (!childRow) return;
+    const child = calculateMittenPattern({
+      ...measurementsFromSizingRow(childRow),
+      stitchGaugePerInch: 7,
+      rowGaugePerInch: 10,
+      thumbStyle: "slotted",
+    });
+    expect(child.ok).toBe(true);
+    if (!child.ok) return;
+    expect(child.calc.fingertip.workingStitches).not.toBe(woman.calc.fingertip.workingStitches);
+    const childHtml = buildMittenPatternHtml(child.calc);
+    for (const side of MITTEN_INSTRUCTION_SIDES) {
+      expectFingertipMap(child.calc, side, panel(childHtml, side.id));
+    }
+  });
+
+  it("prints with the shared shaping-map rules", () => {
+    const page = readFileSync(resolve("src/pages/patterns/mittens/pattern.astro"), "utf8");
+    const css = readFileSync(resolve("src/styles/shaping-map.css"), "utf8");
+    expect(page).toContain("shaping-map.css");
+    expect(css).toContain(".shaping-map[data-mitten-top-shaping-map]");
+    expect(css).toContain(".shaping-map__scroll");
+    expect(css).toMatch(/\.shaping-map\[data-heel-toe-shaping-map\],\s*\.shaping-map\[data-mitten-top-shaping-map\]/);
   });
 });

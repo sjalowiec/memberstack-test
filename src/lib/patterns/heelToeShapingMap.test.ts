@@ -9,8 +9,11 @@ import {
 } from "./christmasStocking/christmasStockingInstructions";
 import {
   buildHeelToeShapingMap,
+  buildSingleShortRowShapingMap,
   describeHeelToeDepthAlignment,
   HEEL_TOE_SHAPING_MAP_TITLE,
+  MITTEN_TOP_SHAPING_MAP_TITLE,
+  renderHeelToeShapingMapHtml,
   renderHeelToeShapingMapSvg,
   replayShortRowActions,
 } from "./heelToeShapingMap";
@@ -129,6 +132,34 @@ describe("heel and toe share one short-row map", () => {
     expect(passes[15]).toMatchObject({ inWorkStitches: 13, inWorkLeft: 0, inWorkRight: 13 });
     expect(passes.filter((pass) => pass.action === "hold" && pass.side === "left")).toHaveLength(4);
     expect(passes.filter((pass) => pass.action === "hold" && pass.side === "right")).toHaveLength(4);
+  });
+
+  it("draws one sequence from a single section and leaves the shared sock map unchanged", () => {
+    const doc = buildBasicSockInstructions(mustCalc(), 1);
+    const shared = buildHeelToeShapingMap(doc);
+    const heel = doc.sections.find((section) => section.id === "heel");
+    expect(heel).toBeTruthy();
+    if (!heel) return;
+    const single = buildSingleShortRowShapingMap(heel, {
+      title: MITTEN_TOP_SHAPING_MAP_TITLE,
+      marker: "mitten-top",
+    });
+    expect(shared.ok && single.ok).toBe(true);
+    if (!shared.ok || !single.ok) return;
+    expect(single.map.passes).toEqual(shared.map.passes);
+    expect(single.map.workingStitches).toBe(shared.map.workingStitches);
+    expect(single.map.remainingStitches).toBe(shared.map.remainingStitches);
+    expect(single.map.carriageStartSide).toBe(shared.map.carriageStartSide);
+    const sockHtml = renderHeelToeShapingMapHtml(shared.map);
+    expect(sockHtml).toContain(
+      `data-heel-toe-shaping-map data-sock="${doc.sock}" data-construction="${doc.constructionDirection}"`,
+    );
+    expect(sockHtml).not.toContain("data-mitten-top-shaping-map");
+    expect(sockHtml).not.toContain("pattern-print-keep-charts");
+    expect(sockHtml).toContain("Heel &amp; Toe Shaping Map");
+    const singleHtml = renderHeelToeShapingMapHtml(single.map);
+    expect(singleHtml).toContain(MITTEN_TOP_SHAPING_MAP_TITLE);
+    expect(renderHeelToeShapingMapSvg(shared.map)).toBe(renderHeelToeShapingMapSvg({ ...single.map, title: shared.map.title, marker: "heel-toe" }));
   });
 });
 
