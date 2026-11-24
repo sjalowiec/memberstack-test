@@ -5,7 +5,11 @@ import {
   bindSleevelessDiagramZoom,
   ensureSleevelessDiagramModal,
 } from "../lib/patterns/sleevelessDiagramModal";
-import { mittenCountSummary, buildMittenPatternHtml } from "../lib/patterns/mitten/mittenInstructions";
+import {
+  mittenCountSummary,
+  buildMittenPatternHtml,
+  mittenPatternInpageNavItems,
+} from "../lib/patterns/mitten/mittenInstructions";
 import { buildMittenDiagramSvg, mittenDiagramFigureHtml } from "../lib/patterns/mitten/mittenDiagramSvg";
 import { draftForBuilderSize } from "../lib/patterns/mitten/mittenBuilderState";
 import {
@@ -42,7 +46,7 @@ import { withSavedPatternProjectId } from "../lib/patterns/savedPatternViewUrl";
 import { MITTEN_SUMMARY_EDIT_HREF } from "../lib/patterns/customPatternProjectNavigation";
 import { ensureUrlRequestedSavedPatternHydrated } from "../lib/patterns/ensureUrlRequestedSavedPattern";
 import { SAVED_PATTERN_UNAVAILABLE_BODY } from "../lib/patterns/savedPatternAccessState";
-import { mountPatternPrintAction } from "../lib/patterns/patternInpageNav";
+import { mountPatternPrintAction, syncPatternInpageNav } from "../lib/patterns/patternInpageNav";
 import { triggerPatternPrint } from "./patternPrintPersonalization";
 
 function renderCounts(target: HTMLElement, lines: Array<{ label: string; value: string }>): void {
@@ -397,6 +401,7 @@ export function renderMittenPatternFromDraft(target: HTMLElement): void {
 
 function bindMittenPatternChrome(scope: ParentNode): void {
   bindMittenTabs(scope);
+  syncMittenPatternInpageNav(scope);
   bindPatternSectionCollapse(scope);
   hydrateGlossaryTooltipPlaceholders(scope);
   initPatternDiagramTabs(scope);
@@ -406,6 +411,22 @@ function bindMittenPatternChrome(scope: ParentNode): void {
     ensureSleevelessDiagramModal();
     bindSleevelessDiagramZoom(zoomRoot);
   }
+}
+
+function activeMittenId(scope: ParentNode): "right-edge" | "left-edge" {
+  const selected = scope.querySelector<HTMLButtonElement>("[data-mitten-tab][aria-selected='true']");
+  return selected?.getAttribute("data-mitten-tab") === "left-edge" ? "left-edge" : "right-edge";
+}
+
+/** Point the shared sticky nav at the mitten that is on screen. */
+export function syncMittenPatternInpageNav(scope: ParentNode): void {
+  const thumbStyle = scope.querySelector("[data-thumb-style]")?.getAttribute("data-thumb-style");
+  syncPatternInpageNav({
+    items: mittenPatternInpageNavItems(
+      activeMittenId(scope),
+      thumbStyle === "gored" ? "gored" : "slotted",
+    ),
+  });
 }
 
 export function bindMittenTabs(scope: ParentNode): void {
@@ -429,6 +450,7 @@ export function bindMittenTabs(scope: ParentNode): void {
       panels.forEach((panel) => {
         panel.hidden = panel.getAttribute("data-mitten") !== id;
       });
+      syncMittenPatternInpageNav(scope);
     });
   });
 }

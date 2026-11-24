@@ -4,9 +4,12 @@ import { sockEnsureCarriageInstruction } from "../sock/sockInstructionRender";
 import { buildSockShortRowInstructionSection } from "../sock/sockShortRowInstructions";
 import { sockHoldOrientation } from "../sock/sockInstructionModel";
 import {
+  MITTEN_CUFF_START_CARRIAGE,
   MITTEN_SECOND_MITTEN_INTRO,
   buildMittenPatternHtml,
   mittenCountSummary,
+  mittenPatternInpageNavItems,
+  mittenPatternSectionId,
 } from "./mittenInstructions";
 import { calculateMittenPattern, womanSmallPreviewCalc, womanSmallPreviewInput } from "./mittenMath";
 
@@ -35,23 +38,20 @@ describe("slotted mitten instructions", () => {
     expect(html.match(/data-mitten="left-edge"/g)).toHaveLength(1);
   });
 
-  it("places the carriage side after cast-on setup and before the cuff reset", () => {
-    for (const [sideHtml, carriage] of [
-      [right, "LEFT"],
-      [left, "RIGHT"],
-    ] as const) {
+  it("starts the counted cuff rows at RC 000 with the carriage on the right", () => {
+    for (const sideHtml of [right, left]) {
       const castOn = block(sideHtml, "cast-on");
       const setup = castOn.indexOf("Complete cast-on setup before the counted cuff rows.");
-      const carriageAt = castOn.indexOf(
-        `Begin the counted cuff rows with the carriage on the ${carriage}.`,
-      );
       const reset = castOn.indexOf(RESET_ROW_COUNTER_TEXT);
+      const carriageAt = castOn.indexOf(MITTEN_CUFF_START_CARRIAGE);
       const knit = castOn.indexOf("Knit 26 rows in your choice of cuff pattern.");
       expect(setup).toBeGreaterThanOrEqual(0);
-      expect(setup).toBeLessThan(carriageAt);
-      expect(carriageAt).toBeLessThan(reset);
-      expect(reset).toBeLessThan(knit);
+      expect(setup).toBeLessThan(reset);
+      expect(reset).toBeLessThan(carriageAt);
+      expect(carriageAt).toBeLessThan(knit);
       expect(castOn).toContain("RC: 026");
+      expect(castOn).not.toContain("carriage on the LEFT");
+      expect(castOn).not.toContain("Begin the counted cuff rows with the carriage on the");
     }
   });
 
@@ -83,7 +83,7 @@ describe("slotted mitten instructions", () => {
     expect(straight).toContain("RC: 044");
     expect(right).not.toContain("Continue knitting the hand");
     expect(block(left, "slot")).toContain("outermost needle on the LEFT");
-    expect(block(left, "cast-on")).toContain("carriage on the RIGHT");
+    expect(block(left, "cast-on")).toContain(MITTEN_CUFF_START_CARRIAGE);
   });
 
   it("follows the shared fingertip steps and keeps the setup row out of the straight count", () => {
@@ -165,6 +165,28 @@ describe("slotted mitten instructions", () => {
     expect(html).not.toContain("single row of ravel cord");
     expect(html).not.toContain("Do not use a single row");
     expect(html).not.toContain("After removing the stitches from the machine");
+  });
+
+  it("omits the preview commentary and exposes the shared section anchors", () => {
+    expect(html).not.toContain("which face is the palm");
+    expect(html).not.toContain("This preview pairs");
+    expect(html).not.toContain("mitten-preview-note");
+    for (const sideId of ["right-edge", "left-edge"] as const) {
+      const sideHtml = sideId === "right-edge" ? right : left;
+      for (const item of mittenPatternInpageNavItems(sideId, "slotted")) {
+        expect(sideHtml).toContain(`id="${item.ids[0]}"`);
+      }
+    }
+    expect(mittenPatternInpageNavItems("left-edge", "gored").map((item) => item.label)).toEqual([
+      "Cuff",
+      "Hand",
+      "Fingertips",
+      "Thumb",
+      "Finishing",
+    ]);
+    expect(mittenPatternInpageNavItems("left-edge", "gored")[3]?.ids).toEqual([
+      mittenPatternSectionId("left-edge", "gored-thumb"),
+    ]);
   });
 
   it("uses the sweater instruction blocks, stitch counts, and garment diagrams", () => {
@@ -256,6 +278,9 @@ describe("gored thumb instructions", () => {
     expect(left).toContain('data-slot-edge="left"');
     expect(block(right, "markers")).toContain("10 rows apart");
     expect(block(right, "markers")).toContain("half the thumb circumference");
+    expect(right).toContain('id="sg-right-edge-gored-thumb"');
+    expect(left).toContain('id="sg-left-edge-gored-thumb"');
+    expect(html).not.toContain("which face is the palm");
     expect(right).not.toContain("work the");
     expect(right).not.toContain("slot stitches");
   });
