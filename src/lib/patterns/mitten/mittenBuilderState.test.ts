@@ -88,6 +88,10 @@ describe("mitten builder pages", () => {
     expect(builder).toContain('data-field="thumbStyle"');
     expect(builder).toContain('data-value="slotted"');
     expect(builder).toContain('data-value="gored"');
+    expect(builder).toContain('src="/images/patterns/mittens.png"');
+    expect(builder).toContain("/images/patterns/mittens/picker/slotted-thumb.webp");
+    expect(builder).toContain("/images/patterns/mittens/picker/gored-thumb.webp");
+    expect(builder).toContain("object-fit: contain");
     expect(builder).toContain("GaugeInput");
     expect(builder).not.toContain("mitten-cuff-circ");
     expect(builder).not.toContain("still need to be checked");
