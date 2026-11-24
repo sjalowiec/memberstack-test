@@ -8,14 +8,25 @@
 import type { MittenSlotEdge } from "./mittenInstructions";
 import { formatMittenLengthInches, mittenPhysicalLengths, type MittenCalc } from "./mittenMath";
 import { DESKTOP_MEASUREMENT_OVERLAY_MIN_STAGE_PX } from "../patternSummaryMeasurementOverlay";
+import { DS_FONT, DS_FS_MEASURE, DS_FS_SMALL } from "../dropShoulderPatternDiagramSvgShared";
 
-const FONT = "Poppins, system-ui, Arial, sans-serif";
+const FONT = DS_FONT;
 const STROKE = "#1a1a1a";
 const DIM = "#52682d";
-const VB_W = 840;
+/** Summary/Edit keeps this hand width so the measurement lanes stay put. */
 const HAND_PX = 150;
-const FS = 16;
-const FS_SM = 14;
+/**
+ * Finished-pattern hand width. The viewBox is cropped to the drawing and labels,
+ * so this width fills the sidebar the way the drop-shoulder body fills its 430-unit canvas.
+ */
+const PATTERN_HAND_PX = 200;
+const PATTERN_PAD = 18;
+/**
+ * Drop-shoulder measure type is 14px on a 430-unit canvas. The mitten canvas is a
+ * little wider because of the thumb, so 16px lands at the same size in the sidebar.
+ */
+const PATTERN_FS = DS_FS_MEASURE + 2;
+const PATTERN_FS_SM = DS_FS_SMALL + 2;
 /** Illustrative gaps. Not garment measurements. */
 const THUMB_GAP = 16;
 const THUMB_ANGLE = 22;
@@ -97,7 +108,7 @@ function text(
   y: number,
   content: string,
   anchor: "start" | "middle" | "end",
-  size = FS,
+  size = PATTERN_FS,
 ): string {
   return `<text x="${f(x)}" y="${f(y)}" font-family="${FONT}" font-size="${size}" fill="${DIM}" text-anchor="${anchor}">${escapeXml(content)}</text>`;
 }
@@ -327,6 +338,145 @@ function buildMittenSummaryDiagramSvg(calc: MittenCalc, slotEdge: MittenSlotEdge
 </svg>`;
 }
 
+export type MittenPatternSketchFrame = {
+  handLeft: number;
+  handRight: number;
+  handMid: number;
+  cuffLeft: number;
+  cuffRight: number;
+  yTip: number;
+  yDomeBase: number;
+  ySlot: number;
+  yCuffTop: number;
+  yBottom: number;
+  tipH: number;
+  handW: number;
+  cuffW: number;
+  hand1H: number;
+  straightH: number;
+  setupH: number;
+  cuffH: number;
+  hand2H: number;
+  thumbW: number;
+  thumbLen: number;
+  baseX: number;
+  baseY: number;
+  sign: number;
+  angle: number;
+  slotRight: boolean;
+};
+
+/**
+ * Finished-pattern mitten, scaled like the drop-shoulder body and placed near the
+ * labels. Summary/Edit uses its own frame so the measurement lanes stay put.
+ */
+export function mittenPatternSketchFrame(
+  calc: MittenCalc,
+  slotEdge: MittenSlotEdge,
+): MittenPatternSketchFrame {
+  const m = mittenDiagramMeasurements(calc);
+  const scale = PATTERN_HAND_PX / m.handDisplayIn;
+  const slotRight = slotEdge === "right";
+  const sign = slotRight ? 1 : -1;
+  const angle = sign * THUMB_ANGLE;
+  const handW = m.handDisplayIn * scale;
+  const cuffW = m.cuffDisplayIn * scale;
+  const tipH = m.fingertipDepthIn * scale;
+  const setupH = m.setupRowIn * scale;
+  const straightH = m.straightLengthIn * scale;
+  const hand1H = m.hand1LengthIn * scale;
+  const cuffH = m.cuffLengthIn * scale;
+  const thumbW = m.thumbDisplayIn * scale;
+  const thumbLen = m.thumbLengthIn * scale;
+  const angleRad = (THUMB_ANGLE * Math.PI) / 180;
+  const thumbReach = Math.sin(angleRad) * thumbLen + (thumbW / 2) * Math.cos(angleRad);
+  const lengthSide = PATTERN_PAD + 104;
+  const thumbSide = PATTERN_PAD + THUMB_GAP + thumbW / 2 + thumbReach + 48;
+  const handLeft = slotRight ? lengthSide : thumbSide;
+  const handRight = handLeft + handW;
+  const yTip = PATTERN_PAD + 4;
+  const yDomeBase = yTip + tipH;
+  const ySlot = yDomeBase + straightH + setupH;
+  const yCuffTop = ySlot + hand1H;
+  const yBottom = yCuffTop + cuffH;
+  const baseX = (slotRight ? handRight : handLeft) + sign * (THUMB_GAP + thumbW / 2);
+  const baseY = ySlot + Math.min(18, thumbW * 0.28);
+  const cuffLeft = handLeft + (handW - cuffW) / 2;
+  return {
+    handLeft,
+    handRight,
+    handMid: (handLeft + handRight) / 2,
+    cuffLeft,
+    cuffRight: cuffLeft + cuffW,
+    yTip,
+    yDomeBase,
+    ySlot,
+    yCuffTop,
+    yBottom,
+    tipH,
+    handW,
+    cuffW,
+    hand1H,
+    straightH,
+    setupH,
+    cuffH,
+    hand2H: straightH + setupH + tipH,
+    thumbW,
+    thumbLen,
+    baseX,
+    baseY,
+    sign,
+    angle,
+    slotRight,
+  };
+}
+
+type InkBox = { x: number; y: number; w: number; h: number };
+
+function textWidth(content: string, size: number): number {
+  return Math.max(size, content.length * size * 0.56);
+}
+
+function horizontalTextBox(
+  x: number,
+  y: number,
+  content: string,
+  anchor: "start" | "middle" | "end",
+  size: number,
+): InkBox {
+  const w = textWidth(content, size);
+  const left = anchor === "start" ? x : anchor === "end" ? x - w : x - w / 2;
+  return { x: left, y: y - size * 0.85, w, h: size * 1.15 };
+}
+
+/** Vertical label, matching the drop-shoulder side measurements. */
+function rotatedTextBox(x: number, y: number, content: string, size: number): InkBox {
+  const h = textWidth(content, size);
+  return { x: x - size * 0.7, y: y - h / 2, w: size * 1.4, h };
+}
+
+function fitViewBox(boxes: InkBox[], pad = PATTERN_PAD): { minX: number; minY: number; w: number; h: number } {
+  let minX = Infinity;
+  let minY = Infinity;
+  let maxX = -Infinity;
+  let maxY = -Infinity;
+  for (const box of boxes) {
+    minX = Math.min(minX, box.x);
+    minY = Math.min(minY, box.y);
+    maxX = Math.max(maxX, box.x + box.w);
+    maxY = Math.max(maxY, box.y + box.h);
+  }
+  minX -= pad;
+  minY -= pad;
+  maxX += pad;
+  maxY += pad;
+  return { minX, minY, w: Math.max(1, maxX - minX), h: Math.max(1, maxY - minY) };
+}
+
+function rotatedText(x: number, y: number, content: string, size = PATTERN_FS): string {
+  return `<text x="0" y="0" transform="translate(${f(x)} ${f(y)}) rotate(-90)" font-family="${FONT}" font-size="${size}" fill="${DIM}" text-anchor="middle">${escapeXml(content)}</text>`;
+}
+
 /** One upright mitten. The second mitten mirrors the thumb side. */
 export function buildMittenDiagramSvg(
   calc: MittenCalc,
@@ -335,79 +485,106 @@ export function buildMittenDiagramSvg(
 ): string {
   if (mode === "summary") return buildMittenSummaryDiagramSvg(calc, slotEdge);
   const m = mittenDiagramMeasurements(calc);
-  const scale = HAND_PX / m.handDisplayIn;
-  const slotRight = slotEdge === "right";
-  const handW = m.handDisplayIn * scale;
-  const cuffW = m.cuffDisplayIn * scale;
-  const tipH = m.fingertipDepthIn * scale;
-  const setupH = m.setupRowIn * scale;
-  const straightH = m.straightLengthIn * scale;
-  const hand1H = m.hand1LengthIn * scale;
-  const cuffH = m.cuffLengthIn * scale;
-  const hand2H = straightH + setupH + tipH;
-  const thumbW = m.thumbDisplayIn * scale;
-  const thumbLen = m.thumbLengthIn * scale;
-  const handLeft = 360;
-  const handRight = handLeft + handW;
-  const handMid = (handLeft + handRight) / 2;
-  const cuffLeft = handLeft + (handW - cuffW) / 2;
-  const cuffRight = cuffLeft + cuffW;
-  const yTip = 36;
-  const yDomeBase = yTip + tipH;
-  const ySlot = yDomeBase + straightH + setupH;
-  const yCuffTop = ySlot + hand1H;
-  const yBottom = yCuffTop + cuffH;
-
-  const sign = slotRight ? 1 : -1;
-  const angle = sign * THUMB_ANGLE;
-  const baseX = (slotRight ? handRight : handLeft) + sign * (THUMB_GAP + thumbW / 2);
-  const baseY = ySlot + Math.min(18, thumbW * 0.28);
+  const frame = mittenPatternSketchFrame(calc, slotEdge);
+  const {
+    handLeft,
+    handRight,
+    handMid,
+    cuffLeft,
+    cuffRight,
+    yTip,
+    yDomeBase,
+    ySlot,
+    yCuffTop,
+    yBottom,
+    tipH,
+    handW,
+    cuffW,
+    cuffH,
+    hand1H,
+    hand2H,
+    thumbW,
+    thumbLen,
+    baseX,
+    baseY,
+    sign,
+    angle,
+    slotRight,
+  } = frame;
   const cap = Math.min(thumbW / 2, thumbLen * 0.42);
   const straight = Math.max(0, thumbLen - cap);
   const thumbOutline =
     `M ${f(-thumbW / 2)} 0 L ${f(-thumbW / 2)} ${f(-straight)} ` +
     `A ${f(thumbW / 2)} ${f(cap)} 0 0 1 ${f(thumbW / 2)} ${f(-straight)} ` +
     `L ${f(thumbW / 2)} 0`;
-
   const angleRad = (THUMB_ANGLE * Math.PI) / 180;
   const tipReach = Math.sin(angleRad) * thumbLen;
   const outerEdge = baseX + sign * (thumbW / 2 + tipReach);
-  const innerSep = outerEdge + sign * 16;
-  const outerSep = innerSep + sign * 14;
+  const innerSep = outerEdge + sign * 12;
+  const outerSep = innerSep + sign * 12;
   const tipY = baseY - Math.cos(angleRad) * thumbLen;
-
-  const labelAnchor = slotRight ? "end" : "start";
   const edge = slotRight ? handLeft : handRight;
   const outward = slotRight ? -1 : 1;
-  const fingertipX = edge + outward * 20;
-  const sectionX = edge + outward * 58;
-  const totalX = edge + outward * 210;
-  const sectionLabelX = sectionX + outward * 10;
-  const totalLabelX = totalX + outward * 10;
-
-  const [tipLabelY, hand2LabelY, hand1LabelY, cuffLabelY] = spreadCenters(
-    [(yTip + yDomeBase) / 2, (yTip + ySlot) / 2, (yCuffTop + ySlot) / 2, (yCuffTop + yBottom) / 2],
-    22,
-  );
-  const totalLabelY = (yTip + yBottom) / 2;
-
-  const thumbDimLocalX = sign * (thumbW / 2 + 14);
-  const thumbLabelLocal = rotateLocal(sign * (thumbW / 2 + 28), -thumbLen - 4, angle);
-  const thumbLabelX = baseX + thumbLabelLocal.x;
-  const thumbLabelY = baseY + thumbLabelLocal.y;
-  const thumbLabelAnchor = slotRight ? "start" : "end";
-
+  const fingertipX = edge + outward * 16;
+  const sectionX = edge + outward * 34;
+  const totalX = edge + outward * 54;
+  const nearLabelX = edge + outward * 72;
+  const farLabelX = edge + outward * 108;
   const len = formatMittenDiagramLength;
   const circ = formatMittenDiagramInches;
-  const vbH = yBottom + 28;
-  const summary = mode === "summary";
-  const label = (
-    x: number,
-    y: number,
-    content: string,
-    anchor: "start" | "middle" | "end",
-    size = FS,
-  ) => (summary ? "" : text(x, y, content, anchor, size));
+  const sectionLabels = [
+    { text: `Fingertip ${len(m.fingertipDepthIn)} in`, y: (yTip + yDomeBase) / 2, x: nearLabelX },
+    { text: `Hand 2 ${len(m.slotToFingertipIn)} in`, y: (yDomeBase + ySlot) / 2, x: farLabelX },
+    { text: `Hand 1 ${len(m.hand1LengthIn)} in`, y: (ySlot + yCuffTop) / 2, x: nearLabelX },
+    { text: `Cuff ${len(m.cuffLengthIn)} in`, y: (yCuffTop + yBottom) / 2, x: farLabelX },
+  ];
+  const totalText = `Total ${len(m.totalLengthIn)} in`;
+  const farLabels = sectionLabels.filter((label) => label.x === farLabelX);
+  const totalHalf = textWidth(totalText, PATTERN_FS) / 2;
+  let totalLabelY = (yTip + yBottom) / 2;
+  const totalHits = farLabels.some(
+    (label) => Math.abs(totalLabelY - label.y) < totalHalf + textWidth(label.text, PATTERN_FS) / 2 + 8,
+  );
+  if (totalHits && farLabels.length >= 2) {
+    const ordered = [...farLabels].sort((a, b) => a.y - b.y);
+    const upper = ordered[0];
+    const lower = ordered[1];
+    if (upper && lower) {
+      const top = upper.y + textWidth(upper.text, PATTERN_FS) / 2 + totalHalf + 8;
+      const bottom = lower.y - textWidth(lower.text, PATTERN_FS) / 2 - totalHalf - 8;
+      if (bottom > top) totalLabelY = (top + bottom) / 2;
+    }
+  }
+  const totalLabelX = farLabelX;
+  const handCirc = "Hand circumference";
+  const handIn = `${circ(m.handCircumferenceIn)} in`;
+  const thumbCirc = "Thumb circumference";
+  const thumbIn = `${circ(m.thumbCircumferenceIn)} in`;
+  const thumbLength = "Thumb length";
+  const thumbInLen = `${len(m.thumbLengthIn)} in`;
+  const thumbDimLocalX = sign * (thumbW / 2 + 14);
+  const thumbTipX = baseX + sign * (Math.sin(angleRad) * thumbLen + (thumbW / 2) * Math.cos(angleRad));
+  const thumbColumnX = thumbTipX + sign * 22;
+  const thumbLenCenter = (tipY + baseY) / 2;
+  const thumbCircY = yBottom + 22;
+  const thumbInY = thumbCircY + 30;
+
+  const ink: InkBox[] = [
+    { x: cuffLeft, y: yTip, w: cuffW, h: yBottom - yTip },
+    { x: handLeft, y: yTip, w: handW, h: ySlot - yTip },
+    { x: Math.min(baseX, thumbTipX) - thumbW / 2, y: Math.min(tipY, baseY), w: Math.abs(thumbTipX - baseX) + thumbW, h: Math.abs(baseY - tipY) + THUMB_OVAL_RY },
+    { x: Math.min(fingertipX, sectionX, totalX) - 6, y: yTip, w: 12, h: yBottom - yTip },
+    { x: Math.min(innerSep, outerSep) - 4, y: Math.min(tipY, yDomeBase), w: 20, h: Math.max(baseY, yCuffTop) - Math.min(tipY, yDomeBase) },
+    horizontalTextBox(handMid, ySlot - HAND_OVAL_RY - 44, handCirc, "middle", PATTERN_FS_SM),
+    horizontalTextBox(handMid, ySlot - HAND_OVAL_RY - 14, handIn, "middle", PATTERN_FS),
+    horizontalTextBox(handMid, thumbCircY, thumbCirc, "middle", PATTERN_FS_SM),
+    horizontalTextBox(handMid, thumbInY, thumbIn, "middle", PATTERN_FS),
+    rotatedTextBox(totalLabelX, totalLabelY, totalText, PATTERN_FS),
+    rotatedTextBox(thumbColumnX, thumbLenCenter - 48, thumbLength, PATTERN_FS_SM),
+    rotatedTextBox(thumbColumnX, thumbLenCenter + 48, thumbInLen, PATTERN_FS),
+    ...sectionLabels.map((label) => rotatedTextBox(label.x, label.y, label.text, PATTERN_FS)),
+  ];
+  const view = fitViewBox(ink);
 
   const body =
     `M ${f(cuffLeft)} ${f(yBottom)} L ${f(cuffRight)} ${f(yBottom)} ` +
@@ -415,45 +592,42 @@ export function buildMittenDiagramSvg(
     `L ${f(handRight)} ${f(yDomeBase)} ` +
     `A ${f(handW / 2)} ${f(tipH)} 0 0 0 ${f(handLeft)} ${f(yDomeBase)} ` +
     `L ${f(handLeft)} ${f(yCuffTop)} L ${f(cuffLeft)} ${f(yCuffTop)} Z`;
-
   const thumbDim =
-    `<g${summary ? ` id="${MITTEN_SUMMARY_TARGETS.thumbLength}"` : ""} data-dimension="thumb-length" fill="none" stroke="${DIM}" stroke-width="1.35">` +
+    `<g data-dimension="thumb-length" fill="none" stroke="${DIM}" stroke-width="1.35">` +
     `<line x1="${f(thumbDimLocalX)}" y1="0" x2="${f(thumbDimLocalX)}" y2="${f(-thumbLen)}"/>` +
     `<polyline points="${f(thumbDimLocalX - 5)},-5 ${f(thumbDimLocalX)},0 ${f(thumbDimLocalX + 5)},-5"/>` +
     `<polyline points="${f(thumbDimLocalX - 5)},${f(-thumbLen + 5)} ${f(thumbDimLocalX)},${f(-thumbLen)} ${f(thumbDimLocalX + 5)},${f(-thumbLen + 5)}"/>` +
     `</g>`;
-
   const construction = calc.thumbStyle === "gored" ? "Gored mitten" : "Slotted mitten";
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${VB_W} ${f(vbH)}" width="100%" role="img" data-diagram="mitten-sketch" data-slot-edge="${slotEdge}" data-hand-mid-x="${f(handMid)}" data-thumb-base-x="${f(baseX)}" data-hand-width-px="${f(handW)}" data-cuff-width-px="${f(cuffW)}" data-cuff-length-px="${f(cuffH)}" data-hand1-px="${f(hand1H)}" data-hand2-px="${f(hand2H)}" data-total-height-px="${f(yBottom - yTip)}" data-fingertip-depth-px="${f(tipH)}" data-fingertip-depth-rows="${calc.fingertip.shortRowDepthRows}" data-dome-top="${f(yTip)}" data-thumb-width-px="${f(thumbW)}" data-thumb-length-px="${f(thumbLen)}">
+  const sectionMarkup = sectionLabels
+    .map((label) => rotatedText(label.x, label.y, label.text))
+    .join("");
+
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${f(view.minX)} ${f(view.minY)} ${f(view.w)} ${f(view.h)}" width="100%" height="auto" preserveAspectRatio="xMidYMid meet" role="img" data-diagram="mitten-sketch" data-slot-edge="${slotEdge}" data-hand-mid-x="${f(handMid)}" data-thumb-base-x="${f(baseX)}" data-hand-width-px="${f(handW)}" data-cuff-width-px="${f(cuffW)}" data-cuff-length-px="${f(cuffH)}" data-hand1-px="${f(hand1H)}" data-hand2-px="${f(hand2H)}" data-total-height-px="${f(yBottom - yTip)}" data-fingertip-depth-px="${f(tipH)}" data-fingertip-depth-rows="${calc.fingertip.shortRowDepthRows}" data-dome-top="${f(yTip)}" data-thumb-width-px="${f(thumbW)}" data-thumb-length-px="${f(thumbLen)}">
   <title>${construction}, ${slotEdge}-edge thumb</title>
-  <rect x="0" y="0" width="${VB_W}" height="${f(vbH)}" fill="#fff"/>
+  <rect x="${f(view.minX)}" y="${f(view.minY)}" width="${f(view.w)}" height="${f(view.h)}" fill="#fff"/>
   <path data-mitten-outline="hand" d="${body}" fill="none" stroke="${STROKE}" stroke-width="2" stroke-linejoin="round"/>
-  <ellipse${summary ? ` id="${MITTEN_SUMMARY_TARGETS.handCircumference}"` : ""} data-opening="hand" cx="${f(handMid)}" cy="${f(ySlot)}" rx="${f(handW * 0.42)}" ry="${HAND_OVAL_RY}" fill="none" stroke="${STROKE}" stroke-width="1.75"/>
-  ${label(handMid, ySlot - HAND_OVAL_RY - 28, "Hand circumference", "middle", FS_SM)}
-  ${label(handMid, ySlot - HAND_OVAL_RY - 8, `${circ(m.handCircumferenceIn)} in`, "middle", FS_SM)}
+  <ellipse data-opening="hand" cx="${f(handMid)}" cy="${f(ySlot)}" rx="${f(handW * 0.42)}" ry="${HAND_OVAL_RY}" fill="none" stroke="${STROKE}" stroke-width="1.75"/>
+  ${text(handMid, ySlot - HAND_OVAL_RY - 44, handCirc, "middle", PATTERN_FS_SM)}
+  ${text(handMid, ySlot - HAND_OVAL_RY - 14, handIn, "middle", PATTERN_FS)}
   <g data-mitten-outline="thumb" transform="translate(${f(baseX)} ${f(baseY)}) rotate(${f(angle)})">
     <path d="${thumbOutline}" fill="none" stroke="${STROKE}" stroke-width="2" stroke-linejoin="round"/>
     ${thumbDim}
   </g>
-  <ellipse${summary ? ` id="${MITTEN_SUMMARY_TARGETS.thumbCircumference}"` : ""} data-opening="thumb" cx="${f(baseX)}" cy="${f(baseY)}" rx="${f(thumbW * 0.78)}" ry="${THUMB_OVAL_RY}" fill="none" stroke="${STROKE}" stroke-width="1.75"/>
-  ${label(baseX + sign * (thumbW * 0.95), baseY + THUMB_OVAL_RY + 16, "Thumb circumference", slotRight ? "start" : "end", FS_SM)}
-  ${label(baseX + sign * (thumbW * 0.95), baseY + THUMB_OVAL_RY + 34, `${circ(m.thumbCircumferenceIn)} in`, slotRight ? "start" : "end", FS_SM)}
+  <ellipse data-opening="thumb" cx="${f(baseX)}" cy="${f(baseY)}" rx="${f(thumbW * 0.78)}" ry="${THUMB_OVAL_RY}" fill="none" stroke="${STROKE}" stroke-width="1.75"/>
+  ${text(handMid, thumbCircY, thumbCirc, "middle", PATTERN_FS_SM)}
+  ${text(handMid, thumbInY, thumbIn, "middle", PATTERN_FS)}
+  ${rotatedText(thumbColumnX, thumbLenCenter - 48, thumbLength, PATTERN_FS_SM)}
+  ${rotatedText(thumbColumnX, thumbLenCenter + 48, thumbInLen, PATTERN_FS)}
   <line data-separation="inner" x1="${f(innerSep)}" y1="${f(tipY - 4)}" x2="${f(innerSep)}" y2="${f(baseY + 22)}" stroke="${STROKE}" stroke-width="1.5"/>
   <line data-separation="outer" x1="${f(outerSep)}" y1="${f(yDomeBase)}" x2="${f(outerSep)}" y2="${f(yCuffTop)}" stroke="${STROKE}" stroke-width="1.5"/>
   ${vMeasure(fingertipX, yTip, yDomeBase, "fingertip")}
-  ${vMeasure(sectionX, ySlot, yTip, "hand-2", summary ? MITTEN_SUMMARY_TARGETS.hand2Length : undefined)}
+  ${vMeasure(sectionX, ySlot, yTip, "hand-2")}
   ${vMeasure(sectionX, yCuffTop, ySlot, "hand-1")}
-  ${vMeasure(sectionX, yBottom, yCuffTop, "cuff", summary ? MITTEN_SUMMARY_TARGETS.cuffLength : undefined)}
+  ${vMeasure(sectionX, yBottom, yCuffTop, "cuff")}
   ${vMeasure(totalX, yTip, yBottom, "total")}
-  ${summary ? `<rect id="${MITTEN_SUMMARY_TARGETS.cuffCircumference}" x="${f((cuffLeft + cuffRight) / 2)}" y="${f((yCuffTop + yBottom) / 2)}" width="2" height="2" fill="none"/>` : ""}
-  ${summary ? `<rect id="${MITTEN_SUMMARY_TARGETS.handLength}" x="${f(sectionX)}" y="${f((yTip + yCuffTop) / 2)}" width="2" height="2" fill="none"/>` : ""}
-  ${label(sectionLabelX, (tipLabelY ?? 0) + 4, `Fingertip ${len(m.fingertipDepthIn)} in`, labelAnchor)}
-  ${label(sectionLabelX, (hand2LabelY ?? 0) + 4, `Hand 2 ${len(m.slotToFingertipIn)} in`, labelAnchor)}
-  ${label(sectionLabelX, (hand1LabelY ?? 0) + 4, `Hand 1 ${len(m.hand1LengthIn)} in`, labelAnchor)}
-  ${label(sectionLabelX, (cuffLabelY ?? 0) + 4, `Cuff ${len(m.cuffLengthIn)} in`, labelAnchor)}
-  ${label(totalLabelX, totalLabelY, `Total ${len(m.totalLengthIn)} in`, labelAnchor)}
-  ${label(thumbLabelX, thumbLabelY - 8, "Thumb length", thumbLabelAnchor, FS_SM)}
-  ${label(thumbLabelX, thumbLabelY + 10, `${len(m.thumbLengthIn)} in`, thumbLabelAnchor, FS_SM)}
+  ${sectionMarkup}
+  ${rotatedText(totalLabelX, totalLabelY, totalText)}
 </svg>`;
 }
 

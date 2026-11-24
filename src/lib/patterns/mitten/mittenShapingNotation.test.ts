@@ -48,6 +48,9 @@ describe("mitten shaping notation", () => {
       const handMid = Number(svg.match(/data-hand-mid-x="([^"]+)"/)?.[1]);
       if (edge === "right") expect(thumbX).toBeGreaterThan(handMid);
       else expect(thumbX).toBeLessThan(handMid);
+      const viewW = Number(svg.match(/viewBox="[^"]*\s([\d.]+)\s[\d.]+"/)?.[1]);
+      expect(viewW).toBeGreaterThan(200);
+      expect(viewW).toBeLessThan(720);
     }
 
     const gored = calculateMittenPattern({

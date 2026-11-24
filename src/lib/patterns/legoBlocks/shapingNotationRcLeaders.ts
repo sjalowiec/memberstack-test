@@ -139,7 +139,7 @@ export function placeShapingNotationRcLandmarks(args: {
       item.stacked = true;
       if (hits(item, placed) || Math.abs(item.labelX - homeX) < 4) {
         item.labelX = homeX;
-        const step = fontSize + 4;
+        const step = fontSize + 10;
         let found = false;
         for (const dir of [-1, 1] as const) {
           const y = homeY + dir * step;

@@ -12,13 +12,12 @@ import {
 } from "../legoBlocks/shapingNotationRcLeaders";
 import { formatShapingNotationRcLabel } from "../shapingNotationRcLandmarks";
 import type { MittenSlotEdge } from "./mittenInstructions";
-import { mittenDiagramMeasurements } from "./mittenDiagramSvg";
+import { mittenPatternSketchFrame } from "./mittenDiagramSvg";
 import { buildMittenShapingNotation } from "./mittenShapingNotation";
 import type { MittenCalc } from "./mittenMath";
 
-const HAND_PX = 150;
-const THUMB_GAP = 16;
 const THUMB_ANGLE = 22;
+const NOTATION_FS = 15;
 
 function escapeXml(value: string): string {
   return value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -37,7 +36,11 @@ function text(
   role: string,
 ): string {
   if (!content) return "";
-  return `<text data-role="${role}" x="${f(x)}" y="${f(y)}" font-family="${DS_FONT}" font-size="15" fill="${DS_MUTED}" text-anchor="${anchor}">${escapeXml(content)}</text>`;
+  return `<text data-role="${role}" x="${f(x)}" y="${f(y)}" font-family="${DS_FONT}" font-size="${NOTATION_FS}" fill="${DS_MUTED}" text-anchor="${anchor}">${escapeXml(content)}</text>`;
+}
+
+function textWidth(content: string): number {
+  return Math.max(NOTATION_FS, content.length * NOTATION_FS * 0.56);
 }
 
 function stack(
@@ -48,85 +51,13 @@ function stack(
   role: string,
 ): string {
   return lines
-    .map((line, index) => text(x, startY + index * 18, line, anchor, role))
+    .map((line, index) => text(x, startY + index * 24, line, anchor, role))
     .join("");
-}
-
-/** Same section heights as the finished-pattern mitten sketch. */
-function sketchFrame(calc: MittenCalc, slotEdge: MittenSlotEdge) {
-  const m = mittenDiagramMeasurements(calc);
-  const scale = HAND_PX / m.handDisplayIn;
-  const slotRight = slotEdge === "right";
-  const handW = m.handDisplayIn * scale;
-  const cuffW = m.cuffDisplayIn * scale;
-  const tipH = m.fingertipDepthIn * scale;
-  const setupH = m.setupRowIn * scale;
-  const straightH = m.straightLengthIn * scale;
-  const hand1H = m.hand1LengthIn * scale;
-  const cuffH = m.cuffLengthIn * scale;
-  const thumbW = m.thumbDisplayIn * scale;
-  const thumbLen = m.thumbLengthIn * scale;
-  const handLeft = 300;
-  const handRight = handLeft + handW;
-  const cuffLeft = handLeft + (handW - cuffW) / 2;
-  const cuffRight = cuffLeft + cuffW;
-  const yTip = 48;
-  const yDomeBase = yTip + tipH;
-  const ySlot = yDomeBase + straightH + setupH;
-  const yCuffTop = ySlot + hand1H;
-  const yBottom = yCuffTop + cuffH;
-  const sign = slotRight ? 1 : -1;
-  const baseX = (slotRight ? handRight : handLeft) + sign * (THUMB_GAP + thumbW / 2);
-  const baseY = ySlot + Math.min(18, thumbW * 0.28);
-  return {
-    m,
-    scale,
-    slotRight,
-    sign,
-    handW,
-    handLeft,
-    handRight,
-    cuffLeft,
-    cuffRight,
-    yTip,
-    tipH,
-    yDomeBase,
-    ySlot,
-    yCuffTop,
-    yBottom,
-    thumbW,
-    thumbLen,
-    baseX,
-    baseY,
-    vbW: 860,
-    vbH: yBottom + 56,
-  };
-}
-
-function rcLeaders(
-  landmarks: readonly ShapingNotationRcLeaderLandmark[],
-  side: "left" | "right",
-  bounds: { minX: number; minY: number; maxX: number; maxY: number },
-): string {
-  if (landmarks.length === 0) return "";
-  const placed = placeShapingNotationRcLandmarks({
-    landmarks,
-    side,
-    fontSize: 13,
-    bounds,
-  });
-  return renderShapingNotationRcLeaders({
-    placed,
-    fill: DS_MUTED,
-    font: DS_FONT,
-    escape: escapeXml,
-    formatNumber: f,
-  });
 }
 
 export function buildMittenShapingNotationSvg(calc: MittenCalc, slotEdge: MittenSlotEdge): string {
   const notation = buildMittenShapingNotation(calc);
-  const frame = sketchFrame(calc, slotEdge);
+  const frame = mittenPatternSketchFrame(calc, slotEdge);
   const shapedX = frame.slotRight ? frame.handRight + 18 : frame.handLeft - 18;
   const shapedAnchor = frame.slotRight ? "start" : "end";
   const handMid = (frame.handLeft + frame.handRight) / 2;
@@ -192,11 +123,75 @@ export function buildMittenShapingNotationSvg(calc: MittenCalc, slotEdge: Mitten
     notation.thumbRows,
   ].filter(Boolean);
   const thumbLines = calc.gore ? goreLines : [notation.thumbStsLabel, notation.thumbRows];
-  const bounds = { minX: 8, minY: 16, maxX: frame.vbW - 8, maxY: frame.vbH - 8 };
+  const thumbAnchor: "start" | "end" = frame.sign > 0 ? "start" : "end";
+  const angleRad = (THUMB_ANGLE * Math.PI) / 180;
+  const thumbOuter =
+    frame.baseX + frame.sign * (Math.sin(angleRad) * frame.thumbLen + (frame.thumbW / 2) * Math.cos(angleRad));
+  const sideMin = Math.min(frame.handLeft, frame.cuffLeft, thumbOuter) - 96;
+  const sideMax = Math.max(frame.handRight, frame.cuffRight, thumbOuter) + 120;
+  const bounds = {
+    minX: sideMin,
+    minY: frame.yTip - 28,
+    maxX: sideMax,
+    maxY: frame.yBottom + 40,
+  };
+  const handPlaced = placeShapingNotationRcLandmarks({
+    landmarks: handLandmarks,
+    side: handSide,
+    fontSize: NOTATION_FS,
+    bounds,
+  });
+  const thumbPlaced = placeShapingNotationRcLandmarks({
+    landmarks: thumbLandmarks,
+    side: frame.slotRight ? "right" : "left",
+    fontSize: NOTATION_FS,
+    bounds,
+  });
+  const thumbRcSorted = [...thumbPlaced].sort((a, b) => a.labelY - b.labelY);
+  const thumbNoteX = frame.sign > 0
+    ? Math.max(...thumbPlaced.map((mark) => mark.labelX))
+    : Math.min(...thumbPlaced.map((mark) => mark.labelX));
+  const stackSpan = Math.max(0, thumbLines.length - 1) * 24;
+  const upperRc = thumbRcSorted[0];
+  const lowerRc = thumbRcSorted[thumbRcSorted.length - 1];
+  const gapTop = upperRc ? upperRc.labelY + 32 : frame.baseY;
+  const gapBottom = lowerRc && lowerRc !== upperRc ? lowerRc.labelY - 32 : gapTop + stackSpan;
+  const thumbNoteY = gapBottom - gapTop >= stackSpan
+    ? gapTop + (gapBottom - gapTop - stackSpan) / 2
+    : (lowerRc?.labelY ?? frame.baseY) + NOTATION_FS + 10;
+  const labelBoxes = [
+    ...[notation.castOn, notation.cuffRows, notation.handIncrease, notation.handStsLabel, notation.hand1Rows, notation.straightRows, notation.markerRows, ...notation.fingertip, ...thumbLines].filter(Boolean),
+  ];
+  const widest = Math.max(...labelBoxes.map((line) => textWidth(line)));
+  const thumbWidest = Math.max(...thumbLines.map((line) => textWidth(line)), 0);
+  const thumbNoteEdge = thumbAnchor === "start" ? thumbNoteX + thumbWidest : thumbNoteX - thumbWidest;
+  const minX = Math.min(
+    frame.handLeft,
+    frame.cuffLeft,
+    thumbOuter,
+    thumbNoteEdge,
+    ...handPlaced.map((mark) => (mark.anchor === "end" ? mark.labelX - textWidth(mark.text) : mark.labelX)),
+    ...thumbPlaced.map((mark) => (mark.anchor === "end" ? mark.labelX - textWidth(mark.text) : mark.labelX)),
+    shapedAnchor === "end" ? shapedX - widest : shapedX,
+  );
+  const maxX = Math.max(
+    frame.handRight,
+    frame.cuffRight,
+    thumbOuter,
+    thumbNoteEdge,
+    ...handPlaced.map((mark) => (mark.anchor === "start" ? mark.labelX + textWidth(mark.text) : mark.labelX)),
+    ...thumbPlaced.map((mark) => (mark.anchor === "start" ? mark.labelX + textWidth(mark.text) : mark.labelX)),
+    shapedAnchor === "start" ? shapedX + widest : shapedX,
+    handMid + textWidth(notation.castOn) / 2,
+  );
+  const minY = Math.min(frame.yTip, frame.baseY - frame.thumbLen, ...handPlaced.map((mark) => mark.labelY - NOTATION_FS), ...thumbPlaced.map((mark) => mark.labelY - NOTATION_FS)) - 16;
+  const maxY = Math.max(frame.yBottom + 28, thumbNoteY + stackSpan + NOTATION_FS, ...handPlaced.map((mark) => mark.labelY + NOTATION_FS), ...thumbPlaced.map((mark) => mark.labelY + 8)) + 12;
+  const boxX = minX - 10;
+  const boxW = maxX - minX + 20;
 
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${f(frame.vbW)} ${f(frame.vbH)}" width="100%" role="img" aria-label="Mitten shaping notation" data-diagram="mitten-shaping-notation" data-slot-edge="${slotEdge}" data-thumb-base-x="${f(frame.baseX)}" data-hand-mid-x="${f(handMid)}">
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${f(boxX)} ${f(minY)} ${f(boxW)} ${f(maxY - minY)}" width="100%" height="auto" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Mitten shaping notation" data-diagram="mitten-shaping-notation" data-slot-edge="${slotEdge}" data-thumb-base-x="${f(frame.baseX)}" data-hand-mid-x="${f(handMid)}">
   <title>Mitten shaping notation, ${slotEdge}-edge thumb</title>
-  <rect x="0" y="0" width="${f(frame.vbW)}" height="${f(frame.vbH)}" fill="#fff"/>
+  <rect x="${f(boxX)}" y="${f(minY)}" width="${f(boxW)}" height="${f(maxY - minY)}" fill="#fff"/>
   <path data-mitten-outline="hand" d="${body}" fill="none" stroke="${DS_STROKE}" stroke-width="2" stroke-linejoin="round"/>
   <g data-mitten-outline="thumb" transform="translate(${f(frame.baseX)} ${f(frame.baseY)}) rotate(${f(frame.sign * THUMB_ANGLE)})">
     <path d="${thumbOutline}" fill="none" stroke="${DS_STROKE}" stroke-width="2" stroke-linejoin="round"/>
@@ -209,8 +204,8 @@ export function buildMittenShapingNotationSvg(calc: MittenCalc, slotEdge: Mitten
   ${notation.markerRows ? text(shapedX, frame.ySlot - 8, notation.markerRows, shapedAnchor, "thumb-markers") : ""}
   ${text(handMid, (frame.yDomeBase + frame.ySlot) / 2, notation.straightRows, "middle", "straight-rows")}
   ${stack(shapedX, frame.yTip + 8, notation.fingertip, shapedAnchor, "fingertip-shaping")}
-  ${stack(frame.baseX + frame.sign * (frame.thumbW / 2 + 28), frame.baseY - 8, thumbLines, shapedAnchor, "thumb-shaping")}
-  ${rcLeaders(handLandmarks, handSide, bounds)}
-  ${rcLeaders(thumbLandmarks, frame.slotRight ? "right" : "left", bounds)}
+  ${stack(thumbNoteX, thumbNoteY, thumbLines, thumbAnchor, "thumb-shaping")}
+  ${renderShapingNotationRcLeaders({ placed: handPlaced, fill: DS_MUTED, font: DS_FONT, escape: escapeXml, formatNumber: f })}
+  ${renderShapingNotationRcLeaders({ placed: thumbPlaced, fill: DS_MUTED, font: DS_FONT, escape: escapeXml, formatNumber: f })}
 </svg>`;
 }
