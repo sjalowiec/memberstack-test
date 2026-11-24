@@ -281,6 +281,7 @@ const excludeFromSearch = isExcludedFromSearchDiscovery(pathname);
     {(isAdminPage || isWatsonPage) && (
       <nav aria-label="Administration" style="position:relative;z-index:10001;display:flex;gap:1.25rem;align-items:center;padding:.6rem 1rem;background:#243015;color:white;font:16px system-ui;">
         <a href="/admin" style="color:white;font-weight:700;">All administration</a>
+        <a href="/admin/support-videos" style="color:white;font-weight:700;">Support Videos</a>
         <form method="post" action="/api/admin/logout" style="margin:0;margin-left:auto;">
           <button type="submit" style="font:inherit;cursor:pointer;">Sign out of administration</button>
         </form>
