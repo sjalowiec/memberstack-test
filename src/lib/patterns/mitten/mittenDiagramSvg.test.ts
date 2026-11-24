@@ -168,4 +168,17 @@ describe("slotted mitten diagrams", () => {
     expect(eight).toContain("Hand circumference");
     expect(eight).toContain("7 in");
   });
+
+  it("keeps the printed diagram labels and adds summary anchors only in summary mode", () => {
+    const calc = womanSmallPreviewCalc();
+    const pattern = buildMittenDiagramSvg(calc, "right");
+    const summary = buildMittenDiagramSvg(calc, "right", "summary");
+    expect(pattern).toContain("Thumb length");
+    expect(pattern).not.toContain('id="target_mitten_thumb_length"');
+    expect(summary).toContain('id="target_mitten_thumb_length"');
+    expect(summary).toContain('id="target_mitten_cuff_circ"');
+    expect(summary).toContain('id="target_mitten_hand_circ"');
+    expect(summary).not.toContain("Thumb length");
+    expect(summary).not.toContain("Hand circumference");
+  });
 });

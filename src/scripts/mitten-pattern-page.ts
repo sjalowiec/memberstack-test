@@ -1,5 +1,21 @@
 import { mittenCountSummary, buildMittenPatternHtml } from "../lib/patterns/mitten/mittenInstructions";
-import { mittenDiagramFigureHtml } from "../lib/patterns/mitten/mittenDiagramSvg";
+import { buildMittenDiagramSvg, mittenDiagramFigureHtml } from "../lib/patterns/mitten/mittenDiagramSvg";
+import { draftForBuilderSize } from "../lib/patterns/mitten/mittenBuilderState";
+import {
+  HAT_GAUGE_CM_TO_IN_FACTOR,
+  HAT_GAUGE_IN_TO_CM_FACTOR,
+} from "../lib/patterns/hat/hatBuilderGaugeUnits";
+import {
+  formatMeasurementDisplayFromInches,
+  parseMeasurementInputToInches,
+  parseStoredInchesForDisplay,
+  type MeasurementDisplayUnit,
+} from "../lib/patterns/patternMeasurementDisplayUnit";
+import {
+  bindPatternSummaryOverlayPositioning,
+  collectOverlayAnchors,
+  type PatternSummaryOverlayCleanup,
+} from "../lib/patterns/patternSummaryMeasurementOverlay";
 import {
   MITTEN_BUILDER_HREF,
   MITTEN_PATTERN_HREF,
@@ -21,12 +37,6 @@ import { ensureUrlRequestedSavedPatternHydrated } from "../lib/patterns/ensureUr
 import { SAVED_PATTERN_UNAVAILABLE_BODY } from "../lib/patterns/savedPatternAccessState";
 import { mountPatternPrintAction } from "../lib/patterns/patternInpageNav";
 import { triggerPatternPrint } from "./patternPrintPersonalization";
-import {
-  bindMittenSizeAutofill,
-  evaluateMittenForm,
-  fillMittenForm,
-  readMittenFormDraft,
-} from "./mitten-builder-page";
 
 function renderCounts(target: HTMLElement, lines: Array<{ label: string; value: string }>): void {
   target.innerHTML = lines
@@ -51,59 +61,222 @@ function currentDraft(): MittenDraft | null {
   return readMittenDraft();
 }
 
+const MEASUREMENT_INPUTS: Record<string, keyof MittenDraft> = {
+  "mitten-cuff-circ": "cuffCircumference",
+  "mitten-cuff-length": "cuffLength",
+  "mitten-hand-circ": "handCircumference",
+  "mitten-hand-length": "handLength",
+  "mitten-hand2": "hand2Length",
+  "mitten-thumb-length": "thumbLength",
+  "mitten-thumb-circ": "thumbCircumference",
+};
+
+function fieldValue(id: string): string {
+  const node = document.getElementById(id);
+  return node instanceof HTMLInputElement || node instanceof HTMLSelectElement || node instanceof HTMLTextAreaElement
+    ? node.value.trim()
+    : "";
+}
+
+function setField(id: string, value: string): void {
+  const node = document.getElementById(id);
+  if (node instanceof HTMLInputElement || node instanceof HTMLSelectElement || node instanceof HTMLTextAreaElement) {
+    node.value = value;
+  }
+}
+
 export async function initMittenSummaryPage(): Promise<void> {
   const root = document.querySelector("[data-mitten-summary]");
   if (!root) return;
   const loaded = await ensureUrlRequestedSavedPatternHydrated();
-  const params = new URLSearchParams(window.location.search);
+  const empty = document.querySelector<HTMLElement>("[data-mitten-summary-empty]");
+  const workspace = document.querySelector<HTMLElement>("[data-mitten-summary-workspace]");
+  const feedback = document.getElementById("mitten-summary-feedback");
   if (loaded === "load-failed") {
-    const feedback = document.getElementById("mitten-summary-feedback");
-    if (feedback) {
-      feedback.hidden = false;
-      feedback.textContent = SAVED_PATTERN_UNAVAILABLE_BODY;
-    }
+    if (empty) empty.hidden = false;
+    const message = empty?.querySelector("[data-mitten-summary-empty-message]");
+    if (message) message.textContent = SAVED_PATTERN_UNAVAILABLE_BODY;
     return;
   }
-  const draft =
+
+  const params = new URLSearchParams(window.location.search);
+  const starting =
     params.get("example") === "woman-small" && !params.get("project")
       ? womanSmallExampleDraft()
-      : (readMittenDraft() ?? womanSmallExampleDraft());
-  fillMittenForm(draft);
-  bindMittenSizeAutofill();
+      : readMittenDraft();
+  if (!starting || !workspace) {
+    if (empty) empty.hidden = false;
+    return;
+  }
+  if (empty) empty.hidden = true;
+  workspace.hidden = false;
 
-  const counts = document.getElementById("mitten-summary-counts");
-  const feedback = document.getElementById("mitten-summary-feedback");
-  const show = () => {
-    const result = evaluateMittenForm();
-    if (!counts) return;
+  let draft: MittenDraft = starting;
+  let displayUnit: MeasurementDisplayUnit = "in";
+  let applying = false;
+  let overlayCleanup: PatternSummaryOverlayCleanup | null = null;
+  writeMittenDraft(draft);
+
+  function showFeedback(message: string): void {
+    if (!feedback) return;
+    feedback.hidden = !message;
+    feedback.textContent = message;
+  }
+
+  function displayMeasurement(stored: string): string {
+    if (displayUnit === "in") return stored;
+    const inches = parseStoredInchesForDisplay(stored);
+    return inches === undefined ? "" : formatMeasurementDisplayFromInches(inches, "cm");
+  }
+
+  function displayGauge(stored: string): string {
+    if (!stored.trim()) return "";
+    const n = Number(stored);
+    if (!Number.isFinite(n)) return "";
+    return displayUnit === "cm" ? (n * HAT_GAUGE_IN_TO_CM_FACTOR).toFixed(1) : stored;
+  }
+
+  function storeMeasurement(raw: string): string {
+    if (displayUnit === "in") return raw.trim();
+    const inches = parseMeasurementInputToInches(raw, "cm");
+    return inches === undefined ? "" : String(inches);
+  }
+
+  function storeGauge(raw: string): string {
+    const trimmed = raw.trim();
+    if (!trimmed) return "";
+    const n = Number(trimmed);
+    if (!Number.isFinite(n)) return "";
+    return displayUnit === "cm" ? (n * HAT_GAUGE_CM_TO_IN_FACTOR).toFixed(1) : trimmed;
+  }
+
+  function paint(): void {
+    applying = true;
+    setField("mitten-pattern-name", draft.patternProject?.title ?? "");
+    setField("mitten-edit-notes", draft.patternProject?.notes ?? "");
+    setField("mitten-size", draft.sizeId);
+    setField("mitten-thumb-style", draft.thumbStyle === "gored" ? "gored" : "slotted");
+    for (const [id, key] of Object.entries(MEASUREMENT_INPUTS)) {
+      const stored = draft[key];
+      setField(id, displayMeasurement(typeof stored === "string" ? stored : ""));
+    }
+    setField("mitten-stitch-gauge", displayGauge(draft.stitchGaugePer4));
+    setField("mitten-row-gauge", displayGauge(draft.rowGaugePer4));
+    document.querySelectorAll<HTMLElement>("[data-mitten-edit-unit-suffix]").forEach((node) => {
+      node.textContent = displayUnit === "cm" ? "cm" : '"';
+    });
+    document.querySelectorAll<HTMLButtonElement>("[data-mitten-edit-unit]").forEach((btn) => {
+      const on = btn.getAttribute("data-mitten-edit-unit") === (displayUnit === "cm" ? "cm" : "inches");
+      btn.classList.toggle("is-active", on);
+      btn.setAttribute("aria-pressed", on ? "true" : "false");
+    });
+    const gaugeHelp = document.querySelector("[data-mitten-edit-gauge-help]");
+    if (gaugeHelp) {
+      gaugeHelp.textContent =
+        displayUnit === "cm" ? "stitches / rows over 10 cm" : "stitches / rows over 4 inches";
+    }
+    applying = false;
+    mountDiagram();
+  }
+
+  function readDraftFromForm(): MittenDraft {
+    const title = fieldValue("mitten-pattern-name");
+    const notes = fieldValue("mitten-edit-notes");
+    const next: MittenDraft = {
+      ...draft,
+      sizeId: fieldValue("mitten-size"),
+      cuffCircumference: storeMeasurement(fieldValue("mitten-cuff-circ")),
+      cuffLength: storeMeasurement(fieldValue("mitten-cuff-length")),
+      handCircumference: storeMeasurement(fieldValue("mitten-hand-circ")),
+      handLength: storeMeasurement(fieldValue("mitten-hand-length")),
+      hand2Length: storeMeasurement(fieldValue("mitten-hand2")),
+      thumbLength: storeMeasurement(fieldValue("mitten-thumb-length")),
+      thumbCircumference: storeMeasurement(fieldValue("mitten-thumb-circ")),
+      thumbStyle: fieldValue("mitten-thumb-style") === "gored" ? "gored" : "slotted",
+      stitchGaugePer4: storeGauge(fieldValue("mitten-stitch-gauge")),
+      rowGaugePer4: storeGauge(fieldValue("mitten-row-gauge")),
+      patternProject: {
+        title,
+        notes,
+        titleCustomized: Boolean(title) || draft.patternProject?.titleCustomized === true,
+      },
+      updatedAt: new Date().toISOString(),
+    };
+    return next;
+  }
+
+  function mountDiagram(): void {
+    const diagramHost = document.querySelector<HTMLElement>("[data-mitten-edit-diagram]");
+    const stageInner = document.querySelector<HTMLElement>("[data-mitten-edit-stage]");
+    const overlay = document.querySelector<HTMLElement>("[data-mitten-edit-overlay]");
+    if (!diagramHost || !stageInner || !overlay) return;
+    const result = calculateMittenPattern(mittenInputFromDraft(draft));
     if (!result.ok) {
-      counts.innerHTML = "";
-      if (feedback) {
-        feedback.hidden = false;
-        feedback.textContent = result.message;
-      }
-      const diagrams = document.getElementById("mitten-summary-diagrams");
-      if (diagrams) diagrams.innerHTML = "";
+      showFeedback(result.message);
+      diagramHost.innerHTML = "";
       return;
     }
-    if (feedback) feedback.hidden = true;
-    renderCounts(counts, mittenCountSummary(result.calc));
-    const diagrams = document.getElementById("mitten-summary-diagrams");
-    if (diagrams) {
-      diagrams.innerHTML = mittenDiagramFigureHtml(result.calc, "right") + mittenDiagramFigureHtml(result.calc, "left");
+    showFeedback("");
+    diagramHost.innerHTML = buildMittenDiagramSvg(result.calc, "right", "summary");
+    overlayCleanup?.();
+    const svg = diagramHost.querySelector("svg");
+    if (svg instanceof SVGElement) {
+      overlayCleanup = bindPatternSummaryOverlayPositioning(
+        stageInner,
+        svg,
+        overlay,
+        collectOverlayAnchors(overlay),
+      );
     }
-  };
-  show();
-  root.addEventListener("input", show);
-  root.addEventListener("change", show);
+  }
+
+  function commitForm(): void {
+    if (applying) return;
+    draft = readDraftFromForm();
+    writeMittenDraft(draft);
+    mountDiagram();
+  }
+
+  paint();
+
+  workspace.addEventListener("input", commitForm);
+  workspace.addEventListener("change", (event) => {
+    const target = event.target;
+    if (target instanceof HTMLSelectElement && target.id === "mitten-size") {
+      const next = draftForBuilderSize({
+        sizeId: target.value,
+        previous: target.value && target.value === draft.sizeId ? draft : { ...draft, sizeId: "" },
+        stitchGaugePer4: storeGauge(fieldValue("mitten-stitch-gauge")),
+        rowGaugePer4: storeGauge(fieldValue("mitten-row-gauge")),
+        thumbStyle: fieldValue("mitten-thumb-style") === "gored" ? "gored" : "slotted",
+      });
+      if (next) {
+        next.patternProject = readDraftFromForm().patternProject;
+        draft = next;
+        writeMittenDraft(draft);
+        paint();
+        return;
+      }
+    }
+    commitForm();
+  });
+
+  document.querySelectorAll<HTMLButtonElement>("[data-mitten-edit-unit]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      draft = readDraftFromForm();
+      displayUnit = btn.getAttribute("data-mitten-edit-unit") === "cm" ? "cm" : "in";
+      paint();
+    });
+  });
 
   document.getElementById("mitten-view-pattern")?.addEventListener("click", () => {
-    const result = evaluateMittenForm();
+    draft = readDraftFromForm();
+    const result = calculateMittenPattern(mittenInputFromDraft(draft));
     if (!result.ok) {
-      show();
+      showFeedback(result.message);
       return;
     }
-    writeMittenDraft(readMittenFormDraft());
+    writeMittenDraft(draft);
     const projectId = readMittenActiveProjectId();
     window.location.assign(
       projectId ? withSavedPatternProjectId(MITTEN_PATTERN_HREF, projectId) : MITTEN_PATTERN_HREF,
@@ -111,38 +284,37 @@ export async function initMittenSummaryPage(): Promise<void> {
   });
 
   document.getElementById("mitten-save-pattern")?.addEventListener("click", () => {
-    void saveMittenFromSummary();
+    draft = readDraftFromForm();
+    void saveMittenFromSummary(draft, showFeedback, (saved) => {
+      draft = saved;
+      paint();
+    });
   });
+
 }
 
-async function saveMittenFromSummary(): Promise<void> {
-  const feedback = document.getElementById("mitten-summary-feedback");
-  const result = evaluateMittenForm();
+async function saveMittenFromSummary(
+  draft: MittenDraft,
+  showFeedback: (message: string) => void,
+  afterSave: (draft: MittenDraft) => void,
+): Promise<void> {
+  const result = calculateMittenPattern(mittenInputFromDraft(draft));
   if (!result.ok) {
-    if (feedback) {
-      feedback.hidden = false;
-      feedback.textContent = result.message;
-    }
+    showFeedback(result.message);
     return;
   }
-  const draft = readMittenFormDraft();
   writeMittenDraft(draft);
   const name = draft.patternProject?.title?.trim() || resolveMittenPatternDisplayName(draft);
-  if (feedback) {
-    feedback.hidden = false;
-    feedback.textContent = "Saving your mitten…";
-  }
+  showFeedback("Saving your mitten…");
   const saved = await persistMittenPatternProject({ draft, name });
   if (!saved.ok) {
-    if (feedback) feedback.textContent = saved.error;
+    showFeedback(saved.error);
     return;
   }
-  fillMittenForm(readMittenDraft() ?? draft);
-  if (feedback) {
-    feedback.textContent = saved.created
-      ? `Saved “${saved.project.name}” to My Patterns.`
-      : `Updated “${saved.project.name}”.`;
-  }
+  afterSave(readMittenDraft() ?? draft);
+  showFeedback(
+    saved.created ? `Saved “${saved.project.name}” to My Patterns.` : `Updated “${saved.project.name}”.`,
+  );
 }
 
 export async function initMittenPatternPage(): Promise<void> {
