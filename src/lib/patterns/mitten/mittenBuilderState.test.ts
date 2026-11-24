@@ -104,7 +104,10 @@ describe("mitten builder pages", () => {
     expect(summary).toContain("PatternSummaryMeasurementChip");
     expect(summary).toContain("mitten-thumb-style");
     expect(summary).toContain("mitten-stitch-gauge");
-    expect(fields).toContain("From the thumb web to the thumb tip. The gore is not added.");
+    expect(summary).toContain("Starts at two-thirds of the hand length.");
+    expect(summary).toContain("From the thumb web to the thumb tip. The gore is not added.");
+    expect(summary).toContain("data-mitten-measure-notes");
+    expect(fields).not.toContain("secondary:");
     expect(summary).not.toContain("still need to be checked");
     expect(summary).not.toContain("temporary");
     expect(summary).not.toContain("Child 9–12");
