@@ -1,4 +1,10 @@
 import { describe, expect, it } from "vitest";
+import {
+  castOnEdgeDiagramLabel,
+  formatKnittedDiagramMeasurement,
+  formatPatternDiagramMeasurement,
+  formatStitchesRowsDiagramLabel,
+} from "../legoBlocks/stitchesRowsDiagramLabel";
 import { mittenSizingRow } from "./mittenSizingChart";
 import {
   buildMittenDiagramSvg,
@@ -13,6 +19,8 @@ import {
   calculateMittenPattern,
   measurementsFromSizingRow,
   womanSmallPreviewCalc,
+  type MittenCalc,
+  type MittenThumbStyle,
 } from "./mittenMath";
 
 function attr(svg: string, name: string): number {
@@ -45,13 +53,13 @@ function expectSketch(size: string) {
     expect(svg).toContain('data-opening="thumb"');
     expect(svg).not.toContain("data-separation");
     expect(svg.match(/data-dimension="thumb-length"/g)).toHaveLength(1);
-    expect(svg).toContain(`Fingertip ${formatMittenDiagramLength(measures.fingertipDepthIn)} in`);
-    expect(svg).toContain(`Cuff ${formatMittenDiagramLength(measures.cuffLengthIn)} in`);
-    expect(svg).toContain(`Below thumb ${formatMittenDiagramLength(measures.hand1LengthIn)} in`);
-    expect(svg).toContain(`Above thumb ${formatMittenDiagramLength(measures.slotToFingertipIn)} in`);
+    expect(svg).toContain(`Fingertip ${formatKnittedDiagramMeasurement(measures.fingertipDepthIn, "in")}`);
+    expect(svg).toContain(`Cuff ${formatKnittedDiagramMeasurement(measures.cuffLengthIn, "in")}`);
+    expect(svg).toContain(`Below thumb ${formatKnittedDiagramMeasurement(measures.hand1LengthIn, "in")}`);
+    expect(svg).toContain(`Above thumb ${formatKnittedDiagramMeasurement(measures.slotToFingertipIn, "in")}`);
     expect(svg).not.toContain("Hand 1");
     expect(svg).not.toContain("Hand 2");
-    expect(svg).toContain(`Total ${formatMittenDiagramLength(measures.totalLengthIn)} in`);
+    expect(svg).toContain(`Total ${formatKnittedDiagramMeasurement(measures.totalLengthIn, "in")}`);
     expect(svg).toContain(`Thumb length`);
     expect(svg).toContain(`${formatMittenDiagramLength(measures.thumbLengthIn)} in`);
     expect(svg).toContain("Hand circumference");
@@ -125,7 +133,7 @@ describe("slotted mitten diagrams", () => {
     const svg = buildMittenDiagramSvg(calc, "right");
     expect(svg).toContain("Total 8.7 in");
     expect(svg).toContain("Cuff 2.6 in");
-    expect(svg).toContain("Below thumb 2.0 in");
+    expect(svg).toContain("Below thumb 2 in");
     expect(svg).toContain("Above thumb 4.1 in");
     expect(svg).not.toContain("Hand 1");
     expect(svg).not.toContain("Hand 2");
@@ -196,6 +204,116 @@ describe("slotted mitten diagrams", () => {
     expect(pattern).not.toContain('data-diagram-mode="summary"');
   });
 });
+
+function labeledGroup(svg: string, label: string): string {
+  const marker = `data-label="${label}"`;
+  const start = svg.indexOf(marker);
+  expect(start, label).toBeGreaterThanOrEqual(0);
+  const open = svg.lastIndexOf("<g", start);
+  let depth = 0;
+  for (let index = open; index < svg.length; index += 1) {
+    if (svg.startsWith("<g", index)) depth += 1;
+    else if (svg.startsWith("</g>", index)) {
+      depth -= 1;
+      if (depth === 0) return svg.slice(open, index + 4);
+    }
+  }
+  return "";
+}
+
+function expectSharedSchematicLabels(calc: MittenCalc) {
+  const measures = mittenDiagramMeasurements(calc);
+  const castOn = castOnEdgeDiagramLabel(calc.cuffSts, calc.stitchGaugePerInch, "in");
+  const hand = formatStitchesRowsDiagramLabel(
+    calc.handSts,
+    "sts",
+    formatPatternDiagramMeasurement(measures.handCircumferenceIn, "in"),
+  );
+  const [castOnCount, castOnMeasure] = castOn.split("\n");
+  const [handCount, handMeasure] = hand.split("\n");
+  const thumbLength = `${formatMittenDiagramLength(measures.thumbLengthIn)} in`;
+  const thumbCircumference = `${formatMittenDiagramInches(measures.thumbCircumferenceIn)} in`;
+
+  for (const edge of ["right", "left"] as const) {
+    const svg = buildMittenDiagramSvg(calc, edge);
+    const castOnGroup = labeledGroup(svg, "cast-on");
+    const handGroup = labeledGroup(svg, "hand-circumference");
+    expect(castOnGroup, `${edge} cast-on count`).toContain(castOnCount);
+    expect(castOnGroup, `${edge} cast-on measure`).toContain(castOnMeasure);
+    expect(castOnGroup.indexOf(castOnCount!)).toBeLessThan(castOnGroup.indexOf(castOnMeasure!));
+    expect(Number(svg.match(/data-cast-on-y="([^"]+)"/)?.[1])).toBeGreaterThan(attr(svg, "y-bottom"));
+    expect(handGroup, `${edge} hand count`).toContain(handCount);
+    expect(handGroup, `${edge} hand measure`).toContain(handMeasure);
+    expect(handGroup.indexOf(handCount!)).toBeLessThan(handGroup.indexOf(handMeasure!));
+    expect(svg).toContain("Hand circumference");
+    expect(svg).toContain(`Fingertip ${formatKnittedDiagramMeasurement(measures.fingertipDepthIn, "in")}`);
+    expect(svg).toContain(`Cuff ${formatKnittedDiagramMeasurement(measures.cuffLengthIn, "in")}`);
+    expect(svg).toContain(`Below thumb ${formatKnittedDiagramMeasurement(measures.hand1LengthIn, "in")}`);
+    expect(svg).toContain(`Above thumb ${formatKnittedDiagramMeasurement(measures.slotToFingertipIn, "in")}`);
+    expect(svg).toContain(`Total ${formatKnittedDiagramMeasurement(measures.totalLengthIn, "in")}`);
+    expect(svg).toContain(thumbLength);
+    expect(svg).toContain("Thumb circumference");
+    expect(svg).toContain(thumbCircumference);
+    for (const inches of [
+      measures.cuffLengthIn,
+      measures.hand1LengthIn,
+      measures.slotToFingertipIn,
+      measures.fingertipDepthIn,
+      measures.totalLengthIn,
+    ]) {
+      const thousandths = formatMittenDiagramLength(inches);
+      const places = thousandths.split(".")[1]?.length ?? 0;
+      if (places === 3 && !thumbLength.includes(thousandths) && !thumbCircumference.includes(thousandths)) {
+        expect(svg).not.toContain(thousandths);
+      }
+    }
+  }
+}
+
+describe("mitten schematic labels", () => {
+  it("shows the cast-on count and hand stitch count for both thumb styles", () => {
+    for (const thumbStyle of ["slotted", "gored"] as const satisfies readonly MittenThumbStyle[]) {
+      const result = calculateMittenPattern({ ...womanSmallPreviewCalcInput(thumbStyle), thumbStyle });
+      expect(result.ok, thumbStyle).toBe(true);
+      if (!result.ok) continue;
+      expectSharedSchematicLabels(result.calc);
+    }
+  });
+
+  it("shows knitted section lengths at one decimal when the row gauge needs thousandths", () => {
+    const row = mittenSizingRow("woman_sm");
+    const result = calculateMittenPattern({
+      ...measurementsFromSizingRow(row!),
+      stitchGaugePerInch: 7,
+      rowGaugePerInch: 9,
+      thumbStyle: "slotted",
+    });
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    const measures = mittenDiagramMeasurements(result.calc);
+    expect(formatMittenDiagramLength(measures.cuffLengthIn).split(".")[1]?.length).toBe(3);
+    expectSharedSchematicLabels(result.calc);
+    const gored = calculateMittenPattern({
+      ...measurementsFromSizingRow(row!),
+      stitchGaugePerInch: 7,
+      rowGaugePerInch: 9,
+      thumbStyle: "gored",
+    });
+    expect(gored.ok).toBe(true);
+    if (!gored.ok) return;
+    expectSharedSchematicLabels(gored.calc);
+  });
+});
+
+function womanSmallPreviewCalcInput(thumbStyle: MittenThumbStyle) {
+  const calc = womanSmallPreviewCalc();
+  return {
+    ...calc.measurements,
+    stitchGaugePerInch: calc.stitchGaugePerInch,
+    rowGaugePerInch: calc.rowGaugePerInch,
+    thumbStyle,
+  };
+}
 
 function circle(svg: string, id: string): { x: number; y: number } {
   const match = svg.match(new RegExp(`id="${id}"[^>]*cx="([^"]+)" cy="([^"]+)"`));
