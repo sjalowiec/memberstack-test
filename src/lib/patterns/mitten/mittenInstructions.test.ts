@@ -7,7 +7,12 @@ import {
   MITTEN_TOP_SHAPING_MAP_TITLE,
 } from "../heelToeShapingMap";
 import { STOP_ROW_COUNTER_TEXT, RESET_ROW_COUNTER_TEXT } from "../rowCounterReset";
-import { sockEnsureCarriageInstruction } from "../sock/sockInstructionRender";
+import {
+  KITCHENER_STITCH_GLOSSARY_ID,
+  KITCHENER_STITCH_GLOSSARY_TERM,
+  sockEnsureCarriageInstruction,
+} from "../sock/sockInstructionRender";
+import { getGlossaryTooltipPayload, glossarySlugForId } from "../../glossary/glossaryTooltipHydrate";
 import { buildSockShortRowInstructionSection } from "../sock/sockShortRowInstructions";
 import { sockHoldOrientation } from "../sock/sockInstructionModel";
 import {
@@ -76,6 +81,26 @@ function block(panelHtml: string, name: string): string {
   expect(start, name).toBeGreaterThanOrEqual(0);
   const next = panelHtml.indexOf("<section", start + 1);
   return panelHtml.slice(start, next === -1 ? panelHtml.length : next);
+}
+
+function expectKitchenerClose(panelHtml: string, calc: MittenCalc): void {
+  const close = block(panelHtml, "close");
+  const link =
+    `<span class="glossary-tooltip-placeholder" data-glossary-id="${KITCHENER_STITCH_GLOSSARY_ID}" ` +
+    `data-term="Kitchener stitch" data-aria-label="${KITCHENER_STITCH_GLOSSARY_TERM}">Kitchener stitch</span>`;
+  expect(KITCHENER_STITCH_GLOSSARY_ID).toBe(521);
+  expect(glossarySlugForId(KITCHENER_STITCH_GLOSSARY_ID)).toBe("kitchener-stitch");
+  expect(getGlossaryTooltipPayload(KITCHENER_STITCH_GLOSSARY_ID)?.titlePlain).toBe(
+    KITCHENER_STITCH_GLOSSARY_TERM,
+  );
+  expect(close).toContain(
+    `Scrap all ${calc.handSts} stitches off the machine with contrasting waste yarn and remove the work from the machine.`,
+  );
+  expect(close).toContain(
+    `Join the ${calc.fingertip.workingStitches} stitches of the shaped half to the ${calc.fingertip.heldStitches} stitches of the other half using ${link}, by hand or on the machine.`,
+  );
+  expect(close.match(/data-glossary-id="521"/g)).toHaveLength(1);
+  expect(close).toContain("by hand or on the machine.");
 }
 
 describe("slotted mitten instructions", () => {
@@ -220,7 +245,8 @@ describe("slotted mitten instructions", () => {
       expect(seam).not.toContain("Hand 1");
       expect(seam).not.toContain("Hand 2");
     }
-    expect(block(right, "close")).toContain("using Kitchener stitch, by hand or on the machine.");
+    expectKitchenerClose(right, womanSmallPreviewCalc());
+    expectKitchenerClose(left, womanSmallPreviewCalc());
     expect(left).toContain(MITTEN_SECOND_MITTEN_INTRO);
     expect(right).not.toContain(MITTEN_SECOND_MITTEN_INTRO);
   });
@@ -393,6 +419,8 @@ describe("gored thumb instructions", () => {
     expect(html).not.toContain("which face is the palm");
     expect(right).not.toContain("work the");
     expect(right).not.toContain("slot stitches");
+    expectKitchenerClose(right, result.calc);
+    expectKitchenerClose(left, result.calc);
   });
 });
 
@@ -592,6 +620,13 @@ describe("mitten top shaping map", () => {
     const page = readFileSync(resolve("src/pages/patterns/mittens/pattern.astro"), "utf8");
     const css = readFileSync(resolve("src/styles/shaping-map.css"), "utf8");
     expect(page).toContain("shaping-map.css");
+    expect(page).toContain('import "../../../styles/glossary-tooltip.css"');
+    expect(page).toContain('import "../../../styles/print.css"');
+    const tooltipPrint = readFileSync(resolve("src/styles/tooltip-print.css"), "utf8");
+    expect(tooltipPrint).toMatch(
+      /@media print[\s\S]*\.glossary-tooltip-placeholder[\s\S]*display:\s*inline !important;/,
+    );
+    expect(tooltipPrint).toMatch(/\.glossary-popup[\s\S]*display:\s*none !important;/);
     expect(page).toContain('import "../../../styles/pattern-tips.css"');
     expect(page).toContain('import "../../../styles/pattern-quick-tip.css"');
     expect(page).toContain('id="mitten-pattern-tips-scope"');

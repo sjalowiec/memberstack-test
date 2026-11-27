@@ -29,7 +29,11 @@ import {
   type SockInstructionStep,
   type SockOfPair,
 } from "../sock/sockInstructionModel";
-import { sockEnsureCarriageInstruction } from "../sock/sockInstructionRender";
+import {
+  KITCHENER_STITCH_GLOSSARY_ID,
+  KITCHENER_STITCH_GLOSSARY_TERM,
+  sockEnsureCarriageInstruction,
+} from "../sock/sockInstructionRender";
 import { buildSockShortRowInstructionSection } from "../sock/sockShortRowInstructions";
 import type { PatternInpageNavItem } from "../patternInpageNav";
 import { buildMittenDiagramTabsHtml } from "./mittenPatternDiagramTabs";
@@ -167,6 +171,16 @@ function instructionBlock(args: {
 
 function section(title: string, blocks: InstructionBlock[]): SleevelessPatternDisplayRow[] {
   return [{ kind: "section", title }, ...blocks];
+}
+
+function kitchenerStitchLink(): string {
+  return buildGlossaryTooltipPlaceholderHtml(
+    KITCHENER_STITCH_GLOSSARY_ID,
+    "Kitchener stitch",
+    escapeHtml,
+    escapeHtml,
+    { ariaLabel: KITCHENER_STITCH_GLOSSARY_TERM },
+  );
 }
 
 function increaseLines(calc: MittenCalc): string[] {
@@ -574,7 +588,7 @@ function mittenRows(calc: MittenCalc, side: MittenInstructionSide): SleevelessPa
         lines: [
           blockMarker("close"),
           `Scrap all ${calc.handSts} stitches off the machine with contrasting waste yarn and remove the work from the machine.`,
-          `Join the ${calc.fingertip.workingStitches} stitches of the shaped half to the ${calc.fingertip.heldStitches} stitches of the other half using Kitchener stitch, by hand or on the machine.`,
+          `Join the ${calc.fingertip.workingStitches} stitches of the shaped half to the ${calc.fingertip.heldStitches} stitches of the other half using ${kitchenerStitchLink()}, by hand or on the machine.`,
         ],
         stitchCount: calc.handSts,
       }),
