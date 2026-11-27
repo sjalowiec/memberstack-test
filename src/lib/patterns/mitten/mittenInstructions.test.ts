@@ -53,6 +53,12 @@ describe("slotted mitten instructions", () => {
     expect(html).toContain('data-print-source="mitten-instructions"');
     expect(html.match(/data-mitten="right-edge"/g)).toHaveLength(1);
     expect(html.match(/data-mitten="left-edge"/g)).toHaveLength(1);
+    expect(html).toContain("Hand below the thumb");
+    expect(html).toContain("Hand above the thumb");
+    expect(html).toContain("Below thumb");
+    expect(html).toContain("Above thumb");
+    expect(html).not.toContain("Hand 1");
+    expect(html).not.toContain("Hand 2");
   });
 
   it("starts the counted cuff rows at RC 000 with the carriage on the right", () => {
@@ -260,8 +266,10 @@ describe("slotted mitten instructions", () => {
     const summary = mittenCountSummary(calc);
     const value = (label: string) => summary.find((line) => line.label === label)?.value;
     expect(value("Calculated cuff length")).toBe("2.6 in");
-    expect(value("Calculated Hand 1 length")).toBe("2.0 in");
-    expect(value("Calculated Hand 2 length")).toBe("4.1 in");
+    expect(value("Calculated hand below the thumb length")).toBe("2.0 in");
+    expect(value("Calculated hand above the thumb length")).toBe("4.1 in");
+    expect(value("Hand below the thumb rows")).toBe("20");
+    expect(summary.some((line) => /Hand [12]/.test(line.label))).toBe(false);
     expect(value("Calculated mitten length")).toBe("8.7 in");
     expect(value("Fingertip setup row")).toBe("0.1 in");
     expect(value("Straight rows")).toBe("24");
@@ -319,6 +327,28 @@ describe("gored thumb instructions", () => {
     expect(left).toContain('data-slot-edge="left"');
     expect(block(right, "markers")).toContain("10 rows apart");
     expect(block(right, "markers")).toContain("half the thumb circumference");
+    expect(block(right, "markers")).toContain("the hand below the thumb");
+    expect(block(right, "markers")).toContain("This marker is nearest the cuff.");
+    expect(block(right, "markers")).not.toContain("Hand 1");
+    expect(block(right, "markers")).not.toContain("Hand 2");
+    for (const sideHtml of [right, left]) {
+      const seam = block(sideHtml, "seam");
+      expect(seam).toContain(
+        "Seam from the cast-on edge through the cuff and the hand below the thumb to the lower thumb marker.",
+      );
+      expect(seam).toContain("The gore joins the edges between the markers as those stitches are rehung.");
+      expect(seam).toContain("Use the thumb tail to seam the thumb.");
+      expect(seam).toContain("Seam from the upper thumb marker to the closed fingertips.");
+      expect(seam.indexOf("the hand below the thumb")).toBeLessThan(seam.indexOf("The gore joins"));
+      expect(seam.indexOf("The gore joins")).toBeLessThan(seam.indexOf("Use the thumb tail"));
+      expect(seam.indexOf("Use the thumb tail")).toBeLessThan(seam.indexOf("upper thumb marker"));
+      expect(seam).not.toContain("Hand 1");
+      expect(seam).not.toContain("Hand 2");
+    }
+    expect(html).toContain("Below thumb");
+    expect(html).toContain("Above thumb");
+    expect(html).not.toContain("Hand 1");
+    expect(html).not.toContain("Hand 2");
     expect(right).toContain('id="sg-right-edge-gored-thumb"');
     expect(left).toContain('id="sg-left-edge-gored-thumb"');
     expect(html).not.toContain("which face is the palm");

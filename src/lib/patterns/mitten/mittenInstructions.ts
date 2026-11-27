@@ -329,8 +329,8 @@ function markerRows(calc: MittenCalc, gore: GoreThumbPlan): SleevelessPatternDis
   const split = goreMarkerSplit(calc, gore);
   const placeLower =
     split.intoHand1 === 0
-      ? "At the end of Hand 1, place the lower thumb marker on each edge. This marker is nearest the cuff."
-      : `During Hand 1, place the lower thumb marker on each edge at ${formatRowCounterResetGarmentRcLabel(split.lowerAt)}. This marker is nearest the cuff.`;
+      ? "At the end of the hand below the thumb, place the lower thumb marker on each edge. This marker is nearest the cuff."
+      : `During the hand below the thumb, place the lower thumb marker on each edge at ${formatRowCounterResetGarmentRcLabel(split.lowerAt)}. This marker is nearest the cuff.`;
   return section("Thumb markers", [
     instructionBlock({
       lines: [
@@ -434,7 +434,7 @@ function slottedThumbRows(calc: MittenCalc): SleevelessPatternDisplayRow[] {
 function seamRows(calc: MittenCalc): SleevelessPatternDisplayRow[] {
   const items = calc.gore
     ? `<ol class="sleeveless-pattern-line">
-      <li>Seam from the cast-on edge through the cuff and Hand 1 to the lower thumb marker.</li>
+      <li>Seam from the cast-on edge through the cuff and the hand below the thumb to the lower thumb marker.</li>
       <li>The gore joins the edges between the markers as those stitches are rehung.</li>
       <li>Use the thumb tail to seam the thumb.</li>
       <li>Seam from the upper thumb marker to the closed fingertips.</li>
@@ -584,15 +584,15 @@ export function mittenCountSummary(calc: MittenCalc): Array<{ label: string; val
   const length = (inches: number) => `${formatMittenLengthInches(inches)} in`;
   return [
     { label: "Calculated cuff length", value: length(lengths.cuffLengthIn) },
-    { label: "Calculated Hand 1 length", value: length(lengths.hand1LengthIn) },
-    { label: "Calculated Hand 2 length", value: length(lengths.hand2LengthIn) },
+    { label: "Calculated hand below the thumb length", value: length(lengths.hand1LengthIn) },
+    { label: "Calculated hand above the thumb length", value: length(lengths.hand2LengthIn) },
     { label: "Calculated mitten length", value: length(lengths.totalLengthIn) },
     { label: "Fingertip setup row", value: length(lengths.setupRowIn) },
     { label: "Cuff stitches", value: String(calc.cuffSts) },
     { label: "Cuff rows", value: String(calc.cuffRows) },
     { label: "Hand stitches", value: String(calc.handSts) },
     { label: "Increases", value: String(calc.increaseSts) },
-    { label: "Hand 1 rows", value: String(calc.hand1Rows) },
+    { label: "Hand below the thumb rows", value: String(calc.hand1Rows) },
     { label: "Straight rows", value: String(calc.straightRows) },
     { label: "Fingertip depth rows", value: String(calc.fingertip.shortRowDepthRows) },
     { label: "Fingertip knitted rows", value: String(calc.fingertip.shortRowKnittingRows) },
