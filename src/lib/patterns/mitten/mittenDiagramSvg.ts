@@ -1,23 +1,30 @@
 /**
- * Upright slotted-mitten diagram.
+ * Upright mitten diagram.
  * Half-circumference is used only to draw the flat view.
- * Labels show builder circumferences and the calculated lengths.
- * Thumb length is web to tip. Gore length is not drawn onto the thumb.
+ * Stitches & Rows labels use the shared sweater label block and the drop-shoulder
+ * dimension lines. Thumb length is web to tip. Gore length is not drawn onto the thumb.
  */
 
 import type { MittenSlotEdge } from "./mittenInstructions";
 import { formatMittenLengthInches, mittenPhysicalLengths, type MittenCalc } from "./mittenMath";
 import { DESKTOP_MEASUREMENT_OVERLAY_MIN_STAGE_PX } from "../patternSummaryMeasurementOverlay";
-import { DS_FONT, DS_FS_MEASURE, DS_FS_SMALL } from "../dropShoulderPatternDiagramSvgShared";
+import type { MeasurementDisplayUnit } from "../patternMeasurementDisplayUnit";
+import {
+  DS_ARROW,
+  DS_FONT,
+  DS_MUTED,
+  endCap,
+  fmtNum,
+} from "../dropShoulderPatternDiagramSvgShared";
 import {
   castOnEdgeDiagramLabel,
+  formatKnittedCountMeasurement,
   formatKnittedDiagramMeasurement,
   formatPatternDiagramMeasurement,
   formatStitchesRowsDiagramLabel,
   stitchesRowsLabelMarkup,
 } from "../legoBlocks/stitchesRowsDiagramLabel";
 
-const FONT = DS_FONT;
 const STROKE = "#1a1a1a";
 const DIM = "#52682d";
 /** Summary/Edit keeps this hand width so the measurement lanes stay put. */
@@ -28,12 +35,6 @@ const HAND_PX = 150;
  */
 const PATTERN_HAND_PX = 200;
 const PATTERN_PAD = 18;
-/**
- * Drop-shoulder measure type is 14px on a 430-unit canvas. The mitten canvas is a
- * little wider because of the thumb, so 16px lands at the same size in the sidebar.
- */
-const PATTERN_FS = DS_FS_MEASURE + 2;
-const PATTERN_FS_SM = DS_FS_SMALL + 2;
 /** Illustrative gaps. Not garment measurements. */
 const THUMB_GAP = 16;
 const THUMB_ANGLE = 22;
@@ -96,55 +97,19 @@ export function formatMittenDiagramInches(inches: number): string {
   return String(Math.round(inches * 100) / 100);
 }
 
-/**
- * Thumb lengths still use thousandths until that part of the schematic is reviewed.
- * Hand sections use {@link formatKnittedDiagramMeasurement} instead.
- */
+/** Kept for the written pattern's length list. The schematic uses the shared label block. */
 export function formatMittenDiagramLength(inches: number): string {
   return formatMittenLengthInches(inches);
 }
 
-/** Knitted section length in the shared one-decimal schematic format. */
-function schematicKnittedLength(inches: number): string {
-  return formatKnittedDiagramMeasurement(inches, "in");
-}
-
-/**
- * Count on the first line, measurement on the second, same anchor.
- * Matches the sweater schematic label block.
- */
-function diagramCountMeasure(label: string, x: number, y: number, extra = ""): string {
-  return stitchesRowsLabelMarkup({
-    label,
-    x,
-    y,
-    anchor: "middle",
-    fill: DIM,
-    countSize: PATTERN_FS,
-    measureSize: PATTERN_FS_SM,
-    fontFamily: FONT,
-    extra,
-    fmt: f,
-  });
-}
-
-function escapeXml(value: string): string {
-  return value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-}
+/** Drop-shoulder Stitches & Rows type: count 17, measurement 14. */
+const STS_COUNT = 17;
+const STS_MEASURE = 14;
+const STS_GAP = Math.round(STS_COUNT * 0.95);
 
 function f(n: number): string {
   if (!Number.isFinite(n)) return "0";
   return String(Math.round(n * 100) / 100);
-}
-
-function text(
-  x: number,
-  y: number,
-  content: string,
-  anchor: "start" | "middle" | "end",
-  size = PATTERN_FS,
-): string {
-  return `<text x="${f(x)}" y="${f(y)}" font-family="${FONT}" font-size="${size}" fill="${DIM}" text-anchor="${anchor}">${escapeXml(content)}</text>`;
 }
 
 function vMeasure(x: number, yTop: number, yBottom: number, name: string, id?: string): string {
@@ -467,40 +432,8 @@ export function mittenPatternSketchFrame(
 
 type InkBox = { x: number; y: number; w: number; h: number };
 
-function textWidth(content: string, size: number): number {
+function lineWidth(content: string, size: number): number {
   return Math.max(size, content.length * size * 0.56);
-}
-
-function horizontalTextBox(
-  x: number,
-  y: number,
-  content: string,
-  anchor: "start" | "middle" | "end",
-  size: number,
-): InkBox {
-  const w = textWidth(content, size);
-  const left = anchor === "start" ? x : anchor === "end" ? x - w : x - w / 2;
-  return { x: left, y: y - size * 0.85, w, h: size * 1.15 };
-}
-
-/** Ink for a count line and the smaller measurement line under it. */
-function countMeasureInk(x: number, y: number, label: string): InkBox {
-  const [count = "", measure = ""] = label.split("\n");
-  const gap = Math.round(PATTERN_FS * 0.95);
-  const countBox = horizontalTextBox(x, y, count, "middle", PATTERN_FS);
-  if (!measure) return countBox;
-  const measureBox = horizontalTextBox(x, y + gap, measure, "middle", PATTERN_FS_SM);
-  const left = Math.min(countBox.x, measureBox.x);
-  const top = Math.min(countBox.y, measureBox.y);
-  const right = Math.max(countBox.x + countBox.w, measureBox.x + measureBox.w);
-  const bottom = Math.max(countBox.y + countBox.h, measureBox.y + measureBox.h);
-  return { x: left, y: top, w: right - left, h: bottom - top };
-}
-
-/** Vertical label, matching the drop-shoulder side measurements. */
-function rotatedTextBox(x: number, y: number, content: string, size: number): InkBox {
-  const h = textWidth(content, size);
-  return { x: x - size * 0.7, y: y - h / 2, w: size * 1.4, h };
 }
 
 function fitViewBox(boxes: InkBox[], pad = PATTERN_PAD): { minX: number; minY: number; w: number; h: number } {
@@ -521,78 +454,161 @@ function fitViewBox(boxes: InkBox[], pad = PATTERN_PAD): { minX: number; minY: n
   return { minX, minY, w: Math.max(1, maxX - minX), h: Math.max(1, maxY - minY) };
 }
 
-function rotatedText(x: number, y: number, content: string, size = PATTERN_FS): string {
-  return `<text x="0" y="0" transform="translate(${f(x)} ${f(y)}) rotate(-90)" font-family="${FONT}" font-size="${size}" fill="${DIM}" text-anchor="middle">${escapeXml(content)}</text>`;
+function boxesOverlap(a: InkBox, b: InkBox, gap = 8): boolean {
+  return a.x < b.x + b.w + gap && a.x + a.w + gap > b.x && a.y < b.y + b.h + gap && a.y + a.h + gap > b.y;
 }
 
-/** Push vertical labels apart. Longer names stay at the same type size. */
-function spreadRotatedColumn(labels: { text: string; y: number }[]): void {
-  const ordered = [...labels].sort((a, b) => a.y - b.y);
-  for (let index = 1; index < ordered.length; index++) {
-    const prev = ordered[index - 1];
-    const curr = ordered[index];
-    if (!prev || !curr) continue;
-    const minGap = textWidth(prev.text, PATTERN_FS) / 2 + textWidth(curr.text, PATTERN_FS) / 2 + 8;
-    if (curr.y < prev.y + minGap) curr.y = prev.y + minGap;
-  }
+/** Two-line sweater label. A rotated label reads along a vertical dimension. */
+function stsRowsLabel(
+  label: string,
+  x: number,
+  y: number,
+  anchor: "start" | "middle" | "end",
+  role: string,
+  transform?: string,
+  extra = "",
+): string {
+  return stitchesRowsLabelMarkup({
+    label,
+    x: transform ? 0 : x,
+    y: transform ? 0 : y,
+    anchor,
+    fill: DS_MUTED,
+    countSize: STS_COUNT,
+    measureSize: STS_MEASURE,
+    fontFamily: DS_FONT,
+    transform,
+    extra: ` data-dimension-label="${role}"${extra}`,
+    fmt: fmtNum,
+  });
 }
 
-/**
- * Thumb circumference sits beside the thumb opening, inward of the length label.
- * The length column moves outward only when that is what keeps the two apart.
- */
-function placeThumbSideLabels(input: {
-  baseX: number;
-  baseY: number;
-  sign: number;
-  thumbW: number;
-  thumbLen: number;
-  thumbColumnX: number;
-  thumbLenCenter: number;
-  circLabel: string;
-  circValue: string;
-}): {
-  lengthX: number;
-  lengthNameY: number;
-  lengthValueY: number;
-  circX: number;
-  circNameY: number;
-  circValueY: number;
-} {
-  const angleRad = (THUMB_ANGLE * Math.PI) / 180;
-  const boxHalf = (size: number) => size * 0.7;
-  const lengthBox = Math.max(boxHalf(PATTERN_FS), boxHalf(PATTERN_FS_SM));
-  const circBox = Math.max(boxHalf(PATTERN_FS), boxHalf(PATTERN_FS_SM));
-  const openingOuter = input.thumbW * 0.78;
-  let lengthOffset = Math.abs(input.thumbColumnX - input.baseX);
-  const circValueHalf = textWidth(input.circValue, PATTERN_FS) / 2;
-  const circNameHalf = textWidth(input.circLabel, PATTERN_FS_SM) / 2;
-  // The length arrow ends just below the thumb web. Keep the circumference
-  // value under that arrow, beside the opening, with the name directly below it.
-  const lengthArrowBottom = input.baseY + (input.thumbW / 2 + 14) * Math.sin(angleRad);
-  const circValueY = lengthArrowBottom + 10 + circValueHalf;
-  const circNameY = circValueY + circValueHalf + 12 + circNameHalf;
-  let circOffset = openingOuter + circBox + 8;
-  if (lengthOffset < circOffset + circBox + 12 + lengthBox) {
-    lengthOffset = circOffset + circBox + 12 + lengthBox;
+function labelInk(
+  label: string,
+  x: number,
+  y: number,
+  anchor: "start" | "middle" | "end",
+  rotated: boolean,
+): InkBox {
+  const [count = "", measure = ""] = label.split("\n");
+  const countW = lineWidth(count, STS_COUNT);
+  const measureW = measure ? lineWidth(measure, STS_MEASURE) : 0;
+  if (!rotated) {
+    const w = Math.max(countW, measureW);
+    const left = anchor === "start" ? x : anchor === "end" ? x - w : x - w / 2;
+    const h = measure ? STS_COUNT * 0.9 + STS_GAP + STS_MEASURE * 0.45 : STS_COUNT * 1.15;
+    return { x: left, y: y - STS_COUNT * 0.85, w, h };
   }
-  const lengthNameY = input.thumbLenCenter - 48;
-  const lengthValueY = input.thumbLenCenter + 48;
+  const along = Math.max(countW, measureW);
+  const across = measure ? STS_GAP + STS_MEASURE * 0.85 : STS_COUNT;
+  return { x: x - STS_COUNT * 0.45, y: y - along / 2, w: across + STS_COUNT * 0.5, h: along };
+}
+
+function horizontalDimension(
+  left: number,
+  right: number,
+  y: number,
+  labelY: number,
+  label: string,
+  role: string,
+): { markup: string; boxes: InkBox[] } {
+  const mid = (left + right) / 2;
+  const castOn = role === "cast-on";
   return {
-    lengthX: input.baseX + input.sign * lengthOffset,
-    lengthNameY,
-    lengthValueY,
-    circX: input.baseX + input.sign * circOffset,
-    circNameY,
-    circValueY,
+    markup:
+      `<g data-dimension="${role}"${castOn ? ` data-cast-on-width="true" data-cast-on-y="${fmtNum(y)}"` : ""}>` +
+      `<line x1="${fmtNum(left)}" y1="${fmtNum(y)}" x2="${fmtNum(right)}" y2="${fmtNum(y)}" stroke="${DS_ARROW}" stroke-width="1.4" fill="none"/>` +
+      endCap(left, y, false) +
+      endCap(right, y, false) +
+      stsRowsLabel(label, mid, labelY, "middle", role, undefined, castOn ? ` data-cast-on-width-label="true"` : "") +
+      `</g>`,
+    boxes: [
+      { x: Math.min(left, right), y: y - 4, w: Math.abs(right - left), h: 8 },
+      labelInk(label, mid, labelY, "middle", false),
+    ],
   };
 }
 
-/** One upright mitten. The second mitten mirrors the thumb side. */
+type VerticalSection = { role: string; y1: number; y2: number; label: string };
+
+/**
+ * Drop-shoulder vertical dimensions. A short span keeps its label horizontal
+ * beside the line. Each label stays centered on its span and steps outward
+ * until it clears the labels already placed.
+ */
+function verticalDimensions(
+  sections: readonly VerticalSection[],
+  edge: number,
+  outward: number,
+  occupied: readonly InkBox[],
+): { markup: string; boxes: InkBox[] } {
+  const placed: InkBox[] = [];
+  const parts: string[] = [];
+  for (const section of sections) {
+    const top = Math.min(section.y1, section.y2);
+    const bottom = Math.max(section.y1, section.y2);
+    const mid = (top + bottom) / 2;
+    const height = bottom - top;
+    const along = Math.max(
+      lineWidth(section.label.split("\n")[0] ?? "", STS_COUNT),
+      lineWidth(section.label.split("\n")[1] ?? "", STS_MEASURE),
+    );
+    const horizontal = height < along + 8;
+    const anchor = outward > 0 ? "start" : "end";
+    let markup = "";
+    let box: InkBox = { x: edge, y: top, w: 1, h: height };
+    let lineX = edge;
+    for (let attempt = 0; attempt < 14; attempt += 1) {
+      const offset = (section.role === "total" ? 40 : 18) + attempt * 16;
+      lineX = edge + outward * offset;
+      if (horizontal) {
+        const labelX = lineX + outward * 8;
+        box = labelInk(section.label, labelX, mid, anchor, false);
+        markup =
+          `<g data-dimension="${section.role}">` +
+          `<line x1="${fmtNum(lineX)}" y1="${fmtNum(top)}" x2="${fmtNum(lineX)}" y2="${fmtNum(bottom)}" stroke="${DS_ARROW}" stroke-width="1.4" fill="none"/>` +
+          endCap(lineX, top, true) +
+          endCap(lineX, bottom, true) +
+          stsRowsLabel(section.label, labelX, mid, anchor, section.role) +
+          `</g>`;
+      } else {
+        const labelX = lineX + outward * 12;
+        box = labelInk(section.label, labelX, mid, "middle", true);
+        markup =
+          `<g data-dimension="${section.role}">` +
+          `<line x1="${fmtNum(lineX)}" y1="${fmtNum(top)}" x2="${fmtNum(lineX)}" y2="${fmtNum(bottom)}" stroke="${DS_ARROW}" stroke-width="1.4" fill="none"/>` +
+          endCap(lineX, top, true) +
+          endCap(lineX, bottom, true) +
+          stsRowsLabel(
+            section.label,
+            labelX,
+            mid,
+            "middle",
+            section.role,
+            `translate(${fmtNum(labelX)} ${fmtNum(mid)}) rotate(-90)`,
+          ) +
+          `</g>`;
+      }
+      const lineBox = { x: lineX - 3, y: top + 1, w: 6, h: Math.max(1, height - 2) };
+      const hits = [...occupied, ...placed].some((other) => boxesOverlap(box, other) || boxesOverlap(lineBox, other, 2));
+      if (!hits) break;
+    }
+    parts.push(markup);
+    placed.push(box, { x: lineX - 3, y: top, w: 6, h: height });
+  }
+  return { markup: parts.join(""), boxes: placed };
+}
+
+function calculatedRowsLabel(rows: number, rowsPerInch: number, unit: MeasurementDisplayUnit): string {
+  return formatStitchesRowsDiagramLabel(rows, "rows", formatKnittedCountMeasurement(rows, rowsPerInch, unit));
+}
+
+/** One upright mitten. The second mitten mirrors the thumb side. Online and print share this drawing. */
 export function buildMittenDiagramSvg(
   calc: MittenCalc,
   slotEdge: MittenSlotEdge,
   mode: MittenDiagramMode = "pattern",
+  unit: MeasurementDisplayUnit = "in",
 ): string {
   if (mode === "summary") return buildMittenSummaryDiagramSvg(calc, slotEdge);
   const m = mittenDiagramMeasurements(calc);
@@ -628,136 +644,186 @@ export function buildMittenDiagramSvg(
     `M ${f(-thumbW / 2)} 0 L ${f(-thumbW / 2)} ${f(-straight)} ` +
     `A ${f(thumbW / 2)} ${f(cap)} 0 0 1 ${f(thumbW / 2)} ${f(-straight)} ` +
     `L ${f(thumbW / 2)} 0`;
+
   const angleRad = (THUMB_ANGLE * Math.PI) / 180;
-  const tipY = baseY - Math.cos(angleRad) * thumbLen;
-  const edge = slotRight ? handLeft : handRight;
-  const outward = slotRight ? -1 : 1;
-  const fingertipX = edge + outward * 16;
-  const sectionX = edge + outward * 34;
-  const totalX = edge + outward * 54;
-  const nearLabelX = edge + outward * 72;
-  const farLabelX = edge + outward * 108;
-  const len = formatMittenDiagramLength;
-  const circ = formatMittenDiagramInches;
-  const sectionLabels = [
-    { text: `Fingertip ${schematicKnittedLength(m.fingertipDepthIn)}`, y: (yTip + yDomeBase) / 2, x: nearLabelX },
-    { text: `Above thumb ${schematicKnittedLength(m.slotToFingertipIn)}`, y: (yDomeBase + ySlot) / 2, x: farLabelX },
-    { text: `Below thumb ${schematicKnittedLength(m.hand1LengthIn)}`, y: (ySlot + yCuffTop) / 2, x: nearLabelX },
-    { text: `Cuff ${schematicKnittedLength(m.cuffLengthIn)}`, y: (yCuffTop + yBottom) / 2, x: farLabelX },
-  ];
-  const totalText = `Total ${schematicKnittedLength(m.totalLengthIn)}`;
-  const totalLabel = { text: totalText, y: (yTip + yBottom) / 2, x: farLabelX };
-  spreadRotatedColumn(sectionLabels.filter((label) => label.x === nearLabelX));
-  spreadRotatedColumn([...sectionLabels.filter((label) => label.x === farLabelX), totalLabel]);
-  const totalLabelX = farLabelX;
-  const totalLabelY = totalLabel.y;
-  const handCirc = "Hand circumference";
+  const rowsPerInch = calc.rowGaugePerInch;
+  const fingertipRows = calc.fingertip.shortRowDepthRows;
+  const aboveRows = calc.straightRows + 1;
+  const totalRows = calc.cuffRows + calc.hand1Rows + aboveRows + fingertipRows;
+  const castOnLabel = castOnEdgeDiagramLabel(calc.cuffSts, calc.stitchGaugePerInch, unit);
   const handLabel = formatStitchesRowsDiagramLabel(
     calc.handSts,
     "sts",
-    formatPatternDiagramMeasurement(m.handCircumferenceIn, "in"),
+    formatPatternDiagramMeasurement(m.handCircumferenceIn, unit),
   );
-  const castOnLabel = castOnEdgeDiagramLabel(calc.cuffSts, calc.stitchGaugePerInch, "in");
+  const thumbWidthLabel = formatStitchesRowsDiagramLabel(
+    calc.thumbSts,
+    "sts",
+    formatPatternDiagramMeasurement(m.thumbCircumferenceIn, unit),
+  );
+  const thumbLengthLabel = formatStitchesRowsDiagramLabel(
+    calc.thumbRows,
+    "rows",
+    formatKnittedDiagramMeasurement(calc.measurements.thumbLengthInches, unit),
+  );
   const castOnLineY = yBottom + 22;
-  const castOnLabelY = castOnLineY + 16;
-  /** Keep the inch baseline where it already sits, and place the stitch count above it. */
-  const handMeasureY = ySlot - HAND_OVAL_RY - 14;
-  const handCountY = handMeasureY - Math.round(PATTERN_FS * 0.95);
-  const handCaptionY = handCountY - 24;
-  const thumbCirc = "Thumb circumference";
-  const thumbIn = `${circ(m.thumbCircumferenceIn)} in`;
-  const thumbLength = "Thumb length";
-  const thumbInLen = `${len(m.thumbLengthIn)} in`;
-  const thumbDimLocalX = sign * (thumbW / 2 + 14);
-  const thumbTipX = baseX + sign * (Math.sin(angleRad) * thumbLen + (thumbW / 2) * Math.cos(angleRad));
-  const thumbLenCenter = (tipY + baseY) / 2;
-  const thumbSide = placeThumbSideLabels({
-    baseX,
-    baseY,
-    sign,
-    thumbW,
-    thumbLen,
-    thumbColumnX: thumbTipX + sign * 22,
-    thumbLenCenter,
-    circLabel: thumbCirc,
-    circValue: thumbIn,
-  });
+  const castOn = horizontalDimension(cuffLeft, cuffRight, castOnLineY, castOnLineY + 16, castOnLabel, "cast-on");
+  const handLineY = yDomeBase + Math.max(36, (ySlot - yDomeBase) * 0.42);
+  const handWidth = horizontalDimension(handLeft, handRight, handLineY, handLineY - 8, handLabel, "hand-width");
+  const edge = slotRight ? handLeft : handRight;
+  const outward = slotRight ? -1 : 1;
+  const vertical = verticalDimensions(
+    [
+      {
+        role: "fingertip",
+        y1: yTip,
+        y2: yDomeBase,
+        label: calculatedRowsLabel(fingertipRows, rowsPerInch, unit),
+      },
+      {
+        role: "above-thumb",
+        y1: yDomeBase,
+        y2: ySlot,
+        label: calculatedRowsLabel(aboveRows, rowsPerInch, unit),
+      },
+      {
+        role: "below-thumb",
+        y1: ySlot,
+        y2: yCuffTop,
+        label: calculatedRowsLabel(calc.hand1Rows, rowsPerInch, unit),
+      },
+      {
+        role: "cuff",
+        y1: yCuffTop,
+        y2: yBottom,
+        label: formatStitchesRowsDiagramLabel(
+          calc.cuffRows,
+          "rows",
+          formatPatternDiagramMeasurement(calc.measurements.cuffLengthInches, unit),
+        ),
+      },
+      {
+        role: "total",
+        y1: yTip,
+        y2: yBottom,
+        label: calculatedRowsLabel(totalRows, rowsPerInch, unit),
+      },
+    ],
+    edge,
+    outward,
+    [...castOn.boxes, ...handWidth.boxes],
+  );
 
+  const dirX = sign * Math.sin(angleRad);
+  const dirY = -Math.cos(angleRad);
+  const outX = sign * Math.cos(angleRad);
+  const outY = Math.sin(angleRad);
+  const widthCenterX = baseX + dirX * thumbLen * 0.42;
+  const widthCenterY = baseY + dirY * thumbLen * 0.42;
+  const half = thumbW / 2;
+  const widthA = { x: widthCenterX - outX * half, y: widthCenterY - outY * half };
+  const widthB = { x: widthCenterX + outX * half, y: widthCenterY + outY * half };
+  const widthAnchor = "middle" as const;
+  const widthLabelX = (widthA.x + widthB.x) / 2 + dirX * 22;
+  const widthLabelY = (widthA.y + widthB.y) / 2 + dirY * 22;
+  const thumbTipX = baseX + dirX * thumbLen;
+  const tipY = baseY + dirY * thumbLen;
+  const thumbWidthInk = labelInk(thumbWidthLabel, widthLabelX, widthLabelY, widthAnchor, false);
+  const thumbBlocked = [...vertical.boxes, ...handWidth.boxes, ...castOn.boxes, thumbWidthInk];
+  let lengthBase = { x: baseX, y: baseY };
+  let lengthTip = { x: thumbTipX, y: tipY };
+  let lengthMid = { x: baseX, y: baseY };
+  let thumbLengthInk = labelInk(thumbLengthLabel, baseX, baseY, "middle", true);
+  for (let attempt = 0; attempt < 12; attempt += 1) {
+    const lengthOffset = half + 18 + attempt * 16;
+    lengthBase = { x: baseX + outX * lengthOffset, y: baseY + outY * lengthOffset };
+    lengthTip = { x: lengthBase.x + dirX * thumbLen, y: lengthBase.y + dirY * thumbLen };
+    lengthMid = {
+      x: (lengthBase.x + lengthTip.x) / 2 + outX * 16,
+      y: (lengthBase.y + lengthTip.y) / 2 + outY * 16,
+    };
+    thumbLengthInk = labelInk(thumbLengthLabel, lengthMid.x, lengthMid.y, "middle", true);
+    const samples = [0, 0.25, 0.5, 0.75, 1].map((t) => ({
+      x: lengthBase.x + (lengthTip.x - lengthBase.x) * t - 4,
+      y: lengthBase.y + (lengthTip.y - lengthBase.y) * t - 4,
+      w: 8,
+      h: 8,
+    }));
+    const hits = thumbBlocked.some(
+      (other) => boxesOverlap(thumbLengthInk, other) || samples.some((sample) => boxesOverlap(sample, other, 2)),
+    );
+    if (!hits) break;
+  }
   const ink: InkBox[] = [
-    { x: cuffLeft, y: yTip, w: cuffW, h: yBottom - yTip },
-    { x: handLeft, y: yTip, w: handW, h: ySlot - yTip },
-    { x: Math.min(baseX, thumbTipX) - thumbW / 2, y: Math.min(tipY, baseY), w: Math.abs(thumbTipX - baseX) + thumbW, h: Math.abs(baseY - tipY) + THUMB_OVAL_RY },
-    { x: Math.min(fingertipX, sectionX, totalX) - 6, y: yTip, w: 12, h: yBottom - yTip },
-    horizontalTextBox(handMid, handCaptionY, handCirc, "middle", PATTERN_FS_SM),
-    countMeasureInk(handMid, handCountY, handLabel),
-    { x: cuffLeft, y: castOnLineY - 6, w: cuffW, h: 12 },
-    countMeasureInk(handMid, castOnLabelY, castOnLabel),
-    rotatedTextBox(totalLabelX, totalLabelY, totalText, PATTERN_FS),
-    rotatedTextBox(thumbSide.lengthX, thumbSide.lengthNameY, thumbLength, PATTERN_FS_SM),
-    rotatedTextBox(thumbSide.lengthX, thumbSide.lengthValueY, thumbInLen, PATTERN_FS),
-    rotatedTextBox(thumbSide.circX, thumbSide.circNameY, thumbCirc, PATTERN_FS_SM),
-    rotatedTextBox(thumbSide.circX, thumbSide.circValueY, thumbIn, PATTERN_FS),
-    ...sectionLabels.map((label) => rotatedTextBox(label.x, label.y, label.text, PATTERN_FS)),
+    { x: Math.min(cuffLeft, handLeft), y: yTip, w: Math.max(cuffRight, handRight) - Math.min(cuffLeft, handLeft), h: yBottom - yTip },
+    {
+      x: Math.min(baseX, thumbTipX) - thumbW,
+      y: Math.min(tipY, baseY) - 8,
+      w: Math.abs(thumbTipX - baseX) + thumbW * 2,
+      h: Math.abs(baseY - tipY) + thumbW,
+    },
+    ...castOn.boxes,
+    ...handWidth.boxes,
+    ...vertical.boxes,
+    thumbWidthInk,
+    thumbLengthInk,
+    { x: Math.min(lengthBase.x, lengthTip.x) - 6, y: Math.min(lengthBase.y, lengthTip.y), w: Math.abs(lengthTip.x - lengthBase.x) + 12, h: Math.abs(lengthTip.y - lengthBase.y) },
   ];
   const view = fitViewBox(ink);
-
   const body =
     `M ${f(cuffLeft)} ${f(yBottom)} L ${f(cuffRight)} ${f(yBottom)} ` +
     `L ${f(cuffRight)} ${f(yCuffTop)} L ${f(handRight)} ${f(yCuffTop)} ` +
     `L ${f(handRight)} ${f(yDomeBase)} ` +
     `A ${f(handW / 2)} ${f(tipH)} 0 0 0 ${f(handLeft)} ${f(yDomeBase)} ` +
     `L ${f(handLeft)} ${f(yCuffTop)} L ${f(cuffLeft)} ${f(yCuffTop)} Z`;
-  const thumbDim =
-    `<g data-dimension="thumb-length" fill="none" stroke="${DIM}" stroke-width="1.35">` +
-    `<line x1="${f(thumbDimLocalX)}" y1="0" x2="${f(thumbDimLocalX)}" y2="${f(-thumbLen)}"/>` +
-    `<polyline points="${f(thumbDimLocalX - 5)},-5 ${f(thumbDimLocalX)},0 ${f(thumbDimLocalX + 5)},-5"/>` +
-    `<polyline points="${f(thumbDimLocalX - 5)},${f(-thumbLen + 5)} ${f(thumbDimLocalX)},${f(-thumbLen)} ${f(thumbDimLocalX + 5)},${f(-thumbLen + 5)}"/>` +
-    `</g>`;
   const construction = calc.thumbStyle === "gored" ? "Gored mitten" : "Slotted mitten";
-  const sectionMarkup = sectionLabels
-    .map((label) => rotatedText(label.x, label.y, label.text))
-    .join("");
+  const thumbWidthDim =
+    `<g data-dimension="thumb-width">` +
+    `<line x1="${fmtNum(widthA.x)}" y1="${fmtNum(widthA.y)}" x2="${fmtNum(widthB.x)}" y2="${fmtNum(widthB.y)}" stroke="${DS_ARROW}" stroke-width="1.4" fill="none"/>` +
+    endCap(widthA.x, widthA.y, false) +
+    endCap(widthB.x, widthB.y, false) +
+    stsRowsLabel(thumbWidthLabel, widthLabelX, widthLabelY, widthAnchor, "thumb-width") +
+    `</g>`;
+  const thumbLengthDim =
+    `<g data-dimension="thumb-length">` +
+    `<line x1="${fmtNum(lengthBase.x)}" y1="${fmtNum(lengthBase.y)}" x2="${fmtNum(lengthTip.x)}" y2="${fmtNum(lengthTip.y)}" stroke="${DS_ARROW}" stroke-width="1.4" fill="none"/>` +
+    endCap(lengthBase.x, lengthBase.y, true) +
+    endCap(lengthTip.x, lengthTip.y, true) +
+    stsRowsLabel(
+      thumbLengthLabel,
+      lengthMid.x,
+      lengthMid.y,
+      "middle",
+      "thumb-length",
+      `translate(${fmtNum(lengthMid.x)} ${fmtNum(lengthMid.y)}) rotate(${fmtNum(-90 + sign * THUMB_ANGLE)})`,
+    ) +
+    `</g>`;
 
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${f(view.minX)} ${f(view.minY)} ${f(view.w)} ${f(view.h)}" width="100%" height="auto" preserveAspectRatio="xMidYMid meet" role="img" data-diagram="mitten-sketch" data-slot-edge="${slotEdge}" data-hand-mid-x="${f(handMid)}" data-thumb-base-x="${f(baseX)}" data-hand-width-px="${f(handW)}" data-cuff-width-px="${f(cuffW)}" data-cuff-length-px="${f(cuffH)}" data-hand1-px="${f(hand1H)}" data-hand2-px="${f(hand2H)}" data-total-height-px="${f(yBottom - yTip)}" data-fingertip-depth-px="${f(tipH)}" data-fingertip-depth-rows="${calc.fingertip.shortRowDepthRows}" data-dome-top="${f(yTip)}" data-y-bottom="${f(yBottom)}" data-thumb-width-px="${f(thumbW)}" data-thumb-length-px="${f(thumbLen)}">
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${f(view.minX)} ${f(view.minY)} ${f(view.w)} ${f(view.h)}" width="100%" height="auto" preserveAspectRatio="xMidYMid meet" role="img" data-diagram="mitten-sketch" data-slot-edge="${slotEdge}" data-diagram-unit="${unit}" data-hand-mid-x="${f(handMid)}" data-thumb-base-x="${f(baseX)}" data-hand-width-px="${f(handW)}" data-cuff-width-px="${f(cuffW)}" data-cuff-length-px="${f(cuffH)}" data-hand1-px="${f(hand1H)}" data-hand2-px="${f(hand2H)}" data-total-height-px="${f(yBottom - yTip)}" data-fingertip-depth-px="${f(tipH)}" data-fingertip-depth-rows="${fingertipRows}" data-dome-top="${f(yTip)}" data-y-bottom="${f(yBottom)}" data-thumb-width-px="${f(thumbW)}" data-thumb-length-px="${f(thumbLen)}">
   <title>${construction}, ${slotEdge}-edge thumb</title>
   <rect x="${f(view.minX)}" y="${f(view.minY)}" width="${f(view.w)}" height="${f(view.h)}" fill="#fff"/>
   <path data-mitten-outline="hand" d="${body}" fill="none" stroke="${STROKE}" stroke-width="2" stroke-linejoin="round"/>
   <ellipse data-opening="hand" cx="${f(handMid)}" cy="${f(ySlot)}" rx="${f(handW * 0.42)}" ry="${HAND_OVAL_RY}" fill="none" stroke="${STROKE}" stroke-width="1.75"/>
-  <g data-label="hand-circumference">
-    ${text(handMid, handCaptionY, handCirc, "middle", PATTERN_FS_SM)}
-    ${diagramCountMeasure(handLabel, handMid, handCountY)}
-  </g>
-  <g data-label="cast-on" data-cast-on-width="true" data-cast-on-y="${f(castOnLineY)}">
-    ${hMeasure(cuffLeft, cuffRight, castOnLineY, "cast-on")}
-    ${diagramCountMeasure(castOnLabel, handMid, castOnLabelY, ` data-cast-on-width-label="true"`)}
-  </g>
+  ${handWidth.markup}
+  ${castOn.markup}
   <g data-mitten-outline="thumb" transform="translate(${f(baseX)} ${f(baseY)}) rotate(${f(angle)})">
     <path d="${thumbOutline}" fill="none" stroke="${STROKE}" stroke-width="2" stroke-linejoin="round"/>
-    ${thumbDim}
   </g>
   <ellipse data-opening="thumb" cx="${f(baseX)}" cy="${f(baseY)}" rx="${f(thumbW * 0.78)}" ry="${THUMB_OVAL_RY}" fill="none" stroke="${STROKE}" stroke-width="1.75"/>
-  <g data-label="thumb-circumference">
-    ${rotatedText(thumbSide.circX, thumbSide.circNameY, thumbCirc, PATTERN_FS_SM)}
-    ${rotatedText(thumbSide.circX, thumbSide.circValueY, thumbIn, PATTERN_FS)}
-  </g>
-  <g data-label="thumb-length">
-    ${rotatedText(thumbSide.lengthX, thumbSide.lengthNameY, thumbLength, PATTERN_FS_SM)}
-    ${rotatedText(thumbSide.lengthX, thumbSide.lengthValueY, thumbInLen, PATTERN_FS)}
-  </g>
-  ${vMeasure(fingertipX, yTip, yDomeBase, "fingertip")}
-  ${vMeasure(sectionX, ySlot, yTip, "hand-2")}
-  ${vMeasure(sectionX, yCuffTop, ySlot, "hand-1")}
-  ${vMeasure(sectionX, yBottom, yCuffTop, "cuff")}
-  ${vMeasure(totalX, yTip, yBottom, "total")}
-  ${sectionMarkup}
-  ${rotatedText(totalLabelX, totalLabelY, totalText)}
+  ${thumbWidthDim}
+  ${thumbLengthDim}
+  ${vertical.markup}
 </svg>`;
 }
 
-export function mittenDiagramFigureHtml(calc: MittenCalc, slotEdge: MittenSlotEdge): string {
+export function mittenDiagramFigureHtml(
+  calc: MittenCalc,
+  slotEdge: MittenSlotEdge,
+  unit: MeasurementDisplayUnit = "in",
+): string {
   return (
     `<figure class="mitten-diagrams" data-mitten-diagrams="${slotEdge}">` +
-    buildMittenDiagramSvg(calc, slotEdge) +
+    buildMittenDiagramSvg(calc, slotEdge, "pattern", unit) +
     `</figure>`
   );
 }

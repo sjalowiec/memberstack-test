@@ -12,6 +12,7 @@ import {
   buildPatternDiagramTabsShellHtml,
 } from "../patternDiagramTabs";
 import { buildSleevelessPatternDiagramEnlargeHostHtml } from "../sleevelessPatternDiagramTabs";
+import type { MeasurementDisplayUnit } from "../patternMeasurementDisplayUnit";
 import { buildMittenDiagramSvg } from "./mittenDiagramSvg";
 import { buildMittenShapingNotationSvg } from "./mittenShapingNotationDiagramSvg";
 import type { MittenSlotEdge } from "./mittenInstructions";
@@ -33,7 +34,11 @@ function diagramHost(mode: "sts-rows" | "shaping-notation", svg: string, alt: st
   });
 }
 
-export function buildMittenDiagramTabsHtml(calc: MittenCalc, slotEdge: MittenSlotEdge): string {
+export function buildMittenDiagramTabsHtml(
+  calc: MittenCalc,
+  slotEdge: MittenSlotEdge,
+  unit: MeasurementDisplayUnit = "in",
+): string {
   const idPrefix = `mitten-${slotEdge}-diagram`;
   const stsAlt = "Mitten stitches and rows";
   const shapingAlt = "Mitten shaping notation";
@@ -55,7 +60,7 @@ export function buildMittenDiagramTabsHtml(calc: MittenCalc, slotEdge: MittenSlo
         printHeading: true,
         panelHtml: diagramHost(
           "sts-rows",
-          buildMittenDiagramSvg(calc, slotEdge),
+          buildMittenDiagramSvg(calc, slotEdge, "pattern", unit),
           stsAlt,
         ),
       },

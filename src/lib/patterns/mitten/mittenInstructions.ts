@@ -36,6 +36,7 @@ import {
 } from "../sock/sockInstructionRender";
 import { buildSockShortRowInstructionSection } from "../sock/sockShortRowInstructions";
 import type { PatternInpageNavItem } from "../patternInpageNav";
+import type { MeasurementDisplayUnit } from "../patternMeasurementDisplayUnit";
 import { buildMittenDiagramTabsHtml } from "./mittenPatternDiagramTabs";
 import {
   MITTEN_INCREASE_EVENLY_GLOSSARY_ID,
@@ -617,21 +618,22 @@ function oneMittenHtml(
   side: MittenInstructionSide,
   intro: string,
   hidden: boolean,
+  unit: MeasurementDisplayUnit,
 ): string {
   const introHtml = intro
     ? `<p class="sleeveless-pattern-line" data-block-line="second-mitten">${escapeHtml(intro)}</p>`
     : "";
   const instructions = renderMittenInstructionRows(mittenRows(calc, side), side.id);
   return `<section class="mitten-panel" data-mitten="${side.id}" data-testid="mitten-${side.id}"${hidden ? " hidden" : ""}>
-  ${readingLayout(`${introHtml}${instructions}`, buildMittenDiagramTabsHtml(calc, side.slotEdge))}
+  ${readingLayout(`${introHtml}${instructions}`, buildMittenDiagramTabsHtml(calc, side.slotEdge, unit))}
 </section>`;
 }
 
 /** One instruction document for the screen and for print. */
-export function buildMittenPatternHtml(calc: MittenCalc): string {
+export function buildMittenPatternHtml(calc: MittenCalc, unit: MeasurementDisplayUnit = "in"): string {
   const secondIntro = calc.gore ? MITTEN_GORED_SECOND_MITTEN_INTRO : MITTEN_SECOND_MITTEN_INTRO;
   const panels = MITTEN_INSTRUCTION_SIDES.map((side, index) =>
-    oneMittenHtml(calc, side, index === 1 ? secondIntro : "", index > 0),
+    oneMittenHtml(calc, side, index === 1 ? secondIntro : "", index > 0, unit),
   ).join("\n");
   return `<div class="mitten-instructions" data-testid="mitten-instructions" data-print-source="mitten-instructions" data-thumb-style="${calc.thumbStyle}">
   ${panels}
