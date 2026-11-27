@@ -2,6 +2,7 @@
  * Print personalization: sleeveless uses `kbm_current_pattern.patternProject`;
  * hat pages use the hat print title (not sweater working-draft metadata);
  * socks pages use the socks draft/project title (not sweater working-draft metadata);
+ * mitten pages use the mitten draft/project title (not sweater working-draft metadata);
  * other patterns may still use session keys + optional modal.
  */
 
@@ -12,6 +13,7 @@ import { shouldRecordPatternPrint } from "../lib/patterns/patternPrintActivity";
 import {
   isChristmasStockingPatternPrintPage,
   isHatPatternPrintPage,
+  isMittenPatternPrintPage,
   isSockPatternPrintPage,
   isTriangleScarfPatternPrintPage,
   resolvePatternPrintPersonalizationFields,
@@ -120,6 +122,13 @@ function readStoredPrintPersonalization(): { title: string; notes: string } {
     return resolvePatternPrintPersonalizationFields({
       isHatPatternPage: false,
       isSockPatternPage: true,
+      sleevelessFields: { title: "", notes: "" },
+    });
+  }
+  if (isMittenPatternPrintPage(document)) {
+    return resolvePatternPrintPersonalizationFields({
+      isHatPatternPage: false,
+      isMittenPatternPage: true,
       sleevelessFields: { title: "", notes: "" },
     });
   }

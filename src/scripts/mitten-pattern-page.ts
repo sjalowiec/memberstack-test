@@ -6,10 +6,13 @@ import {
   ensureSleevelessDiagramModal,
 } from "../lib/patterns/sleevelessDiagramModal";
 import {
-  mittenCountSummary,
   buildMittenPatternHtml,
   mittenPatternInpageNavItems,
 } from "../lib/patterns/mitten/mittenInstructions";
+import {
+  buildMittenPatternPrintBasicsHtml,
+  resolveMittenPatternPrintFields,
+} from "../lib/patterns/mitten/mittenPatternPrint";
 import { buildMittenDiagramSvg, mittenDiagramFigureHtml } from "../lib/patterns/mitten/mittenDiagramSvg";
 import { draftForBuilderSize } from "../lib/patterns/mitten/mittenBuilderState";
 import {
@@ -47,22 +50,7 @@ import { MITTEN_SUMMARY_EDIT_HREF } from "../lib/patterns/customPatternProjectNa
 import { ensureUrlRequestedSavedPatternHydrated } from "../lib/patterns/ensureUrlRequestedSavedPattern";
 import { SAVED_PATTERN_UNAVAILABLE_BODY } from "../lib/patterns/savedPatternAccessState";
 import { mountPatternPrintAction, syncPatternInpageNav } from "../lib/patterns/patternInpageNav";
-import { triggerPatternPrint } from "./patternPrintPersonalization";
-
-function renderCounts(target: HTMLElement, lines: Array<{ label: string; value: string }>): void {
-  target.innerHTML = lines
-    .map(
-      (line) =>
-        `<div class="mitten-count"><dt>${line.label}</dt><dd>${line.value}</dd></div>`,
-    )
-    .join("");
-}
-
-function countsHtml(lines: Array<{ label: string; value: string }>): string {
-  return `<dl class="mitten-counts">${lines
-    .map((line) => `<div class="mitten-count"><dt>${line.label}</dt><dd>${line.value}</dd></div>`)
-    .join("")}</dl>`;
-}
+import { applyPatternPrintPersonalizationToDom, triggerPatternPrint } from "./patternPrintPersonalization";
 
 function currentDraft(): MittenDraft | null {
   const params = new URLSearchParams(window.location.search);
@@ -355,8 +343,10 @@ export async function initMittenPatternPage(): Promise<void> {
   bindMittenPatternChrome(root);
   const heading = document.querySelector("[data-mitten-pattern-heading]");
   if (heading) heading.textContent = resolveMittenPatternDisplayName(draft);
+  const printFields = resolveMittenPatternPrintFields({ draft });
+  applyPatternPrintPersonalizationToDom(printFields.title, printFields.notes);
   const glance = document.querySelector("[data-mitten-print-basics]");
-  if (glance) glance.innerHTML = countsHtml(mittenCountSummary(result.calc));
+  if (glance) glance.innerHTML = buildMittenPatternPrintBasicsHtml(draft);
   const edit = document.querySelector("[data-mitten-edit-open]");
   const projectId =
     new URLSearchParams(window.location.search).get("project")?.trim() || readMittenActiveProjectId();
