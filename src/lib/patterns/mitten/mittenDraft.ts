@@ -1,3 +1,4 @@
+import type { MeasurementDisplayUnit } from "../patternMeasurementDisplayUnit";
 import type { MittenCalcInput, MittenThumbStyle } from "./mittenMath";
 import { gaugePerInchFromPer4Inches } from "./mittenMath";
 import {
@@ -24,6 +25,8 @@ export type MittenDraft = {
   thumbCircumference: string;
   /** Missing values stay on the slotted construction. */
   thumbStyle?: MittenThumbStyle;
+  /** Diagram unit chosen on Summary/Edit. Measurements stay stored in inches. */
+  displayUnit?: MeasurementDisplayUnit;
   /** Hat gauge entry: stitches over 4 inches. */
   stitchGaugePer4: string;
   /** Hat gauge entry: rows over 4 inches. */

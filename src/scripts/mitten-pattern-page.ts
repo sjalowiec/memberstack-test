@@ -111,7 +111,7 @@ export async function initMittenSummaryPage(): Promise<void> {
   workspace.hidden = false;
 
   let draft: MittenDraft = starting;
-  let displayUnit: MeasurementDisplayUnit = "in";
+  let displayUnit: MeasurementDisplayUnit = starting.displayUnit === "cm" ? "cm" : "in";
   let applying = false;
   let overlayCleanup: PatternSummaryOverlayCleanup | null = null;
   writeMittenDraft(draft);
@@ -251,6 +251,7 @@ export async function initMittenSummaryPage(): Promise<void> {
       });
       if (next) {
         next.patternProject = readDraftFromForm().patternProject;
+        next.displayUnit = displayUnit;
         draft = next;
         writeMittenDraft(draft);
         paint();
@@ -264,6 +265,8 @@ export async function initMittenSummaryPage(): Promise<void> {
     btn.addEventListener("click", () => {
       draft = readDraftFromForm();
       displayUnit = btn.getAttribute("data-mitten-edit-unit") === "cm" ? "cm" : "in";
+      draft = { ...draft, displayUnit };
+      writeMittenDraft(draft);
       paint();
     });
   });
@@ -339,7 +342,7 @@ export async function initMittenPatternPage(): Promise<void> {
     body.innerHTML = `<p>${result.message}</p>`;
     return;
   }
-  body.innerHTML = buildMittenPatternHtml(result.calc);
+  body.innerHTML = buildMittenPatternHtml(result.calc, draft.displayUnit === "cm" ? "cm" : "in");
   bindMittenPatternChrome(root);
   const heading = document.querySelector("[data-mitten-pattern-heading]");
   if (heading) heading.textContent = resolveMittenPatternDisplayName(draft);
@@ -385,7 +388,7 @@ export function renderMittenPatternFromDraft(target: HTMLElement): void {
     target.innerHTML = `<p>${result.message}</p>`;
     return;
   }
-  target.innerHTML = buildMittenPatternHtml(result.calc);
+  target.innerHTML = buildMittenPatternHtml(result.calc, draft.displayUnit === "cm" ? "cm" : "in");
   bindMittenPatternChrome(target);
 }
 

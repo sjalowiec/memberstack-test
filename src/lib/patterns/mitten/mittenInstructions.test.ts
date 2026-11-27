@@ -114,8 +114,6 @@ describe("slotted mitten instructions", () => {
     expect(html.match(/data-mitten="left-edge"/g)).toHaveLength(1);
     expect(html).toContain("Hand below the thumb");
     expect(html).toContain("Hand above the thumb");
-    expect(html).toContain("Below thumb");
-    expect(html).toContain("Above thumb");
     expect(html).not.toContain("Hand 1");
     expect(html).not.toContain("Hand 2");
   });
@@ -410,8 +408,8 @@ describe("gored thumb instructions", () => {
       expect(seam).not.toContain("Hand 1");
       expect(seam).not.toContain("Hand 2");
     }
-    expect(html).toContain("Below thumb");
-    expect(html).toContain("Above thumb");
+    expect(html).toContain("Hand below the thumb");
+    expect(html).toContain("Hand above the thumb");
     expect(html).not.toContain("Hand 1");
     expect(html).not.toContain("Hand 2");
     expect(right).toContain('id="sg-right-edge-gored-thumb"');
