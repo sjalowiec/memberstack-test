@@ -19,6 +19,8 @@ import "../../../styles/patterns/pattern-diagram-tabs.css";
 import "../../../styles/shaping-map.css";
 import "../../../styles/patterns/pattern-app-shell.css";
 import "../../../styles/glossary-tooltip.css";
+import "../../../styles/pattern-tips.css";
+import "../../../styles/pattern-quick-tip.css";
 import "../../../styles/print.css";
 
 ---
@@ -33,6 +35,7 @@ import "../../../styles/print.css";
   <main class="wizard-page sleeveless-pattern-page pattern-app-shell mitten-pattern-page" data-testid="mitten-pattern-page" data-mitten-pattern>
     <div class="wizard-container">
       <p class="no-print"><a href={MITTEN_BUILDER_HREF}>Back to Builder</a></p>
+      <div id="mitten-pattern-tips-scope" class="pattern-tips-scope" data-show-tips="true">
       <SavedPatternHeader
         part="intro"
         title="Slotted mittens"
@@ -42,7 +45,7 @@ import "../../../styles/print.css";
         thumbnailSrc="/images/patterns/mittens.png"
         thumbnailAlt="Slotted mittens"
         tipsStorageKey="mittens-show-tips"
-        tipsScopeSelector="#mitten-pattern-root"
+        tipsScopeSelector="#mitten-pattern-tips-scope"
         printOriginLabel="Created with the Knit It Now Mitten Pattern Builder"
         printOriginUrl="KnitItNow.com/patterns/mittens"
       >
@@ -69,6 +72,7 @@ import "../../../styles/print.css";
         <div id="mitten-pattern-root" data-testid="mitten-pattern-root">
           <p>Loading your mitten pattern…</p>
         </div>
+      </div>
       </div>
     </div>
   </main>

@@ -12,6 +12,9 @@ import { buildSockShortRowInstructionSection } from "../sock/sockShortRowInstruc
 import { sockHoldOrientation } from "../sock/sockInstructionModel";
 import {
   MITTEN_CUFF_START_CARRIAGE,
+  MITTEN_FINGERLESS_MITTS_TIP_ID,
+  MITTEN_FINGERLESS_MITTS_TIP_PARAGRAPHS,
+  MITTEN_FINGERLESS_MITTS_TIP_TITLE,
   MITTEN_INSTRUCTION_SIDES,
   MITTEN_SECOND_MITTEN_INTRO,
   buildMittenPatternHtml,
@@ -29,6 +32,37 @@ import {
   type MittenCalc,
 } from "./mittenMath";
 import { MITTEN_SIZING_CHART } from "./mittenSizingChart";
+
+function expectFingerlessMittsTip(html: string, thumbStyle: "slotted" | "gored"): void {
+  expect(html).toContain(`data-thumb-style="${thumbStyle}"`);
+  expect(html.match(new RegExp(`data-tip-id="${MITTEN_FINGERLESS_MITTS_TIP_ID}"`, "g"))).toHaveLength(2);
+  for (const sideId of ["right-edge", "left-edge"] as const) {
+    const sideHtml = panel(html, sideId);
+    const handStart = sideHtml.indexOf(`id="${mittenPatternSectionId(sideId, "hand-above-the-thumb")}"`);
+    const tipAt = sideHtml.indexOf(`data-tip-id="${MITTEN_FINGERLESS_MITTS_TIP_ID}"`);
+    const fingertipsAt = sideHtml.indexOf(`id="${mittenPatternSectionId(sideId, "fingertips")}"`);
+    const shapingAt = sideHtml.indexOf('data-block="fingertips"');
+    const handClose = sideHtml.indexOf("</section>", handStart);
+    expect(handClose).toBeGreaterThan(handStart);
+    expect(handClose).toBeLessThan(tipAt);
+    expect(sideHtml.slice(handStart, handClose)).not.toContain(MITTEN_FINGERLESS_MITTS_TIP_TITLE);
+    expect(tipAt).toBeGreaterThanOrEqual(0);
+    expect(fingertipsAt).toBeGreaterThan(tipAt);
+    expect(shapingAt).toBeGreaterThan(fingertipsAt);
+    expect(sideHtml.slice(tipAt, fingertipsAt)).not.toContain("data-block=");
+    expect(sideHtml).toContain('class="pattern-tip pattern-quick-tip"');
+    expect(sideHtml).toContain("pattern-quick-tip__details");
+    expect(sideHtml).toContain("pattern-quick-tip__summary");
+    expect(sideHtml).toContain("fa-solid fa-lightbulb");
+    expect(sideHtml).toContain("fa-solid fa-chevron-right");
+    expect(sideHtml).toContain(`<span class="pattern-quick-tip__label">${MITTEN_FINGERLESS_MITTS_TIP_TITLE}</span>`);
+    for (const paragraph of MITTEN_FINGERLESS_MITTS_TIP_PARAGRAPHS) {
+      expect(sideHtml).toContain(`<p>${paragraph}</p>`);
+    }
+    expect(block(sideHtml, "fingertips")).not.toContain(MITTEN_FINGERLESS_MITTS_TIP_TITLE);
+    expect(block(sideHtml, "fingertips")).toContain("Before beginning the fingertips");
+  }
+}
 
 function panel(html: string, id: "right-edge" | "left-edge"): string {
   const start = html.indexOf(`data-mitten="${id}"`);
@@ -277,6 +311,10 @@ describe("slotted mitten instructions", () => {
     expect(calc.measurements.hand2LengthInches).toBe(4);
     expect(calc.measurements.cuffLengthInches).toBe(2.5);
   });
+
+  it("places the fingerless mitts Quick Tip immediately before Fingertips on both mittens", () => {
+    expectFingerlessMittsTip(html, "slotted");
+  });
 });
 
 describe("gored thumb instructions", () => {
@@ -294,6 +332,7 @@ describe("gored thumb instructions", () => {
   it("uses the same gored wording for the screen and the print document", () => {
     expect(html).toContain('data-print-source="mitten-instructions"');
     expect(html).toContain('data-thumb-style="gored"');
+    expectFingerlessMittsTip(html, "gored");
     const rightThumb = block(right, "thumb");
     const leftThumb = block(left, "thumb");
     expect(leftThumb).toBe(rightThumb);
@@ -553,6 +592,17 @@ describe("mitten top shaping map", () => {
     const page = readFileSync(resolve("src/pages/patterns/mittens/pattern.astro"), "utf8");
     const css = readFileSync(resolve("src/styles/shaping-map.css"), "utf8");
     expect(page).toContain("shaping-map.css");
+    expect(page).toContain('import "../../../styles/pattern-tips.css"');
+    expect(page).toContain('import "../../../styles/pattern-quick-tip.css"');
+    expect(page).toContain('id="mitten-pattern-tips-scope"');
+    expect(page).toContain('class="pattern-tips-scope"');
+    expect(page).toContain('tipsScopeSelector="#mitten-pattern-tips-scope"');
+    const tipsCss = readFileSync(resolve("src/styles/pattern-tips.css"), "utf8");
+    const quickCss = readFileSync(resolve("src/styles/pattern-quick-tip.css"), "utf8");
+    expect(tipsCss).toMatch(/@media print[\s\S]*data-pattern-print-include-tips/);
+    expect(quickCss).toMatch(/@media print[\s\S]*\.pattern-quick-tip__body/);
+    const builder = readFileSync(resolve("src/pages/patterns/mittens/builder.astro"), "utf8");
+    expect(builder).not.toContain("fingerless");
     expect(css).toContain(".shaping-map[data-mitten-top-shaping-map]");
     expect(css).toContain(".shaping-map__scroll");
     expect(css).toMatch(/\.shaping-map\[data-heel-toe-shaping-map\],\s*\.shaping-map\[data-mitten-top-shaping-map\]/);
