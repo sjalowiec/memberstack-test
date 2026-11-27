@@ -12,7 +12,11 @@ import {
   rowCounterStopBlockHtml,
 } from "../rowCounterReset";
 import type { SleevelessPatternDisplayRow } from "../sleevelessPatternOutput";
-import { renderPatternDisplayRowsHtml } from "../sleevelessPatternDisplayHtml";
+import {
+  renderPatternDisplayBlockHtml,
+  renderPatternDisplayRowsHtml,
+} from "../sleevelessPatternDisplayHtml";
+import { buildPatternQuickTipInnerHtml } from "../patternQuickTip";
 import { sleevelessHelpVideoFromCatalog } from "../sleevelessCatalogHelpVideo";
 import {
   buildSingleShortRowShapingMap,
@@ -83,6 +87,17 @@ export const MITTEN_SECOND_MITTEN_INTRO =
 
 export const MITTEN_GORED_SECOND_MITTEN_INTRO =
   "Knit the second mitten the same way, working the thumb markers at the opposite edge and the fingertip shaping on the opposite side.";
+
+/** Shared Quick Tip shown once on each mitten, immediately before Fingertips. */
+export const MITTEN_FINGERLESS_MITTS_TIP_ID = "mitten-fingerless-mitts";
+
+export const MITTEN_FINGERLESS_MITTS_TIP_TITLE = "Prefer fingerless mitts?";
+
+export const MITTEN_FINGERLESS_MITTS_TIP_PARAGRAPHS = [
+  "Instead of shaping the fingertips, knit to your desired hand length and bind off. For a more finished edge, end with a few rows of ribbing.",
+  "You can also shorten the thumb and bind off instead of gathering the stitches at the tip.",
+  "Continue with the seaming instructions.",
+] as const;
 
 const SIDE_LABEL = { left: "LEFT", right: "RIGHT" } as const;
 
@@ -312,6 +327,41 @@ function mittenTopShapingMapHtml(section: SockInstructionSection): string {
   return built.ok ? renderHeelToeShapingMapHtml(built.map) : "";
 }
 
+function fingerlessMittsHelpTip(): InstructionBlock {
+  return {
+    kind: "block",
+    paragraphs: [],
+    tipHtml: buildPatternQuickTipInnerHtml({
+      summaryLabel: MITTEN_FINGERLESS_MITTS_TIP_TITLE,
+      bodyHtml: MITTEN_FINGERLESS_MITTS_TIP_PARAGRAPHS.map((paragraph) => `<p>${paragraph}</p>`).join(""),
+    }),
+    tipHtmlIsFull: true,
+    tipPresentation: "quick-tip",
+    tipId: MITTEN_FINGERLESS_MITTS_TIP_ID,
+  };
+}
+
+/**
+ * The shared section renderer keeps a block inside the section that is still open.
+ * This tip belongs between Hand above the thumb and Fingertips, so it is rendered on its own.
+ */
+function renderMittenInstructionRows(
+  rows: readonly SleevelessPatternDisplayRow[],
+  pieceSectionId: string,
+): string {
+  const tipAt = rows.findIndex(
+    (row) => row.kind === "block" && row.tipId === MITTEN_FINGERLESS_MITTS_TIP_ID,
+  );
+  if (tipAt < 0) return renderPatternDisplayRowsHtml(rows, { pieceSectionId });
+  const tip = rows[tipAt];
+  if (!tip || tip.kind !== "block") return renderPatternDisplayRowsHtml(rows, { pieceSectionId });
+  return (
+    renderPatternDisplayRowsHtml(rows.slice(0, tipAt), { pieceSectionId }) +
+    renderPatternDisplayBlockHtml(tip, { pieceSectionId }) +
+    renderPatternDisplayRowsHtml(rows.slice(tipAt + 1), { pieceSectionId })
+  );
+}
+
 function fingertipRows(calc: MittenCalc, side: MittenInstructionSide): SleevelessPatternDisplayRow[] {
   const sectionSteps = fingertipSection(calc, side);
   const mapHtml = mittenTopShapingMapHtml(sectionSteps);
@@ -517,6 +567,7 @@ function mittenRows(calc: MittenCalc, side: MittenInstructionSide): SleevelessPa
       }),
     ]),
     ...handAbove,
+    fingerlessMittsHelpTip(),
     ...fingertipRows(calc, side),
     ...section("Close the top", [
       instructionBlock({
@@ -556,9 +607,7 @@ function oneMittenHtml(
   const introHtml = intro
     ? `<p class="sleeveless-pattern-line" data-block-line="second-mitten">${escapeHtml(intro)}</p>`
     : "";
-  const instructions = renderPatternDisplayRowsHtml(mittenRows(calc, side), {
-    pieceSectionId: side.id,
-  });
+  const instructions = renderMittenInstructionRows(mittenRows(calc, side), side.id);
   return `<section class="mitten-panel" data-mitten="${side.id}" data-testid="mitten-${side.id}"${hidden ? " hidden" : ""}>
   ${readingLayout(`${introHtml}${instructions}`, buildMittenDiagramTabsHtml(calc, side.slotEdge))}
 </section>`;
