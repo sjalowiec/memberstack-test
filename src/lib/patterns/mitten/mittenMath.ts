@@ -258,7 +258,7 @@ export function calculateMittenPattern(input: MittenCalcInput): MittenCalcResult
   if (hand1Rows < 0 || hand1Rows % 2 !== 0) {
     return {
       ok: false,
-      message: "Hand 1 rows must be an even number so the carriage returns to the right.",
+      message: "Hand below the thumb rows must be an even number so the carriage returns to the right.",
     };
   }
 
