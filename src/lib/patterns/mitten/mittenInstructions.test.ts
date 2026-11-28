@@ -20,9 +20,12 @@ import {
   MITTEN_FINGERLESS_MITTS_TIP_ID,
   MITTEN_FINGERLESS_MITTS_TIP_PARAGRAPHS,
   MITTEN_FINGERLESS_MITTS_TIP_TITLE,
+  MITTEN_CUFF_OPTIONS_VIDEO_CONTENT_ID,
   MITTEN_INSTRUCTION_SIDES,
   MITTEN_SECOND_MITTEN_INTRO,
+  MITTEN_TOP_VIDEO_CONTENT_ID,
   buildMittenPatternHtml,
+  mittenLearningVideoRows,
   mittenCountSummary,
   mittenPatternInpageNavItems,
   mittenPatternSectionId,
@@ -666,5 +669,135 @@ describe("mitten top shaping map", () => {
     expect(css).toContain(".shaping-map[data-mitten-top-shaping-map]");
     expect(css).toContain(".shaping-map__scroll");
     expect(css).toMatch(/\.shaping-map\[data-heel-toe-shaping-map\],\s*\.shaping-map\[data-mitten-top-shaping-map\]/);
+  });
+});
+
+const CUFF_AND_TOP_VIDEOS = [
+  {
+    content_id: MITTEN_CUFF_OPTIONS_VIDEO_CONTENT_ID,
+    title: "Mitten Cuff Options",
+    slug: "mitten-cuff-options",
+    status: "published",
+    vimeo_id: 9009,
+    vimeo_hash: "cuffhash1",
+  },
+  {
+    content_id: MITTEN_TOP_VIDEO_CONTENT_ID,
+    title: "Mitten Top: Short-Row Shaping",
+    slug: "mitten-top-short-row-shaping",
+    status: "published",
+    vimeo_id: 9008,
+  },
+] as const;
+
+function expectCuffAndTopVideos(html: string, cuffRows: number): void {
+  for (const sideId of ["right-edge", "left-edge"] as const) {
+    const sideHtml = panel(html, sideId);
+    const cuffStart = sideHtml.indexOf(`id="${mittenPatternSectionId(sideId, "cast-on-and-cuff")}"`);
+    const transferStart = sideHtml.indexOf(`id="${mittenPatternSectionId(sideId, "transfer")}"`);
+    const cuff = sideHtml.slice(cuffStart, transferStart);
+    const cuffSentence = `Knit ${cuffRows} rows in your choice of cuff pattern.`;
+    expect(cuff).toContain(`Cast on`);
+    expect(cuff).toContain(cuffSentence);
+    expect(cuff.indexOf(cuffSentence)).toBeLessThan(cuff.indexOf('data-content-id="5009"'));
+    expect(cuff).toContain('data-content-id="5009"');
+    expect(cuff).toContain('data-vimeo-id="9009"');
+    expect(cuff).toContain('data-vimeo-hash="cuffhash1"');
+    expect(cuff).toContain("Watch: Mitten Cuff Options");
+    expect(cuff).toContain("video-button");
+    expect(cuff).toContain("kbm-kin-catalog-video");
+    expect(cuff).toContain("no-print");
+    expect(cuff).toContain("data-mitten-cuff-video");
+
+    const fingertipsStart = sideHtml.indexOf(`id="${mittenPatternSectionId(sideId, "fingertips")}"`);
+    const closeStart = sideHtml.indexOf(`id="${mittenPatternSectionId(sideId, "close-the-top")}"`);
+    const fingertips = sideHtml.slice(fingertipsStart, closeStart);
+    const videoAt = fingertips.indexOf('data-content-id="5008"');
+    const stepAt = fingertips.indexOf("data-step=");
+    expect(videoAt).toBeGreaterThanOrEqual(0);
+    expect(stepAt).toBeGreaterThan(videoAt);
+    expect(fingertips.indexOf('data-content-id="5008"')).toBeLessThan(
+      fingertips.indexOf("Before beginning the fingertips"),
+    );
+    expect(fingertips).toContain('data-vimeo-id="9008"');
+    expect(fingertips).toContain("Watch: Mitten Top: Short-Row Shaping");
+    expect(fingertips).toContain("video-button");
+    expect(fingertips).toContain("no-print");
+    expect(fingertips).toContain("data-mitten-top-video");
+  }
+}
+
+describe("mitten cuff and fingertip learning videos", () => {
+  it("places the catalog videos on slotted and gored mittens without rewriting the instructions", () => {
+    const slotted = womanSmallPreviewCalc();
+    const slottedHtml = buildMittenPatternHtml(slotted, "in", CUFF_AND_TOP_VIDEOS);
+    expectCuffAndTopVideos(slottedHtml, slotted.cuffRows);
+    expect(slottedHtml).toContain(MITTEN_CUFF_START_CARRIAGE);
+
+    const gored = calculateMittenPattern({
+      ...womanSmallPreviewInput(),
+      thumbCircumferenceInches: 2,
+      thumbLengthInches: 2,
+      thumbStyle: "gored",
+    });
+    expect(gored.ok).toBe(true);
+    if (!gored.ok) return;
+    const goredHtml = buildMittenPatternHtml(gored.calc, "in", CUFF_AND_TOP_VIDEOS);
+    expectCuffAndTopVideos(goredHtml, gored.calc.cuffRows);
+    expect(goredHtml).toContain("With the wrong side facing, rehang the first edge");
+  });
+
+  it("omits the buttons when the catalog cannot play those KIN videos", () => {
+    const html = buildMittenPatternHtml(womanSmallPreviewCalc());
+    expect(html).not.toContain('data-content-id="5008"');
+    expect(html).not.toContain('data-content-id="5009"');
+    expect(html).toContain('data-content-id="950"');
+    expect(html).toContain('data-content-id="587"');
+  });
+
+  it("resolves playable catalog rows by KIN id and keeps the player id out of the pattern source", () => {
+    expect(
+      mittenLearningVideoRows([
+        {
+          content_id: "5009",
+          title: "Mitten Cuff Options",
+          status: "published",
+          vimeo_id: "4242",
+          vimeo_hash: "abc123",
+        },
+        { content_id: 5008, title: "Mitten Top: Short-Row Shaping", vimeo_id: 88 },
+      ]),
+    ).toEqual([
+      expect.objectContaining({
+        content_id: 5009,
+        title: "Mitten Cuff Options",
+        vimeo_id: 4242,
+        vimeo_hash: "abc123",
+      }),
+      expect.objectContaining({ content_id: 5008, title: "Mitten Top: Short-Row Shaping", vimeo_id: 88 }),
+    ]);
+    expect(
+      mittenLearningVideoRows([
+        { content_id: 5008, title: "Mitten Top: Short-Row Shaping", status: "draft", vimeo_id: 11 },
+      ]),
+    ).toEqual([]);
+    expect(mittenLearningVideoRows([{ content_id: 5009, title: "Mitten Cuff Options" }])).toEqual([]);
+
+    const source = readFileSync(resolve("src/lib/patterns/mitten/mittenInstructions.ts"), "utf8");
+    expect(source).toContain("MITTEN_CUFF_OPTIONS_VIDEO_CONTENT_ID = 5009");
+    expect(source).toContain("MITTEN_TOP_VIDEO_CONTENT_ID = 5008");
+    expect(source).not.toContain("9009");
+    expect(source).not.toContain("4242");
+    expect(source).not.toContain("player.vimeo.com");
+
+    const page = readFileSync(resolve("src/pages/patterns/mittens/pattern.astro"), "utf8");
+    expect(page).toContain('id="mitten-pattern-videos"');
+    expect(page).toContain("loadMergedVideoCatalog");
+    expect(page).toContain("mittenLearningVideoRows");
+
+    const modal = readFileSync(resolve("src/components/common/KinCatalogVideoModal.astro"), "utf8");
+    expect(modal).toContain('getAttribute("data-vimeo-hash")');
+    const printCss = readFileSync(resolve("src/styles/print.css"), "utf8");
+    expect(printCss).toContain(".video-button");
   });
 });

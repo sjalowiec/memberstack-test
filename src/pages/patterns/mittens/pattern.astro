@@ -11,7 +11,9 @@ import PatternPrintPersonalization from "../../../components/common/PatternPrint
 import SavedPatternHeader from "../../../components/patterns/SavedPatternHeader.astro";
 import SavedPatternStickyNav from "../../../components/patterns/SavedPatternStickyNav.astro";
 import { MITTEN_BUILDER_HREF } from "../../../lib/patterns/mitten/mittenDraft";
+import { mittenLearningVideoRows } from "../../../lib/patterns/mitten/mittenInstructions";
 import { MITTEN_SUMMARY_EDIT_HREF } from "../../../lib/patterns/customPatternProjectNavigation";
+import { loadMergedVideoCatalog } from "../../../lib/videos/videoCatalogStore";
 
 import "../../../styles/wizard.css";
 import "../../../styles/patterns/sleeveless-pattern-shared.css";
@@ -22,6 +24,14 @@ import "../../../styles/glossary-tooltip.css";
 import "../../../styles/pattern-tips.css";
 import "../../../styles/pattern-quick-tip.css";
 import "../../../styles/print.css";
+
+let mittenPatternVideosJson = "[]";
+try {
+  const catalog = await loadMergedVideoCatalog();
+  mittenPatternVideosJson = JSON.stringify(mittenLearningVideoRows(catalog)).replace(/</g, "\\u003c");
+} catch {
+  mittenPatternVideosJson = "[]";
+}
 
 ---
 
@@ -78,6 +88,7 @@ import "../../../styles/print.css";
   </main>
 </Layout>
 
+<script id="mitten-pattern-videos" type="application/json" set:html={mittenPatternVideosJson} />
 <script>
   import { initMittenPatternPage } from "../../../scripts/mitten-pattern-page";
   void initMittenPatternPage();

@@ -51,6 +51,19 @@ import { ensureUrlRequestedSavedPatternHydrated } from "../lib/patterns/ensureUr
 import { SAVED_PATTERN_UNAVAILABLE_BODY } from "../lib/patterns/savedPatternAccessState";
 import { mountPatternPrintAction, syncPatternInpageNav } from "../lib/patterns/patternInpageNav";
 import { applyPatternPrintPersonalizationToDom, triggerPatternPrint } from "./patternPrintPersonalization";
+import type { PublicVideoRow } from "../lib/lessonVideo";
+
+function mittenPageVideoCatalog(): PublicVideoRow[] | undefined {
+  const node = document.getElementById("mitten-pattern-videos");
+  const raw = node?.textContent?.trim();
+  if (!raw) return undefined;
+  try {
+    const parsed = JSON.parse(raw) as unknown;
+    return Array.isArray(parsed) ? (parsed as PublicVideoRow[]) : undefined;
+  } catch {
+    return undefined;
+  }
+}
 
 function currentDraft(): MittenDraft | null {
   const params = new URLSearchParams(window.location.search);
@@ -342,7 +355,11 @@ export async function initMittenPatternPage(): Promise<void> {
     body.innerHTML = `<p>${result.message}</p>`;
     return;
   }
-  body.innerHTML = buildMittenPatternHtml(result.calc, draft.displayUnit === "cm" ? "cm" : "in");
+  body.innerHTML = buildMittenPatternHtml(
+    result.calc,
+    draft.displayUnit === "cm" ? "cm" : "in",
+    mittenPageVideoCatalog(),
+  );
   bindMittenPatternChrome(root);
   const heading = document.querySelector("[data-mitten-pattern-heading]");
   if (heading) heading.textContent = resolveMittenPatternDisplayName(draft);
@@ -388,7 +405,11 @@ export function renderMittenPatternFromDraft(target: HTMLElement): void {
     target.innerHTML = `<p>${result.message}</p>`;
     return;
   }
-  target.innerHTML = buildMittenPatternHtml(result.calc, draft.displayUnit === "cm" ? "cm" : "in");
+  target.innerHTML = buildMittenPatternHtml(
+    result.calc,
+    draft.displayUnit === "cm" ? "cm" : "in",
+    mittenPageVideoCatalog(),
+  );
   bindMittenPatternChrome(target);
 }
 

@@ -17,7 +17,12 @@ import {
   renderPatternDisplayRowsHtml,
 } from "../sleevelessPatternDisplayHtml";
 import { buildPatternQuickTipInnerHtml } from "../patternQuickTip";
-import { sleevelessHelpVideoFromCatalog } from "../sleevelessCatalogHelpVideo";
+import type { PublicVideoRow } from "../../lessonVideo";
+import { catalogVideoIsPublic } from "../../videoPublic";
+import {
+  findPublicVideoByContentId,
+  sleevelessHelpVideoFromCatalog,
+} from "../sleevelessCatalogHelpVideo";
 import {
   buildSingleShortRowShapingMap,
   MITTEN_TOP_SHAPING_MAP_TITLE,
@@ -55,6 +60,12 @@ export const MITTEN_SLOT_VIDEO_CONTENT_ID = 950;
 
 /** “Gathered Top for Mittens and Hats”. Shown beside the gathered thumb finish. */
 export const MITTEN_GATHERED_THUMB_VIDEO_CONTENT_ID = 587;
+
+/** “Mitten Cuff Options”. Shown in the cuff section. */
+export const MITTEN_CUFF_OPTIONS_VIDEO_CONTENT_ID = 5009;
+
+/** “Mitten Top: Short-Row Shaping”. Shown at the start of fingertip shaping. */
+export const MITTEN_TOP_VIDEO_CONTENT_ID = 5008;
 
 export type MittenSlotEdge = "right" | "left";
 
@@ -212,15 +223,71 @@ function stepLine(step: string, text: string): string {
   return stepWrap(step, `<p class="sleeveless-pattern-line">${escapeHtml(text)}</p>`);
 }
 
-function mittenVideoButton(contentId: number, hook: string): string {
-  const video = sleevelessHelpVideoFromCatalog(contentId);
+function vimeoIdNumber(row: PublicVideoRow): number | null {
+  const numeric = vimeoIdText(row.vimeo_id) ?? vimeoIdText(row.vimeo_id_public);
+  return numeric == null ? null : Number(numeric);
+}
+
+function vimeoIdText(value: unknown): string | null {
+  if (typeof value === "number" && Number.isFinite(value)) return String(Math.trunc(value));
+  if (typeof value === "string" && /^\d+$/.test(value.trim())) return value.trim();
+  return null;
+}
+
+/**
+ * Catalog rows for the cuff and fingertip lessons.
+ * The pattern stores KIN content ids. Player ids come from the catalog row.
+ * A missing or unpublished row is omitted, so another video is never substituted.
+ */
+export function mittenLearningVideoRows(catalog: readonly unknown[]): PublicVideoRow[] {
+  const rows = catalog as PublicVideoRow[];
+  const out: PublicVideoRow[] = [];
+  for (const contentId of [MITTEN_CUFF_OPTIONS_VIDEO_CONTENT_ID, MITTEN_TOP_VIDEO_CONTENT_ID]) {
+    const row = findPublicVideoByContentId(rows, contentId);
+    if (!row || !catalogVideoIsPublic(row)) continue;
+    const vimeoId = vimeoIdNumber(row);
+    const title = typeof row.title === "string" ? row.title.trim() : "";
+    if (vimeoId == null || !title) continue;
+    const hash = typeof row.vimeo_hash === "string" ? row.vimeo_hash.trim() : "";
+    out.push({
+      content_id: contentId,
+      title,
+      ...(typeof row.slug === "string" && row.slug.trim() ? { slug: row.slug.trim() } : {}),
+      ...(typeof row.status === "string" && row.status.trim() ? { status: row.status.trim() } : {}),
+      vimeo_id: vimeoId,
+      ...(hash && /^[a-zA-Z0-9]+$/.test(hash) ? { vimeo_hash: hash } : {}),
+      ...(row.jumpLinks ? { jumpLinks: row.jumpLinks } : {}),
+      ...(row.chapters ? { chapters: row.chapters } : {}),
+    });
+  }
+  return out;
+}
+
+function resolveMittenVideo(contentId: number, videoCatalog?: readonly PublicVideoRow[]) {
+  if (videoCatalog) {
+    const fromPage = sleevelessHelpVideoFromCatalog(contentId, [...videoCatalog]);
+    if (fromPage) return fromPage;
+  }
+  return sleevelessHelpVideoFromCatalog(contentId);
+}
+
+function mittenVideoButton(
+  contentId: number,
+  hook: string,
+  videoCatalog?: readonly PublicVideoRow[],
+): string {
+  const video = resolveMittenVideo(contentId, videoCatalog);
   if (!video) return "";
+  const hash = video.privacyHash
+    ? ` data-vimeo-hash="${escapeHtml(video.privacyHash)}"`
+    : "";
   return (
     `<div class="pattern-help-link no-print">` +
     `<button type="button" class="video-button kbm-kin-catalog-video pattern-help-link__button"` +
     ` data-vimeo-id="${escapeHtml(video.id)}"` +
     ` data-video-title="${escapeHtml(video.title)}"` +
     ` data-content-id="${contentId}"` +
+    `${hash}` +
     ` data-video-autoplay="false"` +
     ` data-vimeo-defer` +
     ` ${hook}` +
@@ -380,12 +447,18 @@ function renderMittenInstructionRows(
   );
 }
 
-function fingertipRows(calc: MittenCalc, side: MittenInstructionSide): SleevelessPatternDisplayRow[] {
+function fingertipRows(
+  calc: MittenCalc,
+  side: MittenInstructionSide,
+  videoCatalog?: readonly PublicVideoRow[],
+): SleevelessPatternDisplayRow[] {
   const sectionSteps = fingertipSection(calc, side);
   const mapHtml = mittenTopShapingMapHtml(sectionSteps);
+  const topVideo = mittenVideoButton(MITTEN_TOP_VIDEO_CONTENT_ID, "data-mitten-top-video", videoCatalog);
   const blocks: InstructionBlock[] = [];
   sectionSteps.steps.forEach((step, index) => {
-    blocks.push(fingertipBlock(step, calc, index === 0 ? [blockMarker("fingertips")] : []));
+    const lead = index === 0 ? [blockMarker("fingertips"), ...(topVideo ? [topVideo] : [])] : [];
+    blocks.push(fingertipBlock(step, calc, lead));
     if (step.type === "ensure-carriage" && mapHtml) {
       blocks.push(instructionBlock({ lines: [mapHtml] }));
     }
@@ -447,7 +520,11 @@ function straightRows(calc: MittenCalc, gore: GoreThumbPlan | null): SleevelessP
   ]);
 }
 
-function goredThumbRows(calc: MittenCalc, gore: GoreThumbPlan): SleevelessPatternDisplayRow[] {
+function goredThumbRows(
+  calc: MittenCalc,
+  gore: GoreThumbPlan,
+  videoCatalog?: readonly PublicVideoRow[],
+): SleevelessPatternDisplayRow[] {
   const lines = [
     blockMarker("thumb"),
     "With the wrong side facing, rehang the first edge between the markers on the left needles. Position the marker nearest the cuff at machine zero. Rehang " +
@@ -473,15 +550,26 @@ function goredThumbRows(calc: MittenCalc, gore: GoreThumbPlan): SleevelessPatter
     "Before the final closing row, transfer every other stitch to its neighbor and knit one row.",
     "Break the yarn, thread the tail through the remaining stitches, gather the tip, and use the tail to seam.",
   );
-  const video = mittenVideoButton(MITTEN_GATHERED_THUMB_VIDEO_CONTENT_ID, "data-mitten-gathered-thumb-video");
+  const video = mittenVideoButton(
+    MITTEN_GATHERED_THUMB_VIDEO_CONTENT_ID,
+    "data-mitten-gathered-thumb-video",
+    videoCatalog,
+  );
   if (video) lines.push(video);
   return section("Gored thumb", [
     instructionBlock({ lines, stitchCount: gore.pickupNeedles }),
   ]);
 }
 
-function slottedThumbRows(calc: MittenCalc): SleevelessPatternDisplayRow[] {
-  const video = mittenVideoButton(MITTEN_GATHERED_THUMB_VIDEO_CONTENT_ID, "data-mitten-gathered-thumb-video");
+function slottedThumbRows(
+  calc: MittenCalc,
+  videoCatalog?: readonly PublicVideoRow[],
+): SleevelessPatternDisplayRow[] {
+  const video = mittenVideoButton(
+    MITTEN_GATHERED_THUMB_VIDEO_CONTENT_ID,
+    "data-mitten-gathered-thumb-video",
+    videoCatalog,
+  );
   return section("Rehang and knit the thumb", [
     instructionBlock({
       lines: [
@@ -526,11 +614,20 @@ function seamRows(calc: MittenCalc): SleevelessPatternDisplayRow[] {
   ]);
 }
 
-function mittenRows(calc: MittenCalc, side: MittenInstructionSide): SleevelessPatternDisplayRow[] {
+function mittenRows(
+  calc: MittenCalc,
+  side: MittenInstructionSide,
+  videoCatalog?: readonly PublicVideoRow[],
+): SleevelessPatternDisplayRow[] {
   const slotLabel = SIDE_LABEL[side.slotEdge];
   const gore = calc.gore;
   const title = gore ? (side.slotEdge === "right" ? "Right-edge thumb" : "Left-edge thumb") : side.title;
-  const slotVideo = mittenVideoButton(MITTEN_SLOT_VIDEO_CONTENT_ID, "data-mitten-slot-video");
+  const slotVideo = mittenVideoButton(MITTEN_SLOT_VIDEO_CONTENT_ID, "data-mitten-slot-video", videoCatalog);
+  const cuffVideo = mittenVideoButton(
+    MITTEN_CUFF_OPTIONS_VIDEO_CONTENT_ID,
+    "data-mitten-cuff-video",
+    videoCatalog,
+  );
   const handAbove = gore
     ? [...markerRows(calc, gore), ...straightRows(calc, gore)]
     : [
@@ -562,6 +659,7 @@ function mittenRows(calc: MittenCalc, side: MittenInstructionSide): SleevelessPa
           MITTEN_CUFF_START_CARRIAGE,
           `Knit ${calc.cuffRows} rows in your choice of cuff pattern.`,
           rcLine(calc.cuffRows),
+          ...(cuffVideo ? [cuffVideo] : []),
         ],
         stitchCount: calc.cuffSts,
         reset: true,
@@ -592,7 +690,7 @@ function mittenRows(calc: MittenCalc, side: MittenInstructionSide): SleevelessPa
     ]),
     ...handAbove,
     fingerlessMittsHelpTip(),
-    ...fingertipRows(calc, side),
+    ...fingertipRows(calc, side, videoCatalog),
     ...section("Close the top", [
       instructionBlock({
         lines: [
@@ -603,7 +701,7 @@ function mittenRows(calc: MittenCalc, side: MittenInstructionSide): SleevelessPa
         stitchCount: calc.handSts,
       }),
     ]),
-    ...(gore ? goredThumbRows(calc, gore) : slottedThumbRows(calc)),
+    ...(gore ? goredThumbRows(calc, gore, videoCatalog) : slottedThumbRows(calc, videoCatalog)),
     ...seamRows(calc),
   ];
 }
@@ -628,21 +726,26 @@ function oneMittenHtml(
   intro: string,
   hidden: boolean,
   unit: MeasurementDisplayUnit,
+  videoCatalog?: readonly PublicVideoRow[],
 ): string {
   const introHtml = intro
     ? `<p class="sleeveless-pattern-line" data-block-line="second-mitten">${escapeHtml(intro)}</p>`
     : "";
-  const instructions = renderMittenInstructionRows(mittenRows(calc, side), side.id);
+  const instructions = renderMittenInstructionRows(mittenRows(calc, side, videoCatalog), side.id);
   return `<section class="mitten-panel" data-mitten="${side.id}" data-testid="mitten-${side.id}"${hidden ? " hidden" : ""}>
   ${readingLayout(`${introHtml}${instructions}`, buildMittenDiagramTabsHtml(calc, side.slotEdge, unit))}
 </section>`;
 }
 
 /** One instruction document for the screen and for print. */
-export function buildMittenPatternHtml(calc: MittenCalc, unit: MeasurementDisplayUnit = "in"): string {
+export function buildMittenPatternHtml(
+  calc: MittenCalc,
+  unit: MeasurementDisplayUnit = "in",
+  videoCatalog?: readonly PublicVideoRow[],
+): string {
   const secondIntro = calc.gore ? MITTEN_GORED_SECOND_MITTEN_INTRO : MITTEN_SECOND_MITTEN_INTRO;
   const panels = MITTEN_INSTRUCTION_SIDES.map((side, index) =>
-    oneMittenHtml(calc, side, index === 1 ? secondIntro : "", index > 0, unit),
+    oneMittenHtml(calc, side, index === 1 ? secondIntro : "", index > 0, unit, videoCatalog),
   ).join("\n");
   return `<div class="mitten-instructions" data-testid="mitten-instructions" data-print-source="mitten-instructions" data-thumb-style="${calc.thumbStyle}">
   ${panels}
