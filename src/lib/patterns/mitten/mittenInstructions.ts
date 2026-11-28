@@ -37,6 +37,7 @@ import {
 import { buildSockShortRowInstructionSection } from "../sock/sockShortRowInstructions";
 import type { PatternInpageNavItem } from "../patternInpageNav";
 import type { MeasurementDisplayUnit } from "../patternMeasurementDisplayUnit";
+import { mittenStitchMarkerInlineHtml } from "./mittenDiagramSvg";
 import { buildMittenDiagramTabsHtml } from "./mittenPatternDiagramTabs";
 import {
   MITTEN_INCREASE_EVENLY_GLOSSARY_ID,
@@ -537,7 +538,7 @@ function mittenRows(calc: MittenCalc, side: MittenInstructionSide): SleevelessPa
           instructionBlock({
             lines: [
               blockMarker("slot"),
-              `Starting at the outermost needle on the ${slotLabel}, work the ${calc.slotSts} slot stitches by hand: knit 1 row with waste yarn, 1 row with ravel cord, then 1 row with waste yarn.`,
+              `${mittenStitchMarkerInlineHtml()} Starting at the outermost needle on the ${slotLabel}, work the ${calc.slotSts} slot stitches by hand: knit 1 row with waste yarn, 1 row with ravel cord, then 1 row with waste yarn.`,
               "These hand-worked rows do not count on the row counter.",
               ...(slotVideo ? [slotVideo] : []),
             ],

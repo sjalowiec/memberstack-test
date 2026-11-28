@@ -325,6 +325,35 @@
     color: #374151;
   }
 
+  .stitch-marker-symbol {
+    display: inline-block;
+    margin-right: 0.35em;
+    line-height: 0;
+    vertical-align: -0.05em;
+  }
+
+  .stitch-marker-symbol svg,
+  .print-line .stitch-marker-symbol svg {
+    display: inline-block;
+    width: 0.8em;
+    height: 0.8em;
+    vertical-align: -0.12em;
+  }
+
+  @media print {
+    .stitch-marker-symbol {
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    .stitch-marker-symbol svg,
+    .print-line .stitch-marker-symbol svg {
+      width: 0.8em !important;
+      height: 0.8em !important;
+      max-width: 0.8em !important;
+    }
+  }
+
   .sleeveless-pattern-line .needle-range,
   .print-line .needle-range {
     font-weight: 700;

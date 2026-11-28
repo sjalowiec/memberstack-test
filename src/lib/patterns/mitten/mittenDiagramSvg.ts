@@ -642,8 +642,17 @@ function calculatedRowsLabel(rows: number, rowsPerInch: number, unit: Measuremen
 }
 
 /** Same filled dot the sweater place-marker uses. No caption. */
-const STITCH_MARKER_FILL = "#c62828";
+export const MITTEN_STITCH_MARKER_FILL = "#c62828";
 const STITCH_MARKER_R = 8;
+
+/** Inline copy of the diagram dot, sized with the instruction line. */
+export function mittenStitchMarkerInlineHtml(): string {
+  return (
+    `<span class="stitch-marker-symbol" data-stitch-marker="inline" aria-hidden="true">` +
+    `<svg viewBox="0 0 16 16" width="0.8em" height="0.8em" focusable="false" aria-hidden="true">` +
+    `<circle cx="8" cy="8" r="7" fill="${MITTEN_STITCH_MARKER_FILL}"/></svg></span>`
+  );
+}
 
 export type MittenStitchMarker = { id: string; x: number; y: number };
 
@@ -685,7 +694,7 @@ export function mittenStitchMarkerPositions(
 export function mittenStitchMarkerMarkup(calc: MittenCalc, frame: MittenPatternSketchFrame): string {
   const circles = mittenStitchMarkerPositions(calc, frame).map(
     (mark) =>
-      `<circle data-thumb-marker="${mark.id}" cx="${fmtNum(mark.x)}" cy="${fmtNum(mark.y)}" r="${STITCH_MARKER_R}" fill="${STITCH_MARKER_FILL}"/>`,
+      `<circle data-thumb-marker="${mark.id}" cx="${fmtNum(mark.x)}" cy="${fmtNum(mark.y)}" r="${STITCH_MARKER_R}" fill="${MITTEN_STITCH_MARKER_FILL}"/>`,
   );
   return circles.length ? `<g data-thumb-markers="true">${circles.join("")}</g>` : "";
 }
