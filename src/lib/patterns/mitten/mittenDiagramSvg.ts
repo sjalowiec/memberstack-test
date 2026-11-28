@@ -106,6 +106,14 @@ export function formatMittenDiagramLength(inches: number): string {
 const STS_COUNT = 17;
 const STS_MEASURE = 14;
 const STS_GAP = Math.round(STS_COUNT * 0.95);
+/**
+ * Rendered Poppins boxes. The count rises about one em above its baseline, and
+ * the measurement drops a few pixels below its baseline. Both lines stay this
+ * far off the dimension line, the same step on every indicator.
+ */
+const COUNT_ABOVE = STS_COUNT + 2;
+const MEASURE_DESCENT = 4;
+const LABEL_CLEAR = 8;
 
 function f(n: number): string {
   if (!Number.isFinite(n)) return "0";
@@ -483,25 +491,56 @@ function stsRowsLabel(
   });
 }
 
-function labelInk(
-  label: string,
+/**
+ * Distance from a point on the dimension line to the count baseline.
+ * The measurement stays one label step from the count, and the nearer line of
+ * text stays LABEL_CLEAR off the dimension line. `away` is a unit vector
+ * pointing to the side that holds the label.
+ */
+function labelAnchor(
   x: number,
   y: number,
-  anchor: "start" | "middle" | "end",
-  rotated: boolean,
-): InkBox {
+  rotationDeg: number,
+  awayX: number,
+  awayY: number,
+): { x: number; y: number } {
+  const radians = (rotationDeg * Math.PI) / 180;
+  const shiftX = -Math.sin(radians);
+  const shiftY = Math.cos(radians);
+  const toward = shiftX * awayX + shiftY * awayY;
+  const distance =
+    toward >= 0
+      ? LABEL_CLEAR + toward * COUNT_ABOVE
+      : LABEL_CLEAR + MEASURE_DESCENT - toward * STS_GAP;
+  return { x: x + awayX * distance, y: y + awayY * distance };
+}
+
+function labelInk(label: string, x: number, y: number, rotationDeg: number): InkBox {
   const [count = "", measure = ""] = label.split("\n");
-  const countW = lineWidth(count, STS_COUNT);
-  const measureW = measure ? lineWidth(measure, STS_MEASURE) : 0;
-  if (!rotated) {
-    const w = Math.max(countW, measureW);
-    const left = anchor === "start" ? x : anchor === "end" ? x - w : x - w / 2;
-    const h = measure ? STS_COUNT * 0.9 + STS_GAP + STS_MEASURE * 0.45 : STS_COUNT * 1.15;
-    return { x: left, y: y - STS_COUNT * 0.85, w, h };
-  }
-  const along = Math.max(countW, measureW);
-  const across = measure ? STS_GAP + STS_MEASURE * 0.85 : STS_COUNT;
-  return { x: x - STS_COUNT * 0.45, y: y - along / 2, w: across + STS_COUNT * 0.5, h: along };
+  const along = Math.max(lineWidth(count, STS_COUNT), measure ? lineWidth(measure, STS_MEASURE) : 0);
+  const radians = (rotationDeg * Math.PI) / 180;
+  const ux = Math.cos(radians);
+  const uy = Math.sin(radians);
+  const vx = -Math.sin(radians);
+  const vy = Math.cos(radians);
+  const half = along / 2;
+  const forward = measure ? STS_GAP + 3 : 2;
+  const corners = [
+    [-half, -COUNT_ABOVE],
+    [half, -COUNT_ABOVE],
+    [half, forward],
+    [-half, forward],
+  ].map(([alongOffset, crossOffset]) => ({
+    x: x + (alongOffset ?? 0) * ux + (crossOffset ?? 0) * vx,
+    y: y + (alongOffset ?? 0) * uy + (crossOffset ?? 0) * vy,
+  }));
+  const xs = corners.map((corner) => corner.x);
+  const ys = corners.map((corner) => corner.y);
+  const minX = Math.min(...xs);
+  const maxX = Math.max(...xs);
+  const minY = Math.min(...ys);
+  const maxY = Math.max(...ys);
+  return { x: minX, y: minY, w: Math.max(1, maxX - minX), h: Math.max(1, maxY - minY) };
 }
 
 function horizontalDimension(
@@ -524,7 +563,7 @@ function horizontalDimension(
       `</g>`,
     boxes: [
       { x: Math.min(left, right), y: y - 4, w: Math.abs(right - left), h: 8 },
-      labelInk(label, mid, labelY, "middle", false),
+      labelInk(label, mid, labelY, 0),
     ],
   };
 }
@@ -555,25 +594,24 @@ function verticalDimensions(
     );
     const horizontal = height < along + 8;
     const anchor = outward > 0 ? "start" : "end";
+    const rotation = horizontal ? 0 : -90;
     let markup = "";
     let box: InkBox = { x: edge, y: top, w: 1, h: height };
     let lineX = edge;
     for (let attempt = 0; attempt < 14; attempt += 1) {
       const offset = (section.role === "total" ? 40 : 18) + attempt * 16;
       lineX = edge + outward * offset;
+      const anchorPoint = labelAnchor(lineX, mid, rotation, outward, 0);
+      box = labelInk(section.label, anchorPoint.x, anchorPoint.y, rotation);
       if (horizontal) {
-        const labelX = lineX + outward * 8;
-        box = labelInk(section.label, labelX, mid, anchor, false);
         markup =
           `<g data-dimension="${section.role}">` +
           `<line x1="${fmtNum(lineX)}" y1="${fmtNum(top)}" x2="${fmtNum(lineX)}" y2="${fmtNum(bottom)}" stroke="${DS_ARROW}" stroke-width="1.4" fill="none"/>` +
           endCap(lineX, top, true) +
           endCap(lineX, bottom, true) +
-          stsRowsLabel(section.label, labelX, mid, anchor, section.role) +
+          stsRowsLabel(section.label, anchorPoint.x, anchorPoint.y, anchor, section.role) +
           `</g>`;
       } else {
-        const labelX = lineX + outward * 12;
-        box = labelInk(section.label, labelX, mid, "middle", true);
         markup =
           `<g data-dimension="${section.role}">` +
           `<line x1="${fmtNum(lineX)}" y1="${fmtNum(top)}" x2="${fmtNum(lineX)}" y2="${fmtNum(bottom)}" stroke="${DS_ARROW}" stroke-width="1.4" fill="none"/>` +
@@ -581,11 +619,11 @@ function verticalDimensions(
           endCap(lineX, bottom, true) +
           stsRowsLabel(
             section.label,
-            labelX,
-            mid,
+            anchorPoint.x,
+            anchorPoint.y,
             "middle",
             section.role,
-            `translate(${fmtNum(labelX)} ${fmtNum(mid)}) rotate(-90)`,
+            `translate(${fmtNum(anchorPoint.x)} ${fmtNum(anchorPoint.y)}) rotate(-90)`,
           ) +
           `</g>`;
       }
@@ -667,9 +705,11 @@ export function buildMittenDiagramSvg(
     formatKnittedDiagramMeasurement(calc.measurements.thumbLengthInches, unit),
   );
   const castOnLineY = yBottom + 22;
-  const castOn = horizontalDimension(cuffLeft, cuffRight, castOnLineY, castOnLineY + 16, castOnLabel, "cast-on");
+  const castOnAnchor = labelAnchor((cuffLeft + cuffRight) / 2, castOnLineY, 0, 0, 1);
+  const castOn = horizontalDimension(cuffLeft, cuffRight, castOnLineY, castOnAnchor.y, castOnLabel, "cast-on");
   const handLineY = yDomeBase + Math.max(36, (ySlot - yDomeBase) * 0.42);
-  const handWidth = horizontalDimension(handLeft, handRight, handLineY, handLineY - 8, handLabel, "hand-width");
+  const handAnchor = labelAnchor(handMid, handLineY, 0, 0, -1);
+  const handWidth = horizontalDimension(handLeft, handRight, handLineY, handAnchor.y, handLabel, "hand-width");
   const edge = slotRight ? handLeft : handRight;
   const outward = slotRight ? -1 : 1;
   const vertical = verticalDimensions(
@@ -723,26 +763,31 @@ export function buildMittenDiagramSvg(
   const half = thumbW / 2;
   const widthA = { x: widthCenterX - outX * half, y: widthCenterY - outY * half };
   const widthB = { x: widthCenterX + outX * half, y: widthCenterY + outY * half };
-  const widthAnchor = "middle" as const;
-  const widthLabelX = (widthA.x + widthB.x) / 2 + dirX * 22;
-  const widthLabelY = (widthA.y + widthB.y) / 2 + dirY * 22;
+  const widthAlongX = outX < 0 ? -outX : outX;
+  const widthAlongY = outX < 0 ? -outY : outY;
+  const widthRotation = (Math.atan2(widthAlongY, widthAlongX) * 180) / Math.PI;
+  const widthAnchor = labelAnchor((widthA.x + widthB.x) / 2, (widthA.y + widthB.y) / 2, widthRotation, dirX, dirY);
   const thumbTipX = baseX + dirX * thumbLen;
   const tipY = baseY + dirY * thumbLen;
-  const thumbWidthInk = labelInk(thumbWidthLabel, widthLabelX, widthLabelY, widthAnchor, false);
+  const thumbWidthInk = labelInk(thumbWidthLabel, widthAnchor.x, widthAnchor.y, widthRotation);
   const thumbBlocked = [...vertical.boxes, ...handWidth.boxes, ...castOn.boxes, thumbWidthInk];
+  const lengthRotation = -90 + sign * THUMB_ANGLE;
   let lengthBase = { x: baseX, y: baseY };
   let lengthTip = { x: thumbTipX, y: tipY };
-  let lengthMid = { x: baseX, y: baseY };
-  let thumbLengthInk = labelInk(thumbLengthLabel, baseX, baseY, "middle", true);
+  let lengthAnchor = { x: baseX, y: baseY };
+  let thumbLengthInk = labelInk(thumbLengthLabel, baseX, baseY, lengthRotation);
   for (let attempt = 0; attempt < 12; attempt += 1) {
     const lengthOffset = half + 18 + attempt * 16;
     lengthBase = { x: baseX + outX * lengthOffset, y: baseY + outY * lengthOffset };
     lengthTip = { x: lengthBase.x + dirX * thumbLen, y: lengthBase.y + dirY * thumbLen };
-    lengthMid = {
-      x: (lengthBase.x + lengthTip.x) / 2 + outX * 16,
-      y: (lengthBase.y + lengthTip.y) / 2 + outY * 16,
-    };
-    thumbLengthInk = labelInk(thumbLengthLabel, lengthMid.x, lengthMid.y, "middle", true);
+    lengthAnchor = labelAnchor(
+      (lengthBase.x + lengthTip.x) / 2,
+      (lengthBase.y + lengthTip.y) / 2,
+      lengthRotation,
+      outX,
+      outY,
+    );
+    thumbLengthInk = labelInk(thumbLengthLabel, lengthAnchor.x, lengthAnchor.y, lengthRotation);
     const samples = [0, 0.25, 0.5, 0.75, 1].map((t) => ({
       x: lengthBase.x + (lengthTip.x - lengthBase.x) * t - 4,
       y: lengthBase.y + (lengthTip.y - lengthBase.y) * t - 4,
@@ -782,7 +827,14 @@ export function buildMittenDiagramSvg(
     `<line x1="${fmtNum(widthA.x)}" y1="${fmtNum(widthA.y)}" x2="${fmtNum(widthB.x)}" y2="${fmtNum(widthB.y)}" stroke="${DS_ARROW}" stroke-width="1.4" fill="none"/>` +
     endCap(widthA.x, widthA.y, false) +
     endCap(widthB.x, widthB.y, false) +
-    stsRowsLabel(thumbWidthLabel, widthLabelX, widthLabelY, widthAnchor, "thumb-width") +
+    stsRowsLabel(
+      thumbWidthLabel,
+      widthAnchor.x,
+      widthAnchor.y,
+      "middle",
+      "thumb-width",
+      `translate(${fmtNum(widthAnchor.x)} ${fmtNum(widthAnchor.y)}) rotate(${fmtNum(widthRotation)})`,
+    ) +
     `</g>`;
   const thumbLengthDim =
     `<g data-dimension="thumb-length">` +
@@ -791,11 +843,11 @@ export function buildMittenDiagramSvg(
     endCap(lengthTip.x, lengthTip.y, true) +
     stsRowsLabel(
       thumbLengthLabel,
-      lengthMid.x,
-      lengthMid.y,
+      lengthAnchor.x,
+      lengthAnchor.y,
       "middle",
       "thumb-length",
-      `translate(${fmtNum(lengthMid.x)} ${fmtNum(lengthMid.y)}) rotate(${fmtNum(-90 + sign * THUMB_ANGLE)})`,
+      `translate(${fmtNum(lengthAnchor.x)} ${fmtNum(lengthAnchor.y)}) rotate(${fmtNum(lengthRotation)})`,
     ) +
     `</g>`;
 
