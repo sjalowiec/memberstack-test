@@ -9,7 +9,7 @@ import {
   formatShapingSegment,
 } from "../shapingNotationCompress";
 import type { ShortRowShaping } from "../sock/sockMath";
-import type { GoreReturn, MittenCalc } from "./mittenMath";
+import { goredMarkerPlacement, type GoreReturn, type MittenCalc } from "./mittenMath";
 
 export const MITTEN_INCREASE_EVENLY_GLOSSARY_ID = 645;
 export const MITTEN_INCREASE_EVENLY_GLOSSARY_TERM = "Increase Evenly";
@@ -61,13 +61,14 @@ function stitchLabel(count: number): string {
 /** Notation for one mitten. The mirrored mitten uses the same tokens on the opposite edge. */
 export function buildMittenShapingNotation(calc: MittenCalc): MittenShapingNotation {
   const gore = calc.gore;
+  const place = goredMarkerPlacement(calc);
   return {
     castOn: formatCastOnNotation(calc.cuffSts),
     cuffRows: formatBodyRowsNotation(calc.cuffRows),
     handIncrease: mittenHandIncreaseNotation(calc.increaseSts),
     handStsLabel: stitchLabel(calc.handSts),
-    hand1Rows: formatBodyRowsNotation(calc.hand1Rows),
-    straightRows: formatBodyRowsNotation(calc.straightRows),
+    hand1Rows: formatBodyRowsNotation(place ? place.rowsFromCuff : calc.hand1Rows),
+    straightRows: formatBodyRowsNotation(place ? place.straightRowsAfterUpper : calc.straightRows),
     fingertip: mittenFingertipShortRowNotation(calc.fingertip),
     thumbRows: formatBodyRowsNotation(calc.thumbRows),
     thumbStsLabel: stitchLabel(calc.thumbSts),

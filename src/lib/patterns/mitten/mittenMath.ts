@@ -56,7 +56,10 @@ export type GoreThumbPlan = {
   pickupNeedles: number;
   firstEdgeStitches: number;
   otherEdgeStitches: number;
-  /** Rows between the lower and upper markers on each edge. */
+  /**
+   * Rows between the lower and upper markers on each edge.
+   * Half the thumb circumference, converted with {@link roundHalfUp}.
+   */
   markerRows: number;
   startWorkingNeedles: number;
   heldEachSide: number;
@@ -134,6 +137,59 @@ export function goredThumbReturns(heldEachSide: number): GoreReturn[] {
     side = side === "left" ? "right" : "left";
   }
   return returns;
+}
+
+/**
+ * Share of the thumb circumference between the top of the cuff and the lower markers.
+ * The same share is used for every size, including children and custom measurements.
+ */
+export const GORED_LOWER_MARKER_CIRCUMFERENCE_FRACTION = 0.15;
+
+/** Rows from the top of the cuff to the lower gored-thumb markers. */
+export function rowsFromCuffToLowerGoredMarkers(
+  thumbCircumferenceInches: number,
+  rowGaugePerInch: number,
+): number {
+  if (!(thumbCircumferenceInches > 0) || !(rowGaugePerInch > 0)) return 0;
+  return roundHalfUp(
+    thumbCircumferenceInches * GORED_LOWER_MARKER_CIRCUMFERENCE_FRACTION * rowGaugePerInch,
+  );
+}
+
+export type GoredMarkerPlacement = {
+  /** Rows from the top of the cuff to the lower markers. */
+  rowsFromCuff: number;
+  /** Rows between the lower and upper markers. */
+  markerRows: number;
+  /** Hand row counter at the lower markers. The counter starts at the top of the cuff. */
+  lowerAt: number;
+  /** Hand row counter at the upper markers. This is the thumb web. */
+  upperAt: number;
+  /** Straight rows after the upper markers and before the fingertip setup. */
+  straightRowsAfterUpper: number;
+};
+
+/**
+ * Lower markers sit 15% of the thumb circumference above the cuff.
+ * Upper markers sit half a thumb circumference above that.
+ * The rows after the upper markers change so the mitten length stays the same.
+ */
+export function goredMarkerPlacement(calc: MittenCalc): GoredMarkerPlacement | null {
+  const gore = calc.gore;
+  if (!gore) return null;
+  const rowsFromCuff = rowsFromCuffToLowerGoredMarkers(
+    calc.measurements.thumbCircumferenceInches,
+    calc.rowGaugePerInch,
+  );
+  const lowerAt = rowsFromCuff;
+  const upperAt = lowerAt + gore.markerRows;
+  return {
+    rowsFromCuff,
+    markerRows: gore.markerRows,
+    lowerAt,
+    upperAt,
+    straightRowsAfterUpper: calc.hand1Rows + calc.straightRows - upperAt,
+  };
 }
 
 export function planGoredThumb(args: {
@@ -299,12 +355,18 @@ export function calculateMittenPattern(input: MittenCalcInput): MittenCalcResult
           : "The thumb measurement cannot form a slotted thumb.",
     };
   }
-  if (thumb.gore && thumb.gore.markerRows > hand1Rows + straightRows) {
-    return {
-      ok: false,
-      message:
-        "The gored thumb opening is longer than the hand rows before the fingertips. Lengthen the hand or reduce the thumb circumference.",
-    };
+  if (thumb.gore) {
+    const rowsFromCuff = rowsFromCuffToLowerGoredMarkers(
+      input.thumbCircumferenceInches,
+      rowGaugePerInch,
+    );
+    if (rowsFromCuff + thumb.gore.markerRows > hand1Rows + straightRows) {
+      return {
+        ok: false,
+        message:
+          "The gored thumb opening is longer than the hand rows before the fingertips. Lengthen the hand or reduce the thumb circumference.",
+      };
+    }
   }
 
   return {

@@ -50,8 +50,10 @@ import {
 } from "./mittenShapingNotation";
 import {
   formatMittenLengthInches,
+  goredMarkerPlacement,
   mittenPhysicalLengths,
   type GoreThumbPlan,
+  type GoredMarkerPlacement,
   type MittenCalc,
 } from "./mittenMath";
 
@@ -296,20 +298,10 @@ function mittenVideoButton(
   );
 }
 
-function goreMarkerSplit(calc: MittenCalc, gore: GoreThumbPlan): {
-  intoHand1: number;
-  lowerAt: number;
-  upperInStraight: number;
-  afterUpper: number;
-} {
-  const upperInStraight = Math.min(gore.markerRows, calc.straightRows);
-  const intoHand1 = gore.markerRows - upperInStraight;
-  return {
-    intoHand1,
-    lowerAt: calc.hand1Rows - intoHand1,
-    upperInStraight,
-    afterUpper: calc.straightRows - upperInStraight,
-  };
+function requireGoredMarkerPlacement(calc: MittenCalc): GoredMarkerPlacement {
+  const placement = goredMarkerPlacement(calc);
+  if (!placement) throw new Error("Gored marker placement requires a gored thumb.");
+  return placement;
 }
 
 function fingertipBlock(step: SockInstructionStep, calc: MittenCalc, lead: string[]): InstructionBlock {
@@ -466,18 +458,32 @@ function fingertipRows(
   return section("Fingertips", blocks);
 }
 
+function goredHandBelowLines(calc: MittenCalc): string[] {
+  const place = requireGoredMarkerPlacement(calc);
+  if (place.rowsFromCuff === 0) {
+    return [
+      blockMarker("hand-1"),
+      "Place the lower thumb marker on each edge at the top of the cuff. This marker is nearest the cuff.",
+      rcLine(0),
+    ];
+  }
+  return [
+    blockMarker("hand-1"),
+    `Knit ${place.rowsFromCuff} rows. (${calc.handSts} stitches)`,
+    "Place the lower thumb marker on each edge. This marker is nearest the cuff.",
+    rcLine(place.lowerAt),
+  ];
+}
+
 function markerRows(calc: MittenCalc, gore: GoreThumbPlan): SleevelessPatternDisplayRow[] {
-  const split = goreMarkerSplit(calc, gore);
-  const placeLower =
-    split.intoHand1 === 0
-      ? "At the end of the hand below the thumb, place the lower thumb marker on each edge. This marker is nearest the cuff."
-      : `During the hand below the thumb, place the lower thumb marker on each edge at ${formatRowCounterResetGarmentRcLabel(split.lowerAt)}. This marker is nearest the cuff.`;
+  const place = requireGoredMarkerPlacement(calc);
   return section("Thumb markers", [
     instructionBlock({
       lines: [
         blockMarker("markers"),
-        placeLower,
+        `Knit ${gore.markerRows} rows across all ${calc.handSts} stitches, then place the upper thumb marker on each edge.`,
         `On each hand edge, the lower and upper markers are ${gore.markerRows} rows apart. That distance is half the thumb circumference.`,
+        rcLine(place.upperAt),
       ],
       stitchCount: calc.handSts,
     }),
@@ -504,15 +510,14 @@ function straightRows(calc: MittenCalc, gore: GoreThumbPlan | null): SleevelessP
       }),
     ]);
   }
-  const split = goreMarkerSplit(calc, gore);
+  const place = requireGoredMarkerPlacement(calc);
   const lines = [blockMarker("straight")];
-  lines.push(
-    split.upperInStraight > 0
-      ? `Knit ${split.upperInStraight} rows across all ${calc.handSts} stitches, then place the upper thumb marker on each edge.`
-      : "Place the upper thumb marker on each edge at the start of this section.",
-  );
-  if (split.afterUpper > 0) {
-    lines.push(`Knit ${split.afterUpper} more rows across all ${calc.handSts} stitches.`);
+  if (place.straightRowsAfterUpper > 0) {
+    lines.push(
+      `Knit ${place.straightRowsAfterUpper} rows across all ${calc.handSts} stitches.`,
+    );
+  } else {
+    lines.push("The upper thumb marker is at the start of the fingertip shaping.");
   }
   lines.push(rcLine(calc.handEndRc));
   return section("Hand above the thumb", [
@@ -679,7 +684,7 @@ function mittenRows(
     ]),
     ...section("Hand below the thumb", [
       instructionBlock({
-        lines: [
+        lines: gore ? goredHandBelowLines(calc) : [
           blockMarker("hand-1"),
           `Knit ${calc.hand1Rows} rows. (${calc.handSts} stitches)`,
           rcLine(calc.hand1Rows),

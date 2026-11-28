@@ -8,9 +8,12 @@ import {
   calculateMittenPattern,
   calculateThumbCounts,
   gaugePerInchFromPer4Inches,
+  goredMarkerPlacement,
+  measurementsFromSizingRow,
   mittenPhysicalLengths,
   planGoredThumb,
   roundHalfUp,
+  rowsFromCuffToLowerGoredMarkers,
   womanSmallPreviewCalc,
   womanSmallPreviewInput,
 } from "./mittenMath";
@@ -194,6 +197,69 @@ describe("gored thumb math", () => {
     expect(result.calc.gore?.returns).toHaveLength(6);
     expect(result.calc.thumbRows).toBeGreaterThan(result.calc.gore?.returns.length ?? 0);
     expect(result.calc.slotSts).toBe(0);
+  });
+
+  it("places the lower markers at 15% of the thumb circumference and keeps the mitten length", () => {
+    const gauges = [6, 8, 10, 12];
+    const sizes = ["child_2_4", "child_6_8", "woman_sm", "woman_lg", "man_sm", "man_lg"] as const;
+    for (const size of sizes) {
+      const row = MITTEN_SIZING_CHART.find((entry) => entry.size === size);
+      expect(row, size).toBeTruthy();
+      for (const rowGaugePerInch of gauges) {
+        const slotted = calculateMittenPattern({
+          ...measurementsFromSizingRow(row!),
+          stitchGaugePerInch: 7,
+          rowGaugePerInch,
+        });
+        const gored = calculateMittenPattern({
+          ...measurementsFromSizingRow(row!),
+          stitchGaugePerInch: 7,
+          rowGaugePerInch,
+          thumbStyle: "gored",
+        });
+        expect(slotted.ok, `${size} ${rowGaugePerInch}`).toBe(true);
+        expect(gored.ok, `${size} ${rowGaugePerInch}`).toBe(true);
+        if (!slotted.ok || !gored.ok) continue;
+        const place = goredMarkerPlacement(gored.calc);
+        expect(place, `${size} ${rowGaugePerInch}`).toBeTruthy();
+        if (!place) continue;
+        const rowsFromCuff = rowsFromCuffToLowerGoredMarkers(row!.thumbCircumferenceInches, rowGaugePerInch);
+        expect(place.rowsFromCuff).toBe(rowsFromCuff);
+        expect(place.lowerAt).toBe(rowsFromCuff);
+        expect(place.markerRows).toBe(gored.calc.gore?.markerRows);
+        expect(place.upperAt).toBe(place.lowerAt + place.markerRows);
+        expect(place.lowerAt + place.markerRows + place.straightRowsAfterUpper).toBe(gored.calc.handEndRc);
+        expect(gored.calc.handEndRc).toBe(slotted.calc.handEndRc);
+        expect(gored.calc.hand1Rows).toBe(slotted.calc.hand1Rows);
+        expect(gored.calc.straightRows).toBe(slotted.calc.straightRows);
+        expect(gored.calc.fingertip).toEqual(slotted.calc.fingertip);
+        expect(gored.calc.thumbRows).toBe(slotted.calc.thumbRows);
+        expect(gored.calc.thumbSts).toBe(gored.calc.gore?.pickupNeedles);
+        expect(slotted.calc.gore).toBeNull();
+        expect(mittenPhysicalLengths(gored.calc).totalLengthIn).toBeCloseTo(
+          mittenPhysicalLengths(slotted.calc).totalLengthIn,
+          5,
+        );
+      }
+    }
+  });
+
+  it("uses 15% of a custom thumb circumference for every gauge", () => {
+    const result = calculateMittenPattern({
+      ...womanSmallPreviewInput(),
+      thumbCircumferenceInches: 3.1,
+      rowGaugePerInch: 9,
+      thumbStyle: "gored",
+    });
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    const place = goredMarkerPlacement(result.calc);
+    expect(place?.rowsFromCuff).toBe(roundHalfUp(3.1 * 0.15 * 9));
+    expect(place?.markerRows).toBe(roundHalfUp((3.1 / 2) * 9));
+    expect(place?.upperAt).toBe((place?.lowerAt ?? 0) + (place?.markerRows ?? 0));
+    expect((place?.lowerAt ?? 0) + (place?.markerRows ?? 0) + (place?.straightRowsAfterUpper ?? 0)).toBe(
+      result.calc.handEndRc,
+    );
   });
 
   it("uses a smaller final group and does not wrap after the last held needle", () => {
