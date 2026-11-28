@@ -262,11 +262,17 @@ describe("slotted mitten diagrams", () => {
     expect(pattern).not.toContain('data-diagram-mode="summary"');
   });
 
-  it("marks the slotted thumb opening with the side-seam tick and no caption", () => {
+  it("marks each written stitch marker with a filled circle and no caption", () => {
     for (const edge of ["right", "left"] as const) {
       const svg = buildMittenDiagramSvg(womanSmallPreviewCalc(), edge);
-      expect(svg).toContain('data-thumb-marker="slot"');
-      expect(svg).toContain(`data-armhole-marker-tick="${edge}"`);
+      const circles = [...svg.matchAll(/<circle data-thumb-marker="([^"]+)" cx="([^"]+)" cy="([^"]+)" r="8" fill="#c62828"\/>/g)];
+      expect(circles.map((match) => match[1])).toEqual([`slot-${edge}`]);
+      const openingY = svg.match(/data-opening="hand"[^>]*cy="([^"]+)"/)?.[1];
+      expect(circles[0]?.[3]).toBe(openingY);
+      const handLeft = Number(svg.match(/data-hand-mid-x="([^"]+)"/)?.[1]) - attr(svg, "hand-width-px") / 2;
+      const handRight = handLeft + attr(svg, "hand-width-px");
+      expect(Number(circles[0]?.[2])).toBeCloseTo(edge === "right" ? handRight : handLeft, 1);
+      expect(svg).not.toContain("data-armhole-marker-tick");
       expect(svg).not.toContain("Thumb marker");
       expect(svg).not.toContain("Place marker");
       const summary = buildMittenDiagramSvg(womanSmallPreviewCalc(), edge, "summary");
@@ -275,7 +281,12 @@ describe("slotted mitten diagrams", () => {
     const gored = calculateMittenPattern(womanSmallPreviewCalcInput("gored"));
     expect(gored.ok).toBe(true);
     if (!gored.ok) return;
-    expect(buildMittenDiagramSvg(gored.calc, "right")).not.toContain("data-thumb-marker");
+    const svg = buildMittenDiagramSvg(gored.calc, "right");
+    const ids = [...svg.matchAll(/data-thumb-marker="([^"]+)"/g)].map((match) => match[1]);
+    expect(ids).toEqual(["lower-left", "upper-left", "lower-right", "upper-right"]);
+    expect(svg).not.toContain("data-armhole-marker-tick");
+    const left = buildMittenDiagramSvg(gored.calc, "left");
+    expect([...left.matchAll(/data-thumb-marker="([^"]+)"/g)].map((match) => match[1])).toEqual(ids);
   });
 });
 

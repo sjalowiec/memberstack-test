@@ -311,10 +311,10 @@ describe("slotted mitten instructions", () => {
     expect(right).toContain('data-pattern-diagram-panel="shaping-notation"');
     expect(right).toContain('data-diagram="mitten-sketch"');
     expect(right).toContain('data-diagram="mitten-shaping-notation"');
-    expect(right.match(/data-thumb-marker="slot"/g)).toHaveLength(2);
-    expect(left.match(/data-thumb-marker="slot"/g)).toHaveLength(2);
-    expect(right).toContain('data-armhole-marker-tick="right"');
-    expect(left).toContain('data-armhole-marker-tick="left"');
+    expect(right.match(/data-thumb-marker="slot-right"/g)).toHaveLength(2);
+    expect(left.match(/data-thumb-marker="slot-left"/g)).toHaveLength(2);
+    expect(right).not.toContain("data-armhole-marker-tick");
+    expect(left).not.toContain("data-armhole-marker-tick");
     expect(right).not.toContain("Thumb marker");
     expect(right).not.toContain("Place marker");
     expect(right).toContain("co46");

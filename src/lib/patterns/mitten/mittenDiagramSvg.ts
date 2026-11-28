@@ -13,7 +13,6 @@ import {
   DS_ARROW,
   DS_FONT,
   DS_MUTED,
-  armholeSideTick,
   endCap,
   fmtNum,
 } from "../dropShoulderPatternDiagramSvgShared";
@@ -642,6 +641,55 @@ function calculatedRowsLabel(rows: number, rowsPerInch: number, unit: Measuremen
   return formatStitchesRowsDiagramLabel(rows, "rows", formatKnittedCountMeasurement(rows, rowsPerInch, unit));
 }
 
+/** Same filled dot the sweater place-marker uses. No caption. */
+const STITCH_MARKER_FILL = "#c62828";
+const STITCH_MARKER_R = 8;
+
+export type MittenStitchMarker = { id: string; x: number; y: number };
+
+/**
+ * Stitch-marker dots from the written instructions.
+ * Slotted: the thumb opening on the slot edge.
+ * Gored: lower and upper markers on each hand edge, markerRows apart.
+ */
+export function mittenStitchMarkerPositions(
+  calc: MittenCalc,
+  frame: MittenPatternSketchFrame,
+): MittenStitchMarker[] {
+  if (!calc.gore) {
+    const edge = frame.slotRight ? "right" : "left";
+    return [
+      {
+        id: `slot-${edge}`,
+        x: frame.slotRight ? frame.handRight : frame.handLeft,
+        y: frame.ySlot,
+      },
+    ];
+  }
+  const upperInStraight = Math.min(calc.gore.markerRows, calc.straightRows);
+  const intoHand1 = calc.gore.markerRows - upperInStraight;
+  const lowerAt = calc.hand1Rows - intoHand1;
+  const lowerY =
+    frame.yCuffTop - (calc.hand1Rows > 0 ? (lowerAt / calc.hand1Rows) * frame.hand1H : 0);
+  const upperY =
+    frame.ySlot - (calc.straightRows > 0 ? (upperInStraight / calc.straightRows) * frame.straightH : 0);
+  return (["left", "right"] as const).flatMap((edge) => {
+    const x = edge === "left" ? frame.handLeft : frame.handRight;
+    return [
+      { id: `lower-${edge}`, x, y: lowerY },
+      { id: `upper-${edge}`, x, y: upperY },
+    ];
+  });
+}
+
+export function mittenStitchMarkerMarkup(calc: MittenCalc, frame: MittenPatternSketchFrame): string {
+  const circles = mittenStitchMarkerPositions(calc, frame).map(
+    (mark) =>
+      `<circle data-thumb-marker="${mark.id}" cx="${fmtNum(mark.x)}" cy="${fmtNum(mark.y)}" r="${STITCH_MARKER_R}" fill="${STITCH_MARKER_FILL}"/>`,
+  );
+  return circles.length ? `<g data-thumb-markers="true">${circles.join("")}</g>` : "";
+}
+
 /** One upright mitten. The second mitten mirrors the thumb side. Online and print share this drawing. */
 export function buildMittenDiagramSvg(
   calc: MittenCalc,
@@ -852,16 +900,11 @@ export function buildMittenDiagramSvg(
     ) +
     `</g>`;
 
-  const thumbMarker = calc.gore
-    ? ""
-    : `<g data-thumb-marker="slot">${armholeSideTick(slotRight ? handRight : handLeft, ySlot, slotRight ? "right" : "left")}</g>`;
-
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${f(view.minX)} ${f(view.minY)} ${f(view.w)} ${f(view.h)}" width="100%" height="auto" preserveAspectRatio="xMidYMid meet" role="img" data-diagram="mitten-sketch" data-slot-edge="${slotEdge}" data-diagram-unit="${unit}" data-hand-mid-x="${f(handMid)}" data-thumb-base-x="${f(baseX)}" data-hand-width-px="${f(handW)}" data-cuff-width-px="${f(cuffW)}" data-cuff-length-px="${f(cuffH)}" data-hand1-px="${f(hand1H)}" data-hand2-px="${f(hand2H)}" data-total-height-px="${f(yBottom - yTip)}" data-fingertip-depth-px="${f(tipH)}" data-fingertip-depth-rows="${fingertipRows}" data-dome-top="${f(yTip)}" data-y-bottom="${f(yBottom)}" data-thumb-width-px="${f(thumbW)}" data-thumb-length-px="${f(thumbLen)}">
   <title>${construction}, ${slotEdge}-edge thumb</title>
   <rect x="${f(view.minX)}" y="${f(view.minY)}" width="${f(view.w)}" height="${f(view.h)}" fill="#fff"/>
   <path data-mitten-outline="hand" d="${body}" fill="none" stroke="${STROKE}" stroke-width="2" stroke-linejoin="round"/>
   <ellipse data-opening="hand" cx="${f(handMid)}" cy="${f(ySlot)}" rx="${f(handW * 0.42)}" ry="${HAND_OVAL_RY}" fill="none" stroke="${STROKE}" stroke-width="1.75"/>
-  ${thumbMarker}
   ${handWidth.markup}
   ${castOn.markup}
   <g data-mitten-outline="thumb" transform="translate(${f(baseX)} ${f(baseY)}) rotate(${f(angle)})">
@@ -871,6 +914,7 @@ export function buildMittenDiagramSvg(
   ${thumbWidthDim}
   ${thumbLengthDim}
   ${vertical.markup}
+  ${mittenStitchMarkerMarkup(calc, frame)}
 </svg>`;
 }
 

@@ -4,7 +4,7 @@
  * Labels are the shared notation tokens from {@link buildMittenShapingNotation}.
  */
 
-import { DS_FONT, DS_MUTED, DS_STROKE, armholeSideTick } from "../dropShoulderPatternDiagramSvgShared";
+import { DS_FONT, DS_MUTED, DS_STROKE } from "../dropShoulderPatternDiagramSvgShared";
 import {
   renderShapingNotationRcLeaders,
   placeShapingNotationRcLandmarks,
@@ -12,7 +12,7 @@ import {
 } from "../legoBlocks/shapingNotationRcLeaders";
 import { formatShapingNotationRcLabel } from "../shapingNotationRcLandmarks";
 import type { MittenSlotEdge } from "./mittenInstructions";
-import { mittenPatternSketchFrame } from "./mittenDiagramSvg";
+import { mittenPatternSketchFrame, mittenStitchMarkerMarkup } from "./mittenDiagramSvg";
 import { buildMittenShapingNotation } from "./mittenShapingNotation";
 import type { MittenCalc } from "./mittenMath";
 
@@ -237,7 +237,7 @@ export function buildMittenShapingNotationSvg(calc: MittenCalc, slotEdge: Mitten
   <g data-mitten-outline="thumb" transform="translate(${f(frame.baseX)} ${f(frame.baseY)}) rotate(${f(frame.sign * THUMB_ANGLE)})">
     <path d="${thumbOutline}" fill="none" stroke="${DS_STROKE}" stroke-width="2" stroke-linejoin="round"/>
   </g>
-  ${calc.gore ? "" : `<g data-thumb-marker="slot">${armholeSideTick(frame.slotRight ? frame.handRight : frame.handLeft, frame.ySlot, frame.slotRight ? "right" : "left")}</g>`}
+  ${mittenStitchMarkerMarkup(calc, frame)}
   ${text(handMid, frame.yBottom + 22, notation.castOn, "middle", "cast-on")}
   ${text(handMid, (frame.yCuffTop + frame.yBottom) / 2, notation.cuffRows, "middle", "cuff-rows")}
   ${text(handMid, frame.yCuffTop - 16, notation.handIncrease, "middle", "hand-increase")}
