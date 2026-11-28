@@ -8,7 +8,7 @@ import {
   mittenHandIncreaseNotation,
 } from "./mittenShapingNotation";
 import { buildMittenShapingNotationSvg } from "./mittenShapingNotationDiagramSvg";
-import { calculateMittenPattern, womanSmallPreviewCalc, womanSmallPreviewInput } from "./mittenMath";
+import { calculateMittenPattern, goredMarkerPlacement, womanSmallPreviewCalc, womanSmallPreviewInput } from "./mittenMath";
 
 describe("mitten shaping notation", () => {
   const calc = womanSmallPreviewCalc();
@@ -82,7 +82,22 @@ describe("mitten shaping notation", () => {
     expect(svg).toContain('data-thumb-marker="lower-right"');
     expect(svg).toContain('data-thumb-marker="upper-right"');
     expect(svg).not.toContain('data-thumb-marker="slot');
+    const place = goredMarkerPlacement(gored.calc);
+    expect(place?.rowsFromCuff).toBe(3);
+    expect(place?.upperAt).toBe(13);
+    expect(place?.straightRowsAfterUpper).toBe(31);
+    expect(svg).toContain("3r");
     expect(svg).toContain("10r");
+    expect(svg).toContain("31r");
+    expect(svg).toContain('data-rc-label="lower-marker"');
+    expect(svg).toContain('data-row-counter="3"');
+    expect(svg).toContain('data-rc-label="upper-marker"');
+    expect(svg).toContain('data-row-counter="13"');
+    expect(svg).toMatch(/data-rc-label="fingertip-stop"[^>]*data-row-counter="44"/);
+    expect(svg).not.toContain('data-rc-label="hand-1-end"');
     expect(svg).not.toContain("bo");
+    const thumbY = Number(svg.match(/data-mitten-outline="thumb" transform="translate\([^ ]+ ([^ )]+)/)?.[1]);
+    const upperCy = Number(svg.match(/data-thumb-marker="upper-right"[^>]*cy="([^"]+)"/)?.[1]);
+    expect(thumbY).toBeCloseTo(upperCy, 5);
   });
 });

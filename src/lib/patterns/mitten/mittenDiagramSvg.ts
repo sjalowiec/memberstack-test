@@ -6,7 +6,12 @@
  */
 
 import type { MittenSlotEdge } from "./mittenInstructions";
-import { formatMittenLengthInches, mittenPhysicalLengths, type MittenCalc } from "./mittenMath";
+import {
+  formatMittenLengthInches,
+  goredMarkerPlacement,
+  mittenPhysicalLengths,
+  type MittenCalc,
+} from "./mittenMath";
 import { DESKTOP_MEASUREMENT_OVERLAY_MIN_STAGE_PX } from "../patternSummaryMeasurementOverlay";
 import type { MeasurementDisplayUnit } from "../patternMeasurementDisplayUnit";
 import {
@@ -374,6 +379,44 @@ export type MittenPatternSketchFrame = {
 };
 
 /**
+ * Gored pattern drawings put the thumb web at the upper markers.
+ * The cuff-to-web height and the straight rows above the web share the original
+ * counted-hand height, so the mitten length does not change.
+ * Summary/Edit keeps the measurement sections.
+ */
+function goredPatternSectionHeights(
+  calc: MittenCalc,
+  straightH: number,
+  hand1H: number,
+): { straightH: number; hand1H: number; webAtSlot: boolean } {
+  const place = goredMarkerPlacement(calc);
+  const countedRows = calc.hand1Rows + calc.straightRows;
+  const countedH = straightH + hand1H;
+  if (!place || !(countedRows > 0) || !(countedH > 0)) {
+    return { straightH, hand1H, webAtSlot: false };
+  }
+  const pxPerRow = countedH / countedRows;
+  return {
+    hand1H: place.upperAt * pxPerRow,
+    straightH: place.straightRowsAfterUpper * pxPerRow,
+    webAtSlot: true,
+  };
+}
+
+/** Lower and upper marker heights on a pattern frame whose web is the upper marker. */
+export function goredMarkerYs(
+  calc: MittenCalc,
+  frame: MittenPatternSketchFrame,
+): { lowerY: number; upperY: number } | null {
+  const place = goredMarkerPlacement(calc);
+  if (!place || !(place.upperAt > 0)) return null;
+  return {
+    upperY: frame.ySlot,
+    lowerY: frame.yCuffTop - (place.lowerAt / place.upperAt) * frame.hand1H,
+  };
+}
+
+/**
  * Finished-pattern mitten, scaled like the drop-shoulder body and placed near the
  * labels. Summary/Edit uses its own frame so the measurement lanes stay put.
  */
@@ -390,8 +433,9 @@ export function mittenPatternSketchFrame(
   const cuffW = m.cuffDisplayIn * scale;
   const tipH = m.fingertipDepthIn * scale;
   const setupH = m.setupRowIn * scale;
-  const straightH = m.straightLengthIn * scale;
-  const hand1H = m.hand1LengthIn * scale;
+  const heights = goredPatternSectionHeights(calc, m.straightLengthIn * scale, m.hand1LengthIn * scale);
+  const straightH = heights.straightH;
+  const hand1H = heights.hand1H;
   const cuffH = m.cuffLengthIn * scale;
   const thumbW = m.thumbDisplayIn * scale;
   const thumbLen = m.thumbLengthIn * scale;
@@ -407,7 +451,7 @@ export function mittenPatternSketchFrame(
   const yCuffTop = ySlot + hand1H;
   const yBottom = yCuffTop + cuffH;
   const baseX = (slotRight ? handRight : handLeft) + sign * (THUMB_GAP + thumbW / 2);
-  const baseY = ySlot + Math.min(18, thumbW * 0.28);
+  const baseY = heights.webAtSlot ? ySlot : ySlot + Math.min(18, thumbW * 0.28);
   const cuffLeft = handLeft + (handW - cuffW) / 2;
   return {
     handLeft,
@@ -659,7 +703,7 @@ export type MittenStitchMarker = { id: string; x: number; y: number };
 /**
  * Stitch-marker dots from the written instructions.
  * Slotted: the thumb opening on the slot edge.
- * Gored: lower and upper markers on each hand edge, markerRows apart.
+ * Gored: lower markers near the cuff, upper markers at the thumb web.
  */
 export function mittenStitchMarkerPositions(
   calc: MittenCalc,
@@ -675,13 +719,9 @@ export function mittenStitchMarkerPositions(
       },
     ];
   }
-  const upperInStraight = Math.min(calc.gore.markerRows, calc.straightRows);
-  const intoHand1 = calc.gore.markerRows - upperInStraight;
-  const lowerAt = calc.hand1Rows - intoHand1;
-  const lowerY =
-    frame.yCuffTop - (calc.hand1Rows > 0 ? (lowerAt / calc.hand1Rows) * frame.hand1H : 0);
-  const upperY =
-    frame.ySlot - (calc.straightRows > 0 ? (upperInStraight / calc.straightRows) * frame.straightH : 0);
+  const ys = goredMarkerYs(calc, frame);
+  const lowerY = ys?.lowerY ?? frame.yCuffTop;
+  const upperY = ys?.upperY ?? frame.ySlot;
   return (["left", "right"] as const).flatMap((edge) => {
     const x = edge === "left" ? frame.handLeft : frame.handRight;
     return [
@@ -744,8 +784,10 @@ export function buildMittenDiagramSvg(
   const angleRad = (THUMB_ANGLE * Math.PI) / 180;
   const rowsPerInch = calc.rowGaugePerInch;
   const fingertipRows = calc.fingertip.shortRowDepthRows;
-  const aboveRows = calc.straightRows + 1;
-  const totalRows = calc.cuffRows + calc.hand1Rows + aboveRows + fingertipRows;
+  const place = goredMarkerPlacement(calc);
+  const markerYs = place ? goredMarkerYs(calc, frame) : null;
+  const aboveRows = (place ? place.straightRowsAfterUpper : calc.straightRows) + 1;
+  const totalRows = calc.cuffRows + calc.hand1Rows + calc.straightRows + 1 + fingertipRows;
   const castOnLabel = castOnEdgeDiagramLabel(calc.cuffSts, calc.stitchGaugePerInch, unit);
   const handLabel = formatStitchesRowsDiagramLabel(
     calc.handSts,
@@ -784,12 +826,33 @@ export function buildMittenDiagramSvg(
         y2: ySlot,
         label: calculatedRowsLabel(aboveRows, rowsPerInch, unit),
       },
-      {
-        role: "below-thumb",
-        y1: ySlot,
-        y2: yCuffTop,
-        label: calculatedRowsLabel(calc.hand1Rows, rowsPerInch, unit),
-      },
+      ...(place && markerYs
+        ? [
+            ...(place.rowsFromCuff > 0
+              ? [
+                  {
+                    role: "below-thumb",
+                    y1: markerYs.lowerY,
+                    y2: yCuffTop,
+                    label: calculatedRowsLabel(place.rowsFromCuff, rowsPerInch, unit),
+                  },
+                ]
+              : []),
+            {
+              role: "thumb-gore",
+              y1: ySlot,
+              y2: place.rowsFromCuff > 0 ? markerYs.lowerY : yCuffTop,
+              label: calculatedRowsLabel(place.markerRows, rowsPerInch, unit),
+            },
+          ]
+        : [
+            {
+              role: "below-thumb",
+              y1: ySlot,
+              y2: yCuffTop,
+              label: calculatedRowsLabel(calc.hand1Rows, rowsPerInch, unit),
+            },
+          ]),
       {
         role: "cuff",
         y1: yCuffTop,

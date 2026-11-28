@@ -414,10 +414,16 @@ describe("gored thumb instructions", () => {
     expect(right).toContain("+2s-1r-6x");
     expect(right).toContain('data-diagram="mitten-shaping-notation"');
     expect(left).toContain('data-slot-edge="left"');
+    expect(block(right, "hand-1")).toContain("Knit 3 rows. (50 stitches)");
+    expect(block(right, "hand-1")).toContain("Place the lower thumb marker on each edge. This marker is nearest the cuff.");
+    expect(block(right, "hand-1")).toContain("RC: 003");
+    expect(block(right, "hand-1")).not.toContain("Knit 20 rows");
+    expect(block(right, "markers")).toContain("Knit 10 rows across all 50 stitches, then place the upper thumb marker on each edge.");
     expect(block(right, "markers")).toContain("10 rows apart");
     expect(block(right, "markers")).toContain("half the thumb circumference");
-    expect(block(right, "markers")).toContain("the hand below the thumb");
-    expect(block(right, "markers")).toContain("This marker is nearest the cuff.");
+    expect(block(right, "markers")).toContain("RC: 013");
+    expect(block(right, "straight")).toContain("Knit 31 rows across all 50 stitches.");
+    expect(block(right, "straight")).toContain("RC: 044");
     expect(block(right, "markers")).not.toContain("Hand 1");
     expect(block(right, "markers")).not.toContain("Hand 2");
     for (const sideHtml of [right, left]) {

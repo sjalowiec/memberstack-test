@@ -10,13 +10,17 @@ import { mittenSizingRow } from "./mittenSizingChart";
 import {
   buildMittenDiagramSvg,
   formatMittenDiagramLength,
+  goredMarkerYs,
   MITTEN_SUMMARY_CHIP,
   MITTEN_SUMMARY_TARGETS,
   mittenDiagramMeasurements,
+  mittenPatternSketchFrame,
+  mittenStitchMarkerPositions,
   mittenSummaryMinPxPerUnit,
 } from "./mittenDiagramSvg";
 import {
   calculateMittenPattern,
+  goredMarkerPlacement,
   measurementsFromSizingRow,
   womanSmallPreviewCalc,
   type MittenCalc,
@@ -288,6 +292,37 @@ describe("slotted mitten diagrams", () => {
     const left = buildMittenDiagramSvg(gored.calc, "left");
     expect([...left.matchAll(/data-thumb-marker="([^"]+)"/g)].map((match) => match[1])).toEqual(ids);
   });
+
+  it("puts the gored thumb web on the upper markers", () => {
+    const gored = calculateMittenPattern(womanSmallPreviewCalcInput("gored"));
+    expect(gored.ok).toBe(true);
+    if (!gored.ok) return;
+    const place = goredMarkerPlacement(gored.calc);
+    expect(place?.lowerAt).toBe(4);
+    expect(place?.upperAt).toBe(18);
+    expect(place?.straightRowsAfterUpper).toBe(26);
+    for (const edge of ["right", "left"] as const) {
+      const frame = mittenPatternSketchFrame(gored.calc, edge);
+      const marks = mittenStitchMarkerPositions(gored.calc, frame);
+      const upper = marks.find((mark) => mark.id === `upper-${edge}`);
+      const lower = marks.find((mark) => mark.id === `lower-${edge}`);
+      const ys = goredMarkerYs(gored.calc, frame);
+      expect(upper?.y).toBeCloseTo(frame.baseY, 5);
+      expect(upper?.y).toBeCloseTo(frame.ySlot, 5);
+      expect(lower?.y).toBeCloseTo(ys?.lowerY ?? 0, 5);
+      expect(lower!.y).toBeGreaterThan(upper!.y);
+      expect(lower!.y).toBeLessThan(frame.yCuffTop);
+      const svg = buildMittenDiagramSvg(gored.calc, edge);
+      const thumbY = Number(svg.match(/data-mitten-outline="thumb" transform="translate\([^ ]+ ([^ )]+)/)?.[1]);
+      const upperCy = Number(
+        svg.match(new RegExp(`data-thumb-marker="upper-${edge}"[^>]*cy="([^"]+)"`))?.[1],
+      );
+      expect(thumbY).toBeCloseTo(upperCy, 5);
+    }
+    const slotted = mittenPatternSketchFrame(womanSmallPreviewCalc(), "right");
+    const goredFrame = mittenPatternSketchFrame(gored.calc, "right");
+    expect(goredFrame.yBottom - goredFrame.yTip).toBeCloseTo(slotted.yBottom - slotted.yTip, 5);
+  });
 });
 
 function rowsLabel(rows: number, rowsPerInch: number, unit: "in" | "cm" = "in"): string {
@@ -333,17 +368,19 @@ function expectSharedSchematicLabels(calc: MittenCalc) {
     "rows",
     formatKnittedDiagramMeasurement(calc.measurements.thumbLengthInches, "in"),
   );
-  const aboveRows = calc.straightRows + 1;
+  const place = goredMarkerPlacement(calc);
+  const aboveRows = (place ? place.straightRowsAfterUpper : calc.straightRows) + 1;
   const fingertip = rowsLabel(calc.fingertip.shortRowDepthRows, calc.rowGaugePerInch);
   const above = rowsLabel(aboveRows, calc.rowGaugePerInch);
-  const below = rowsLabel(calc.hand1Rows, calc.rowGaugePerInch);
+  const below = rowsLabel(place ? place.rowsFromCuff : calc.hand1Rows, calc.rowGaugePerInch);
+  const gore = place ? rowsLabel(place.markerRows, calc.rowGaugePerInch) : "";
   const cuff = formatStitchesRowsDiagramLabel(
     calc.cuffRows,
     "rows",
     formatPatternDiagramMeasurement(calc.measurements.cuffLengthInches, "in"),
   );
   const total = rowsLabel(
-    calc.cuffRows + calc.hand1Rows + aboveRows + calc.fingertip.shortRowDepthRows,
+    calc.cuffRows + calc.hand1Rows + calc.straightRows + 1 + calc.fingertip.shortRowDepthRows,
     calc.rowGaugePerInch,
   );
 
@@ -356,7 +393,16 @@ function expectSharedSchematicLabels(calc: MittenCalc) {
     expectCountBeforeMeasure(dimensionGroup(svg, "thumb-length"), thumbLength, `${edge} thumb length`);
     expectCountBeforeMeasure(dimensionGroup(svg, "fingertip"), fingertip, `${edge} fingertip`);
     expectCountBeforeMeasure(dimensionGroup(svg, "above-thumb"), above, `${edge} above thumb`);
-    expectCountBeforeMeasure(dimensionGroup(svg, "below-thumb"), below, `${edge} below thumb`);
+    if (place && place.rowsFromCuff > 0) {
+      expectCountBeforeMeasure(dimensionGroup(svg, "below-thumb"), below, `${edge} below thumb`);
+    } else if (!place) {
+      expectCountBeforeMeasure(dimensionGroup(svg, "below-thumb"), below, `${edge} below thumb`);
+    }
+    if (place) {
+      expectCountBeforeMeasure(dimensionGroup(svg, "thumb-gore"), gore, `${edge} gore`);
+    } else {
+      expect(svg).not.toContain('data-dimension="thumb-gore"');
+    }
     expectCountBeforeMeasure(dimensionGroup(svg, "cuff"), cuff, `${edge} cuff`);
     expectCountBeforeMeasure(dimensionGroup(svg, "total"), total, `${edge} total`);
     expect(svg).not.toContain("Hand circumference");

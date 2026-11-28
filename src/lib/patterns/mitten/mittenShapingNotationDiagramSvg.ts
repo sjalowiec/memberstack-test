@@ -12,9 +12,9 @@ import {
 } from "../legoBlocks/shapingNotationRcLeaders";
 import { formatShapingNotationRcLabel } from "../shapingNotationRcLandmarks";
 import type { MittenSlotEdge } from "./mittenInstructions";
-import { mittenPatternSketchFrame, mittenStitchMarkerMarkup } from "./mittenDiagramSvg";
+import { goredMarkerYs, mittenPatternSketchFrame, mittenStitchMarkerMarkup } from "./mittenDiagramSvg";
 import { buildMittenShapingNotation } from "./mittenShapingNotation";
-import type { MittenCalc } from "./mittenMath";
+import { goredMarkerPlacement, type MittenCalc } from "./mittenMath";
 
 const THUMB_ANGLE = 22;
 const NOTATION_FS = 15;
@@ -103,17 +103,56 @@ export function buildMittenShapingNotationSvg(calc: MittenCalc, slotEdge: Mitten
 
   const handSide: "left" | "right" = frame.slotRight ? "left" : "right";
   const outlineX = frame.slotRight ? frame.handLeft : frame.handRight;
+  const place = goredMarkerPlacement(calc);
+  const markerYs = place ? goredMarkerYs(calc, frame) : null;
+  const markerLandmarks: ShapingNotationRcLeaderLandmark[] =
+    place && markerYs
+      ? [
+          ...(place.lowerAt > 0
+            ? [
+                {
+                  id: "lower-marker",
+                  text: formatShapingNotationRcLabel(place.lowerAt),
+                  actionY: markerYs.lowerY,
+                  outlineX,
+                  priority: 3,
+                  rowCounter: place.lowerAt,
+                  kind: "lower-marker",
+                },
+              ]
+            : []),
+          {
+            id: "upper-marker",
+            text: formatShapingNotationRcLabel(place.upperAt),
+            actionY: markerYs.upperY,
+            outlineX,
+            priority: 4,
+            rowCounter: place.upperAt,
+            kind: "upper-marker",
+          },
+        ]
+      : [
+          {
+            id: "hand-1-end",
+            text: formatShapingNotationRcLabel(calc.hand1Rows),
+            actionY: frame.ySlot,
+            outlineX,
+            priority: 3,
+            rowCounter: calc.hand1Rows,
+            kind: "hand-1-end",
+          },
+        ];
   const handLandmarks: ShapingNotationRcLeaderLandmark[] = [
     { id: "cuff-start", text: formatShapingNotationRcLabel(0), actionY: frame.yBottom, outlineX, priority: 0, rowCounter: 0, kind: "cuff-start" },
     { id: "cuff-end", text: formatShapingNotationRcLabel(calc.cuffRows), actionY: frame.yCuffTop, outlineX, priority: 1, rowCounter: calc.cuffRows, kind: "cuff-end" },
     { id: "hand-start", text: formatShapingNotationRcLabel(0), actionY: frame.yCuffTop + 2, outlineX, priority: 2, rowCounter: 0, kind: "hand-start" },
-    { id: "hand-1-end", text: formatShapingNotationRcLabel(calc.hand1Rows), actionY: frame.ySlot, outlineX, priority: 3, rowCounter: calc.hand1Rows, kind: "hand-1-end" },
+    ...markerLandmarks,
     {
       id: "fingertip-stop",
       text: formatShapingNotationRcLabel(calc.gore ? calc.handEndRc : calc.straightRows),
       actionY: frame.yDomeBase,
       outlineX,
-      priority: 4,
+      priority: 5,
       rowCounter: calc.gore ? calc.handEndRc : calc.straightRows,
       kind: "fingertip-stop",
     },
@@ -242,8 +281,8 @@ export function buildMittenShapingNotationSvg(calc: MittenCalc, slotEdge: Mitten
   ${text(handMid, (frame.yCuffTop + frame.yBottom) / 2, notation.cuffRows, "middle", "cuff-rows")}
   ${text(handMid, frame.yCuffTop - 16, notation.handIncrease, "middle", "hand-increase")}
   ${text(handMid, frame.yCuffTop + 16, notation.handStsLabel, "middle", "hand-sts")}
-  ${text(handMid, (frame.ySlot + frame.yCuffTop) / 2, notation.hand1Rows, "middle", "hand-1-rows")}
-  ${notation.markerRows ? text(shapedX, frame.ySlot - 8, notation.markerRows, shapedAnchor, "thumb-markers") : ""}
+  ${text(handMid, markerYs ? (frame.yCuffTop + markerYs.lowerY) / 2 : (frame.ySlot + frame.yCuffTop) / 2, notation.hand1Rows, "middle", "hand-1-rows")}
+  ${notation.markerRows ? text(shapedX, markerYs ? (markerYs.lowerY + markerYs.upperY) / 2 : frame.ySlot - 8, notation.markerRows, shapedAnchor, "thumb-markers") : ""}
   ${text(handMid, (frame.yDomeBase + frame.ySlot) / 2, notation.straightRows, "middle", "straight-rows")}
   ${fingertipLines.map((line) => text(shapedX, phaseStart + line.dy, line.text, shapedAnchor, "fingertip-shaping")).join("")}
   ${stack(thumbNoteX, thumbNoteY, thumbLines, thumbAnchor, "thumb-shaping")}
