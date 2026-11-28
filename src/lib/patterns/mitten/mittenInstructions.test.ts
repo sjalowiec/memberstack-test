@@ -165,6 +165,14 @@ describe("slotted mitten instructions", () => {
     const resetAt = right.indexOf(RESET_ROW_COUNTER_TEXT, slotAt);
     const knitAt = right.indexOf("Knit 24 rows across all 50 stitches with the main yarn.");
     expect(slot).toContain("outermost needle on the RIGHT");
+    expect(slot.match(/data-stitch-marker="inline"/g)).toHaveLength(1);
+    expect(slot).toContain('fill="#c62828"');
+    expect(slot.indexOf('data-stitch-marker="inline"')).toBeLessThan(
+      slot.indexOf("Starting at the outermost needle on the RIGHT"),
+    );
+    expect(slot).toContain(
+      "Starting at the outermost needle on the RIGHT, work the 10 slot stitches by hand: knit 1 row with waste yarn, 1 row with ravel cord, then 1 row with waste yarn.",
+    );
     expect(slot).toContain("1 row with waste yarn, 1 row with ravel cord, then 1 row with waste yarn");
     expect(slot).toContain("These hand-worked rows do not count on the row counter.");
     expect(slot).not.toContain(RESET_ROW_COUNTER_TEXT);
@@ -178,6 +186,7 @@ describe("slotted mitten instructions", () => {
     expect(straight).not.toContain("RC: 044");
     expect(right).not.toContain("Continue knitting the hand");
     expect(block(left, "slot")).toContain("outermost needle on the LEFT");
+    expect(block(left, "slot").match(/data-stitch-marker="inline"/g)).toHaveLength(1);
     expect(block(left, "cast-on")).toContain(MITTEN_CUFF_START_CARRIAGE);
   });
 
@@ -369,6 +378,7 @@ describe("gored thumb instructions", () => {
   it("uses the same gored wording for the screen and the print document", () => {
     expect(html).toContain('data-print-source="mitten-instructions"');
     expect(html).toContain('data-thumb-style="gored"');
+    expect(html).not.toContain('data-stitch-marker="inline"');
     expectFingerlessMittsTip(html, "gored");
     const rightThumb = block(right, "thumb");
     const leftThumb = block(left, "thumb");
