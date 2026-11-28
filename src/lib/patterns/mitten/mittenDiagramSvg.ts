@@ -13,6 +13,7 @@ import {
   DS_ARROW,
   DS_FONT,
   DS_MUTED,
+  armholeSideTick,
   endCap,
   fmtNum,
 } from "../dropShoulderPatternDiagramSvgShared";
@@ -851,11 +852,16 @@ export function buildMittenDiagramSvg(
     ) +
     `</g>`;
 
+  const thumbMarker = calc.gore
+    ? ""
+    : `<g data-thumb-marker="slot">${armholeSideTick(slotRight ? handRight : handLeft, ySlot, slotRight ? "right" : "left")}</g>`;
+
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${f(view.minX)} ${f(view.minY)} ${f(view.w)} ${f(view.h)}" width="100%" height="auto" preserveAspectRatio="xMidYMid meet" role="img" data-diagram="mitten-sketch" data-slot-edge="${slotEdge}" data-diagram-unit="${unit}" data-hand-mid-x="${f(handMid)}" data-thumb-base-x="${f(baseX)}" data-hand-width-px="${f(handW)}" data-cuff-width-px="${f(cuffW)}" data-cuff-length-px="${f(cuffH)}" data-hand1-px="${f(hand1H)}" data-hand2-px="${f(hand2H)}" data-total-height-px="${f(yBottom - yTip)}" data-fingertip-depth-px="${f(tipH)}" data-fingertip-depth-rows="${fingertipRows}" data-dome-top="${f(yTip)}" data-y-bottom="${f(yBottom)}" data-thumb-width-px="${f(thumbW)}" data-thumb-length-px="${f(thumbLen)}">
   <title>${construction}, ${slotEdge}-edge thumb</title>
   <rect x="${f(view.minX)}" y="${f(view.minY)}" width="${f(view.w)}" height="${f(view.h)}" fill="#fff"/>
   <path data-mitten-outline="hand" d="${body}" fill="none" stroke="${STROKE}" stroke-width="2" stroke-linejoin="round"/>
   <ellipse data-opening="hand" cx="${f(handMid)}" cy="${f(ySlot)}" rx="${f(handW * 0.42)}" ry="${HAND_OVAL_RY}" fill="none" stroke="${STROKE}" stroke-width="1.75"/>
+  ${thumbMarker}
   ${handWidth.markup}
   ${castOn.markup}
   <g data-mitten-outline="thumb" transform="translate(${f(baseX)} ${f(baseY)}) rotate(${f(angle)})">

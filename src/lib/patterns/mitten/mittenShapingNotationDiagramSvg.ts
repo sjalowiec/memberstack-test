@@ -4,7 +4,7 @@
  * Labels are the shared notation tokens from {@link buildMittenShapingNotation}.
  */
 
-import { DS_FONT, DS_MUTED, DS_STROKE } from "../dropShoulderPatternDiagramSvgShared";
+import { DS_FONT, DS_MUTED, DS_STROKE, armholeSideTick } from "../dropShoulderPatternDiagramSvgShared";
 import {
   renderShapingNotationRcLeaders,
   placeShapingNotationRcLandmarks,
@@ -108,7 +108,15 @@ export function buildMittenShapingNotationSvg(calc: MittenCalc, slotEdge: Mitten
     { id: "cuff-end", text: formatShapingNotationRcLabel(calc.cuffRows), actionY: frame.yCuffTop, outlineX, priority: 1, rowCounter: calc.cuffRows, kind: "cuff-end" },
     { id: "hand-start", text: formatShapingNotationRcLabel(0), actionY: frame.yCuffTop + 2, outlineX, priority: 2, rowCounter: 0, kind: "hand-start" },
     { id: "hand-1-end", text: formatShapingNotationRcLabel(calc.hand1Rows), actionY: frame.ySlot, outlineX, priority: 3, rowCounter: calc.hand1Rows, kind: "hand-1-end" },
-    { id: "fingertip-stop", text: formatShapingNotationRcLabel(calc.handEndRc), actionY: frame.yDomeBase, outlineX, priority: 4, rowCounter: calc.handEndRc, kind: "fingertip-stop" },
+    {
+      id: "fingertip-stop",
+      text: formatShapingNotationRcLabel(calc.gore ? calc.handEndRc : calc.straightRows),
+      actionY: frame.yDomeBase,
+      outlineX,
+      priority: 4,
+      rowCounter: calc.gore ? calc.handEndRc : calc.straightRows,
+      kind: "fingertip-stop",
+    },
   ];
   const thumbOutlineX = frame.baseX;
   const thumbLandmarks: ShapingNotationRcLeaderLandmark[] = calc.gore
@@ -229,6 +237,7 @@ export function buildMittenShapingNotationSvg(calc: MittenCalc, slotEdge: Mitten
   <g data-mitten-outline="thumb" transform="translate(${f(frame.baseX)} ${f(frame.baseY)}) rotate(${f(frame.sign * THUMB_ANGLE)})">
     <path d="${thumbOutline}" fill="none" stroke="${DS_STROKE}" stroke-width="2" stroke-linejoin="round"/>
   </g>
+  ${calc.gore ? "" : `<g data-thumb-marker="slot">${armholeSideTick(frame.slotRight ? frame.handRight : frame.handLeft, frame.ySlot, frame.slotRight ? "right" : "left")}</g>`}
   ${text(handMid, frame.yBottom + 22, notation.castOn, "middle", "cast-on")}
   ${text(handMid, (frame.yCuffTop + frame.yBottom) / 2, notation.cuffRows, "middle", "cuff-rows")}
   ${text(handMid, frame.yCuffTop - 16, notation.handIncrease, "middle", "hand-increase")}

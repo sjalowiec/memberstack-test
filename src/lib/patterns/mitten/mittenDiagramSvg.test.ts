@@ -261,6 +261,22 @@ describe("slotted mitten diagrams", () => {
     expect(summary).toContain('data-diagram-mode="summary"');
     expect(pattern).not.toContain('data-diagram-mode="summary"');
   });
+
+  it("marks the slotted thumb opening with the side-seam tick and no caption", () => {
+    for (const edge of ["right", "left"] as const) {
+      const svg = buildMittenDiagramSvg(womanSmallPreviewCalc(), edge);
+      expect(svg).toContain('data-thumb-marker="slot"');
+      expect(svg).toContain(`data-armhole-marker-tick="${edge}"`);
+      expect(svg).not.toContain("Thumb marker");
+      expect(svg).not.toContain("Place marker");
+      const summary = buildMittenDiagramSvg(womanSmallPreviewCalc(), edge, "summary");
+      expect(summary).not.toContain("data-thumb-marker");
+    }
+    const gored = calculateMittenPattern(womanSmallPreviewCalcInput("gored"));
+    expect(gored.ok).toBe(true);
+    if (!gored.ok) return;
+    expect(buildMittenDiagramSvg(gored.calc, "right")).not.toContain("data-thumb-marker");
+  });
 });
 
 function rowsLabel(rows: number, rowsPerInch: number, unit: "in" | "cm" = "in"): string {
