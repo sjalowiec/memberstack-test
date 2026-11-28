@@ -121,12 +121,11 @@ describe("slotted mitten instructions", () => {
   it("starts the counted cuff rows at RC 000 with the carriage on the right", () => {
     for (const sideHtml of [right, left]) {
       const castOn = block(sideHtml, "cast-on");
-      const setup = castOn.indexOf("Complete cast-on setup before the counted cuff rows.");
       const reset = castOn.indexOf(RESET_ROW_COUNTER_TEXT);
       const carriageAt = castOn.indexOf(MITTEN_CUFF_START_CARRIAGE);
       const knit = castOn.indexOf("Knit 26 rows in your choice of cuff pattern.");
-      expect(setup).toBeGreaterThanOrEqual(0);
-      expect(setup).toBeLessThan(reset);
+      expect(castOn).not.toContain("Complete cast-on setup before the counted cuff rows.");
+      expect(reset).toBeGreaterThanOrEqual(0);
       expect(reset).toBeLessThan(carriageAt);
       expect(carriageAt).toBeLessThan(knit);
       expect(castOn).toContain("RC: 026");
@@ -159,18 +158,24 @@ describe("slotted mitten instructions", () => {
     }
   });
 
-  it("keeps the slot rows uncounted and makes the next full-width row row 1 of the straight rows", () => {
+  it("keeps the slot rows uncounted and resets the counter before the hand above the thumb", () => {
     const slot = block(right, "slot");
     const straight = block(right, "straight");
+    const slotAt = right.indexOf('data-block="slot"');
+    const resetAt = right.indexOf(RESET_ROW_COUNTER_TEXT, slotAt);
+    const knitAt = right.indexOf("Knit 24 rows across all 50 stitches with the main yarn.");
     expect(slot).toContain("outermost needle on the RIGHT");
     expect(slot).toContain("1 row with waste yarn, 1 row with ravel cord, then 1 row with waste yarn");
     expect(slot).toContain("These hand-worked rows do not count on the row counter.");
     expect(slot).not.toContain(RESET_ROW_COUNTER_TEXT);
-    expect(straight).toContain(
-      "Knit 24 rows across all 50 stitches with the main yarn. Row 1 is the full-width row immediately after the slot.",
-    );
+    expect(resetAt).toBeGreaterThan(slotAt);
+    expect(resetAt).toBeLessThan(knitAt);
+    expect(right.slice(slotAt, knitAt)).toContain("RC: 020");
+    expect(straight).toContain("Knit 24 rows across all 50 stitches with the main yarn.");
+    expect(straight).not.toContain("Row 1 is the full-width row immediately after the slot.");
     expect(straight.match(/Knit 24 rows/g)).toHaveLength(1);
-    expect(straight).toContain("RC: 044");
+    expect(straight).toContain("RC: 024");
+    expect(straight).not.toContain("RC: 044");
     expect(right).not.toContain("Continue knitting the hand");
     expect(block(left, "slot")).toContain("outermost needle on the LEFT");
     expect(block(left, "cast-on")).toContain(MITTEN_CUFF_START_CARRIAGE);
@@ -185,7 +190,7 @@ describe("slotted mitten instructions", () => {
       tubeStitches: calc.handSts,
       constructionDirection: "cuff-to-toe",
       sock: 1,
-      arriveRc: calc.handEndRc,
+      arriveRc: calc.straightRows,
     });
     const fingertips = block(right, "fingertips");
     const straight = block(right, "straight");
@@ -197,6 +202,8 @@ describe("slotted mitten instructions", () => {
       sockEnsureCarriageInstruction("heel", "right").replace("the heel", "the fingertips"),
     );
     expect(fingertips).toContain("Do not count this setup row on the row counter.");
+    expect(fingertips).toContain("RC: 024");
+    expect(fingertips).not.toContain("RC: 044");
     expect(fingertips).not.toContain("RC: 032");
     expect(straight).not.toContain("Before beginning the fingertips");
     const stepOrder = [...fingertips.matchAll(/data-step="([^"]+)"/g)].map((match) => match[1]);
@@ -304,6 +311,12 @@ describe("slotted mitten instructions", () => {
     expect(right).toContain('data-pattern-diagram-panel="shaping-notation"');
     expect(right).toContain('data-diagram="mitten-sketch"');
     expect(right).toContain('data-diagram="mitten-shaping-notation"');
+    expect(right.match(/data-thumb-marker="slot"/g)).toHaveLength(2);
+    expect(left.match(/data-thumb-marker="slot"/g)).toHaveLength(2);
+    expect(right).toContain('data-armhole-marker-tick="right"');
+    expect(left).toContain('data-armhole-marker-tick="left"');
+    expect(right).not.toContain("Thumb marker");
+    expect(right).not.toContain("Place marker");
     expect(right).toContain("co46");
     expect(right).toContain("+4s-1r-1x");
     expect(right).toContain("-1s-1r-16x");
@@ -446,7 +459,7 @@ function expectFingertipMap(calc: MittenCalc, side: MittenInstructionSide, panel
     tubeStitches: calc.handSts,
     constructionDirection: "cuff-to-toe",
     sock: side.sock,
-    arriveRc: calc.handEndRc,
+    arriveRc: calc.gore ? calc.handEndRc : calc.straightRows,
   });
   const built = buildSingleShortRowShapingMap(section, {
     title: MITTEN_TOP_SHAPING_MAP_TITLE,
@@ -476,6 +489,10 @@ function expectFingertipMap(calc: MittenCalc, side: MittenInstructionSide, panel
   expect(panelHtml.indexOf(MITTEN_TOP_SHAPING_MAP_TITLE)).toBeLessThan(asideAt);
   expect(panelHtml.slice(asideAt)).not.toContain("data-mitten-top-shaping-map");
 
+  const stopRc = calc.gore ? calc.handEndRc : calc.straightRows;
+  expect(fingertips).toContain(`RC: ${String(stopRc).padStart(3, "0")}`);
+  expect(section.rc.startRc).toBe(stopRc);
+  expect(built.map.passes[0]?.pass).toBe(1);
   expect(fingertips).toContain(SHAPING_MAP_NOTE);
   expect(fingertips).toContain(STOP_ROW_COUNTER_TEXT);
   expect(fingertips).not.toContain("row counter was reset");

@@ -112,7 +112,7 @@ export function endCap(x: number, y: number, vertical: boolean): string {
 }
 
 /** Short hash across the side seam — not a dimension arrow. */
-function armholeSideTick(x: number, y: number, side: "left" | "right"): string {
+export function armholeSideTick(x: number, y: number, side: "left" | "right"): string {
   const outward = side === "left" ? -6 : 6;
   const inward = side === "left" ? 5 : -5;
   return (

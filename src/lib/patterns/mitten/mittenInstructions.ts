@@ -330,7 +330,9 @@ function fingertipSection(calc: MittenCalc, side: MittenInstructionSide): SockIn
     tubeStitches: calc.handSts,
     constructionDirection: "cuff-to-toe",
     sock: side.sock,
-    arriveRc: calc.handEndRc,
+    // Slotted hand-above rows start from a reset, so the stop reading is those
+    // rows. Gored keeps the continuous hand counter.
+    arriveRc: calc.gore ? calc.handEndRc : calc.straightRows,
   });
 }
 
@@ -411,11 +413,18 @@ function markerRows(calc: MittenCalc, gore: GoreThumbPlan): SleevelessPatternDis
 function straightRows(calc: MittenCalc, gore: GoreThumbPlan | null): SleevelessPatternDisplayRow[] {
   if (!gore) {
     return section("Hand above the thumb", [
+      {
+        kind: "block",
+        rowCounterReset: true,
+        rowCounterResetGarmentRc: calc.hand1Rows,
+        paragraphs: [],
+        trustedParagraphs: [blockMarker("hand-above-reset")],
+      },
       instructionBlock({
         lines: [
           blockMarker("straight"),
-          `Knit ${calc.straightRows} rows across all ${calc.handSts} stitches with the main yarn. Row 1 is the full-width row immediately after the slot.`,
-          rcLine(calc.handEndRc),
+          `Knit ${calc.straightRows} rows across all ${calc.handSts} stitches with the main yarn.`,
+          rcLine(calc.straightRows),
         ],
         stitchCount: calc.handSts,
       }),
@@ -544,7 +553,6 @@ function mittenRows(calc: MittenCalc, side: MittenInstructionSide): SleevelessPa
         lines: [
           blockMarker("cast-on"),
           `Cast on ${calc.cuffSts} stitches.`,
-          "Complete cast-on setup before the counted cuff rows.",
         ],
         stitchCount: calc.cuffSts,
       }),
